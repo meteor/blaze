@@ -1,0 +1,60 @@
+<head>
+  <title>Documentation - Meteor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+</head>
+
+<body>
+  <div id="nav">
+    {{> nav }}
+  </div>
+  <div id="main">
+    <div id="top"></div>
+    <h2 class="main-headline">Meteor 0.3.7</h1>
+    {{> introduction }}
+    {{> concepts }}
+    {{> api }}
+    {{> packages }}
+    {{> commandline }}
+  </div>
+</body>
+
+<template name="nav">
+<div id="nav-inner">
+  {{#each sections}}
+  {{#if type "spacer"}}
+    <div class="spacer"> </div>
+  {{/if}}
+  {{#if type "section"}}
+    <h{{depth}}><a href="#{{id}}" class="{{maybe_current}} {{style}}">
+        {{#if instance}}<i>{{instance}}</i>.{{/if}}{{name}}
+    </a></h{{depth}}>
+  {{/if}}
+  {{/each}}
+</div>
+</template>
+
+
+
+<template name="dtdd_helper">
+<dt><span class="name">{{{name}}}</span>
+  {{#if type}}<span class="type">{{type}}</span>{{/if}}
+</dt>
+<dd>{{#better_markdown}}{{{descr}}}{{/better_markdown}}</dd>
+</template>
+
+
+
+<template name="warning_helper">
+  <div class="warning">
+    {{#better_markdown}}{{{this}}}{{/better_markdown}}
+  </div>
+</template>
+
+<template name="note_helper">
+  <div class="note">
+    {{#better_markdown}}{{{this}}}{{/better_markdown}}
+  </div>
+</template>
+
