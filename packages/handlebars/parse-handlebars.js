@@ -1,3 +1,4 @@
+// @export Handlebars
 Handlebars = {};
 
 /* Our format:
@@ -26,22 +27,15 @@ Handlebars = {};
  * partial.)
  */
 
+var path = Npm.require('path');
+var hbars = Npm.require('handlebars');
 
 Handlebars.to_json_ast = function (code) {
-  // We need handlebars and underscore, but this is bundle time, so
-  // we load them using 'require'.
-  // If we're in a unit test right now, we're actually in the server
-  // run-time environment; we have '_' but not 'require'.
-  // This is all very hacky.
-  var req = (typeof require === 'undefined' ?
-             Npm.require : require);
-  var path = req('path');
-  var _ = req("underscore");
-  var ast = req("handlebars").parse(code);
+  var ast = hbars.parse(code);
 
   // Recreate Handlebars.Exception to properly report error messages
   // and stack traces. (https://github.com/wycats/handlebars.js/issues/226)
-  makeHandlebarsExceptionsVisible(req);
+  makeHandlebarsExceptionsVisible();
 
   var identifier = function (node) {
     if (node.type !== "ID")
@@ -154,13 +148,13 @@ Handlebars.to_json_ast = function (code) {
   return template(ast.statements);
 };
 
-var makeHandlebarsExceptionsVisible = function (req) {
-  req("handlebars").Exception = function(message) {
+var makeHandlebarsExceptionsVisible = function () {
+  hbars.Exception = function(message) {
     this.message = message;
     // In Node, if we don't do this we don't see the message displayed
     // nor the right stack trace.
     Error.captureStackTrace(this, arguments.callee);
   };
-  req("handlebars").Exception.prototype = new Error();
-  req("handlebars").Exception.prototype.name = 'Handlebars.Exception';
+  hbars.Exception.prototype = new Error();
+  hbars.Exception.prototype.name = 'Handlebars.Exception';
 };
