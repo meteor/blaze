@@ -26,22 +26,48 @@ Handlebars = {};
  * partial.)
  */
 
+var path = Npm.require('path');
+var hbars = Npm.require('handlebars');
 
+// Has keys 'message', 'line'
+Handlebars.ParseError = function (message, line) {
+  this.message = message;
+  if (line)
+    this.line = line;
+};
+
+// Raises Handlebars.ParseError if the Handlebars parser fails. We
+// will do our best to decode the output of Handlebars into a message
+// and a line number.
+
+// If Handlebars parsing fails, the Handlebars parser error will
+// escape to the caller.
+//
 Handlebars.to_json_ast = function (code) {
-  // We need handlebars and underscore, but this is bundle time, so
-  // we load them using 'require'.
-  // If we're in a unit test right now, we're actually in the server
-  // run-time environment; we have '_' but not 'require'.
-  // This is all very hacky.
-  var req = (typeof require === 'undefined' ?
-             Npm.require : require);
-  var path = req('path');
-  var _ = req("underscore");
-  var ast = req("handlebars").parse(code);
+  try {
+    var ast = hbars.parse(code);
+  } catch (e) {
+    // The Handlebars parser throws Error objects with a message
+    // attribute (and nothing else) and we must do our best. Parse
+    // errors include a line number (relative to the start of 'code'
+    // of course) which we'll attempt to parse out. (Handlebars
+    // almost, but not quite copies the line number information onto
+    // the Error object.) Other than parse errors, you also see very
+    // short strings like "else doesn't match unless" (with no
+    // location information.)
+    var m = e.message.match(/^Parse error on line (\d+):([\s\S]*)$/)
+    if (m)
+      throw new Handlebars.ParseError("Parse error:" + m[2], +m[1]);
+
+    if (e.message)
+      throw new Handlebars.ParseError(e.message);
+
+    throw e;
+  }
 
   // Recreate Handlebars.Exception to properly report error messages
   // and stack traces. (https://github.com/wycats/handlebars.js/issues/226)
-  makeHandlebarsExceptionsVisible(req);
+  makeHandlebarsExceptionsVisible();
 
   var identifier = function (node) {
     if (node.type !== "ID")
@@ -154,13 +180,13 @@ Handlebars.to_json_ast = function (code) {
   return template(ast.statements);
 };
 
-var makeHandlebarsExceptionsVisible = function (req) {
-  req("handlebars").Exception = function(message) {
+var makeHandlebarsExceptionsVisible = function () {
+  hbars.Exception = function(message) {
     this.message = message;
     // In Node, if we don't do this we don't see the message displayed
     // nor the right stack trace.
     Error.captureStackTrace(this, arguments.callee);
   };
-  req("handlebars").Exception.prototype = new Error();
-  req("handlebars").Exception.prototype.name = 'Handlebars.Exception';
+  hbars.Exception.prototype = new Error();
+  hbars.Exception.prototype.name = 'Handlebars.Exception';
 };
