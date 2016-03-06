@@ -19,5 +19,15 @@ Package.onUse(function (api) {
   api.use(['blaze', 'spacebars']);
   api.imply(['meteor', 'blaze', 'spacebars'], 'client');
 
+  // to be able to compile dynamic.html. this compiler is used
+  // only inside this package and it should not be implied to not
+  // conflict with other packages providing .html compilers.
+  api.use('templating-compiler');
   api.addFiles(['dynamic.html', 'dynamic.js'], 'client');
+});
+
+Package.onTest(function (api) {
+  api.use(['tinytest', 'templating-runtime', 'templating-compiler']);
+
+  api.addFiles(['dynamic_tests.html', 'dynamic_tests.js'], 'client');
 });
