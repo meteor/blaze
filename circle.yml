@@ -14,4 +14,4 @@ dependencies:
     - meteor --get-ready
 test:
   override:
-    - METEOR_WAREHOUSE_DIR=/tmp/meteor tests/test-runner/test-all.sh
+    - METEOR_COMMAND=/tmp/meteor/meteor tests/test-runner/test-all.sh
