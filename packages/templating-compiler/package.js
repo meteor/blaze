@@ -17,7 +17,7 @@ Package.registerBuildPlugin({
     'templating-tools'
   ],
   sources: [
-    'plugin/compile-templates.js'
+    'compile-templates.js'
   ]
 });
 

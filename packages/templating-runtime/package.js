@@ -27,7 +27,7 @@ Package.onUse(function (api) {
 });
 
 Package.onTest(function (api) {
-  api.use(['tinytest', 'templating-runtime', 'templating-compiler']);
+  api.use(['tinytest', 'templating-runtime', 'templating-compiler', 'reactive-var', 'test-helpers', 'tracker']);
 
   api.addFiles(['dynamic_tests.html', 'dynamic_tests.js'], 'client');
 });
