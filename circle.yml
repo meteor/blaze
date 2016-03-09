@@ -11,7 +11,7 @@ machine:
 dependencies:
   override:
     - npm install selenium-webdriver
-    - meteor list
+    - meteor --get-ready
 test:
   override:
     - METEOR_WAREHOUSE_DIR=/tmp/meteor tests/test-runner/test-all.sh
