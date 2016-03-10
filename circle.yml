@@ -10,7 +10,7 @@ machine:
     - git clone -b devel https://github.com/meteor/meteor.git /tmp/meteor
 dependencies:
   override:
-    - npm install selenium-webdriver
+    - npm install selenium-webdriver mkdirp
     - meteor --get-ready
 test:
   override:
