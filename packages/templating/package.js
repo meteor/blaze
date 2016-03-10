@@ -9,6 +9,9 @@ Package.describe({
 // registry and a default templating system, ideally per-package.
 
 Package.onUse(function (api) {
+  api.use('templating-runtime');
+  api.export('Template', 'client');
+
   api.imply('templating-compiler');
   api.imply('templating-runtime');
 });
