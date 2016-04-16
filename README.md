@@ -1,4 +1,5 @@
 [![Slack Status](http://slack.blazejs.com/badge.svg)](http://blazejs.com)
+[![CircleCI Status](https://circleci.com/gh/meteor/blaze.svg?style=shield)](https://circleci.com/gh/meteor/blaze)
 
 # Meteor Blaze
 
@@ -6,12 +7,8 @@ This is a repository for Meteor Blaze project.
 
 ## How to get involved
 
-1. Visit a new [place](http://blazejs.com) dedicated to further development of Blaze.
-1. [Join](http://slack.meteorjs.com) our Slack team
-
-## Credits
-
-@mitar ;)
+1. [Join](http://blazejs.com) or [Slack chat](http://slack.meteorjs.com).
+1. Open issues and/or participate in discussion about bugs and feature requests.
 
 ## License
 
