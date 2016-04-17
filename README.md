@@ -1,4 +1,4 @@
-[![Slack Status](http://slack.blazejs.com/badge.svg)](http://blazejs.com)
+[![Slack Status](http://slack.blazejs.com/badge.svg)](http://slack.blazejs.com)
 [![CircleCI Status](https://circleci.com/gh/meteor/blaze.svg?style=shield)](https://circleci.com/gh/meteor/blaze)
 
 # Meteor Blaze
