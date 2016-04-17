@@ -1,3 +1,5 @@
+(See [issues-based roadmap on GitHub](https://github.com/meteor/blaze/milestones) as well.)
+
 ## Next steps
 
 * Get Meteor to use code from this repository for Blaze distributed with Meteor releases.
@@ -7,7 +9,8 @@
 * Provide integrations with common build toolchains to compile Blaze templates.
 * Make CI testing works for all packages.
 * Create landing page (http://blazejs.com/).
-* Create documentation page (supporting multiple versions, editing through GitHub).
+* Create documentation page (supporting multiple versions, editing through GitHub)
+  ([#19](https://github.com/meteor/blaze/issues/19)).
 * Migrate all still relevant issues from Meteor main repository to this repository.
 
 ## Future ideas
