@@ -15,3 +15,5 @@ This is a repository for Meteor Blaze project.
 ## License
 
 MIT
+
+Testing
