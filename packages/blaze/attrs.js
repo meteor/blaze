@@ -101,10 +101,18 @@ var ClassHandler = Blaze._DiffingAttributeHandler.extend({
   },
   parseValue: function (attrString) {
     var tokens = {};
-
-    _.each(attrString.split(' '), function(token) {
-      if (token)
-        tokens[token] = token;
+    var similarTokens = 0;
+    
+    _.each(attrString.split(' '), function(token, i) {
+      if (token) {
+        
+        // Incase of duplicate class names where order matters (e.g: Semantic UI), group similar tokens accordingly
+        if (tokens[token] && i > 0) {
+          var groupWithIndex = (i - similarTokens++) - 1;
+          tokens[Object.keys(tokens)[groupWithIndex]] += ' ' + token;
+        } else
+          tokens[token] = token;
+      }
     });
     return tokens;
   }
