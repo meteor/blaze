@@ -1,6 +1,6 @@
 Package.describe({
   summary: "Compile templates in .html files",
-  version: '1.1.6-beta.11'
+  version: '1.2.14'
 });
 
 Package.registerBuildPlugin({
