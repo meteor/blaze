@@ -1,0 +1,50 @@
+#sidebar
+  font-family 'Source Sans Pro', sans-serif
+  border-right 1px solid #eee
+  font-size 16px
+  line-height 1.1em
+  background #f8f8f8
+  li
+    margin-bottom .6em
+  a
+    color #444
+    &.current, &:hover
+      color #F37425
+    &.H2
+      font-weight 600
+
+  .categories > li > p
+    margin-top 1.5em
+    border-top 1px solid #eee
+    text-transform uppercase
+    padding-top 1.2em
+    margin-bottom 1em
+    color #999
+    font-size 0.8em
+
+  .sub-menu
+    font-family 'ProximaNova-Regular'
+    padding-left 20px
+    margin .6em 0
+    font-size 14px
+    .active
+      position relative
+      color #F37425
+      &:before
+        content ""
+        position absolute
+        top 2px
+        left -15px
+        display inline-block
+        width 0
+        height 0
+        border-top 4px solid transparent
+        border-bottom 4px solid transparent
+        border-left 6px solid #F37425
+
+#sidebar-mobile
+  display none
+  margin-bottom 20px
+  .search-box
+    width 200px
+    margin-bottom 20px

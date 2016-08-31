@@ -1,0 +1,31 @@
+<div id="sidebar-mobile">
+  <!--
+     Disabled search since it doesn't seem to work well
+    <input class="search-box st-default-search-input">
+    <br>
+  -->
+  <select class="version-select">
+    <% config.versions.forEach(function (v) { %>
+      <option value="v<%- v %>">v<%- v %></option>
+    <% }) %>
+  </select>
+</div>
+
+<ul class="categories">
+  <% _.each(config.sidebar_categories, function(pages, category) { %>
+    <li>
+      <% if (category !== 'null') { %>
+        <p><%- category %></p>
+      <% } %>
+      <ul class="menu-root">
+        <% pages.forEach(function(path) { %>
+          <% p = site.pages.findOne({path: path + '.html'}); %>
+          <li>
+            <a href="<%- relative_url(page.path, p.path) %>" class="sidebar-link<%- page.title === p.title ? ' current' : '' %>">
+              <%- p.title %>
+            </a>
+          </li>
+        <% }); %>
+      </ul>
+    </li>
+  <% }); %>
