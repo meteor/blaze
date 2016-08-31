@@ -5,6 +5,9 @@ checkout:
 machine:
   node:
     version: 0.10.33
+  environment:
+    USER_NAME: circleci
+    USER_EMAIL: circleci@users.noreply.github.com
   pre:
     - curl https://install.meteor.com | /bin/sh
     - git clone --recursive -b devel https://github.com/meteor/meteor.git /tmp/meteor
@@ -12,9 +15,16 @@ dependencies:
   override:
     - npm install selenium-webdriver@2.47.0 mkdirp
     - meteor --get-ready
+    - /tmp/meteor/meteor --get-ready
+    - cd site; npm install
 test:
   override:
     - tests/test-runner/test-all.sh:
         parallel: true
     - METEOR_COMMAND=/tmp/meteor/meteor tests/test-runner/test-all.sh:
         parallel: true
+deployment:
+  production:
+    branch: master
+    commands:
+      - cd site; npm run deploy
