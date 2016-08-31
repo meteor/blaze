@@ -84,5 +84,8 @@ theme: custom-meteor
 
 # Deployment
 ## Docs: http://hexo.io/docs/deployment.html
-deploy: https://meteor.github.io/blaze/
-type: git
+deploy:
+  type: git
+  repo: git@github.com:meteor/blaze.git
+  branch: gh-pages
+  message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"

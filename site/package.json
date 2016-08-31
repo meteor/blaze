@@ -18,10 +18,10 @@
     "hexo-server": "^0.1.2"
   },
   "devDependencies": {
-    "hexo-s3-deploy": "^1.0.1"
   },
   "scripts": {
     "start": "hexo serve",
-    "deploy": "hexo-s3-deploy"
+    "deploy": "hexo deploy",
+    "generate": "hexo generate"
   }
 }
