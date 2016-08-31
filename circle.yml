@@ -14,5 +14,7 @@ dependencies:
     - meteor --get-ready
 test:
   override:
+    - tests/test-runner/test-all.sh:
+        parallel: true
     - METEOR_COMMAND=/tmp/meteor/meteor tests/test-runner/test-all.sh:
         parallel: true
