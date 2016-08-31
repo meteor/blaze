@@ -1,0 +1,37 @@
+<div id="site-nav">
+  <a class="logo" href="/"><img src="<%- config.logo.desktop %>" /></a>
+  <span class="sub-title"><%- config.subtitle %></span>
+
+  <% if (config.versions.length > 1) { %>
+    <select class="version-select">
+      <% config.versions.forEach(function (v) { %>
+        <option value="v<%- v %>"><%- v %></option>
+      <% }) %>
+    </select>
+  <% } %>
+
+  <div class="nav-group right">
+
+  	<div class="nav-item">
+    	<a href="/" title="Overview">
+    		Overview
+    	</a>
+    </div>
+    <div class="nav-item">
+    	<a href="guide.html" title="Guide">
+    		Guide
+    	</a>
+    </div>
+    <div class="nav-item">
+    	<a href="docs.html" title="API Docs">
+    		API Docs
+    	</a>
+    </div>
+    <div class="nav-item">
+    	<a href="https://forums.meteor.com/c/blaze" title="Forums" target="_blank">
+    		Forums
+    	</a>
+    </div>
+  </div>
+
+</div>
