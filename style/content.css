@@ -1,0 +1,210 @@
+#content {
+  max-width: 760px;
+  margin: 0px auto;
+  -webkit-text-size-adjust: 100%;
+}
+#content em {
+  font-style: italic;
+}
+#content strong {
+  font-family: 'Source Sans Pro', sans-serif;
+}
+#content h1,
+#content h2,
+#content h3,
+#content h4,
+#content h5,
+#content h6,
+#content p,
+#content ul,
+#content ol,
+#content figure {
+  margin: 15px 0;
+  line-height: 1.4em;
+}
+#content h1 {
+  font-size: 2.2em;
+  margin-top: 0;
+  margin-bottom: 30px;
+}
+#content h2 {
+  font-size: 1.7em;
+  margin-top: 30px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+#content h3 {
+  font-size: 1.4em;
+  margin-top: 30px;
+}
+#content h2,
+#content h3 {
+  position: relative;
+}
+#content h2 .anchor,
+#content h3 .anchor {
+  opacity: 0;
+  position: absolute;
+  font-size: 16px;
+  top: 2px;
+  left: -21px;
+}
+#content h2:hover .anchor,
+#content h3:hover .anchor {
+  opacity: 1;
+}
+#content ul,
+#content ol {
+  padding-left: 1.5em;
+}
+#content ul li,
+#content ol li {
+  margin-bottom: 5px;
+}
+#content ul {
+  list-style-type: disc;
+}
+#content ol {
+  list-style-type: decimal;
+}
+#content a {
+  color: #f37425;
+}
+#content img {
+  max-width: 100%;
+}
+#content code {
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-size: 0.8em;
+  line-height: 1.6em;
+  padding: 1px 4px;
+  background-color: #eee;
+  margin: 0 2px;
+}
+#content blockquote {
+  padding-left: 1.3em;
+  border-left: #eee solid 0.2em;
+  font-style: italic;
+}
+#content .edit-discuss-links {
+  margin-top: -25px;
+  margin-bottom: 40px;
+}
+#content .highlight {
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-size: 0.8em;
+  line-height: 1.6em;
+  margin: 20px 0;
+  overflow-x: auto;
+  position: relative;
+  background-color: #f8f8f8;
+  padding: 20px 30px;
+}
+#content .highlight table,
+#content .highlight tr,
+#content .highlight td {
+  width: 100%;
+  border-collapse: collapse;
+  padding: 0;
+  margin: 0;
+}
+#content .highlight .gutter {
+  user-select: none;
+  width: 1.5em;
+  padding-right: 30px;
+}
+#content .highlight.html .code:after,
+#content .highlight.js .code:after,
+#content .highlight.bash .code:after,
+#content .highlight.css .code:after {
+  font-family: 'Source Sans Pro', sans-serif;
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: #ccc;
+  text-align: right;
+  font-size: 0.75em;
+  padding: 5px 10px 0;
+  letter-spacing: 1.5px;
+  line-height: 15px;
+  height: 15px;
+  font-weight: 600;
+}
+#content .highlight.html.html .code:after,
+#content .highlight.js.html .code:after,
+#content .highlight.bash.html .code:after,
+#content .highlight.css.html .code:after {
+  content: 'HTML';
+}
+#content .highlight.html.js .code:after,
+#content .highlight.js.js .code:after,
+#content .highlight.bash.js .code:after,
+#content .highlight.css.js .code:after {
+  content: 'JS';
+}
+#content .highlight.html.bash .code:after,
+#content .highlight.js.bash .code:after,
+#content .highlight.bash.bash .code:after,
+#content .highlight.css.bash .code:after {
+  content: 'Shell';
+}
+#content .highlight.html.css .code:after,
+#content .highlight.js.css .code:after,
+#content .highlight.bash.css .code:after,
+#content .highlight.css.css .code:after {
+  content: 'CSS';
+}
+#content > table {
+  width: 100%;
+  margin: 20px 0;
+}
+#content > table tr {
+  border-top: 1px solid #eee;
+}
+#content > table tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+#content > table th {
+  font-family: 'Source Sans Pro', sans-serif;
+  padding: 12px 13px;
+}
+#content > table th,
+#content > table td {
+  border: 1px solid #eee;
+  vertical-align: middle;
+}
+#content > table td {
+  padding: 6px 13px;
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-size: 0.8em;
+  line-height: 1.6em;
+}
+#content .bottom-nav {
+  height: 44px;
+  margin: 30px 0 25px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 25px;
+}
+#content .bottom-nav a {
+  font-family: 'Source Sans Pro', sans-serif;
+  margin: 0 5px;
+}
+#content .edit-link {
+  text-align: center;
+}
+#content .edit-link a {
+  color: #aaa;
+  font-family: 'Source Sans Pro', sans-serif;
+}
+#content .edit-link a:before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background: url("../images/gh.png") center center no-repeat;
+  background-size: 16px;
+  opacity: 0.3;
+  margin-right: 8px;
+  position: relative;
+  top: 2px;
+}
