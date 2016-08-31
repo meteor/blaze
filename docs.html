@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>API Docs | BlazeJS</title>
+    <link rel="icon" href="images/icon.ico" type="image/x-icon">
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,200,300italic,400italic' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="style/main.css">
+  </head>
+  <body>
+    <div id="wrap">
+  <div id="header">
+    <div id="site-nav">
+  <a class="logo" href="/"><img src="logo/logo.png" /></a>
+  <span class="sub-title"></span>
+
+  
+
+  <div class="nav-group right">
+
+  	<div class="nav-item">
+    	<a href="/" title="Overview">
+    		Overview
+    	</a>
+    </div>
+    <div class="nav-item">
+    	<a href="guide.html" title="Guide">
+    		Guide
+    	</a>
+    </div>
+    <div class="nav-item">
+    	<a href="docs.html" title="API Docs">
+    		API Docs
+    	</a>
+    </div>
+    <div class="nav-item">
+    	<a href="https://forums.meteor.com/c/blaze" title="Forums" target="_blank">
+    		Forums
+    	</a>
+    </div>
+  </div>
+
+</div>
+
+  </div>
+  <div id="sidebar">
+    <div id="sidebar-mobile">
+  <!--
+     Disabled search since it doesn't seem to work well
+    <input class="search-box st-default-search-input">
+    <br>
+  -->
+  <select class="version-select">
+    
+      <option value="v1">v1</option>
+    
+  </select>
+</div>
+
+<ul class="categories">
+  
+    <li>
+      
+      <ul class="menu-root">
+        
+          
+          <li>
+            <a href="index.html" class="sidebar-link">
+              Overview
+            </a>
+          </li>
+        
+          
+          <li>
+            <a href="guide.html" class="sidebar-link">
+              Guide
+            </a>
+          </li>
+        
+          
+          <li>
+            <a href="" class="sidebar-link current">
+              API Docs
+            </a>
+          </li>
+        
+      </ul>
+    </li>
+  
+
+  </div>
+  <div id="content">
+    <h1>API Docs</h1>
+    <p class="edit-discuss-links">
+      <a href="https://github.com/meteor/blaze/tree/master/source/docs.md" target="_blank">Edit on GitHub</a>
+      
+    </p>
+    
+    <div class="bottom-nav">
+      
+      
+        <span>← <a href="guide.html">Guide</a></span>
+      
+      
+    </div>
+    <p class="edit-link">
+      <a href="https://github.com/meteor/guide/tree/master/content/docs.md" target="_blank">Edit this page on GitHub</a>
+    </p>
+    
+  </div>
+
+  <!-- mobile only -->
+  <div id="mobile-header">
+    <a class="menu-button"></a>
+    <a class="logo" href="/">
+      <img src="logo/icon.png" />
+    </a>
+  </div>
+  <div id="mobile-shade"></div>
+
+</div>
+
+    <script src="script/smooth-scroll.min.js"></script>
+    <script src="script/main.js"></script>
+    <script>
+
+      // mobile
+      document.querySelector('#mobile-header .menu-button')
+        .addEventListener('click', function () {
+          document.body.classList.toggle('sidebar-open')
+        })
+      document.getElementById('mobile-shade').addEventListener('click', function () {
+        document.body.classList.remove('sidebar-open')
+      })
+
+    </script>
+  </body>
+</html>
