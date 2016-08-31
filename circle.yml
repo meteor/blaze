@@ -7,7 +7,7 @@ machine:
     version: 0.10.33
   pre:
     - curl https://install.meteor.com | /bin/sh
-    - git clone -b devel https://github.com/meteor/meteor.git /tmp/meteor
+    - git clone --recursive -b devel https://github.com/meteor/meteor.git /tmp/meteor
 dependencies:
   override:
     - npm install selenium-webdriver@2.47.0 mkdirp
