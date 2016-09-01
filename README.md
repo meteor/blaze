@@ -47,29 +47,6 @@ Here are two Spacebars templates from an example app called "Leaderboard" which 
 
 The template tags `{{name}}` and `{{score}}` refer to properties of the data context (the current player), while `players` and `selected` refer to helper functions.  Helper functions and event handlers are defined in JavaScript:
 
-
-```html
-<template name="leaderboard">
-  <ol class="leaderboard">
-    {{#each players}}
-      {{> player}}
-    {{/each}}
-  </ol>
-</template>
-
-<template name="player">
-  <li class="player {{selected}}">
-    <span class="name">{{name}}</span>
-    <span class="score">{{score}}</span>
-  </li>
-</template>
-```
-
-The template tags `{{name}}` and `{{score}}` refer to properties of
-the data context (the current player), while `players` and `selected`
-refer to helper functions.  Helper functions and event handlers are defined
-in JavaScript:
-
 ```javascript
 Template.leaderboard.helpers({
   players: function () {
