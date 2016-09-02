@@ -19,8 +19,8 @@ dependencies:
     - cd site; npm install
 test:
   override:
-    - tests/test-runner/test-all.sh:
-        parallel: true
+    # - tests/test-runner/test-all.sh:
+    #    parallel: true
     - METEOR_COMMAND=/tmp/meteor/meteor tests/test-runner/test-all.sh:
         parallel: true
 deployment:
