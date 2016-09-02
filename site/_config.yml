@@ -4,9 +4,9 @@
 
 # Site
 title: BlazeJS
-subtitle: 
+subtitle:
 description:
-author: 
+author:
 language:
 timezone:
 versions:
@@ -15,7 +15,9 @@ sidebar_categories:
   null:
     - index
     - guide
-    - docs
+  API:
+    - templates
+    - blaze
 github_repo: meteor/blaze
 content_root: source
 logo:
@@ -23,9 +25,12 @@ logo:
   mobile: logo/icon.png
 favicon: logo/icon.ico
 
+api_box:
+  data_file: 'data/data.js'
+
 # API keys
 apis:
-  segment: 
+  segment:
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
