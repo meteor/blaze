@@ -9,12 +9,12 @@ machine:
     USER_NAME: circleci
     USER_EMAIL: circleci@users.noreply.github.com
   pre:
-    - curl https://install.meteor.com | /bin/sh
+    # - curl https://install.meteor.com | /bin/sh
     - git clone --recursive -b devel https://github.com/meteor/meteor.git /tmp/meteor
 dependencies:
   override:
     - npm install selenium-webdriver@2.47.0 mkdirp
-    - meteor --get-ready
+    # - meteor --get-ready
     - /tmp/meteor/meteor --get-ready
     - cd site; npm install
 test:
