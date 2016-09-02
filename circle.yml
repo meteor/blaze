@@ -5,10 +5,9 @@ checkout:
 machine:
   node:
     version: 0.10.33
-  environment:
-    USER_NAME: circleci
-    USER_EMAIL: circleci@users.noreply.github.com
   pre:
+    - git config --global user.name "circleci"
+    - git config --global user.email "circleci@users.noreply.github.com"
     # - curl https://install.meteor.com | /bin/sh
     - git clone --recursive -b devel https://github.com/meteor/meteor.git /tmp/meteor
 dependencies:
