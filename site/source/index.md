@@ -198,9 +198,9 @@ Blaze will get better support for using it outside of Meteor, such as regular st
 
 # Resources
 
-* [Templates API](http://docs.meteor.com/#templates_api)
-* [Blaze API](http://docs.meteor.com/#blaze)
-* [Spacebars syntax](https://github.com/meteor/meteor/blob/devel/packages/spacebars/README.md)
+* [Templates API](http://blazejs.org/templates.html)
+* [Blaze API](http://blazejs.org/blaze.html)
+* [Spacebars syntax](https://docs.meteor.com/packages/spacebars.html)
 
 # Packages
 
