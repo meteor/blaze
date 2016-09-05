@@ -66,7 +66,7 @@ Then you can call this helper from template like this:
 ```
 
 You can learn more about arguments to helpers in [Spacebars
-Readme](https://atmospherejs.com/meteor/spacebars).
+Readme](http://blazejs.org/spacebars).
 
 Under the hood, each helper starts a new
 [`Tracker.autorun`](#/full/tracker_autorun).  When its reactive
@@ -513,4 +513,4 @@ browsers.
 
 Spacebars is the language used to write Meteor templates. It is inspired by [Handlebars](http://handlebarsjs.com/). It shares some of the spirit and syntax of Handlebars, but has been tailored to produce reactive Meteor templates when compiled.
 
-For more information about Spacebars, see the [Spacebars README](#pkg_spacebars).
+For more information about Spacebars, see the [Spacebars README](http://blazejs.org/spacebars).
