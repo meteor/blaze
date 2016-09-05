@@ -200,7 +200,7 @@ Blaze will get better support for using it outside of Meteor, such as regular st
 
 * [Templates API](http://blazejs.org/templates.html)
 * [Blaze API](http://blazejs.org/blaze.html)
-* [Spacebars syntax](https://docs.meteor.com/packages/spacebars.html)
+* [Spacebars syntax](http://blazejs.org/spacebars.html)
 
 # Packages
 
