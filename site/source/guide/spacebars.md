@@ -1,5 +1,5 @@
 ---
-title: Spacebars
+title: The Spacebars
 order: 2
 description: 
 ---

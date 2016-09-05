@@ -1,6 +1,6 @@
 ---
 title: Templates
-order: 9
+order: 7
 description: Documentation of Meteor's template API.
 ---
 
