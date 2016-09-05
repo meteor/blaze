@@ -9,12 +9,3 @@ Read more on the Blaze [project page](http://blazejs.org/).
 * [Templates API](http://blazejs.org/templates.html)
 * [Blaze API](http://blazejs.org/blaze.html)
 * [Spacebars syntax](http://blazejs.org/spacebars.html)
-
-## Packages
-
-* blaze
-* blaze-tools
-* html-tools
-* htmljs
-* spacebars
-* spacebars-compiler
