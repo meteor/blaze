@@ -3,4 +3,4 @@
 	url = https://github.com/tozd/meteor-test-runner.git
 [submodule "site/themes/meteor"]
 	path = site/themes/meteor
-	url = https://github.com/meteor/hexo-theme-meteor
+	url = https://github.com/meteor/hexo-theme-meteor.git
