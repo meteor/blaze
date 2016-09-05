@@ -4,38 +4,62 @@
 
 # Site
 title: BlazeJS
-subtitle:
+subtitle: Developers
 description:
 author:
 language:
 timezone:
+apis:
+  # marketo: 627-RVJ-941
+  # segment: zQx6cQifkTU79E3L0XAnmrOXP2A5bC6r
+  # docsearch:
+  #   apiKey: bdf6b09d12024f6bae3631a0dfdd4a7f
+  #   indexName: meteor_api_guide
 versions:
-  - '1'
+  - '1.0.0'
 sidebar_categories:
   null:
     - index
-    - guide
+  GUIDE:
+    - guide/introduction
+    - guide/spacebars
+    - guide/reusable-components
+    - guide/smart-components
+    - guide/reusing-code
+    - guide/understanding-blaze
   API:
-    - templates
-    - blaze
-    - spacebars
-github_repo: meteor/blaze
-content_root: source
+    - api/templates
+    - api/blaze
+    - api/spacebars
+github_repo: 'meteor/blaze/site'
+content_root: 'source'
+
+# themeing
+favicon: '/logo/icon.ico'
+
 logo:
-  desktop: logo/logo.png
-  mobile: logo/icon.png
-favicon: logo/icon.ico
+  nav_mobile: '/logo/logo.png'
+  url: 'http://blazejs.org'
+  title: 'BlazeJS'
+  subtitle: 'Developers'
 
-api_box:
-  data_file: 'data/data.js'
+nav_links:
+  'Guide':
+    url: http://blazejs.org/guide/introduction.html
+  'API Docs':
+    url: http://blazejs.org/api/templates.html
+  'Forums':
+    url: https://forums.meteor.com/c/blaze
+    target: _new
 
-# API keys
-apis:
-  segment:
+social_links:
+  github: 'https://github.com/meteor/blaze'
+  twitter: '@meteor'
+
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: https://blazejs.org/
+url: http://blazejs.org/
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -87,7 +111,11 @@ pagination_dir: page
 # Extensions
 ## Plugins: http://hexo.io/plugins/
 ## Themes: http://hexo.io/themes/
-theme: custom-meteor
+theme: meteor
+api_box:
+  data_file: 'data/data.js'
+marked:
+  breaks: false
 
 # Deployment
 ## Docs: http://hexo.io/docs/deployment.html
