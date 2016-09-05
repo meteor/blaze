@@ -1,6 +1,6 @@
 ---
 title: Spacebars
-order: 8
+order: 9
 description: Documentation of Meteor's `spacebars` package.
 ---
 

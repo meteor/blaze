@@ -22,7 +22,7 @@ sidebar_categories:
     - index
   GUIDE:
     - guide/introduction
-    - guide/guide-spacebars
+    - guide/spacebars
     - guide/reusable-components
     - guide/smart-components
     - guide/reusing-code
@@ -47,7 +47,7 @@ nav_links:
   'Guide':
     url: http://blazejs.org/guide/introduction.html
   'API Docs':
-    url: http://blazejs.org/docs/blaze.html
+    url: http://blazejs.org/api/templates.html
   'Forums':
     url: https://forums.meteor.com/c/blaze
     target: _new
