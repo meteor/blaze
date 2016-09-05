@@ -1,13 +1,10 @@
-<p align="center">
-  <img src="https://cdn.rawgit.com/meteor/blaze/master/images/logo.svg" width="260" />
-</p>
-
+<img src="https://cdn.rawgit.com/meteor/blaze/master/images/logo.svg" width="260" />
 [![Slack Status](http://slack.blazejs.org/badge.svg)](http://slack.blazejs.org)
 [![CircleCI Status](https://circleci.com/gh/meteor/blaze.svg?style=shield)](https://circleci.com/gh/meteor/blaze)
 
 ## What is Blaze?
 
-Blaze is a powerful library for creating user interfaces by writing reactive HTML templates.  Compared to using a combination of traditional templates and jQuery, Blaze eliminates the need for all the "update logic" in your app that listens for data changes and manipulates the DOM.  Instead, familiar template directives like ``{{#if}}`` and ``{{#each}}`` integrate with [Tracker's](https://meteor.com/tracker) "transparent reactivity" and [Minimongo's](https://meteor.com/mini-databases) database cursors so that the DOM updates automatically.
+Blaze is a powerful library for creating user interfaces by writing reactive HTML templates.  Compared to using a combination of traditional templates and jQuery, Blaze eliminates the need for all the "update logic" in your app that listens for data changes and manipulates the DOM.  Instead, familiar template directives like ``{{#if}}`` and ``{{#each}}`` integrate with [Tracker's](https://meteor.com/tracker) "transparent reactivity" and [Minimongo's](https://meteor.com/mini-databases) database cursors so that the DOM updates automatically. 
 
 Blaze is sometimes compared to frameworks like React, Angular, Ember, Polymer, Knockout, and others by virtue of its advanced templating system.  What sets Blaze apart is a relentless focus on the developer experience, using templating, transparent reactivity, and interoperability with existing libraries to create a gentle learning curve while enabling you to build world-class apps.
 
