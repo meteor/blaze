@@ -44,7 +44,7 @@ Here are two Spacebars templates from an example app called "Leaderboard" which 
 </template>
 ```
 
-The template tags `{{name}}` and `{{score}}` refer to properties of the data context (the current player), while `players` and `selected` refer to helper functions.  Helper functions and event handlers are defined in JavaScript:
+The template tags `{% raw %}{{name}}{% endraw %}` and `{% raw %}{{score}}{% endraw %}` refer to properties of the data context (the current player), while `players` and `selected` refer to helper functions.  Helper functions and event handlers are defined in JavaScript:
 
 
 ```html
@@ -64,7 +64,7 @@ The template tags `{{name}}` and `{{score}}` refer to properties of the data con
 </template>
 ```
 
-The template tags `{{name}}` and `{{score}}` refer to properties of the data context (the current player), while `players` and `selected` refer to helper functions. Helper functions and event handlers are defined in JavaScript:
+The template tags `{% raw %}{{name}}{% endraw %}` and `{% raw %}{{score}}{% endraw %}` refer to properties of the data context (the current player), while `players` and `selected` refer to helper functions. Helper functions and event handlers are defined in JavaScript:
 
 ```javascript
 Template.leaderboard.helpers({
