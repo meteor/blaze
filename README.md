@@ -28,10 +28,10 @@ We'd love for you to help us build Blaze. If you'd like to be a contributor,
 check out our [Contributing guide](/Contributing.md).
 
 Also, to stay up-to-date on all Blaze related news and the community you should
-definitely [Join us on Slack](http://slack.blazejs.org)
+definitely [Join us on Slack](http://slack.blazejs.org).
 
 See the current [Roadmap](https://github.com/meteor/blaze/milestones) and consider helping with any of the tasks on the roadmap.
 
 ## License
 
-Blaze is available under the MIT license
+Blaze is available under the MIT license.
