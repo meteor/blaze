@@ -9,7 +9,7 @@ Spacebars is a Meteor template language inspired by
 of Handlebars, but it has been tailored to produce reactive Meteor templates
 when compiled.
 
-## Getting Started
+<h2 id="getting_Started">Getting Started</h2>
 
 A Spacebars template consists of HTML interspersed with template tags, which are
 delimited by `{% raw %}{{{% endraw %}` and `}}` (two curly braces).
@@ -52,7 +52,8 @@ tags:
   careful with these!  It's your job to make sure the HTML is safe, either by
   generating it yourself or sanitizing it if it came from a user input.
 
-## Reactivity Model
+<h2 id="reactivity_Model">Reactivity Model</h2>
+
 
 Spacebars templates update reactively at a fine-grained level in response to
 changing data.
@@ -63,7 +64,8 @@ example, a double-braced tag replace its text node when its text value changes.
 An `#if` re-renders its contents only when the condition changes from truthy to
 falsy or vice versa.
 
-## Identifiers and Paths
+<h2 id="identifiers_And_Paths">Identifiers and Paths</h2>
+
 
 A Spacebars identifier is either a JavaScript identifier name or any string
 enclosed in square brackets (`[` and `]`).  There are also the special
@@ -75,7 +77,7 @@ reserved words like `var` and `for`.
 A Spacebars path is a series of one or more identifiers separated by either `.`
 or `/`, such as `foo`, `foo.bar`, `this.name`, `../title`, or `foo.[0]` (numeric indices must be enclosed in brackets).
 
-### Name Resolution
+<h2 id="name_Resolution">Name Resolution</h2>
 
 The first identifier in a path is resolved in one of two ways:
 
@@ -91,7 +93,7 @@ If a path starts with `..`, then the *enclosing* data context is used instead of
 the current one.  The enclosing data context might be the one outside the
 current `#each`, `#with`, or template inclusion.
 
-### Path Evaluation
+<h2 id="path_Evaluation">Path Evaluation</h2>
 
 When evaluating a path, identifiers after the first are used to index into the
 object so far, like JavaScript's `.`.  However, an error is never thrown when
@@ -100,7 +102,7 @@ trying to index into a non-object or an undefined value.
 In addition, Spacebars will call functions for you, so `{% raw %}{{foo.bar}}{% endraw %}` may be
 taken to mean `foo().bar`, `foo.bar()`, or `foo().bar()` as appropriate.
 
-## Helper Arguments
+<h2 id="helper_Arguments">Helper Arguments</h2>
 
 An argument to a helper can be any path or identifier, or a string, boolean, or
 number literal, or null.
@@ -121,7 +123,7 @@ frob(a, b, c, Spacebars.kw({verily: true}))
 
 The helper's implementation can access the current data context as `this`.
 
-## Inclusion and Block Arguments
+<h2 id="inclusion_And_Block_Argurments">Inclusion and Block Arguments</h2>
 
 Inclusion tags (`{% raw %}{{> foo}}{% endraw %}`) and block tags (`{% raw %}{{#foo}}{% endraw %}`) take a single
 data argument, or no argument.  Any other form of arguments will be interpreted
@@ -135,7 +137,7 @@ as an *object specification* or a *nested helper*:
   (positional or keyword arguments), the first argument is called on the others
   using the normal helper argument calling convention.
 
-## Template Tag Placement Limitations
+<h2 id="template_Tag_Placement">Template Tag Placement Limitations</h2>
 
 Unlike purely string-based template systems, Spacebars is HTML-aware and
 designed to update the DOM automatically.  As a result, you can't use a template

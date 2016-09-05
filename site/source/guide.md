@@ -11,7 +11,7 @@ After reading this guide, you'll know:
 3. How the Blaze rendering engine works under the hood and some advanced techniques for using it.
 4. How to test Blaze templates.
 
-Blaze is Meteor's built-in reactive rendering library. Usually, templates are written in [Spacebars](https://github.com/meteor/meteor/blob/devel/packages/spacebars/README.md), a variant of [Handlebars](http://handlebarsjs.com) designed to take advantage of [Tracker](https://github.com/meteor/meteor/tree/devel/packages/tracker), Meteor's reactivity system. These templates are compiled into JavaScript UI components that are rendered by the Blaze library.
+Blaze is Meteor's built-in reactive rendering library. Usually, templates are written in [Spacebars](http://blazejs.org/spacebars), a variant of [Handlebars](http://handlebarsjs.com) designed to take advantage of [Tracker](https://github.com/meteor/meteor/tree/devel/packages/tracker), Meteor's reactivity system. These templates are compiled into JavaScript UI components that are rendered by the Blaze library.
 
 Blaze is not required to build applications in Meteor---you can also easily use [React](http://react-in-meteor.readthedocs.org/en/latest/) or [Angular](http://www.angular-meteor.com) to develop your UI. However, this particular article will take you through best practices in building an application in Blaze, which is used as the UI engine in all of the other articles.
 
@@ -71,7 +71,7 @@ This snippet illustrates a few things:
  - The `{% raw %}{{#each .. in}}{% endraw %}` block helper which repeats a block of HTML for each element in an array or cursor, or renders the contents of the `{% raw %}{{else}}{% endraw %}` block if no items exist.
  - The template inclusion tag, `{% raw %}{{> Todos_item (todoArgs todo)}}{% endraw %}` which renders the `Todos_item` component with the data context returned from the `todosArg` helper.
 
-You can read about the full syntax [in the Spacebars README](https://github.com/meteor/meteor/blob/devel/packages/spacebars/README.md). In this section we'll attempt to cover some of the important details beyond just the syntax.
+You can read about the full syntax [in the Spacebars README](http://blazejs.org/spacebars). In this section we'll attempt to cover some of the important details beyond just the syntax.
 
 <h3 id="data-contexts">Data contexts and lookup</h3>
 
