@@ -7,7 +7,7 @@ description: Documentation of how to use Blaze, Meteor's reactive rendering engi
 Blaze is the package that makes reactive templates possible.
 You can use the Blaze API directly in order to render templates programmatically
 and manipulate "Views," the building blocks of reactive templates. For more
-information, check out the [Blaze project page](https://www.meteor.com/blaze).
+information, check out the [Blaze project page](http://blazejs.org/).
 
 {% apibox "Blaze.render" %}
 

@@ -17,8 +17,7 @@ or replaced and should be cleaned up.  You can associate data with a
 template instance, and you can access its DOM nodes when it is in the
 document.
 
-Read more about templates and how to use them in the [Spacebars](#pkg_spacebars)
-package README and the [Blaze](http://guide.meteor.com/blaze.html) article in the Meteor Guide.
+Read more about templates and how to use them in the [Spacebars](http://blazejs.org/api/spacebars) and [Blaze](http://blazejs.org/api/blaze).
 
 <h2 title="Template.<em>myTemplate</em>" id="template_myTemplate">Template Declarations</h2>
 
@@ -66,7 +65,7 @@ Then you can call this helper from template like this:
 ```
 
 You can learn more about arguments to helpers in [Spacebars
-Readme](http://blazejs.org/spacebars).
+Readme](http://blazejs.org/api/spacebars).
 
 Under the hood, each helper starts a new
 [`Tracker.autorun`](#/full/tracker_autorun).  When its reactive
@@ -513,4 +512,4 @@ browsers.
 
 Spacebars is the language used to write Meteor templates. It is inspired by [Handlebars](http://handlebarsjs.com/). It shares some of the spirit and syntax of Handlebars, but has been tailored to produce reactive Meteor templates when compiled.
 
-For more information about Spacebars, see the [Spacebars README](http://blazejs.org/spacebars).
+For more information about Spacebars, see the [Spacebars README](http://blazejs.org/api/spacebars).
