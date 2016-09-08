@@ -78,4 +78,4 @@ This means when you render a Blaze template, you are simply running a function o
 
 One of the most core concepts in Blaze is the "view", which is a building block that represents a reactively rendering area of a template. The view is the machinery that works behind the scenes to track reactivity, do lookups, and re-render appropriately when data changes. The view is the unit of re-rendering in Blaze. You can even use the view tree to walk the rendered component hierarchy, but it's better to avoid this in favor of communicating between components using callbacks, template arguments, or global data stores.
 
-You can read more about views in the [Blaze docs](http://docs.meteor.com/#/full/blaze_view).
+You can read more about views in the [Blaze docs](http://blazejs.org/api/blaze.html#Blaze-View).

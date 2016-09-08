@@ -58,7 +58,7 @@ This snippet illustrates a few things:
  - The `{% raw %}{{#each .. in}}{% endraw %}` block helper which repeats a block of HTML for each element in an array or cursor, or renders the contents of the `{% raw %}{{else}}{% endraw %}` block if no items exist.
  - The template inclusion tag, `{% raw %}{{> Todos_item (todoArgs todo)}}{% endraw %}` which renders the `Todos_item` component with the data context returned from the `todosArg` helper.
 
-You can read about the full syntax [in the Spacebars README](http://blazejs.org/spacebars). In this section we'll attempt to cover some of the important details beyond just the syntax.
+You can read about the full syntax [in the Spacebars](http://blazejs.org/api/spacebars). In this section we'll attempt to cover some of the important details beyond just the syntax.
 
 <h3 id="data-contexts">Data contexts and lookup</h3>
 
