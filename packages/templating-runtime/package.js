@@ -1,6 +1,6 @@
 Package.describe({
   summary: "Runtime for compiled .html files",
-  version: '1.1.6-beta.11'
+  version: '1.2.14'
 });
 
 // This onUse describes the *runtime* implications of using this package.

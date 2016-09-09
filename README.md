@@ -1,17 +1,37 @@
-[![Slack Status](http://slack.blazejs.com/badge.svg)](http://slack.blazejs.com)
-[![CircleCI Status](https://circleci.com/gh/meteor/blaze.svg?style=shield)](https://circleci.com/gh/meteor/blaze)
+<p align="center">
+  <img src="https://cdn.rawgit.com/meteor/blaze/master/images/logo.svg" width="260" />
+</p>
+<p align="center">
+  <img src="http://slack.blazejs.org/badge.svg">
+  <img src="https://circleci.com/gh/meteor/blaze.svg?style=shield">
+</p>
 
-# Meteor Blaze
+## What is Blaze?
 
-This is a repository for Meteor Blaze project.
+Blaze is a powerful library for creating user interfaces by writing reactive HTML templates.  Compared to using a combination of traditional templates and jQuery, Blaze eliminates the need for all the "update logic" in your app that listens for data changes and manipulates the DOM.  Instead, familiar template directives like ``{{#if}}`` and ``{{#each}}`` integrate with [Tracker's](https://meteor.com/tracker) "transparent reactivity" and [Minimongo's](https://meteor.com/mini-databases) database cursors so that the DOM updates automatically. 
 
-## How to get involved
+### Blaze has two major parts:
 
-1. [Join](http://slack.blazejs.com) our [Slack chat](https://blazejs.slack.com/).
-1. See the current [roadmap](https://github.com/meteor/blaze/milestones) and consider
-   helping with any of the tasks on the roadmap.
-1. Open issues and/or participate in discussions about bugs and feature requests.
+* A template compiler that compiles template files into JavaScript code that runs against the Blaze runtime library.  Moreover, Blaze provides a compiler toolchain (think LLVM) that can be used to support arbitrary template syntaxes.  The flagship template syntax is Spacebars, a variant of Handlebars, but a community alternative based on Jade is already in use by many apps.
+
+* A reactive DOM engine that builds and manages the DOM at runtime, invoked via templates or directly from the app, which features reactively updating regions, lists, and attributes; event delegation; and many callbacks and hooks to aid the app developer.
+
+## Quick Start
+
+Blaze is a [Meteor](http://meteor.com/)-only package for now. Sooner we will have Blaze on npm so you can use it in your stack.
+
+A new Meteor project has Blaze included.
+
+## Get involved
+
+We'd love for you to help us build Blaze. If you'd like to be a contributor,
+check out our [Contributing guide](/Contributing.md).
+
+Also, to stay up-to-date on all Blaze related news and the community you should
+definitely [Join us on Slack](http://slack.blazejs.org).
+
+See the current [Roadmap](https://github.com/meteor/blaze/milestones) and consider helping with any of the tasks on the roadmap.
 
 ## License
 
-MIT
+Blaze is available under the MIT license.
