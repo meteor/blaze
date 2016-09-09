@@ -23,7 +23,7 @@ test:
     - METEOR_COMMAND=/tmp/meteor/meteor tests/test-runner/test-all.sh:
         parallel: true
 deployment:
-  production:
-    branch: master
+  s3:
+    branch: /^(master|version-.*)/
     commands:
       - cd site; npm run deploy
