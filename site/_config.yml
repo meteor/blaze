@@ -120,7 +120,4 @@ marked:
 # Deployment
 ## Docs: http://hexo.io/docs/deployment.html
 deploy:
-  type: git
-  repo: git@github.com:meteor/blaze.git
-  branch: gh-pages
-  message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"
+  type:
