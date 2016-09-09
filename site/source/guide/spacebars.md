@@ -1,5 +1,5 @@
 ---
-title: The Spacebars
+title: Spacebars templates
 order: 2
 description: 
 ---
