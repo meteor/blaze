@@ -10,7 +10,7 @@ Package.describe({
 
 Package.onUse(function (api) {
   api.use('templating-runtime');
-  api.export('Template', 'client');
+  api.export('Template');
 
   api.imply('templating-compiler');
   api.imply('templating-runtime');
