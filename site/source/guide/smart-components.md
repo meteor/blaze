@@ -4,11 +4,11 @@ order: 4
 description: 
 ---
 
-Some of your components will need to access state outside of their data context---for instance, data from the server via subscriptions or the contents of client-side store. As discussed in the [data loading](data-loading.html#patterns) and [UI](ui-ux.html#smart-components) articles, you should be careful and considered in how use such smart components.
+Some of your components will need to access state outside of their data context---for instance, data from the server via subscriptions or the contents of client-side store. As discussed in the [data loading](https://guide.meteor.com/data-loading.html#patterns) and [UI](https://guide.meteor.com/ui-ux.html#smart-components) articles, you should be careful and considered in how use such smart components.
 
 All of the suggestions about reusable components apply to smart components. In addition:
 
-<h3 id="subscribing">Subscribe from `onCreated`</h3>
+## Subscribe from `onCreated`
 
 You should subscribe to publications from the server from an `onCreated` callback (within an `autorun` block if you have reactively changing arguments). In the Todos example app, in the `Lists_show_page` template we subscribe to the `todos.inList` publication based on the current `_id` FlowRouter param:
 
@@ -39,9 +39,9 @@ Template.Lists_show_page.helpers({
 });
 ```
 
-<h3 id="fetch-in-smart-components">Fetch in helpers</h3>
+## Fetch in helpers
 
-As described in the [UI/UX article](ui-ux.html#smart-components), you should fetch data in the same component where you subscribed to that data. In a Blaze smart component, it's usually simplest to fetch the data in a helper, which you can then use to pass data into a reusable child component. For example, in the `Lists_show_page`:
+As described in the [UI/UX article](https://guide.meteor.com/ui-ux.html#smart-components), you should fetch data in the same component where you subscribed to that data. In a Blaze smart component, it's usually simplest to fetch the data in a helper, which you can then use to pass data into a reusable child component. For example, in the `Lists_show_page`:
 
 ```html
 {{> Lists_show (listArgs listId)}}
