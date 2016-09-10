@@ -8,4 +8,4 @@ This build plugin parses all of the HTML files in your app and looks for three t
 - `<body>` - Appended to the `body` section of your HTML.
 - `<template name="templateName">` - Compiled into a Blaze template, which can be included with `{{> templateName}}` or referenced in JS code with `Template.templateName`.
 
-Read more on the [Templating](http://blazejs.org/api/templates).
+Read more on the [Templating](http://blazejs.org/api/templates.html).
