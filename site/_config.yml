@@ -16,7 +16,7 @@ apis:
   #   apiKey: bdf6b09d12024f6bae3631a0dfdd4a7f
   #   indexName: meteor_api_guide
 versions:
-  - '1.0.0'
+  - '2.1.8'
 sidebar_categories:
   null:
     - index
@@ -31,8 +31,8 @@ sidebar_categories:
     - api/templates
     - api/blaze
     - api/spacebars
-github_repo: 'meteor/blaze/site'
-content_root: 'source'
+github_repo: 'meteor/blaze'
+content_root: 'site'
 
 # themeing
 favicon: '/logo/icon.ico'
@@ -120,7 +120,4 @@ marked:
 # Deployment
 ## Docs: http://hexo.io/docs/deployment.html
 deploy:
-  type: git
-  repo: git@github.com:meteor/blaze.git
-  branch: gh-pages
-  message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"
+  type:

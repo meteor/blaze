@@ -9,6 +9,7 @@
     "canonical-json": "0.0.4",
     "handlebars": "^4.0.5",
     "hexo": "^3.1.0",
+    "hexo-s3-deploy": "^1.0.1",
     "hexo-generator-archive": "^0.1.2",
     "hexo-generator-category": "^0.1.2",
     "hexo-generator-index": "^0.1.2",
@@ -28,7 +29,7 @@
     "prestart": "jsdoc/jsdoc.sh",
     "start": "hexo serve",
     "predeploy": "jsdoc/jsdoc.sh",
-    "deploy": "hexo deploy",
+    "deploy": "hexo-s3-deploy",
     "pregenerate": "jsdoc/jsdoc.sh",
     "generate": "hexo generate"
   }
