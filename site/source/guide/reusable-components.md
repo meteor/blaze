@@ -4,13 +4,13 @@ order: 3
 description: 
 ---
 
-In [UI/UX article](ui-ux.html#smart-components) we discussed the merits of creating reusable components that interact with their environment in clear and minimal ways.
+In [UI/UX article](https://guide.meteor.com/ui-ux.html#smart-components) we discussed the merits of creating reusable components that interact with their environment in clear and minimal ways.
 
 Although Blaze, which is a simple template-based rendering engine, doesn't enforce a lot of these principles (unlike other frameworks like React and Angular) you can enjoy most of the same benefits by following some conventions when writing your Blaze components. This section will outline some of these "best practices" for writing reusable Blaze components.
 
 Examples below will reference the `Lists_show` component from the Todos example app.
 
-<h3 id="validate-data-context">Validate data context</h3>
+## Validate data context
 
 In order to ensure your component always gets the data you expect, you should validate the data context provided to it. This is just like validating the arguments to any Meteor Method or publication, and lets you write your validation code in one place and then assume that the data is correct.
 
@@ -30,7 +30,7 @@ Template.Lists_show.onCreated(function() {
 
 We use an `autorun()` here to ensure that the data context is re-validated whenever it changes.
 
-<h3 id="name-data-contexts">Name data contexts to template inclusions</h3>
+## Name data contexts to template inclusions
 
 It's tempting to just provide the object you're interested in as the entire data context of the template (like `{% raw %}{{> Todos_item todo}}{% endraw %}`). It's better to explicitly give it a name (`{% raw %}{{> Todos_item todo=todo}}{% endraw %}`). There are two primary reasons for this:
 
@@ -49,7 +49,7 @@ Additionally, for better clarity, always explicitly provide a data context to an
 {{> myTemplate ""}}
 ```
 
-<h3 id="use-each-in">Prefer `{% raw %}{{#each .. in}}{% endraw %}`</h3>
+## Prefer `{% raw %}{{#each .. in}}{% endraw %}`
 
 For similar reasons to the above, it's better to use `{% raw %}{{#each todo in todos}}{% endraw %}` rather than the older `{% raw %}{{#each todos}}{% endraw %}`. The second sets the entire data context of its children to a single `todo` object, and makes it difficult to access any context from outside of the block.
 
@@ -63,11 +63,11 @@ The only reason not to use `{% raw %}{{#each .. in}}{% endraw %}` would be becau
 
 Now you can access `this.todo` inside `Todos_item` event handlers and helpers.
 
-<h3 id="pass-data-into-helpers">Pass data into helpers</h3>
+## Pass data into helpers
 
 Rather than accessing data in helpers via `this`, it's better to pass the arguments in directly from the template. So our `checkedClass` helper takes the `todo` as an argument and inspects it directly, rather than implicitly using `this.todo`. We do this for similar reasons to why we always pass arguments to template inclusions, and because "template variables" (such as the iteratee of the `{% raw %}{{#each .. in}}{% endraw %}` helper) are not available on `this`.
 
-<h3 id="use-template-instance">Use the template instance</h3>
+## Use the template instance
 
 Although Blaze's simple API doesn't necessarily encourage a componentized approach, you can use the *template instance* as a convenient place to store internal functionality and state. The template instance can be accessed via `this` inside Blaze's lifecycle callbacks and as `Template.instance()` in event handlers and helpers. It's also passed as the second argument to event handlers.
 
@@ -94,7 +94,7 @@ Template.Lists_show.events({
 });
 ```
 
-<h3 id="reactive-dict-state">Use a reactive dict for state</h3>
+## Use a reactive dict for state
 
 The [`reactive-dict`](https://atmospherejs.com/meteor/reactive-dict) package lets you define a simple reactive key-value dictionary. It's a convenient way to attach internal state to a component. We create the `state` dictionary in the `onCreated` callback, and attach it to the template instance:
 
@@ -110,7 +110,7 @@ Template.Lists_show.onCreated(function() {
 
 Once the state dictionary has been created we can access it from helpers and modify it in event handlers (see the code snippet above).
 
-<h3 id="attach-functions-to-instance">Attach functions to the instance</h3>
+## Attach functions to the instance
 
 If you have common functionality for a template instance that needs to be abstracted or called from multiple event handlers, it's sensible to attach it as functions directly to the template instance in the `onCreated()` callback:
 
@@ -144,7 +144,7 @@ Template.Lists_show.events({
 });
 ```
 
-<h3 id="scope-dom-lookups-to-instance">Scope DOM lookups to the template instance</h3>
+## Scope DOM lookups to the template instance
 
 It's a bad idea to look up things directly in the DOM with jQuery's global `$()`. It's easy to select some element on the page that has nothing to do with the current component. Also, it limits your options on rendering *outside* of the main document (see testing section below).
 
@@ -158,13 +158,13 @@ Template.Lists_show.events({
 });
 ```
 
-<h3 id="js-selectors-for-events">Use `.js-` selectors for event maps</h3>
+## Use `.js-` selectors for event maps
 
 When you are setting up event maps in your JS files, you need to 'select' the element in the template that the event attaches to. Rather than using the same CSS class names that are used to style the elements, it's better practice to use classnames that are specifically added for those event maps. A reasonable convention is a class starting with `js-` to indicate it is used by the JavaScript. For instance `.js-todo-add` above.
 
-<h3 id="passing-template-content">Passing HTML content as a template argument</h3>
+## Passing HTML content as a template argument
 
-If you need to pass in content to a sub-component (for instance the content of a modal dialog), you can use the [custom block helper](#block-helpers) to provide a block of content. If you need more flexibility, typically just providing the component name as an argument is the way to go. The sub-component can then just render that component with:
+If you need to pass in content to a sub-component (for instance the content of a modal dialog), you can use the [custom block helper](../guide/spacebars.html#block-helpers) to provide a block of content. If you need more flexibility, typically just providing the component name as an argument is the way to go. The sub-component can then just render that component with:
 
 ```html
 {{> Template.dynamic templateName dataContext}}
@@ -172,7 +172,7 @@ If you need to pass in content to a sub-component (for instance the content of a
 
 This is more or less the way that the [`kadira:blaze-layout`](https://atmospherejs.com/kadira/blaze-layout) package works.
 
-<h3 id="pass-callbacks">Pass callbacks</h3>
+## Pass callbacks
 
 If you need to communicate *up* the component hierarchy, it's best to pass a *callback* for the sub-component to call.
 
@@ -203,7 +203,7 @@ Template.Todos_item.events({
 });
 ```
 
-<h3 id="onrendered-for-libs">Use `onRendered()` for 3rd party libraries</h3>
+## Use `onRendered()` for 3rd party libraries
 
 As we mentioned above, the `onRendered()` callback is typically the right spot to call out to third party libraries that expect a pre-rendered DOM (such as jQuery plugins). The `onRendered()` callback is triggered *once* after the component has rendered and attached to the DOM for the first time.
 
