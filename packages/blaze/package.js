@@ -1,18 +1,28 @@
 Package.describe({
+  name: 'blaze',
   summary: "Meteor Reactive Templating library",
-  version: '2.1.8'
+  version: '2.1.8',
+  git: 'https://github.com/meteor/blaze.git'
 });
 
 Package.onUse(function (api) {
-  api.export(['Blaze', 'UI', 'Handlebars']);
+  api.versionsFrom('METEOR@1.4.1');
+
   api.use('jquery'); // should be a weak dep, by having multiple "DOM backends"
   api.use('tracker');
   api.use('check');
   api.use('underscore'); // only the subset in microscore.js
-  api.use('htmljs');
-  api.imply('htmljs');
   api.use('observe-sequence');
   api.use('reactive-var');
+
+  api.export([
+    'Blaze',
+    'UI',
+    'Handlebars'
+  ]);
+
+  api.use('htmljs@1.0.10');
+  api.imply('htmljs');
 
   api.addFiles([
     'preamble.js'
@@ -39,16 +49,19 @@ Package.onUse(function (api) {
 });
 
 Package.onTest(function (api) {
+  api.versionsFrom('METEOR@1.4.1');
+
   api.use('tinytest');
-  api.use('jquery'); // strong dependency, for testing jQuery backend
-  api.use('blaze');
   api.use('test-helpers');
+  api.use('jquery'); // strong dependency, for testing jQuery backend
   api.use('underscore');
-  api.use('blaze-tools'); // for BlazeTools.toJS
-  api.use('html-tools');
   api.use('reactive-var');
   api.use('tracker');
-  api.use('templating');
+
+  api.use('blaze');
+  api.use('blaze-tools@1.0.9'); // for BlazeTools.toJS
+  api.use('html-tools@1.0.10');
+  api.use('templating@1.2.14');
 
   api.addFiles('view_tests.js');
   api.addFiles('render_tests.js', 'client');

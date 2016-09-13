@@ -1,20 +1,16 @@
 Package.describe({
   name: 'templating-tools',
+  summary: "Tools to scan HTML and compile tags when building a templating package",
   version: '1.0.4',
-  // Brief, one-line summary of the package.
-  summary: 'Tools to scan HTML and compile tags when building a templating package',
-  // URL to the Git repository containing the source code for this package.
-  git: 'https://github.com/meteor/meteor',
-  // By default, Meteor will default to using README.md for documentation.
-  // To avoid submitting documentation, set this field to null.
-  documentation: 'README.md'
+  git: 'https://github.com/meteor/blaze.git'
 });
 
 Package.onUse(function(api) {
+  api.versionsFrom('METEOR@1.4.1');
+
   api.use([
     'underscore',
     'ecmascript',
-    'spacebars-compiler',
 
     // minifier-js is a weak dependency of spacebars-compiler; adding it here
     // ensures that the output is minified.  (Having it as a weak dependency means
@@ -25,6 +21,12 @@ Package.onUse(function(api) {
     'minifier-js'
   ]);
 
+  api.export('TemplatingTools');
+
+  api.use([
+    'spacebars-compiler@1.0.12'
+  ]);
+
   api.addFiles([
     'templating-tools.js',
     'html-scanner.js',
@@ -32,16 +34,21 @@ Package.onUse(function(api) {
     'throw-compile-error.js',
     'code-generation.js'
   ]);
-
-  api.export('TemplatingTools');
 });
 
 Package.onTest(function(api) {
+  api.versionsFrom('METEOR@1.4.1');
+
   api.use([
     'tinytest',
-    'templating-tools',
     'ecmascript'
   ]);
 
-  api.addFiles('html-scanner-tests.js', 'server');
+  api.use([
+    'templating-tools'
+  ]);
+
+  api.addFiles([
+    'html-scanner-tests.js'
+  ], 'server');
 });

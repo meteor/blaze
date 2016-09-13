@@ -1,20 +1,17 @@
 Package.describe({
+  name: 'static-html',
+  summary: "Define static page content in .html files",
   version: '1.1.12',
-  // Brief, one-line summary of the package.
-  summary: 'Define static page content in .html files',
-  git: 'https://github.com/meteor/meteor',
-  // By default, Meteor will default to using README.md for documentation.
-  // To avoid submitting documentation, set this field to null.
-  documentation: 'README.md'
+  git: 'https://github.com/meteor/blaze.git'
 });
 
 Package.registerBuildPlugin({
   name: "compileStaticHtmlBatch",
   use: [
-    'caching-html-compiler',
     'ecmascript',
-    'templating-tools',
-    'underscore'
+    'underscore',
+    'caching-html-compiler@1.0.6',
+    'templating-tools@1.0.4'
   ],
   sources: [
     'static-html.js'
@@ -22,6 +19,8 @@ Package.registerBuildPlugin({
 });
 
 Package.onUse(function(api) {
+  api.versionsFrom('METEOR@1.4.1');
+
   api.use('isobuild:compiler-plugin@1.0.0');
 
   // Body attributes are compiled to code that uses Meteor.startup

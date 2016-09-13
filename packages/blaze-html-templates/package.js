@@ -1,25 +1,24 @@
 Package.describe({
   name: 'blaze-html-templates',
+  summary: "Compile HTML templates into reactive UI with Meteor Blaze",
   version: '1.0.4',
-  // Brief, one-line summary of the package.
-  summary: 'Compile HTML templates into reactive UI with Meteor Blaze',
-  // By default, Meteor will default to using README.md for documentation.
-  // To avoid submitting documentation, set this field to null.
-  documentation: 'README.md'
+  git: 'https://github.com/meteor/blaze.git'
 });
 
 Package.onUse(function(api) {
+  api.versionsFrom('METEOR@1.4.1');
+
   api.imply([
     // A library for reactive user interfaces
-    'blaze',
+    'blaze@2.1.8',
 
     // The following packages are basically empty shells that just exist to
     // satisfy code checking for the existence of a package. Rest assured that
     // they are not adding any bloat to your bundle.
     'ui', // XXX COMPAT WITH PACKAGES BUILT FOR 0.9.0.
-    'spacebars', // XXX COMPAT WITH PACKAGES BUILT FOR 0.9.0
+    'spacebars@1.0.12', // XXX COMPAT WITH PACKAGES BUILT FOR 0.9.0
 
     // Compile .html files into Blaze reactive views
-    'templating'
+    'templating@1.2.14'
   ]);
 });
