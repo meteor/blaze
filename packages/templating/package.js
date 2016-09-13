@@ -1,6 +1,8 @@
 Package.describe({
+  name: 'templating',
   summary: "Allows templates to be defined in .html files",
-  version: '1.2.14'
+  version: '1.2.14',
+  git: 'https://github.com/meteor/blaze.git'
 });
 
 // Today, this package is closely intertwined with Handlebars, meaning
@@ -9,9 +11,11 @@ Package.describe({
 // registry and a default templating system, ideally per-package.
 
 Package.onUse(function (api) {
-  api.use('templating-runtime');
+  api.versionsFrom('METEOR@1.4.1');
+
   api.export('Template', 'client');
 
+  api.use('templating-runtime@1.2.14');
   api.imply('templating-compiler');
   api.imply('templating-runtime');
 });

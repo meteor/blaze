@@ -1,6 +1,8 @@
 Package.describe({
+  name: 'templating-compiler',
   summary: "Compile templates in .html files",
-  version: '1.2.14'
+  version: '1.2.14',
+  git: 'https://github.com/meteor/blaze.git'
 });
 
 Package.registerBuildPlugin({
@@ -12,9 +14,9 @@ Package.registerBuildPlugin({
   // XXX maybe uglify should be applied by this plugin instead of via magic
   // weak dependency.
   use: [
-    'caching-html-compiler',
     'ecmascript',
-    'templating-tools'
+    'caching-html-compiler@1.0.6',
+    'templating-tools@1.0.4'
   ],
   sources: [
     'compile-templates.js'
@@ -22,5 +24,7 @@ Package.registerBuildPlugin({
 });
 
 Package.onUse(function (api) {
+  api.versionsFrom('METEOR@1.4.1');
+
   api.use('isobuild:compiler-plugin@1.0.0');
 });

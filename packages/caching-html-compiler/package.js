@@ -1,21 +1,26 @@
 Package.describe({
+  name: 'caching-html-compiler',
+  summary: "Pluggable class for compiling HTML into templates",
   version: '1.0.6',
-  // Brief, one-line summary of the package.
-  summary: 'Pluggable class for compiling HTML into templates',
-  // By default, Meteor will default to using README.md for documentation.
-  // To avoid submitting documentation, set this field to null.
-  documentation: 'README.md'
+  git: 'https://github.com/meteor/blaze.git'
 });
 
 Package.onUse(function(api) {
+  api.versionsFrom('METEOR@1.4.1');
+
   api.use([
     'underscore',
     'caching-compiler',
-    'templating-tools',
     'ecmascript'
   ]);
 
-  api.addFiles('caching-html-compiler.js', 'server');
+  api.export('CachingHtmlCompiler', 'server');
 
-  api.export("CachingHtmlCompiler", 'server');
+  api.use([
+    'templating-tools@1.0.4'
+  ]);
+
+  api.addFiles([
+    'caching-html-compiler.js'
+  ], 'server');
 });

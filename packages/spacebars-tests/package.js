@@ -1,15 +1,18 @@
 Package.describe({
+  name: 'spacebars-tests',
   summary: "Additional tests for Spacebars",
-  version: '1.0.8'
+  version: '1.0.8',
+  git: 'https://github.com/meteor/blaze.git'
 });
 
 // These tests are in a separate package to avoid a circular dependency
 // between the `spacebars` and `templating` packages.
 Package.onTest(function (api) {
+  api.versionsFrom('METEOR@1.4.1');
+
   api.use([
     'es5-shim',
     'underscore',
-    'spacebars',
     'tinytest',
     'jquery',
     'test-helpers',
@@ -19,11 +22,15 @@ Package.onTest(function (api) {
     'tracker',
     'mongo',
     'random',
-    'blaze',
     'session'
   ]);
 
-  api.use('templating', 'client');
+  api.use([
+    'spacebars@1.0.12',
+    'blaze@2.1.8'
+  ]);
+  api.use('templating@1.2.14', 'client');
+
   api.addFiles([
     'template_tests.html',
     'template_tests.js',
