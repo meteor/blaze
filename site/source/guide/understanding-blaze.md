@@ -6,7 +6,7 @@ description:
 
 Although Blaze is a very intuitive rendering system, it does have some quirks and complexities that are worth knowing about when you are trying to do complex things.
 
-<h3 id="re-rendering">Re-rendering</h3>
+## Re-rendering
 
 Blaze is intentionally opaque about re-rendering. Tracker and Blaze are designed as "eventual consistency" systems that end up fully reflecting any data change eventually, but may take a few re-runs or re-renders in getting there, depending on how they are used. This can be frustrating if you are trying to carefully control when your component is re-rendered.
 
@@ -28,11 +28,11 @@ Template.myTemplate.helpers({
 });
 ```
 
-<h3 id="controlling-re-rendering">Controlling re-rendering</h3>
+## Controlling re-rendering
 
 If your helper or sub-component is expensive to run, and often re-runs without any visible effect, you can short circuit unnecessary re-runs by using a more subtle reactive data source. The [`peerlibrary:computed-field`](https://atmospherejs.com/peerlibrary/computed-field) package helps achieve this pattern.
 
-<h3 id="attribute-helpers">Attribute helpers</h3>
+## Attribute helpers
 
 Setting tag attributes via helpers (e.g. `<div {% raw %}{{attributes}}{% endraw %}>`) is a neat tool and has some precedence rules that make it more useful. Specifically, when you use it more than once on a given element, the attributes are composed (rather than the second set of attributes simply replacing the first). So you can use one helper to set one set of attributes and a second to set another. For instance:
 
@@ -58,7 +58,7 @@ Template.myTemplate.helpers({
 });
 ```
 
-<h3 id="lookups">Lookup order</h3>
+## Lookup order
 
 Another complicated topic in Blaze is name lookups. In what order does Blaze look when you write `{% raw %}{{something}}{% endraw %}`? It runs in the following order:
 
@@ -68,14 +68,14 @@ Another complicated topic in Blaze is name lookups. In what order does Blaze loo
 4. Global helper
 5. Field on the current data context
 
-<h3 id="build-system">Blaze and the build system</h3>
+## Blaze and the build system
 
-As mentioned in the [build system article](build-tool.html#blaze), the [`blaze-html-templates`](https://atmospherejs.com/meteor/blaze-html-templates) package scans your source code for `.html` files, picks out `<template name="templateName">` tags, and compiles them into a JavaScript file that defines a function that implements the component in code, attached to the `Template.templateName` symbol.
+As mentioned in the [build system article](https://guide.meteor.com/build-tool.html#blaze), the [`blaze-html-templates`](https://atmospherejs.com/meteor/blaze-html-templates) package scans your source code for `.html` files, picks out `<template name="templateName">` tags, and compiles them into a JavaScript file that defines a function that implements the component in code, attached to the `Template.templateName` symbol.
 
 This means when you render a Blaze template, you are simply running a function on the client that corresponds to the Spacebars content you defined in the `.html` file.
 
-<h3 id="views">What is a view?</h3>
+## What is a view?
 
 One of the most core concepts in Blaze is the "view", which is a building block that represents a reactively rendering area of a template. The view is the machinery that works behind the scenes to track reactivity, do lookups, and re-render appropriately when data changes. The view is the unit of re-rendering in Blaze. You can even use the view tree to walk the rendered component hierarchy, but it's better to avoid this in favor of communicating between components using callbacks, template arguments, or global data stores.
 
-You can read more about views in the [Blaze docs](http://docs.meteor.com/#/full/blaze_view).
+You can read more about views in the [Blaze View](../api/blaze.html#Blaze-View).

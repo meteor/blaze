@@ -17,10 +17,9 @@ or replaced and should be cleaned up.  You can associate data with a
 template instance, and you can access its DOM nodes when it is in the
 document.
 
-Read more about templates and how to use them in the [Spacebars](#pkg_spacebars)
-package README and the [Blaze](http://guide.meteor.com/blaze.html) article in the Meteor Guide.
+Read more about templates and how to use them in the [Spacebars](../api/spacebars.html) and [Blaze](../guide/introduction.html) article in the Guide.
 
-<h2 title="Template.<em>myTemplate</em>" id="template_myTemplate">Template Declarations</h2>
+## Template Declarations
 
 {% apibox "Template#events" instanceDelimiter:. %}
 
@@ -65,17 +64,16 @@ Then you can call this helper from template like this:
 {{displayName "John" "Doe" title="President"}}
 ```
 
-You can learn more about arguments to helpers in [Spacebars
-Readme](http://blazejs.org/spacebars).
+You can learn more about arguments to helpers in [Spacebars](../api/spacebars.html).
 
 Under the hood, each helper starts a new
-[`Tracker.autorun`](#/full/tracker_autorun).  When its reactive
+[`Tracker.autorun`](http://docs.meteor.com/api/tracker.html#Tracker-autorun).  When its reactive
 dependencies change, the helper is rerun. Helpers depend on their data
 context, passed arguments and other reactive data sources accessed during
 execution.
 
 To create a helper that can be used in any template, use
-[`Template.registerHelper`](#template_registerhelper).
+[`Template.registerHelper`](../api/templates.html#Template-registerHelper).
 
 
 {% apibox "Template#onRendered" instanceDelimiter:. %}
@@ -84,13 +82,13 @@ Callbacks added with this method are called once when an instance of
 Template.*myTemplate* is rendered into DOM nodes and put into the document for
 the first time.
 
-In the body of a callback, `this` is a [template instance](#template_inst)
+In the body of a callback, `this` is a [template instance](../api/templates.html#Template-instance)
 object that is unique to this occurrence of the template and persists across
 re-renderings. Use the `onCreated` and `onDestroyed` callbacks to perform
 initialization or clean-up on the object.
 
 Because your template has been rendered, you can use functions like
-[`this.findAll`](#template_findAll) which look at its DOM nodes.
+[`this.findAll`](../api/templates.html#Template-findAll) which look at its DOM nodes.
 
 This can be a good place to apply any DOM manipulations you want, after the
 template is rendered for the first time.
@@ -141,7 +139,7 @@ Template.myPictures.onCreated(function () {
 
 These callbacks are called when an occurrence of a template is taken off
 the page for any reason and not replaced with a re-rendering.  Inside
-a callback, `this` is the [template instance](#template_inst) object
+a callback, `this` is the [template instance](../api/templates.html#Template-instance) object
 being destroyed.
 
 This group of callbacks is most useful for cleaning up or undoing any external
@@ -156,7 +154,7 @@ Template.myPictures.onDestroyed(function () {
 ```
 
 
-<h2 id="template_inst">Template instances</h2>
+## Template instances
 
 A template instance object represents an occurrence of a template in
 the document.  It can be used to access the DOM and it can be
@@ -165,11 +163,11 @@ assigned properties that persist as the template is reactively updated.
 Template instance objects are found as the value of `this` in the
 `onCreated`, `onRendered`, and `onDestroyed` template callbacks, and as an
 argument to event handlers.  You can access the current template instance
-from helpers using [`Template.instance()`](#template_instance).
+from helpers using [`Template.instance()`](../api/templates.html#Template-instance).
 
 In addition to the properties and functions described below, you can assign
 additional properties of your choice to the object. Use the
-[`onCreated`](#template_onCreated) and [`onDestroyed`](#template_onDestroyed)
+[`onCreated`](../api/templates.html#Template-onCreated) and [`onDestroyed`](../api/templates.html#Template-onDestroyed)
 methods to add callbacks performing initialization or clean-up on the object.
 
 You can only access `findAll`, `find`, `firstNode`, and `lastNode` from the
@@ -219,8 +217,8 @@ Access is read-only and non-reactive.
 
 {% apibox "Blaze.TemplateInstance#autorun" %}
 
-You can use `this.autorun` from an [`onCreated`](#template_onCreated) or
-[`onRendered`](#template_onRendered) callback to reactively update the DOM
+You can use `this.autorun` from an [`onCreated`](../api/templates.html#Template-onCreated) or
+[`onRendered`](../api/templates.html#Template-onRendered) callback to reactively update the DOM
 or the template instance.  You can use `Template.currentData()` inside
 of this callback to access reactive data context of the template instance.
 The Computation is automatically stopped when the template is destroyed.
@@ -229,7 +227,7 @@ Alias for `template.view.autorun`.
 
 {% apibox "Blaze.TemplateInstance#subscribe" %}
 
-You can use `this.subscribe` from an [`onCreated`](#template_onCreated) callback
+You can use `this.subscribe` from an [`onCreated`](../api/templates.html#Template-onCreated) callback
 to specify which data publications this template depends on. The subscription is
 automatically stopped when the template is destroyed.
 
@@ -319,7 +317,7 @@ any `Template.myTemplate` object.
 
 Helpers on `Template.body` are only available in the `<body>` tags of
 your app.  To register a global helper, use
-[Template.registerHelper](#template_registerhelper).
+[Template.registerHelper](../api/templates.html#Template-registerhelper).
 Event maps on `Template.body` don't apply to elements added to the
 body via `Blaze.render`, jQuery, or the DOM API, or to the body element
 itself.  To handle events on the body, window, or document, use jQuery
@@ -338,7 +336,7 @@ template="foo"}}{% endraw %}` is equivalent to `{% raw %}{{> foo}}{% endraw %}` 
 `{% raw %}{{#Template.dynamic template="foo"}} ... {{/Template.dynamic}}{% endraw %}`
 is equivalent to `{% raw %}{{#foo}} ... {{/foo}}{% endraw %}`.
 
-<h2 id="eventmaps">Event Maps</h2>
+## Event Maps
 
 An event map is an object where
 the properties specify a set of events to handle, and the values are
@@ -508,9 +506,3 @@ used for arrow keys or modifier keys.
 Other DOM events are available as well, but for the events above,
 Meteor has taken some care to ensure that they work uniformly in all
 browsers.
-
-<h2 id="spacebars">Spacebars</h2>
-
-Spacebars is the language used to write Meteor templates. It is inspired by [Handlebars](http://handlebarsjs.com/). It shares some of the spirit and syntax of Handlebars, but has been tailored to produce reactive Meteor templates when compiled.
-
-For more information about Spacebars, see the [Spacebars README](http://blazejs.org/spacebars).

@@ -6,20 +6,19 @@ description: Documentation of how to use Blaze, Meteor's reactive rendering engi
 
 Blaze is the package that makes reactive templates possible.
 You can use the Blaze API directly in order to render templates programmatically
-and manipulate "Views," the building blocks of reactive templates. For more
-information, check out the [Blaze project page](https://www.meteor.com/blaze).
+and manipulate "Views," the building blocks of reactive templates.
 
 {% apibox "Blaze.render" %}
 
 When you render a template, the callbacks added with
-[`onCreated`](#template_onCreated) are invoked immediately, before evaluating
+[`onCreated`](../api/templates.html#Template-onCreated) are invoked immediately, before evaluating
 the content of the template.  The callbacks added with
-[`onRendered`](#template_onRendered) are invoked after the View is rendered and
+[`onRendered`](../api/templates.html#Template-onRendered) are invoked after the View is rendered and
 inserted into the DOM.
 
 The rendered template
 will update reactively in response to data changes until the View is
-removed using [`Blaze.remove`](#blaze_remove) or the View's
+removed using [`Blaze.remove`](#Blaze-remove) or the View's
 parent element is removed by Meteor or jQuery.
 
 {% pullquote warning %}
@@ -27,7 +26,7 @@ If the View is removed by some other mechanism
 besides Meteor or jQuery (which Meteor integrates with by default),
 the View may continue to update indefinitely.  Most users will not need to
 manually render templates and insert them into the DOM, but if you do,
-be mindful to always call [`Blaze.remove`](#blaze_remove) when the View is
+be mindful to always call [`Blaze.remove`](#Blaze-remove) when the View is
 no longer needed.
 {% endpullquote %}
 
@@ -41,12 +40,12 @@ no longer needed.
 Use `Blaze.remove` to remove a template or View previously inserted with
 `Blaze.render`, in such a way that any behaviors attached to the DOM by
 Meteor are cleaned up.  The rendered template or View is now considered
-["destroyed"](#template_onDestroyed), along with all nested templates and
+["destroyed"](../api/templates.html#Template-onDestroyed), along with all nested templates and
 Views.  In addition, any data assigned via
 jQuery to the DOM nodes is removed, as if the nodes were passed to
 jQuery's `$(...).remove()`.
 
-As mentioned in [`Blaze.render`](#blaze_render), it is important to "remove"
+As mentioned in [`Blaze.render`](#Blaze-render), it is important to "remove"
 all content rendered via `Blaze.render` using `Blaze.remove`, unless the
 parent node of `renderedView` is removed by a Meteor reactive
 update or with jQuery.
@@ -81,8 +80,8 @@ Most applications do not need to be aware of these Views, but they offer a
 way to understand and customize Meteor's rendering behavior for more
 advanced applications and packages.
 
-You can obtain a View object by calling [`Blaze.render`](#blaze_render) on a
-template, or by accessing [`template.view`](#template_view) on a template
+You can obtain a View object by calling [`Blaze.render`](#Blaze-render) on a
+template, or by accessing [`template.view`](../api/templates.html#template-view) on a template
 instance.
 
 At the heart of a View is an [autorun](#tracker_autorun) that calls the View's
@@ -105,9 +104,9 @@ appropriate, and then the `onViewCreated` hook is fired.  The term
 "unrendered View" means a newly constructed View that has not been
 "created" or rendered.
 
-The "current View" is kept in [`Blaze.currentView`](#blaze_currentview) and
+The "current View" is kept in [`Blaze.currentView`](#Blaze-currentView) and
 is set during View rendering, callbacks, autoruns, and template event
-handlers.  It affects calls such as [`Template.currentData()`](#template_currentdata).
+handlers.  It affects calls such as [`Template.currentData()`](../api/templates.html#Template-currentData).
 
 The following properties and methods are available on Blaze.View:
 
@@ -224,15 +223,15 @@ be updated.
 
 {% apibox "Blaze.currentView" nested:true %}
 
-The "current view" is used by [`Template.currentData()`](#template_currentdata) and
-[`Template.instance()`](#template_instance) to determine
+The "current view" is used by [`Template.currentData()`](../api/templates.html#Template-currentData) and
+[`Template.instance()`](../api/templates.html#Template-instance) to determine
 the contextually relevant data context and template instance.
 
 {% apibox "Blaze.getView" nested:true %}
 
 If you don't specify an `element`, there must be a current View or an
 error will be thrown.  This is in contrast to
-[`Blaze.currentView`](#blaze_currentview).
+[`Blaze.currentView`](#Blaze-currentView).
 
 {% apibox "Blaze.With" nested:true %}
 
@@ -266,7 +265,7 @@ Templates defined by the template compiler, such as `Template.myTemplate`,
 are objects of type `Blaze.Template` (aliased as `Template`).
 
 In addition to methods like `events` and `helpers`, documented as part of
-the [Template API](#templates_api), the following fields and methods are
+the [Template API](../api/templates.html), the following fields and methods are
 present on template objects:
 
 <dl class="objdesc">
@@ -293,12 +292,12 @@ present on template objects:
 
 {% apibox "Blaze.isTemplate" %}
 
-<h2 id="renderable_content">Renderable Content</h2>
+## Renderable Content
 
 A value is *renderable content* if it is one of the following:
 
-* A [template object](#templates_api) like `Template.myTemplate`
-* An unrendered [View](#blaze_view) object, like the return value of `Blaze.With`
+* A [template object](../api/templates.html) like `Template.myTemplate`
+* An unrendered [View](../api/blaze.html#Blaze-View) object, like the return value of `Blaze.With`
 * `null` or `undefined`
 
 > Internally, renderable content includes objects representing HTML tags

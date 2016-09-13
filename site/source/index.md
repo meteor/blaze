@@ -4,7 +4,7 @@ order: 0
 description:
 ---
 
-Blaze is a powerful library for creating user interfaces by writing reactive HTML templates. Compared to using a combination of traditional templates and jQuery, Blaze eliminates the need for all the "update logic" in your app that listens for data changes and manipulates the DOM. Instead, familiar template directives like `{% raw %}{{#if}}{% endraw %}` and `{% raw %}{{#each}}{% endraw %}` integrates with [Tracker's](https://meteor.com/tracker) "transparent reactivity" and [Minimongo's](https://meteor.com/mini-databases) database cursors so that the DOM updates automatically. 
+Blaze is a powerful library for creating user interfaces by writing reactive HTML templates. Compared to using a combination of traditional templates and jQuery, Blaze eliminates the need for all the "update logic" in your app that listens for data changes and manipulates the DOM. Instead, familiar template directives like `{% raw %}{{#if}}{% endraw %}` and `{% raw %}{{#each}}{% endraw %}` integrates with [Tracker's](https://docs.meteor.com/api/tracker.html) "transparent reactivity" and [Minimongo's](https://docs.meteor.com/api/collections.html) database cursors so that the DOM updates automatically. 
 
 ## Quick Start
 
@@ -104,7 +104,7 @@ It may sound obvious to "keep it simple" and prioritize the developer experience
 
 ### Transparent Reactivity
 
-Under the hood, Blaze uses the [Tracker](https://meteor.com/tracker) library to automatically keep track of when to recalculate each template helper. If a helper reads a value from the client-side database, for example, the helper will automatically be recalculated when the value changes.
+Under the hood, Blaze uses the [Tracker](https://docs.meteor.com/api/tracker.html) library to automatically keep track of when to recalculate each template helper. If a helper reads a value from the client-side database, for example, the helper will automatically be recalculated when the value changes.
 
 What this means for the developer is simple. You don't have to explicitly declare when to update the DOM, or even perform any explicit "data-binding." You don't have to know how Tracker works, or even exactly what "reactivity" means, to benefit. The result is less thinking and less typing than other approaches.
 
@@ -190,9 +190,9 @@ Blaze will get better support for using it outside of Meteor, such as regular st
 
 # Resources
 
-* [Templates API](http://blazejs.org/templates.html)
-* [Blaze API](http://blazejs.org/blaze.html)
-* [Spacebars syntax](http://blazejs.org/spacebars.html)
+* [Templates API](../api/templates.html)
+* [Blaze API](../api/blaze.html)
+* [Spacebars syntax](../api/spacebars.html)
 
 # Packages
 
