@@ -22,7 +22,7 @@ Package.onUse(function (api) {
 
   api.export('Spacebars');
 
-  api.use('htmljs@1.0.10');
+  api.use('htmljs@1.0.11');
   api.use('blaze@2.1.8');
 
   api.addFiles([

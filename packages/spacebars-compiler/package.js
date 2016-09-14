@@ -16,7 +16,7 @@ Package.onUse(function (api) {
 
   api.export('SpacebarsCompiler');
 
-  api.use('htmljs@1.0.10');
+  api.use('htmljs@1.0.11');
   api.use('html-tools@1.0.10');
   api.use('blaze-tools@1.0.9');
 
