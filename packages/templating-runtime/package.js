@@ -21,12 +21,12 @@ Package.onUse(function (api) {
   // Blaze, so anybody using templating (eg apps) need to implicitly use
   // 'meteor' and 'blaze'.
   api.use([
-    'blaze@2.1.8',
+    'blaze@2.1.9',
     'spacebars@1.0.12'
   ]);
   api.imply([
     'meteor',
-    'blaze@2.1.8',
+    'blaze@2.1.9',
     'spacebars@1.0.12'
   ], 'client');
 

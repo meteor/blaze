@@ -42,7 +42,7 @@ Package.onTest(function (api) {
     'spacebars-compiler',
     'blaze-tools@1.0.10',
     'spacebars@1.0.12',
-    'blaze@2.1.8'
+    'blaze@2.1.9'
   ]);
 
   api.addFiles([
