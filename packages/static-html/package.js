@@ -11,7 +11,7 @@ Package.registerBuildPlugin({
     'ecmascript',
     'underscore',
     'caching-html-compiler@1.0.6',
-    'templating-tools@1.0.4'
+    'templating-tools@1.0.5'
   ],
   sources: [
     'static-html.js'

@@ -17,7 +17,7 @@ Package.onUse(function(api) {
   api.export('CachingHtmlCompiler', 'server');
 
   api.use([
-    'templating-tools@1.0.4'
+    'templating-tools@1.0.5'
   ]);
 
   api.addFiles([
