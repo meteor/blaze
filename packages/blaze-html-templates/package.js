@@ -19,6 +19,6 @@ Package.onUse(function(api) {
     'spacebars@1.0.13', // XXX COMPAT WITH PACKAGES BUILT FOR 0.9.0
 
     // Compile .html files into Blaze reactive views
-    'templating@1.2.14'
+    'templating@1.2.15'
   ]);
 });

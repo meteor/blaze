@@ -29,7 +29,7 @@ Package.onTest(function (api) {
     'spacebars@1.0.13',
     'blaze@2.1.9'
   ]);
-  api.use('templating@1.2.14', 'client');
+  api.use('templating@1.2.15', 'client');
 
   api.addFiles([
     'template_tests.html',

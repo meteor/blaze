@@ -61,7 +61,7 @@ Package.onTest(function (api) {
   api.use('blaze');
   api.use('blaze-tools@1.0.10'); // for BlazeTools.toJS
   api.use('html-tools@1.0.11');
-  api.use('templating@1.2.14');
+  api.use('templating@1.2.15');
 
   api.addFiles('view_tests.js');
   api.addFiles('render_tests.js', 'client');
