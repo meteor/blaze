@@ -1,7 +1,7 @@
 Package.describe({
   name: 'static-html',
   summary: "Define static page content in .html files",
-  version: '1.1.12',
+  version: '1.1.13',
   git: 'https://github.com/meteor/blaze.git'
 });
 
