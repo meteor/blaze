@@ -1,7 +1,7 @@
 Package.describe({
   name: 'ui',
   summary: "Deprecated: Use the 'blaze' package",
-  version: '1.0.11',
+  version: '1.0.12',
   git: 'https://github.com/meteor/blaze.git'
 });
 
