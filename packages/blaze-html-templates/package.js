@@ -10,7 +10,7 @@ Package.onUse(function(api) {
 
   api.imply([
     // A library for reactive user interfaces
-    'blaze@2.1.8',
+    'blaze@2.1.9',
 
     // The following packages are basically empty shells that just exist to
     // satisfy code checking for the existence of a package. Rest assured that
