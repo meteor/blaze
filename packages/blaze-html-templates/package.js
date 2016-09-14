@@ -16,7 +16,7 @@ Package.onUse(function(api) {
     // satisfy code checking for the existence of a package. Rest assured that
     // they are not adding any bloat to your bundle.
     'ui', // XXX COMPAT WITH PACKAGES BUILT FOR 0.9.0.
-    'spacebars@1.0.12', // XXX COMPAT WITH PACKAGES BUILT FOR 0.9.0
+    'spacebars@1.0.13', // XXX COMPAT WITH PACKAGES BUILT FOR 0.9.0
 
     // Compile .html files into Blaze reactive views
     'templating@1.2.14'
