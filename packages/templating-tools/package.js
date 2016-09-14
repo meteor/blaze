@@ -24,7 +24,7 @@ Package.onUse(function(api) {
   api.export('TemplatingTools');
 
   api.use([
-    'spacebars-compiler@1.0.12'
+    'spacebars-compiler@1.0.13'
   ]);
 
   api.addFiles([
