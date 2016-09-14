@@ -33,7 +33,7 @@ Package.onUse(function (api) {
   // to be able to compile dynamic.html. this compiler is used
   // only inside this package and it should not be implied to not
   // conflict with other packages providing .html compilers.
-  api.use('templating-compiler@1.2.14');
+  api.use('templating-compiler@1.2.15');
 
   api.addFiles([
     'dynamic.html',
@@ -53,7 +53,7 @@ Package.onTest(function (api) {
 
   api.use([
     'templating-runtime',
-    'templating-compiler@1.2.14'
+    'templating-compiler@1.2.15'
   ]);
 
   api.addFiles([
