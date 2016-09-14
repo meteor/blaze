@@ -28,7 +28,7 @@ Package.onTest(function (api) {
   api.use('underscore');
 
   api.use('blaze-tools');
-  api.use('html-tools@1.0.10');
+  api.use('html-tools@1.0.11');
 
   api.addFiles([
     'token_tests.js'
