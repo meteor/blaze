@@ -15,7 +15,7 @@ Package.onUse(function (api) {
 
   api.export('Template', 'client');
 
-  api.use('templating-runtime@1.2.14');
+  api.use('templating-runtime@1.2.15');
   api.imply('templating-compiler@1.2.15');
-  api.imply('templating-runtime@1.2.14');
+  api.imply('templating-runtime@1.2.15');
 });
