@@ -18,7 +18,7 @@ Package.onUse(function (api) {
 
   api.use('htmljs@1.0.11');
   api.use('html-tools@1.0.10');
-  api.use('blaze-tools@1.0.9');
+  api.use('blaze-tools@1.0.10');
 
   api.addFiles([
     'templatetag.js',
@@ -40,7 +40,7 @@ Package.onTest(function (api) {
 
   api.use([
     'spacebars-compiler',
-    'blaze-tools@1.0.9',
+    'blaze-tools@1.0.10',
     'spacebars@1.0.12',
     'blaze@2.1.8'
   ]);

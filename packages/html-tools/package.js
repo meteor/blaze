@@ -31,7 +31,7 @@ Package.onTest(function (api) {
 
   api.use('html-tools');
   api.use('htmljs@1.0.11');
-  api.use('blaze-tools@1.0.9'); // for `toJS`
+  api.use('blaze-tools@1.0.10'); // for `toJS`
 
   api.addFiles([
     'charref_tests.js',
