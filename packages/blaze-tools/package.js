@@ -12,7 +12,7 @@ Package.onUse(function (api) {
 
   api.export('BlazeTools');
 
-  api.use('htmljs@1.0.10');
+  api.use('htmljs@1.0.11');
 
   api.addFiles([
     'preamble.js',

@@ -10,7 +10,7 @@ Package.onUse(function (api) {
 
   api.export('HTMLTools');
 
-  api.use('htmljs@1.0.10');
+  api.use('htmljs@1.0.11');
   api.imply('htmljs');
 
   api.addFiles([
@@ -30,7 +30,7 @@ Package.onTest(function (api) {
   api.use('underscore');
 
   api.use('html-tools');
-  api.use('htmljs@1.0.10');
+  api.use('htmljs@1.0.11');
   api.use('blaze-tools@1.0.9'); // for `toJS`
 
   api.addFiles([

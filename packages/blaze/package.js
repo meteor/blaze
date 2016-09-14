@@ -21,7 +21,7 @@ Package.onUse(function (api) {
     'Handlebars'
   ]);
 
-  api.use('htmljs@1.0.10');
+  api.use('htmljs@1.0.11');
   api.imply('htmljs');
 
   api.addFiles([
