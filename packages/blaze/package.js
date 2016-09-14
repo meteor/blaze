@@ -22,7 +22,7 @@ Package.onUse(function (api) {
   ]);
 
   api.use('htmljs@1.0.11');
-  api.imply('htmljs');
+  api.imply('htmljs@1.0.11');
 
   api.addFiles([
     'preamble.js'

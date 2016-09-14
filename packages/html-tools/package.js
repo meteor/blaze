@@ -11,7 +11,7 @@ Package.onUse(function (api) {
   api.export('HTMLTools');
 
   api.use('htmljs@1.0.11');
-  api.imply('htmljs');
+  api.imply('htmljs@1.0.11');
 
   api.addFiles([
     'utils.js',

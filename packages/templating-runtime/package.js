@@ -24,7 +24,11 @@ Package.onUse(function (api) {
     'blaze@2.1.8',
     'spacebars@1.0.12'
   ]);
-  api.imply(['meteor', 'blaze', 'spacebars'], 'client');
+  api.imply([
+    'meteor',
+    'blaze@2.1.8',
+    'spacebars@1.0.12'
+  ], 'client');
 
   // to be able to compile dynamic.html. this compiler is used
   // only inside this package and it should not be implied to not
