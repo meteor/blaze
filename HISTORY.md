@@ -1,5 +1,7 @@
 ## vNEXT
 
+## v2.1.9, 2016-Sep-13
+
 * Moved documentation to: http://blazejs.org/
 * Started `HISTORY.md` file with the list of all changes.
 * Moved development to the new repository: https://github.com/meteor/blaze
