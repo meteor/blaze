@@ -26,7 +26,7 @@ Package.onTest(function (api) {
   ]);
 
   api.use([
-    'spacebars@1.0.12',
+    'spacebars@1.0.13',
     'blaze@2.1.9'
   ]);
   api.use('templating@1.2.14', 'client');

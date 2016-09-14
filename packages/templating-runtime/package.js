@@ -22,12 +22,12 @@ Package.onUse(function (api) {
   // 'meteor' and 'blaze'.
   api.use([
     'blaze@2.1.9',
-    'spacebars@1.0.12'
+    'spacebars@1.0.13'
   ]);
   api.imply([
     'meteor',
     'blaze@2.1.9',
-    'spacebars@1.0.12'
+    'spacebars@1.0.13'
   ], 'client');
 
   // to be able to compile dynamic.html. this compiler is used
