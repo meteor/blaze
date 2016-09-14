@@ -59,7 +59,7 @@ Package.onTest(function (api) {
   api.use('tracker');
 
   api.use('blaze');
-  api.use('blaze-tools@1.0.9'); // for BlazeTools.toJS
+  api.use('blaze-tools@1.0.10'); // for BlazeTools.toJS
   api.use('html-tools@1.0.10');
   api.use('templating@1.2.14');
 
