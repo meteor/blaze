@@ -10,7 +10,7 @@ Package.registerBuildPlugin({
   use: [
     'ecmascript',
     'underscore',
-    'caching-html-compiler@1.0.6',
+    'caching-html-compiler@1.0.7',
     'templating-tools@1.0.5'
   ],
   sources: [
