@@ -32,7 +32,7 @@ sidebar_categories:
     - api/blaze
     - api/spacebars
 github_repo: 'meteor/blaze'
-content_root: 'site'
+content_root: 'site/source'
 
 # themeing
 favicon: '/logo/icon.ico'
