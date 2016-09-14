@@ -1,7 +1,7 @@
 Package.describe({
   name: 'html-tools',
   summary: "Standards-compliant HTML tools",
-  version: '1.0.10',
+  version: '1.0.11',
   git: 'https://github.com/meteor/blaze.git'
 });
 
