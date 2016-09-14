@@ -8,8 +8,8 @@ Package.describe({
 Package.registerBuildPlugin({
   name: "compileStaticHtmlBatch",
   use: [
-    'ecmascript',
-    'underscore',
+    'ecmascript@0.5.8',
+    'underscore@1.0.9',
     'caching-html-compiler@1.0.7',
     'templating-tools@1.0.5'
   ],
