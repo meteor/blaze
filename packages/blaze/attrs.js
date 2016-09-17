@@ -316,8 +316,8 @@ Blaze._makeAttributeHandler = function (elem, name, value) {
              name === 'controls' || name === 'loop' || name === 'muted')) {
     return new BooleanHandler(name, value);
   } else if ((name === 'spellcheck' && elem.contentEditable === 'true') ||
-			      (name === 'spellcheck' && elem.tagName === 'TEXTAREA') ||
-			      (name === 'spellcheck' && elem.tagName === 'INPUT' && elem.type !== 'password')) {
+             (name === 'spellcheck' && elem.tagName === 'TEXTAREA') ||
+             (name === 'spellcheck' && elem.tagName === 'INPUT' && elem.type !== 'password')) {
     return new BooleanHandler(name, value);
   } else if ((elem.tagName === 'TEXTAREA' || elem.tagName === 'INPUT')
              && name === 'value') {
