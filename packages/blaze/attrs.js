@@ -296,6 +296,29 @@ Blaze._makeAttributeHandler = function (elem, name, value) {
   } else if ((elem.tagName === 'OPTION' && name === 'selected') ||
              (elem.tagName === 'INPUT' && name === 'checked')) {
     return new BooleanHandler(name, value);
+  } else if (name === 'autocomplete' || name === 'autofocus' || name === 'disabled' ||
+             name === 'hidden' || name === 'readonly' || name === 'required') {
+    return new BooleanHandler(name, value);
+  } else if (elem.tagName === 'FORM' && name === 'novalidate') {
+    return new BooleanHandler(name, value);
+  } else if (elem.tagName === 'IFRAME' && name === ' sandbox') {
+    return new BooleanHandler(name, value);
+  } else if (elem.tagName === 'IMG' && name === 'ismap') {
+    return new BooleanHandler(name, value);
+  } else if ((elem.tagName === 'INPUT' || elem.tagName === 'SELECT') 
+             && name === 'multiple') {
+    return new BooleanHandler(name, value);
+  } else if (elem.tagName === 'OL' && name === 'reversed') {
+    return new BooleanHandler(name, value);
+  } else if (elem.tagName === 'SCRIPT' && (name === 'async' || name === 'defer')) {
+    return new BooleanHandler(name, value);
+  } else if (elem.tagName === 'VIDEO' && (name === 'autoplay' || 
+             name === 'controls' || name === 'loop' || name === 'muted')) {
+    return new BooleanHandler(name, value);
+  } else if (name === 'spellcheck' && elem.contentEditable === 'true' ||
+             (elem.tagName === 'TEXTAREA' ||
+              (elem.tagName === 'INPUT' && elem.type !== 'password'))) {
+    return new BooleanHandler(name, value);
   } else if ((elem.tagName === 'TEXTAREA' || elem.tagName === 'INPUT')
              && name === 'value') {
     // internally, TEXTAREAs tracks their value in the 'value'
