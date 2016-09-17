@@ -301,7 +301,7 @@ Blaze._makeAttributeHandler = function (elem, name, value) {
     return new BooleanHandler(name, value);
   } else if (elem.tagName === 'FORM' && name === 'novalidate') {
     return new BooleanHandler(name, value);
-  } else if (elem.tagName === 'IFRAME' && name === ' sandbox') {
+  } else if (elem.tagName === 'IFRAME' && name === 'sandbox') {
     return new BooleanHandler(name, value);
   } else if (elem.tagName === 'IMG' && name === 'ismap') {
     return new BooleanHandler(name, value);
