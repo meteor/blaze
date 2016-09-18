@@ -140,21 +140,6 @@ Tinytest.add("blaze - render - input - checked", function (test) {
 });
 
 // test that we correctly update the HTML5 boolean properties
-Tinytest.add("blaze - render - input - autocomplete", function (test) {
-  var R = ReactiveVar(null);
-  var div = document.createElement("DIV");
-  materialize(INPUT({type: "text", autocomplete: function () { return R.get(); }}), div);
-  var inputEl = div.querySelector('input');
-  test.equal(inputEl.autocomplete, false);
-  inputEl.autocomplete = true;
-
-  R.set("autocomplete");
-  Tracker.flush();
-  R.set(null);
-  Tracker.flush();
-  test.equal(inputEl.autocomplete, false);
-});
-
 Tinytest.add("blaze - render - input - autofocus", function (test) {
   var R = ReactiveVar(null);
   var div = document.createElement("DIV");
@@ -203,16 +188,16 @@ Tinytest.add("blaze - render - input - hidden", function (test) {
 Tinytest.add("blaze - render - input - readonly", function (test) {
   var R = ReactiveVar(null);
   var div = document.createElement("DIV");
-  materialize(INPUT({type: "text", readonly: function () { return R.get(); }}), div);
+  materialize(INPUT({type: "text", readOnly: function () { return R.get(); }}), div);
   var inputEl = div.querySelector('input');
-  test.equal(inputEl.readonly, false);
-  inputEl.readonly = true;
+  test.equal(inputEl.readOnly, false);
+  inputEl.readOnly = true;
 
   R.set("readonly");
   Tracker.flush();
   R.set(null);
   Tracker.flush();
-  test.equal(inputEl.readonly, false);
+  test.equal(inputEl.readOnly, false);
 });
 
 Tinytest.add("blaze - render - input - required", function (test) {
@@ -249,16 +234,16 @@ Tinytest.add("blaze - render - select - multiple", function (test) {
 Tinytest.add("blaze - render - form - novalidate", function (test) {
   var R = ReactiveVar(null);
   var div = document.createElement("DIV");
-  materialize(FORM({novalidate: function () { return R.get(); }}), div);
+  materialize(FORM({noValidate: function () { return R.get(); }}), div);
   var formEl = div.querySelector('form');
-  test.equal(formEl.novalidate, false);
-  formEl.novalidate = true;
+  test.equal(formEl.noValidate, false);
+  formEl.noValidate = true;
 
   R.set("novalidate");
   Tracker.flush();
   R.set(null);
   Tracker.flush();
-  test.equal(formEl.novalidate, false);
+  test.equal(formEl.noValidate, false);
 });
 
 // test that we correctly update the HTML5 <iframe> sandbox boolean property
@@ -267,30 +252,30 @@ Tinytest.add("blaze - render - iframe - sandbox", function (test) {
   var div = document.createElement("DIV");
   materialize(IFRAME({sandbox: function () { return R.get(); }}), div);
   var iframeEl = div.querySelector('iframe');
-  test.equal(iframeEl.sandbox, false);
-  iframeEl.sandbox = true;
+  test.equal(iframeEl.sandbox.contains('sandbox'), false);
+  iframeEl.sandbox.add('sandbox');
 
   R.set("sandbox");
   Tracker.flush();
   R.set(null);
   Tracker.flush();
-  test.equal(iframeEl.sandbox, false);
+  test.equal(iframeEl.sandbox.contains('sandbox'), false);
 });
 
 // test that we correctly update the HTML5 <image> ismap boolean property
 Tinytest.add("blaze - render - image - ismap", function (test) {
   var R = ReactiveVar(null);
   var div = document.createElement("DIV");
-  materialize(IMG({ismap: function () { return R.get(); }}), div);
+  materialize(IMG({isMap: function () { return R.get(); }}), div);
   var imageEl = div.querySelector('img');
-  test.equal(imageEl.ismap, false);
-  imageEl.ismap = true;
+  test.equal(imageEl.isMap, false);
+  imageEl.isMap = true;
 
   R.set("ismap");
   Tracker.flush();
   R.set(null);
   Tracker.flush();
-  test.equal(imageEl.ismap, false);
+  test.equal(imageEl.isMap, false);
 });
 
 // test that we correctly update the HTML5 <ol> reversed boolean property
