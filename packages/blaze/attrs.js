@@ -296,8 +296,8 @@ Blaze._makeAttributeHandler = function (elem, name, value) {
   } else if ((elem.tagName === 'OPTION' && name === 'selected') ||
              (elem.tagName === 'INPUT' && name === 'checked')) {
     return new BooleanHandler(name, value);
-  } else if (name === 'autocomplete' || name === 'autofocus' || name === 'disabled' ||
-             name === 'hidden' || name === 'readonly' || name === 'required') {
+  } else if (name === 'autofocus' || name === 'disabled' || name === 'hidden' || 
+             name === 'readonly' || name === 'required') {
     return new BooleanHandler(name, value);
   } else if (elem.tagName === 'FORM' && name === 'novalidate') {
     return new BooleanHandler(name, value);
