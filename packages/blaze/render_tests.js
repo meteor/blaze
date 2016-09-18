@@ -295,21 +295,6 @@ Tinytest.add("blaze - render - ordered list - reversed", function (test) {
 });
 
 // test that we correctly update the HTML5 <script> boolean properties
-Tinytest.add("blaze - render - script - async", function (test) {
-  var R = ReactiveVar(null);
-  var div = document.createElement("DIV");
-  materialize(SCRIPT({src: "", async: function () { return R.get(); }}), div);
-  var scriptEl = div.querySelector('script');
-  test.equal(scriptEl.async, false);
-  scriptEl.async = true;
-
-  R.set("async");
-  Tracker.flush();
-  R.set(null);
-  Tracker.flush();
-  test.equal(scriptEl.async, false);
-});
-
 Tinytest.add("blaze - render - script - defer", function (test) {
   var R = ReactiveVar(null);
   var div = document.createElement("DIV");
@@ -384,37 +369,6 @@ Tinytest.add("blaze - render - video - muted", function (test) {
   R.set(null);
   Tracker.flush();
   test.equal(videoEl.muted, false);
-});
-
-// test that we correctly update the HTML5 spellcheck boolean property
-Tinytest.add("blaze - render - textarea - spellcheck", function (test) {
-  var R = ReactiveVar(null);
-  var div = document.createElement("DIV");
-  materialize(TEXTAREA({spellcheck: function () { return R.get(); }}), div);
-  var textareaEl = div.querySelector('textarea');
-  test.equal(textareaEl.spellcheck, false);
-  textareaEl.spellcheck = true;
-
-  R.set("spellcheck");
-  Tracker.flush();
-  R.set(null);
-  Tracker.flush();
-  test.equal(textareaEl.spellcheck, false);
-});
-
-Tinytest.add("blaze - render - editable paragraph - spellcheck", function (test) {
-  var R = ReactiveVar(null);
-  var div = document.createElement("DIV");
-  materialize(P({contentEditable: 'true', spellcheck: function () { return R.get(); }}), div);
-  var editableEl = div.querySelector('p');
-  test.equal(editableEl.spellcheck, false);
-  editableEl.spellcheck = true;
-
-  R.set("spellcheck");
-  Tracker.flush();
-  R.set(null);
-  Tracker.flush();
-  test.equal(editableEl.spellcheck, false);
 });
 
 Tinytest.add("blaze - render - textarea", function (test) {
