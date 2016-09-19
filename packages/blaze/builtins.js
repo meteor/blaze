@@ -226,6 +226,11 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
         });
       },
       changedAt: function (id, newItem, oldItem, index) {
+        // added by ramezrafla@zegenie to skip unchanged content let through by the diff-ing engine
+        if (Blaze._deepCompare(newItem,oldItem)) {
+          //if (Meteor.isDevelopment) console.log('Blaze builtin - changedAt: Skipping', newItem);
+          return;
+        }
         Tracker.nonreactive(function () {
           if (eachView.expandedValueDep) {
             eachView.expandedValueDep.changed();
