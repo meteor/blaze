@@ -360,10 +360,8 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
         Tracker.nonreactive(function doMaterialize() {
           // re-render
           var rangesAndNodes = Blaze._materializeDOM(htmljs, [], view);
-          if (! Blaze._isContentEqual(lastHtmljs, htmljs)) {
-            domrange.setMembers(rangesAndNodes);
-            Blaze._fireCallbacks(view, 'rendered');
-          }
+          domrange.setMembers(rangesAndNodes);
+          Blaze._fireCallbacks(view, 'rendered');
         });
       }
       lastHtmljs = htmljs;
@@ -512,21 +510,6 @@ Blaze._destroyView = function (view, _skipNodes) {
 Blaze._destroyNode = function (node) {
   if (node.nodeType === 1)
     Blaze._DOMBackend.Teardown.tearDownElement(node);
-};
-
-// Are the HTMLjs entities `a` and `b` the same?  We could be
-// more elaborate here but the point is to catch the most basic
-// cases.
-Blaze._isContentEqual = function (a, b) {
-  if (a instanceof HTML.Raw) {
-    return (b instanceof HTML.Raw) && (a.value === b.value);
-  } else if (a == null) {
-    return (b == null);
-  } else {
-    return (a === b) &&
-      ((typeof a === 'number') || (typeof a === 'boolean') ||
-       (typeof a === 'string'));
-  }
 };
 
 /**
