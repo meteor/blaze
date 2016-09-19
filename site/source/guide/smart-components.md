@@ -1,7 +1,6 @@
 ---
 title: Writing smart components with Blaze
-order: 4
-description: 
+description:
 ---
 
 Some of your components will need to access state outside of their data context---for instance, data from the server via subscriptions or the contents of client-side store. As discussed in the [data loading](https://guide.meteor.com/data-loading.html#patterns) and [UI](https://guide.meteor.com/ui-ux.html#smart-components) articles, you should be careful and considered in how use such smart components.
