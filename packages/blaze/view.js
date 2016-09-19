@@ -352,6 +352,11 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
       view._isInRender = false;
 
       if (! c.firstRun) {
+        // added by ramezrafla@zegenie to skip affecting DOM for unchanged content
+        if (Blaze._deepCompare(lastHtmljs,htmljs)) {
+          // console.log("Blaze materializeView: Skipping " + htmljs);
+          return;
+        }      
         Tracker.nonreactive(function doMaterialize() {
           // re-render
           var rangesAndNodes = Blaze._materializeDOM(htmljs, [], view);
