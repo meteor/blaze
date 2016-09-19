@@ -1,6 +1,5 @@
 ---
 title: Blaze
-order: 8
 description: Documentation of how to use Blaze, Meteor's reactive rendering engine.
 ---
 

@@ -1,6 +1,5 @@
 ---
 title: Understanding Blaze
-order: 6
 description:
 ---
 
