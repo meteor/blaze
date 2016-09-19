@@ -1,7 +1,6 @@
 ---
 title: Reusable components in Blaze
-order: 3
-description: 
+description:
 ---
 
 In [UI/UX article](https://guide.meteor.com/ui-ux.html#smart-components) we discussed the merits of creating reusable components that interact with their environment in clear and minimal ways.

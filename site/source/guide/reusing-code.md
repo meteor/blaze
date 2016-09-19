@@ -1,7 +1,6 @@
 ---
 title: Reusing code in Blaze
-order: 5
-description: 
+description:
 ---
 
 It's common to want to reuse code between two otherwise unrelated components. There are two main ways to do this in Blaze.
