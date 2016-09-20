@@ -303,7 +303,7 @@ Blaze._makeAttributeHandler = function (elem, name, value) {
     return new BooleanHandler(name, value);
   } else if (elem.tagName === 'IFRAME' && name === 'sandbox' && !value) {
     // Disable sandbox mode (others values will be handled as a normal attr)
-    return new BooleanHandler(name, value);
+    return new BooleanHandler(name, !!value);
   } else if (elem.tagName === 'IMG' && name === 'ismap') {
     return new BooleanHandler(name, value);
   } else if ((elem.tagName === 'INPUT' || elem.tagName === 'SELECT') 
