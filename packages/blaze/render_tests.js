@@ -254,12 +254,19 @@ Tinytest.add("blaze - render - iframe - sandbox", function (test) {
   var iframeEl = div.querySelector('iframe');
   test.equal(iframeEl.sandbox.contains('sandbox'), false);
   iframeEl.sandbox.add('sandbox');
-
   R.set("sandbox");
   Tracker.flush();
   R.set(null);
   Tracker.flush();
   test.equal(iframeEl.sandbox.contains('sandbox'), false);
+  
+  // Check non boolean valid values
+  var sandboxList = iframeEl.sandbox;
+  R.set("allow-forms");
+  test.equal(sandboxList.contains('allow-forms'), true);
+  R.set("allow-forms allow-scripts");
+  var containAll = (sandboxList.contains('allow-forms') && sandboxList.contains('allow-forms'));
+  test.equal(containAll, true);
 });
 
 // test that we correctly update the HTML5 <image> ismap boolean property
