@@ -1316,10 +1316,7 @@ Tinytest.add('spacebars-tests - template_tests - nully attributes', function (te
     0: Template.spacebars_template_test_nully_attributes0,
     1: Template.spacebars_template_test_nully_attributes1,
     2: Template.spacebars_template_test_nully_attributes2,
-    3: Template.spacebars_template_test_nully_attributes3,
-    4: Template.spacebars_template_test_nully_attributes4,
-    5: Template.spacebars_template_test_nully_attributes5,
-    6: Template.spacebars_template_test_nully_attributes6
+    3: Template.spacebars_template_test_nully_attributes3
   };
 
   var run = function (whichTemplate, data, expectTrue) {
