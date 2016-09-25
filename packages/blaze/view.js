@@ -441,9 +441,8 @@ Blaze._HTMLJSExpander = HTML.TransformingVisitor.extend();
 Blaze._HTMLJSExpander.def({
   visitFunction: function (x) {
     if (Blaze.isTemplate(x))
-      return Blaze._HTMLJSExpander.prototype.visit(x.constructView());
+      return Blaze._HTMLJSExpander.prototype.visit.call(this, x.constructView());
 
-    // this will throw an error; other functions are not allowed!
     return HTML.TransformingVisitor.prototype.visitFunction.call(this, x);
   },
   visitObject: function (x) {
