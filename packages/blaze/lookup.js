@@ -20,7 +20,7 @@ var bindIfIsFunction = function (x, target) {
 // If `x` is a function, binds the value of `this` for that function
 // to the current data context.
 var bindDataContext = function (x) {
-  if (typeof x === 'function') {
+  if (! Blaze.isTemplate(x) && typeof x === 'function') {
     return function () {
       var data = Blaze.getData();
       if (data == null)
@@ -68,7 +68,7 @@ Blaze._getTemplateHelper = function (template, name, tmplInstanceFunc) {
 };
 
 var wrapHelper = function (f, templateFunc) {
-  if (typeof f !== "function") {
+  if (Blaze.isTemplate(f) || typeof f !== "function") {
     return f;
   }
 
@@ -203,7 +203,7 @@ Blaze.View.prototype.lookup = function (name, _options) {
     if (! data) {
       return null;
     }
-    if (typeof x !== 'function') {
+    if (Blaze.isTemplate(x) || typeof x !== 'function') {
       if (isCalledAsFunction) {
         throw new Error("Can't call non-function: " + x);
       }

@@ -227,7 +227,7 @@ Tinytest.add("spacebars-tests - old - template_tests - inclusion args 2", functi
 var extendTemplateWithInit = function (template, initFunc) {
   var tmpl = new Template(template.viewName+'-extended', template.renderFunction);
   tmpl.constructView = function (/*args*/) {
-    var view = Template.prototype.constructView.apply(this, arguments);
+    var view = Template.constructView.apply(this, arguments);
     initFunc(view);
     return view;
   };

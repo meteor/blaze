@@ -591,7 +591,7 @@ var contentAsView = function (content) {
 var contentAsFunc = function (content) {
   checkRenderContent(content);
 
-  if (typeof content !== 'function') {
+  if (Blaze.isTemplate(content) || typeof content !== 'function') {
     return function () {
       return content;
     };
@@ -712,7 +712,7 @@ Blaze.toHTMLWithData = function (content, data, parentView) {
 };
 
 Blaze._toText = function (htmljs, parentView, textMode) {
-  if (typeof htmljs === 'function')
+  if (! Blaze.isTemplate(htmljs) && typeof htmljs === 'function')
     throw new Error("Blaze._toText doesn't take a function, just HTMLjs");
 
   if ((parentView != null) && ! (parentView instanceof Blaze.View)) {

@@ -125,7 +125,7 @@ Spacebars.makeRaw = function (value) {
 // may write a template like {{user.fullNameWithPrefix 'Mr.'}}, where the
 // function will be null until data is ready.
 Spacebars.call = function (value/*, args*/) {
-  if (typeof value === 'function') {
+  if (! Blaze.isTemplate(value) && typeof value === 'function') {
     // Evaluate arguments by calling them if they are functions.
     var newArgs = [];
     for (var i = 1; i < arguments.length; i++) {

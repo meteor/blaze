@@ -43,7 +43,7 @@ Blaze._reportException = function (e, msg) {
 };
 
 Blaze._wrapCatchingExceptions = function (f, where) {
-  if (typeof f !== 'function')
+  if (Blaze.isTemplate(f) || typeof f !== 'function')
     return f;
 
   return function () {

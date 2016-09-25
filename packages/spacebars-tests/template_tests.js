@@ -14,7 +14,7 @@ var nodesToArray = function (array) {
 var extendTemplateWithInit = function (template, initFunc) {
   var tmpl = new Template(template.viewName+'-extended', template.renderFunction);
   tmpl.constructView = function (/*args*/) {
-    var view = Template.prototype.constructView.apply(this, arguments);
+    var view = Template.constructView.apply(this, arguments);
     initFunc(view);
     return view;
   };
