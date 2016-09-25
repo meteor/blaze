@@ -440,12 +440,19 @@ Blaze._expandView = function (view, parentView) {
 Blaze._HTMLJSExpander = HTML.TransformingVisitor.extend();
 Blaze._HTMLJSExpander.def({
   visitFunction: function (x) {
+    // We do not really support functions in any special way, but template classes
+    // are also functions, so we have a special case here. Ideally, TransformingVisitor
+    // would check if a value is a template class and dispatch it to visitObject, as
+    // it was done before we changed templates to template classes, but HTMLJS package
+    // does not have access to Blaze.isTemplate, so we are doing it here.
     if (Blaze.isTemplate(x))
       return Blaze._HTMLJSExpander.prototype.visit.call(this, x.constructView());
 
     return HTML.TransformingVisitor.prototype.visitFunction.call(this, x);
   },
   visitObject: function (x) {
+    // Now that templates are classes, Blaze.isTemplate(x) cannot really be true,
+    // but we are keeping it for consistency with old logic.
     if (Blaze.isTemplate(x))
       x = x.constructView();
     if (x instanceof Blaze.View)
