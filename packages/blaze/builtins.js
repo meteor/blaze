@@ -316,7 +316,7 @@ Blaze._TemplateWith = function (arg, contentFunc) {
     // Since we are generating the Blaze._TemplateWith view for the
     // user, set the flag on the child view.  If `content` is a template,
     // construct the View so that we can set the flag.
-    if (content instanceof Blaze.Template) {
+    if (Blaze.isTemplate(content)) {
       content = content.constructView();
     }
     if (content instanceof Blaze.View) {

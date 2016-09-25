@@ -75,7 +75,7 @@ var materializeDOMInner = function (htmljs, intoArray, parentView, workStack) {
       }
       return;
     } else {
-      if (htmljs instanceof Blaze.Template) {
+      if (Blaze.isTemplate(htmljs)) {
         htmljs = htmljs.constructView();
         // fall through to Blaze.View case below
       }

@@ -1,9 +1,9 @@
 // [new] Blaze.Template([viewName], renderFunction)
 //
-// `Blaze.Template` is the class of templates, like `Template.foo` in
-// Meteor, which is `instanceof Template`.
+// `Blaze.Template` is the base class of templates. `Template.Foo` in
+// Meteor is a subclass of `Blaze.Template`.
 //
-// `viewKind` is a string that looks like "Template.foo" for templates
+// `viewName` is a string that looks like "Template.Foo" for templates
 // defined by the compiler.
 
 /**
@@ -13,10 +13,75 @@
  * @param {String} [viewName] Optional.  A name for Views constructed by this Template.  See [`view.name`](#view_name).
  * @param {Function} renderFunction A function that returns [*renderable content*](#renderable_content).  This function is used as the `renderFunction` for Views constructed by this Template.
  */
-Blaze.Template = function (viewName, renderFunction) {
-  if (! (this instanceof Blaze.Template))
-    // called without `new`
-    return new Blaze.Template(viewName, renderFunction);
+class Template {
+  constructor(view) {
+    // For backwards-compatibility to allow a new template class by doing "new Template(viewName, renderFunction)".
+    if ((arguments.length === 2 && typeof arguments[0] === 'string' && typeof arguments[1] === 'function')
+        || (arguments.length === 1 && typeof view === 'function')) {
+      return this.constructor.constructTemplate.apply(this.constructor, arguments);
+    }
+
+    this._constructTemplateInstance(view);
+  }
+
+  // We use another method so that it is easier to monkey patch it.
+  _constructTemplateInstance(view) {
+    if (!(this instanceof Blaze.Template))
+      // called without `new`
+      throw new Error("Trying to create a template instance without 'new'.");
+
+    if (!(view instanceof Blaze.View))
+      throw new Error("View required.");
+
+    view._templateInstance = this;
+
+    /**
+     * @name view
+     * @memberOf Blaze.Template
+     * @instance
+     * @summary The [View](#blaze_view) object for this invocation of the template.
+     * @locus Client
+     * @type {Blaze.View}
+     */
+    this.view = view;
+    this.data = null;
+
+    /**
+     * @name firstNode
+     * @memberOf Blaze.Template
+     * @instance
+     * @summary The first top-level DOM node in this template instance.
+     * @locus Client
+     * @type {DOMNode}
+     */
+    this.firstNode = null;
+
+    /**
+     * @name lastNode
+     * @memberOf Blaze.Template
+     * @instance
+     * @summary The last top-level DOM node in this template instance.
+     * @locus Client
+     * @type {DOMNode}
+     */
+    this.lastNode = null;
+
+    // This dependency is used to identify state transitions in
+    // _subscriptionHandles which could cause the result of
+    // Template#subscriptionsReady to change. Basically this is triggered
+    // whenever a new subscription handle is added or when a subscription handle
+    // is removed and they are not ready.
+    this._allSubsReadyDep = new Tracker.Dependency();
+    this._allSubsReady = false;
+
+    this._subscriptionHandles = {};
+  }
+}
+
+Blaze.Template = Template;
+
+Blaze.Template.constructTemplate = function (viewName, renderFunction) {
+  const parentTemplateClass = this;
 
   if (typeof viewName === 'function') {
     // omitted "viewName" argument
@@ -28,21 +93,31 @@ Blaze.Template = function (viewName, renderFunction) {
   if (typeof renderFunction !== 'function')
     throw new Error("renderFunction must be a function");
 
-  this.viewName = viewName;
-  this.renderFunction = renderFunction;
+  const templateClass = class extends parentTemplateClass {};
 
-  this.__helpers = new HelperMap;
-  this.__eventMaps = [];
+  if (Object.defineProperty) {
+    Object.defineProperty(templateClass, 'name', {
+      value: viewName,
+      configurable: true}
+    );
+  }
 
-  this._callbacks = {
+  templateClass.viewName = viewName;
+  templateClass.renderFunction = renderFunction;
+
+  templateClass.__helpers = new HelperMap;
+  templateClass.__eventMaps = [];
+
+  templateClass._callbacks = {
     created: [],
     rendered: [],
     destroyed: []
   };
-};
-var Template = Blaze.Template;
 
-var HelperMap = function () {};
+  return templateClass;
+};
+
+const HelperMap = function () {};
 HelperMap.prototype.get = function (name) {
   return this[' '+name];
 };
@@ -54,113 +129,110 @@ HelperMap.prototype.has = function (name) {
 };
 
 /**
- * @summary Returns true if `value` is a template object like `Template.myTemplate`.
+ * @summary Returns true if `value` is a template class like `Template.myTemplate`.
  * @locus Client
  * @param {Any} value The value to test.
  */
 Blaze.isTemplate = function (t) {
-  return (t instanceof Blaze.Template);
+  return (t && typeof t === 'function' && t.prototype instanceof Blaze.Template);
 };
 
 /**
  * @name  onCreated
- * @instance
- * @memberOf Template
+ * @memberOf Blaze.Template
  * @summary Register a function to be called when an instance of this template is created.
  * @param {Function} callback A function to be added as a callback.
  * @locus Client
  * @importFromPackage templating
  */
-Template.prototype.onCreated = function (cb) {
+Template.onCreated = function (cb) {
   this._callbacks.created.push(cb);
 };
 
 /**
  * @name  onRendered
- * @instance
- * @memberOf Template
+ * @memberOf Blaze.Template
  * @summary Register a function to be called when an instance of this template is inserted into the DOM.
  * @param {Function} callback A function to be added as a callback.
  * @locus Client
  * @importFromPackage templating
  */
-Template.prototype.onRendered = function (cb) {
+Template.onRendered = function (cb) {
   this._callbacks.rendered.push(cb);
 };
 
 /**
  * @name  onDestroyed
- * @instance
- * @memberOf Template
+ * @memberOf Blaze.Template
  * @summary Register a function to be called when an instance of this template is removed from the DOM and destroyed.
  * @param {Function} callback A function to be added as a callback.
  * @locus Client
  * @importFromPackage templating
  */
-Template.prototype.onDestroyed = function (cb) {
+Template.onDestroyed = function (cb) {
   this._callbacks.destroyed.push(cb);
 };
 
-Template.prototype._getCallbacks = function (which) {
-  var self = this;
-  var callbacks = self[which] ? [self[which]] : [];
+Template._getCallbacks = function (which) {
+  const templateClass = this;
+  let callbacks = templateClass[which] ? [templateClass[which]] : [];
   // Fire all callbacks added with the new API (Template.onRendered())
   // as well as the old-style callback (e.g. Template.rendered) for
   // backwards-compatibility.
-  callbacks = callbacks.concat(self._callbacks[which]);
+  callbacks = callbacks.concat(templateClass._callbacks[which]);
   return callbacks;
 };
 
-var fireCallbacks = function (callbacks, template) {
-  Template._withTemplateInstanceFunc(
+function fireCallbacks(callbacks, template) {
+  Blaze.Template._withTemplateInstanceFunc(
     function () { return template; },
     function () {
-      for (var i = 0, N = callbacks.length; i < N; i++) {
+      for (let i = 0, N = callbacks.length; i < N; i++) {
         callbacks[i].call(template);
       }
     });
-};
+}
 
-Template.prototype.constructView = function (contentFunc, elseFunc) {
-  var self = this;
-  var view = Blaze.View(self.viewName, self.renderFunction);
-  view.template = self;
+Blaze.Template.constructView = function (contentFunc, elseFunc) {
+  const templateClass = this;
+  const view = Blaze.View(templateClass.viewName, templateClass.renderFunction);
+  view.template = templateClass;
 
   view.templateContentBlock = (
-    contentFunc ? new Template('(contentBlock)', contentFunc) : null);
+    contentFunc ? templateClass.constructTemplate('(contentBlock)', contentFunc) : null);
   view.templateElseBlock = (
-    elseFunc ? new Template('(elseBlock)', elseFunc) : null);
+    elseFunc ? templateClass.constructTemplate('(elseBlock)', elseFunc) : null);
 
-  if (self.__eventMaps || typeof self.events === 'object') {
+  if (templateClass.__eventMaps || typeof templateClass.events === 'object') {
     view._onViewRendered(function () {
       if (view.renderCount !== 1)
         return;
 
-      if (! self.__eventMaps.length && typeof self.events === "object") {
+      if (! templateClass.__eventMaps.length && typeof templateClass.events === "object") {
         // Provide limited back-compat support for `.events = {...}`
         // syntax.  Pass `template.events` to the original `.events(...)`
         // function.  This code must run only once per template, in
         // order to not bind the handlers more than once, which is
         // ensured by the fact that we only do this when `__eventMaps`
         // is falsy, and we cause it to be set now.
-        Template.prototype.events.call(self, self.events);
+        templateClass.prototype.events.call(templateClass, templateClass.events);
       }
 
-      _.each(self.__eventMaps, function (m) {
+      _.each(templateClass.__eventMaps, function (m) {
         Blaze._addEventMap(view, m, view);
       });
     });
   }
 
-  view._templateInstance = new Blaze.TemplateInstance(view);
+  view._templateInstance = new templateClass(view);
   view.templateInstance = function () {
-    // Update data, firstNode, and lastNode, and return the TemplateInstance
+    // Update data, firstNode, and lastNode, and return the Template instance
     // object.
-    var inst = view._templateInstance;
+    const inst = view._templateInstance;
 
     /**
      * @instance
-     * @memberOf Blaze.TemplateInstance
+     * @memberOf Blaze.Template
      * @name  data
      * @summary The data context of this instance's latest invocation.
      * @locus Client
@@ -182,7 +254,7 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
   /**
    * @name  created
    * @instance
-   * @memberOf Template
+   * @memberOf Blaze.Template
    * @summary Provide a callback when an instance of a template is created.
    * @locus Client
    * @deprecated in 1.1
@@ -190,7 +262,7 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
   // To avoid situations when new callbacks are added in between view
   // instantiation and event being fired, decide on all callbacks to fire
   // immediately and then fire them on the event.
-  var createdCallbacks = self._getCallbacks('created');
+  const createdCallbacks = templateClass._getCallbacks('created');
   view.onViewCreated(function () {
     fireCallbacks(createdCallbacks, view.templateInstance());
   });
@@ -198,12 +270,12 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
   /**
    * @name  rendered
    * @instance
-   * @memberOf Template
+   * @memberOf Blaze.Template
    * @summary Provide a callback when an instance of a template is rendered.
    * @locus Client
    * @deprecated in 1.1
    */
-  var renderedCallbacks = self._getCallbacks('rendered');
+  const renderedCallbacks = templateClass._getCallbacks('rendered');
   view.onViewReady(function () {
     fireCallbacks(renderedCallbacks, view.templateInstance());
   });
@@ -211,12 +283,12 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
   /**
    * @name  destroyed
    * @instance
-   * @memberOf Template
+   * @memberOf Blaze.Template
    * @summary Provide a callback when an instance of a template is destroyed.
    * @locus Client
    * @deprecated in 1.1
    */
-  var destroyedCallbacks = self._getCallbacks('destroyed');
+  const destroyedCallbacks = templateClass._getCallbacks('destroyed');
   view.onViewDestroyed(function () {
     fireCallbacks(destroyedCallbacks, view.templateInstance());
   });
@@ -225,71 +297,13 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
 };
 
 /**
- * @class
- * @summary The class for template instances
- * @param {Blaze.View} view
- * @instanceName template
- */
-Blaze.TemplateInstance = function (view) {
-  if (! (this instanceof Blaze.TemplateInstance))
-    // called without `new`
-    return new Blaze.TemplateInstance(view);
-
-  if (! (view instanceof Blaze.View))
-    throw new Error("View required");
-
-  view._templateInstance = this;
-
-  /**
-   * @name view
-   * @memberOf Blaze.TemplateInstance
-   * @instance
-   * @summary The [View](#blaze_view) object for this invocation of the template.
-   * @locus Client
-   * @type {Blaze.View}
-   */
-  this.view = view;
-  this.data = null;
-
-  /**
-   * @name firstNode
-   * @memberOf Blaze.TemplateInstance
-   * @instance
-   * @summary The first top-level DOM node in this template instance.
-   * @locus Client
-   * @type {DOMNode}
-   */
-  this.firstNode = null;
-
-  /**
-   * @name lastNode
-   * @memberOf Blaze.TemplateInstance
-   * @instance
-   * @summary The last top-level DOM node in this template instance.
-   * @locus Client
-   * @type {DOMNode}
-   */
-  this.lastNode = null;
-
-  // This dependency is used to identify state transitions in
-  // _subscriptionHandles which could cause the result of
-  // TemplateInstance#subscriptionsReady to change. Basically this is triggered
-  // whenever a new subscription handle is added or when a subscription handle
-  // is removed and they are not ready.
-  this._allSubsReadyDep = new Tracker.Dependency();
-  this._allSubsReady = false;
-
-  this._subscriptionHandles = {};
-};
-
-/**
  * @summary Find all elements matching `selector` in this template instance, and return them as a JQuery object.
  * @locus Client
  * @param {String} selector The CSS selector to match, scoped to the template contents.
  * @returns {DOMNode[]}
  */
-Blaze.TemplateInstance.prototype.$ = function (selector) {
-  var view = this.view;
+Blaze.Template.prototype.$ = function (selector) {
+  const view = this.view;
   if (! view._domrange)
     throw new Error("Can't use $ on template instance with no DOM");
   return view._domrange.$(selector);
@@ -301,7 +315,7 @@ Blaze.TemplateInstance.prototype.$ = function (selector) {
  * @param {String} selector The CSS selector to match, scoped to the template contents.
  * @returns {DOMElement[]}
  */
-Blaze.TemplateInstance.prototype.findAll = function (selector) {
+Blaze.Template.prototype.findAll = function (selector) {
   return Array.prototype.slice.call(this.$(selector));
 };
 
@@ -311,8 +325,8 @@ Blaze.TemplateInstance.prototype.findAll = function (selector) {
  * @param {String} selector The CSS selector to match, scoped to the template contents.
  * @returns {DOMElement}
  */
-Blaze.TemplateInstance.prototype.find = function (selector) {
-  var result = this.$(selector);
+Blaze.Template.prototype.find = function (selector) {
+  const result = this.$(selector);
   return result[0] || null;
 };
 
@@ -321,7 +335,7 @@ Blaze.TemplateInstance.prototype.find = function (selector) {
  * @locus Client
  * @param {Function} runFunc The function to run. It receives one argument: a Tracker.Computation object.
  */
-Blaze.TemplateInstance.prototype.autorun = function (f) {
+Blaze.Template.prototype.autorun = function (f) {
   return this.view.autorun(f);
 };
 
@@ -344,19 +358,17 @@ Blaze.TemplateInstance.prototype.autorun = function (f) {
  * @param {DDP.Connection} [options.connection] The connection on which to make the
  * subscription.
  */
-Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
-  var self = this;
-
-  var subHandles = self._subscriptionHandles;
-  var args = _.toArray(arguments);
+Blaze.Template.prototype.subscribe = function (/* arguments */) {
+  const subHandles = this._subscriptionHandles;
+  const args = _.toArray(arguments);
 
   // Duplicate logic from Meteor.subscribe
-  var options = {};
+  let options = {};
   if (args.length) {
-    var lastParam = _.last(args);
+    const lastParam = _.last(args);
 
     // Match pattern to check if the last arg is an options argument
-    var lastParamOptionsPattern = {
+    const lastParamOptionsPattern = {
       onReady: Match.Optional(Function),
       // XXX COMPAT WITH 1.0.3.1 onError used to exist, but now we use
       // onStop with an error callback instead.
@@ -372,9 +384,9 @@ Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
     }
   }
 
-  var subHandle;
-  var oldStopped = options.onStop;
-  options.onStop = function (error) {
+  let subHandle;
+  const oldStopped = options.onStop;
+  options.onStop = (error) => {
     // When the subscription is stopped, remove it from the set of tracked
     // subscriptions to avoid this list growing without bound
     delete subHandles[subHandle.subscriptionId];
@@ -382,8 +394,8 @@ Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
     // Removing a subscription can only change the result of subscriptionsReady
     // if we are not ready (that subscription could be the one blocking us being
     // ready).
-    if (! self._allSubsReady) {
-      self._allSubsReadyDep.changed();
+    if (! this._allSubsReady) {
+      this._allSubsReadyDep.changed();
     }
 
     if (oldStopped) {
@@ -391,8 +403,8 @@ Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
     }
   };
 
-  var connection = options.connection;
-  var callbacks = _.pick(options, ["onReady", "onError", "onStop"]);
+  const connection = options.connection;
+  const callbacks = _.pick(options, ["onReady", "onError", "onStop"]);
 
   // The callbacks are passed as the last item in the arguments array passed to
   // View#subscribe
@@ -400,7 +412,7 @@ Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
 
   // View#subscribe takes the connection as one of the options in the last
   // argument
-  subHandle = self.view.subscribe.call(self.view, args, {
+  subHandle = this.view.subscribe.call(this.view, args, {
     connection: connection
   });
 
@@ -410,8 +422,8 @@ Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
     // Adding a new subscription will always cause us to transition from ready
     // to not ready, but if we are already not ready then this can't make us
     // ready.
-    if (self._allSubsReady) {
-      self._allSubsReadyDep.changed();
+    if (this._allSubsReady) {
+      this._allSubsReadyDep.changed();
     }
   }
 
@@ -420,11 +432,11 @@ Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
 
 /**
  * @summary A reactive function that returns true when all of the subscriptions
- * called with [this.subscribe](#TemplateInstance-subscribe) are ready.
+ * called with [this.subscribe](#Template-subscribe) are ready.
  * @return {Boolean} True if all subscriptions on this template instance are
  * ready.
  */
-Blaze.TemplateInstance.prototype.subscriptionsReady = function () {
+Blaze.Template.prototype.subscriptionsReady = function () {
   this._allSubsReadyDep.depend();
 
   this._allSubsReady = _.all(this._subscriptionHandles, function (handle) {
@@ -440,13 +452,15 @@ Blaze.TemplateInstance.prototype.subscriptionsReady = function () {
  * @param {Object} helpers Dictionary of helper functions by name.
  * @importFromPackage templating
  */
-Template.prototype.helpers = function (dict) {
+Blaze.Template.helpers = function (dict) {
+  const templateClass = this;
+
   if (! _.isObject(dict)) {
     throw new Error("Helpers dictionary has to be an object");
   }
 
-  for (var k in dict)
-    this.__helpers.set(k, dict[k]);
+  for (let k in dict)
+    templateClass.__helpers.set(k, dict[k]);
 };
 
 // Kind of like Blaze.currentView but for the template instance.
@@ -454,17 +468,18 @@ Template.prototype.helpers = function (dict) {
 // are implicitly dependent on the current template instance's `data` property,
 // which would make them dependenct on the data context of the template
 // inclusion.
-Template._currentTemplateInstanceFunc = null;
+Blaze.Template._currentTemplateInstanceFunc = null;
 
-Template._withTemplateInstanceFunc = function (templateInstanceFunc, func) {
+Blaze.Template._withTemplateInstanceFunc = function (templateInstanceFunc, func) {
   if (typeof func !== 'function')
     throw new Error("Expected function, got: " + func);
-  var oldTmplInstanceFunc = Template._currentTemplateInstanceFunc;
+
+  const oldTmplInstanceFunc = Template._currentTemplateInstanceFunc;
   try {
-    Template._currentTemplateInstanceFunc = templateInstanceFunc;
+    Blaze.Template._currentTemplateInstanceFunc = templateInstanceFunc;
     return func();
   } finally {
-    Template._currentTemplateInstanceFunc = oldTmplInstanceFunc;
+    Blaze.Template._currentTemplateInstanceFunc = oldTmplInstanceFunc;
   }
 };
 
@@ -474,32 +489,33 @@ Template._withTemplateInstanceFunc = function (templateInstanceFunc, func) {
  * @param {EventMap} eventMap Event handlers to associate with this template.
  * @importFromPackage templating
  */
-Template.prototype.events = function (eventMap) {
+Blaze.Template.events = function (eventMap) {
+  const templateClass = this;
+
   if (! _.isObject(eventMap)) {
     throw new Error("Event map has to be an object");
   }
 
-  var template = this;
-  var eventMap2 = {};
-  for (var k in eventMap) {
+  const eventMap2 = {};
+  for (let k in eventMap) {
     eventMap2[k] = (function (k, v) {
       return function (event/*, ...*/) {
-        var view = this; // passed by EventAugmenter
-        var data = Blaze.getData(event.currentTarget);
+        let view = this; // passed by EventAugmenter
+        let data = Blaze.getData(event.currentTarget);
         if (data == null)
           data = {};
-        var args = Array.prototype.slice.call(arguments);
-        var tmplInstanceFunc = Blaze._bind(view.templateInstance, view);
+        let args = Array.prototype.slice.call(arguments);
+        let tmplInstanceFunc = Blaze._bind(view.templateInstance, view);
         args.splice(1, 0, tmplInstanceFunc());
 
-        return Template._withTemplateInstanceFunc(tmplInstanceFunc, function () {
+        return Blaze.Template._withTemplateInstanceFunc(tmplInstanceFunc, function () {
           return v.apply(data, args);
         });
       };
     })(k, eventMap[k]);
   }
 
-  template.__eventMaps.push(eventMap2);
+  templateClass.__eventMaps.push(eventMap2);
 };
 
 /**
@@ -508,12 +524,12 @@ Template.prototype.events = function (eventMap) {
  * @memberOf Template
  * @summary The [template instance](#template_inst) corresponding to the current template helper, event handler, callback, or autorun.  If there isn't one, `null`.
  * @locus Client
- * @returns {Blaze.TemplateInstance}
+ * @returns {Blaze.Template}
  * @importFromPackage templating
  */
-Template.instance = function () {
-  return Template._currentTemplateInstanceFunc
-    && Template._currentTemplateInstanceFunc();
+Blaze.Template.instance = function () {
+  return Blaze.Template._currentTemplateInstanceFunc
+    && Blaze.Template._currentTemplateInstanceFunc();
 };
 
 // Note: Template.currentData() is documented to take zero arguments,
@@ -534,7 +550,7 @@ Template.instance = function () {
  * @function
  * @importFromPackage templating
  */
-Template.currentData = Blaze.getData;
+Blaze.Template.currentData = Blaze.getData;
 
 /**
  * @summary Accesses other data contexts that enclose the current data context.
@@ -543,7 +559,7 @@ Template.currentData = Blaze.getData;
  * @param {Integer} [numLevels] The number of levels beyond the current data context to look. Defaults to 1.
  * @importFromPackage templating
  */
-Template.parentData = Blaze._parentData;
+Blaze.Template.parentData = Blaze._parentData;
 
 /**
  * @summary Defines a [helper function](#template_helpers) which can be used from all templates.
@@ -553,7 +569,7 @@ Template.parentData = Blaze._parentData;
  * @param {Function} function The helper function itself.
  * @importFromPackage templating
  */
-Template.registerHelper = Blaze.registerHelper;
+Blaze.Template.registerHelper = Blaze.registerHelper;
 
 /**
  * @summary Removes a global [helper function](#template_helpers).
@@ -562,4 +578,4 @@ Template.registerHelper = Blaze.registerHelper;
  * @param {String} name The name of the helper function you are defining.
  * @importFromPackage templating
  */
-Template.deregisterHelper = Blaze.deregisterHelper;
+Blaze.Template.deregisterHelper = Blaze.deregisterHelper;

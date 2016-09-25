@@ -440,7 +440,7 @@ Blaze._expandView = function (view, parentView) {
 Blaze._HTMLJSExpander = HTML.TransformingVisitor.extend();
 Blaze._HTMLJSExpander.def({
   visitObject: function (x) {
-    if (x instanceof Blaze.Template)
+    if (Blaze.isTemplate(x))
       x = x.constructView();
     if (x instanceof Blaze.View)
       return Blaze._expandView(x, this.parentView);
@@ -549,7 +549,7 @@ var checkRenderContent = function (content) {
     throw new Error("Can't render undefined");
 
   if ((content instanceof Blaze.View) ||
-      (content instanceof Blaze.Template) ||
+      (Blaze.isTemplate(content)) ||
       (typeof content === 'function'))
     return;
 
@@ -570,7 +570,7 @@ var checkRenderContent = function (content) {
 var contentAsView = function (content) {
   checkRenderContent(content);
 
-  if (content instanceof Blaze.Template) {
+  if (Blaze.isTemplate(content)) {
     return content.constructView();
   } else if (content instanceof Blaze.View) {
     return content;

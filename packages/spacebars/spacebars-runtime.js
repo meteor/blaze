@@ -6,13 +6,13 @@ Spacebars.include = function (templateOrFunction, contentFunc, elseFunc) {
   if (! templateOrFunction)
     return null;
 
-  if (typeof templateOrFunction !== 'function') {
-    var template = templateOrFunction;
-    if (! Blaze.isTemplate(template))
-      throw new Error("Expected template or null, found: " + template);
+  if (Blaze.isTemplate(templateOrFunction)) {
     var view = templateOrFunction.constructView(contentFunc, elseFunc);
     view.__startsNewLexicalScope = true;
     return view;
+  }
+  else if (typeof templateOrFunction !== 'function') {
+    throw new Error("Expected template or null, found: " + templateOrFunction);
   }
 
   var templateVar = Blaze.ReactiveVar(null, tripleEquals);

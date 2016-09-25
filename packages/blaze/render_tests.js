@@ -709,7 +709,7 @@ Tinytest.add("blaze - render - templates and views", function (test) {
     var counter = 1;
     var buf = [];
 
-    var myTemplate = Blaze.Template(
+    var myTemplate = new Blaze.Template(
       'myTemplate',
       function () {
         return [String(this.number),
@@ -717,7 +717,7 @@ Tinytest.add("blaze - render - templates and views", function (test) {
       });
 
     myTemplate.constructView = function (number) {
-      var view = Template.prototype.constructView.call(this);
+      var view = Template.constructView.call(this);
       view.number = number;
       return view;
     };

@@ -49,7 +49,7 @@ Blaze._getTemplateHelper = function (template, name, tmplInstanceFunc) {
   }
 
   // old-style helper
-  if (name in template) {
+  if (template.hasOwnProperty(name) && template.propertyIsEnumerable(name)) {
     // Only warn once per helper
     if (! isKnownOldStyleHelper) {
       template.__helpers.set(name, Blaze._OLDSTYLE_HELPER);
@@ -108,7 +108,7 @@ Blaze._lexicalBindingLookup = function (view, name) {
 // templateInstance argument is provided to be available for possible
 // alternative implementations of this function by 3rd party packages.
 Blaze._getTemplate = function (name, templateInstance) {
-  if ((name in Blaze.Template) && (Blaze.Template[name] instanceof Blaze.Template)) {
+  if ((name in Blaze.Template) && (Blaze.isTemplate(Blaze.Template[name]))) {
     return Blaze.Template[name];
   }
   return null;
