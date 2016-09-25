@@ -96,6 +96,8 @@ Blaze.Template.constructTemplate = function (viewName, renderFunction) {
   const templateClass = class extends parentTemplateClass {};
 
   if (Object.defineProperty) {
+    // To be nicer for debugging than having "templateClass" everywhere.
+    // TODO: Is there a way to provide class name dynamically?
     Object.defineProperty(templateClass, 'name', {
       value: viewName,
       configurable: true}
