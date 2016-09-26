@@ -13,74 +13,89 @@
  * @param {String} [viewName] Optional.  A name for Views constructed by this Template.  See [`view.name`](#view_name).
  * @param {Function} renderFunction A function that returns [*renderable content*](#renderable_content).  This function is used as the `renderFunction` for Views constructed by this Template.
  */
-class Template {
-  constructor(view) {
-    // For backwards-compatibility to allow a new template class by doing "new Template(viewName, renderFunction)".
-    if ((arguments.length === 2 && typeof arguments[0] === 'string' && typeof arguments[1] === 'function')
-        || (arguments.length === 1 && typeof view === 'function')) {
-      return this.constructor.constructTemplate.apply(this.constructor, arguments);
+// We are not using ES2016 class here because it does not allow instantiating the class
+// without "new", which we want to support for backwards compatibility.
+function Template(view) {
+  // For backwards-compatibility to allow a new template class by doing "new Template(viewName, renderFunction)".
+  if ((arguments.length === 2 && typeof arguments[0] === 'string' && typeof arguments[1] === 'function')
+      || (arguments.length === 1 && typeof view === 'function')) {
+    // If called as "new Template(viewName, renderFunction)".
+    if (this instanceof Blaze.Template) {
+      return this.constructor.newRenderFunction.apply(this.constructor, arguments);
     }
-
-    this._constructTemplateInstance(view);
+    // If called as "Template(viewName, renderFunction)", we assume the base template class.
+    // This is for backwards compatibility anyway. One should be using "newRenderFunction" anyway.
+    else {
+      return Blaze.Template.newRenderFunction.apply(Blaze.Template, arguments);
+    }
   }
 
-  // We use another method so that it is easier to monkey patch it.
-  _constructTemplateInstance(view) {
-    if (!(this instanceof Blaze.Template))
-      // called without `new`
-      throw new Error("Trying to create a template instance without 'new'.");
-
-    if (!(view instanceof Blaze.View))
-      throw new Error("View required.");
-
-    view._templateInstance = this;
-
-    /**
-     * @name view
-     * @memberOf Blaze.Template
-     * @instance
-     * @summary The [View](#blaze_view) object for this invocation of the template.
-     * @locus Client
-     * @type {Blaze.View}
-     */
-    this.view = view;
-    this.data = null;
-
-    /**
-     * @name firstNode
-     * @memberOf Blaze.Template
-     * @instance
-     * @summary The first top-level DOM node in this template instance.
-     * @locus Client
-     * @type {DOMNode}
-     */
-    this.firstNode = null;
-
-    /**
-     * @name lastNode
-     * @memberOf Blaze.Template
-     * @instance
-     * @summary The last top-level DOM node in this template instance.
-     * @locus Client
-     * @type {DOMNode}
-     */
-    this.lastNode = null;
-
-    // This dependency is used to identify state transitions in
-    // _subscriptionHandles which could cause the result of
-    // Template#subscriptionsReady to change. Basically this is triggered
-    // whenever a new subscription handle is added or when a subscription handle
-    // is removed and they are not ready.
-    this._allSubsReadyDep = new Tracker.Dependency();
-    this._allSubsReady = false;
-
-    this._subscriptionHandles = {};
+  if (this instanceof Blaze.Template) {
+    this._constructTemplate(view);
+  }
+  else {
+    // If called as "Template(view)", we assume the base template class.
+    // This is for backwards compatibility anyway. One should be using "new Template(view)" anyway.
+    return new Blaze.Template(view);
   }
 }
 
 Blaze.Template = Template;
 
-Blaze.Template.constructTemplate = function (viewName, renderFunction) {
+// We use another method to really construct the instance so that it is easier to monkey patch it.
+Blaze.Template.prototype._constructTemplate = function (view) {
+  if (!(this instanceof Blaze.Template))
+    // called without `new`
+    throw new Error("Trying to create a template instance without 'new'.");
+
+  if (!(view instanceof Blaze.View))
+    throw new Error("View required.");
+
+  view._templateInstance = this;
+
+  /**
+   * @name view
+   * @memberOf Blaze.Template
+   * @instance
+   * @summary The [View](#blaze_view) object for this invocation of the template.
+   * @locus Client
+   * @type {Blaze.View}
+   */
+  this.view = view;
+  this.data = null;
+
+  /**
+   * @name firstNode
+   * @memberOf Blaze.Template
+   * @instance
+   * @summary The first top-level DOM node in this template instance.
+   * @locus Client
+   * @type {DOMNode}
+   */
+  this.firstNode = null;
+
+  /**
+   * @name lastNode
+   * @memberOf Blaze.Template
+   * @instance
+   * @summary The last top-level DOM node in this template instance.
+   * @locus Client
+   * @type {DOMNode}
+   */
+  this.lastNode = null;
+
+  // This dependency is used to identify state transitions in
+  // _subscriptionHandles which could cause the result of
+  // Template#subscriptionsReady to change. Basically this is triggered
+  // whenever a new subscription handle is added or when a subscription handle
+  // is removed and they are not ready.
+  this._allSubsReadyDep = new Tracker.Dependency();
+  this._allSubsReady = false;
+
+  this._subscriptionHandles = {};
+};
+
+Blaze.Template.newRenderFunction = function (viewName, renderFunction) {
   const parentTemplateClass = this;
 
   if (typeof viewName === 'function') {
@@ -201,9 +216,9 @@ Blaze.Template.constructView = function (contentFunc, elseFunc) {
   view.template = templateClass;
 
   view.templateContentBlock = (
-    contentFunc ? templateClass.constructTemplate('(contentBlock)', contentFunc) : null);
+    contentFunc ? templateClass.newRenderFunction('(contentBlock)', contentFunc) : null);
   view.templateElseBlock = (
-    elseFunc ? templateClass.constructTemplate('(elseBlock)', elseFunc) : null);
+    elseFunc ? templateClass.newRenderFunction('(elseBlock)', elseFunc) : null);
 
   if (templateClass.__eventMaps || typeof templateClass.events === 'object') {
     view._onViewRendered(function () {

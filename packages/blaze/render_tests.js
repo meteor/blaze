@@ -709,7 +709,7 @@ Tinytest.add("blaze - render - templates and views", function (test) {
     var counter = 1;
     var buf = [];
 
-    var myTemplate = new Blaze.Template(
+    var myTemplate = Blaze.Template(
       'myTemplate',
       function () {
         return [String(this.number),
