@@ -1,7 +1,6 @@
 ---
 title: Spacebars templates
-order: 2
-description: 
+description:
 ---
 
 Spacebars is a handlebars-like templating language, built on the concept of rendering a reactively changing *data context*. Spacebars templates look like simple HTML with special "mustache" tags delimited by curly braces: `{% raw %}{{ }}{% endraw %}`.
@@ -164,7 +163,7 @@ A block helper, called with `{% raw %}{{# }}{% endraw %}` is a helper that takes
   {{#myIf condition=true}}
     <h1>I'll be rendered!</h1>
   {{else}}
-    <h1>I won't be rendered</h1>    
+    <h1>I won't be rendered</h1>
   {{/myIf}}
 </template>
 ```
