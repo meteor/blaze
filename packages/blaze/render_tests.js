@@ -261,11 +261,12 @@ Tinytest.add("blaze - render - iframe - sandbox", function (test) {
   test.equal(iframeEl.sandbox.contains('sandbox'), false);
   
   // Check non boolean valid values
-  var sandboxList = iframeEl.sandbox;
   R.set("allow-forms");
-  test.equal(sandboxList.contains('allow-forms'), true);
+  Tracker.flush();
+  test.equal(iframeEl.sandbox.contains('allow-forms'), true);
   R.set("allow-forms allow-scripts");
-  var containAll = (sandboxList.contains('allow-forms') && sandboxList.contains('allow-forms'));
+  Tracker.flush();
+  var containAll = (iframeEl.sandbox.contains('allow-forms') && iframeEl.sandbox.contains('allow-scripts'));
   test.equal(containAll, true);
 });
 
