@@ -9,7 +9,7 @@ Package.describe({
 Package.onUse(function (api) {
   api.versionsFrom('METEOR@1.4.1');
 
-  api.use('underscore'); // only the subset in packages/blaze/microscore.js
+  api.use('underscore');
 
   // XXX would like to do the following only when the first html file
   // is encountered
