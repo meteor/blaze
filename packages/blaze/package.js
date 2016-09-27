@@ -11,7 +11,7 @@ Package.onUse(function (api) {
   api.use('jquery'); // should be a weak dep, by having multiple "DOM backends"
   api.use('tracker');
   api.use('check');
-  api.use('underscore'); // only the subset in microscore.js
+  api.use('underscore');
   api.use('observe-sequence');
   api.use('reactive-var');
 
