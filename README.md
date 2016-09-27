@@ -29,7 +29,7 @@ A new Meteor project has Blaze included.
 ## Get involved
 
 We'd love for you to help us build Blaze. If you'd like to be a contributor,
-check out our [Contributing guide](/Contributing.md).
+check out our [Contributing guide](/CONTRIBUTING.md).
 
 Also, to stay up-to-date on all Blaze related news and the community you should
 definitely [Join us on Slack](http://slack.blazejs.org).
