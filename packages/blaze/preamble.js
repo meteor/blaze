@@ -30,3 +30,27 @@ Blaze._warn = function (msg) {
     console.warn(msg);
   }
 };
+
+var nativeBind = Function.prototype.bind;
+
+// An implementation of _.bind which allows better optimization.
+// See: https://github.com/petkaantonov/bluebird/wiki/Optimization-killers#3-managing-arguments
+if (nativeBind) {
+  Blaze._bind = function (func, obj) {
+    if (arguments.length === 2) {
+      return nativeBind.call(func, obj);
+    }
+
+    // Copy the arguments so this function can be optimized.
+    var args = new Array(arguments.length);
+    for (var i = 0; i < args.length; i++) {
+      args[i] = arguments[i];
+    }
+
+    return nativeBind.apply(func, args.slice(1));
+  };
+}
+else {
+  // A slower but backwards compatible version.
+  Blaze._bind = _.bind;
+}

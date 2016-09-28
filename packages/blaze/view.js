@@ -396,7 +396,7 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
         _intoArray.push(domrange);
       });
       // now push the task that calculates initialContents
-      _workStack.push(_.bind(Blaze._materializeDOM, null,
+      _workStack.push(Blaze._bind(Blaze._materializeDOM, null,
                              lastHtmljs, initialContents, view, _workStack));
     }
   });
