@@ -43,7 +43,8 @@ definitely [Join us on Slack](http://slack.blazejs.org).
 See the current [Roadmap](https://github.com/meteor/blaze/milestones) and consider helping with any of the tasks on the roadmap.
 
 ## Backers
-Support us with a monthly donation and help us continue our activities. [[Become a backer](https://opencollective.com/blaze#backer)]
+
+Support us with a monthly donation and help us continue our activities. [Become a backer](https://opencollective.com/blaze#backer).
 
 <a href="https://opencollective.com/blaze/backer/0/website" target="_blank"><img src="https://opencollective.com/blaze/backer/0/avatar.svg"></a>
 <a href="https://opencollective.com/blaze/backer/1/website" target="_blank"><img src="https://opencollective.com/blaze/backer/1/avatar.svg"></a>
@@ -78,7 +79,8 @@ Support us with a monthly donation and help us continue our activities. [[Become
 
 
 ## Sponsors
-Become a sponsor and get your logo on our README on Github with a link to your site. [[Become a sponsor](https://opencollective.com/blaze#sponsor)]
+
+Become a sponsor and get your logo on our README on Github with a link to your site. [Become a sponsor](https://opencollective.com/blaze#sponsor).
 
 <a href="https://opencollective.com/blaze/sponsor/0/website" target="_blank"><img src="https://opencollective.com/blaze/sponsor/0/avatar.svg"></a>
 <a href="https://opencollective.com/blaze/sponsor/1/website" target="_blank"><img src="https://opencollective.com/blaze/sponsor/1/avatar.svg"></a>
