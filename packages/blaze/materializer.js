@@ -70,7 +70,7 @@ var materializeDOMInner = function (htmljs, intoArray, parentView, workStack) {
       }
     } else if (HTML.isArray(htmljs)) {
       for (var i = htmljs.length-1; i >= 0; i--) {
-        workStack.push(_.bind(Blaze._materializeDOM, null,
+        workStack.push(Blaze._bind(Blaze._materializeDOM, null,
                               htmljs[i], intoArray, parentView, workStack));
       }
       return;
@@ -163,7 +163,7 @@ var materializeTag = function (tag, parentView, workStack) {
       }
     });
     // now push the task that calculates childNodesAndRanges
-    workStack.push(_.bind(Blaze._materializeDOM, null,
+    workStack.push(Blaze._bind(Blaze._materializeDOM, null,
                           children, childNodesAndRanges, parentView,
                           workStack));
   }

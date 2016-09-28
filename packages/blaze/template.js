@@ -489,7 +489,7 @@ Template.prototype.events = function (eventMap) {
         if (data == null)
           data = {};
         var args = Array.prototype.slice.call(arguments);
-        var tmplInstanceFunc = _.bind(view.templateInstance, view);
+        var tmplInstanceFunc = Blaze._bind(view.templateInstance, view);
         args.splice(1, 0, tmplInstanceFunc());
 
         return Template._withTemplateInstanceFunc(tmplInstanceFunc, function () {

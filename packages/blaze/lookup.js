@@ -14,7 +14,7 @@ Blaze.deregisterHelper = function(name) {
 var bindIfIsFunction = function (x, target) {
   if (typeof x !== 'function')
     return x;
-  return _.bind(x, target);
+  return Blaze._bind(x, target);
 };
 
 // If `x` is a function, binds the value of `this` for that function
@@ -144,7 +144,7 @@ Blaze.View.prototype.lookup = function (name, _options) {
   var foundTemplate;
 
   if (this.templateInstance) {
-    boundTmplInstance = _.bind(this.templateInstance, this);
+    boundTmplInstance = Blaze._bind(this.templateInstance, this);
   }
 
   // 0. looking up the parent data context with the special "../" syntax

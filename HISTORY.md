@@ -2,6 +2,7 @@
 
 * Better support for HTML5 boolean attributes (`disabled`, `required`, `hidden`, ...) to be removed when a falsy value is set, just like `checked` property.
   [#52](https://github.com/meteor/blaze/issues/52) [#102](https://github.com/meteor/blaze/pull/102)
+* Potential speedup by using a specialized `_.bind` function.
 
 ## v2.1.9, 2016-Sep-13
 
