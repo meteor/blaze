@@ -40,7 +40,7 @@ check out our [contributing guide](/CONTRIBUTING.md).
 Also, to stay up-to-date on all Blaze related news and the community you should
 definitely [join us on Slack](http://slack.blazejs.org).
 
-See [open issues](https://github.com/meteor/blaze/issues) and [them organized into GitHub projects](https://github.com/meteor/blaze/projects) and consider helping with any of the tasks. The current [roadmap](https://github.com/meteor/blaze/milestones) shows the issues we need help with for the next release.
+See [open issues](https://github.com/meteor/blaze/issues) and consider helping with any of the tasks. Those [labeled "contributions welcome"](https://github.com/meteor/blaze/issues?q=is%3Aopen+is%3Aissue+label%3A%22contributions+welcome%22) are probably a good start. We have issues [organized into GitHub projects](https://github.com/meteor/blaze/projects) for a better overview as well. And the current [roadmap](https://github.com/meteor/blaze/milestones) shows the issues we need help with for the next release.
 
 ## Backers
 
