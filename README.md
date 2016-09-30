@@ -35,12 +35,12 @@ A new Meteor project has Blaze included.
 ## Get involved
 
 We'd love for you to help us build Blaze. If you'd like to be a contributor,
-check out our [Contributing guide](/CONTRIBUTING.md).
+check out our [contributing guide](/CONTRIBUTING.md).
 
 Also, to stay up-to-date on all Blaze related news and the community you should
-definitely [Join us on Slack](http://slack.blazejs.org).
+definitely [join us on Slack](http://slack.blazejs.org).
 
-See the current [Roadmap](https://github.com/meteor/blaze/milestones) and consider helping with any of the tasks on the roadmap.
+See [open issues](https://github.com/meteor/blaze/issues) and [them organized into GitHub projects](https://github.com/meteor/blaze/projects) and consider helping with any of the tasks. The current [roadmap](https://github.com/meteor/blaze/milestones) shows the issues we need help with for the next release.
 
 ## Backers
 
