@@ -25,7 +25,7 @@ Read more about templates and how to use them in the [Spacebars](../api/spacebar
 Declare event handlers for instances of this template. Multiple calls add
 new event handlers in addition to the existing ones.
 
-See [Event Maps](#eventmaps) for a detailed description of the event
+See [Event Maps](#Event-Maps) for a detailed description of the event
 map format and how event handling works in Meteor.
 
 {% apibox "Template#helpers" instanceDelimiter:. %}
