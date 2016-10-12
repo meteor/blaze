@@ -31,6 +31,8 @@ Here are two Spacebars templates from an example app called "Leaderboard" which 
   <ol class="leaderboard">
     {{#each players}}
       {{> player}}
+    {{else}}
+      {{> no_players}}
     {{/each}}
   </ol>
 </template>
@@ -39,6 +41,12 @@ Here are two Spacebars templates from an example app called "Leaderboard" which 
   <li class="player {{selected}}">
     <span class="name">{{name}}</span>
     <span class="score">{{score}}</span>
+  </li>
+</template>
+
+<template name="no_players">
+  <li class="no-players">
+    No players available
   </li>
 </template>
 ```
@@ -51,6 +59,8 @@ The template tags `{% raw %}{{name}}{% endraw %}` and `{% raw %}{{score}}{% endr
   <ol class="leaderboard">
     {{#each players}}
       {{> player}}
+    {{else}}
+      {{> no_players}}
     {{/each}}
   </ol>
 </template>
@@ -59,6 +69,12 @@ The template tags `{% raw %}{{name}}{% endraw %}` and `{% raw %}{{score}}{% endr
   <li class="player {{selected}}">
     <span class="name">{{name}}</span>
     <span class="score">{{score}}</span>
+  </li>
+</template>
+
+<template name="no_players">
+  <li class="no-players">
+    No players available
   </li>
 </template>
 ```
