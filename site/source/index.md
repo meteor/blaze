@@ -3,7 +3,7 @@ title: Overview
 description:
 ---
 
-Blaze is a powerful library for creating user interfaces by writing reactive HTML templates. Compared to using a combination of traditional templates and jQuery, Blaze eliminates the need for all the "update logic" in your app that listens for data changes and manipulates the DOM. Instead, familiar template directives like `{% raw %}{{#if}}{% endraw %}` and `{% raw %}{{#each}}{% endraw %}` integrates with [Tracker's](https://docs.meteor.com/api/tracker.html) "transparent reactivity" and [Minimongo's](https://docs.meteor.com/api/collections.html) database cursors so that the DOM updates automatically.
+Blaze is a powerful library for creating user interfaces by writing reactive HTML templates. Compared to using a combination of traditional templates and jQuery, Blaze eliminates the need for all the "update logic" in your app that listens for data changes and manipulates the DOM. Instead, familiar template directives like `{{#if}}` and `{{#each}}` integrates with [Tracker's](https://docs.meteor.com/api/tracker.html) "transparent reactivity" and [Minimongo's](https://docs.meteor.com/api/collections.html) database cursors so that the DOM updates automatically.
 
 ## Quick Start
 
@@ -51,7 +51,7 @@ Here are two Spacebars templates from an example app called "Leaderboard" which 
 </template>
 ```
 
-The template tags `{% raw %}{{name}}{% endraw %}` and `{% raw %}{{score}}{% endraw %}` refer to properties of the data context (the current player), while `players` and `selected` refer to helper functions.  Helper functions and event handlers are defined in JavaScript:
+The template tags `{{name}}` and `{{score}}` refer to properties of the data context (the current player), while `players` and `selected` refer to helper functions.  Helper functions and event handlers are defined in JavaScript:
 
 
 ```html
@@ -79,7 +79,7 @@ The template tags `{% raw %}{{name}}{% endraw %}` and `{% raw %}{{score}}{% endr
 </template>
 ```
 
-The template tags `{% raw %}{{name}}{% endraw %}` and `{% raw %}{{score}}{% endraw %}` refer to properties of the data context (the current player), while `players` and `selected` refer to helper functions. Helper functions and event handlers are defined in JavaScript:
+The template tags `{{name}}` and `{{score}}` refer to properties of the data context (the current player), while `players` and `selected` refer to helper functions. Helper functions and event handlers are defined in JavaScript:
 
 ```javascript
 Template.leaderboard.helpers({
