@@ -7,9 +7,9 @@ Blaze is a powerful library for creating user interfaces by writing reactive HTM
 
 ## Quick Start
 
-Blaze is a Meteor-only package for now. Sooner we will have Blaze on npm so you can use it in your stack.
+Blaze is a Meteor-only package for now. Soon we will have Blaze on npm so you can use it in your stack.
 
-A new Meteor project has Blaze included.
+When you create a new Meteor project, Blaze (the `blaze-html-templates` package) is automatically included.
 
 ## Details
 
@@ -31,8 +31,6 @@ Here are two Spacebars templates from an example app called "Leaderboard" which 
   <ol class="leaderboard">
     {{#each players}}
       {{> player}}
-    {{else}}
-      {{> no_players}}
     {{/each}}
   </ol>
 </template>
@@ -41,40 +39,6 @@ Here are two Spacebars templates from an example app called "Leaderboard" which 
   <li class="player {{selected}}">
     <span class="name">{{name}}</span>
     <span class="score">{{score}}</span>
-  </li>
-</template>
-
-<template name="no_players">
-  <li class="no-players">
-    No players available
-  </li>
-</template>
-```
-
-The template tags `{{name}}` and `{{score}}` refer to properties of the data context (the current player), while `players` and `selected` refer to helper functions.  Helper functions and event handlers are defined in JavaScript:
-
-
-```html
-<template name="leaderboard">
-  <ol class="leaderboard">
-    {{#each players}}
-      {{> player}}
-    {{else}}
-      {{> no_players}}
-    {{/each}}
-  </ol>
-</template>
-
-<template name="player">
-  <li class="player {{selected}}">
-    <span class="name">{{name}}</span>
-    <span class="score">{{score}}</span>
-  </li>
-</template>
-
-<template name="no_players">
-  <li class="no-players">
-    No players available
   </li>
 </template>
 ```
@@ -127,7 +91,7 @@ What this means for the developer is simple. You don't have to explicitly declar
 
 Blaze embraces popular template syntaxes such as Handlebars and Jade which are clean, readable, and familiar to developers coming from other frameworks.
 
-A good template language should clearly distinguish the special "template directives" (often enclosed in curly braces) from the HTML, and it should not obscure the structure of the resulting HTML. These properties make templating an easy concept to learn after static HTML (or alongside it),and make templates easy to read, easy to style with CSS, and easy to relate to the DOM.
+A good template language should clearly distinguish the special "template directives" (often enclosed in curly braces) from the HTML, and it should not obscure the structure of the resulting HTML. These properties make templating an easy concept to learn after static HTML (or alongside it), and make templates easy to read, easy to style with CSS, and easy to relate to the DOM.
 
 In contrast, some newer frameworks try to remake templates as just HTML (Angular, Polymer) or replace them with just JavaScript (React). These approaches tend to obscure either the structure of the template, or what is a real DOM element and what is not, or both. In addition, since templates are generally precompiled anyway as a best practice, it's really not important that raw template source code be browser-parsable. Meanwhile, the developer experience of reading, writing, and maintaining templates is hugely important.
 
@@ -137,7 +101,7 @@ Web developers often share snippets of HTML, JavaScript, and CSS, or publish the
 
 Blaze doesn't assume it owns the whole DOM, and it tries to make as few assumptions as possible about the DOM outside of its updates. It hooks into jQuery's clean-up routines to prevent memory leaks, and it preserves classes, attributes, and styles added to elements by jQuery or any third-party library.
 
-While it's certainly possible for Blaze and jQuery to step on each other's toes if you aren't careful, there are established patterns for keeping the peace, and Meteor users rightfully expect to be able to use the various widgets and enhancements cooked up by the broader web community in their apps.
+While it's certainly possible for Blaze and jQuery to step on each other's toes if you aren't careful, there are established patterns for keeping the peace, and Blaze developers rightfully expect to be able to use the various widgets and enhancements cooked up by the broader web community in their apps.
 
 ## Comparisons to other libraries
 
@@ -147,7 +111,7 @@ Compared to Ember, Blaze offers finer-grained, automatic DOM updates. Because Bl
 
 Compared to Angular and Polymer, Blaze has a gentler learning curve, simpler concepts, and nicer template syntax that cleanly separates template directives and HTML. Also, Blaze is targeted at today's browsers and not designed around a hypothetical "browser of the future."
 
-Compared to React, Blaze emphasizes HTML templates rather than JavaScript component classes.Templates are more approachable than JavaScript code and easier to read, write, and style with CSS. Instead of using Tracker, React relies on a combination of explicit "setState" calls and data-model diffing in order to achieve efficient rendering.
+Compared to React, Blaze emphasizes HTML templates rather than JavaScript component classes. Templates are more approachable than JavaScript code and easier to read, write, and style with CSS. Instead of using Tracker, React relies on a combination of explicit "setState" calls and data-model diffing in order to achieve efficient rendering.
 
 ## Future Work
 
