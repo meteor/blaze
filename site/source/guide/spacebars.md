@@ -174,7 +174,7 @@ There are a few built-in block helpers that are worth knowing about:
 
 ### If / Unless
 
-The `{% raw %}{{#if}}{% endraw %}` and `{% raw %}{{#unless}}{% endraw %}` helpers are fairly straightforward but invaluable for controlling the control flow of a template. Both operate by evaluating and checking their single argument for truthiness. In JS `null`, `undefined`, `0`, `''`, `[]`, and `false` are considered "falsy", and all other values are "truthy".
+The `{% raw %}{{#if}}{% endraw %}` and `{% raw %}{{#unless}}{% endraw %}` helpers are fairly straightforward but invaluable for controlling the control flow of a template. Both operate by evaluating and checking their single argument for truthiness. In JS `null`, `undefined`, `0`, `''`, `NaN`, and `false` are considered "falsy", and all other values are "truthy".
 
 ```html
 {{#if something}}
