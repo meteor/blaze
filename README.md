@@ -18,7 +18,7 @@
 
 ## What is Blaze?
 
-Blaze is a powerful library for creating user interfaces by writing reactive HTML templates.  Compared to using a combination of traditional templates and jQuery, Blaze eliminates the need for all the "update logic" in your app that listens for data changes and manipulates the DOM.  Instead, familiar template directives like ``{{#if}}`` and ``{{#each}}`` integrate with [Tracker's](https://github.com/meteor/meteor/tree/master/packages/tracker) "transparent reactivity" and [Minimongo's](https://meteor.com/mini-databases) database cursors so that the DOM updates automatically. 
+Blaze is a powerful library for creating user interfaces by writing reactive HTML templates.  Compared to using a combination of traditional templates and jQuery, Blaze eliminates the need for all the "update logic" in your app that listens for data changes and manipulates the DOM.  Instead, familiar template directives like ``{{#if}}`` and ``{{#each}}`` integrate with [Tracker's](https://github.com/meteor/meteor/tree/master/packages/tracker) "transparent reactivity" and [Minimongo's](https://meteor.com/mini-databases) database cursors so that the DOM updates automatically.
 
 ### Blaze has two major parts:
 
@@ -28,9 +28,9 @@ Blaze is a powerful library for creating user interfaces by writing reactive HTM
 
 ## Quick Start
 
-Blaze is a [Meteor](http://meteor.com/)-only package for now. Sooner we will have Blaze on npm so you can use it in your stack.
+Blaze is a [Meteor](http://meteor.com/)-only package for now. Soon we will have Blaze on npm so you can use it in your stack.
 
-A new Meteor project has Blaze included.
+Each new Meteor project you create has Blaze included (the `blaze-html-templates` package).
 
 ## Get involved
 
