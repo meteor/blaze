@@ -186,9 +186,6 @@ Blaze.View.prototype.autorun = function (f, _inViewScope, displayName) {
   if (this._isInRender) {
     throw new Error("Can't call View#autorun from inside render(); try calling it from the created or rendered callback");
   }
-  if (Tracker.active) {
-    throw new Error("Can't call View#autorun from a Tracker Computation; try calling it from the created or rendered callback");
-  }
 
   var templateInstanceFunc = Blaze.Template._currentTemplateInstanceFunc;
 
