@@ -1,5 +1,7 @@
 ## vNEXT
 
+## v2.2.0, 2016-Nov-01
+
 * Allow nested `template.autorun` calls.
   [#148](https://github.com/meteor/blaze/issues/148)
 * Potential speedup by using a specialized `_.bind` function.
