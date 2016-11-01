@@ -2887,6 +2887,11 @@ Tinytest.add(
     tmplInner.created = function () {
       actualTemplateInstance = this;
       returnedComputation = this.autorun(function (c) {
+        // Test nested autorun.
+        actualTemplateInstance.autorun(function (c2) {
+          rv.get();
+          autorunTemplateInstances.push(Template.instance());
+        });
         computationArg = c;
         rv.get();
         autorunTemplateInstances.push(Template.instance());
@@ -2900,8 +2905,9 @@ Tinytest.add(
     });
 
     var div = renderToDiv(tmpl);
-    test.equal(autorunTemplateInstances.length, 1);
+    test.equal(autorunTemplateInstances.length, 2);
     test.equal(autorunTemplateInstances[0], actualTemplateInstance);
+    test.equal(autorunTemplateInstances[1], actualTemplateInstance);
 
     // Test that the autorun returned a computation and received a
     // computation as an argument.
@@ -2912,8 +2918,9 @@ Tinytest.add(
     // the correct current view.
     rv.set("bar");
     Tracker.flush();
-    test.equal(autorunTemplateInstances.length, 2);
+    test.equal(autorunTemplateInstances.length, 4);
     test.equal(autorunTemplateInstances[1], actualTemplateInstance);
+    test.equal(autorunTemplateInstances[2], actualTemplateInstance);
 
     // If the inner template is destroyed, the autorun should be stopped.
     show.set(false);
@@ -2921,7 +2928,7 @@ Tinytest.add(
     rv.set("baz");
     Tracker.flush();
 
-    test.equal(autorunTemplateInstances.length, 2);
+    test.equal(autorunTemplateInstances.length, 4);
     test.equal(rv._numListeners(), 0);
   }
 );
