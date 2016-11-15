@@ -1,5 +1,5 @@
 Plugin.registerCompiler({
-  extensions: ['html'],
+  extensions: ['html', 'blaze'],
   archMatching: 'web',
   isTemplate: true
 }, () => new CachingHtmlCompiler(
