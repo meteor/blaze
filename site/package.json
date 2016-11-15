@@ -9,7 +9,6 @@
     "canonical-json": "0.0.4",
     "handlebars": "^4.0.5",
     "hexo": "^3.1.0",
-    "hexo-s3-deploy": "^1.0.1",
     "hexo-generator-archive": "^0.1.2",
     "hexo-generator-category": "^0.1.2",
     "hexo-generator-index": "^0.1.2",
@@ -24,10 +23,11 @@
     "underscore": "^1.8.3"
   },
   "devDependencies": {
+    "hexo-s3-deploy": "meteor/hexo-s3-deploy#e36f6d046660040878bb5bedfc8422f526a78be6"
   },
   "scripts": {
     "prestart": "jsdoc/jsdoc.sh",
-    "start": "hexo serve",
+    "start": "hexo server",
     "predeploy": "jsdoc/jsdoc.sh",
     "deploy": "hexo-s3-deploy",
     "pregenerate": "jsdoc/jsdoc.sh",
