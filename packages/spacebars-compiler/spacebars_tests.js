@@ -38,6 +38,10 @@ Tinytest.add("spacebars-compiler - stache tags", function (test) {
   run('{{ !-- {{as--df}} --}}', {type: 'BLOCKCOMMENT', value: ' {{as--df}} '});
   run('{{ !-- asdf }asdf', "Unclosed");
   run('{{ !-- asdf --}asdf', "Unclosed");
+  run('{{elseif}}', {type: 'ELSEIF', path: ['elseif'], args: []});
+  run('{{ elseif }}', {type: 'ELSEIF', path: ['elseif'], args: []});
+  run('{{elseif x}}', {type: 'ELSEIF', path: ['elseif'], args: [['PATH', ['x']]]});
+  run('{{elseif_x}}', {type: 'DOUBLE', path: ['elseif_x'], args: []});
   run('{{else}}', {type: 'ELSE'});
   run('{{ else }}', {type: 'ELSE'});
   run('{{else x}}', "Expected");
@@ -272,6 +276,9 @@ Tinytest.add("spacebars-compiler - parse", function (test) {
 
   test.equal(BlazeTools.toJS(SpacebarsCompiler.parse('{{#foo}}{{#bar}}{{/bar}}{{/foo}}')),
              'SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["foo"], content: SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["bar"]})})');
+
+  test.equal(BlazeTools.toJS(SpacebarsCompiler.parse('{{#if x}}test{{elseif y}}alt{{/if}}')),
+             'SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["if"], args: [["PATH", ["x"]]], content: "test", elseContent: SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["if"], args: [["PATH", ["y"]]], content: "alt"})})');
 
   test.equal(BlazeTools.toJS(SpacebarsCompiler.parse('<div>hello</div> {{#foo}}<div>{{#bar}}world{{/bar}}</div>{{/foo}}')),
              '[HTML.DIV("hello"), " ", SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["foo"], content: HTML.DIV(SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["bar"], content: "world"}))})]');

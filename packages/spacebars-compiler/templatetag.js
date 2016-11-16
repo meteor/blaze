@@ -12,6 +12,7 @@ SpacebarsCompiler = {};
 // - `"INCLUSION"` - `{{> foo}}`
 // - `"BLOCKOPEN"` - `{{#foo}}`
 // - `"BLOCKCLOSE"` - `{{/foo}}`
+// - `"ELSEIF"` - `{{elseif}}`
 // - `"ELSE"` - `{{else}}`
 // - `"ESCAPE"` - `{{|`, `{{{|`, `{{{{|` and so on
 //
@@ -25,7 +26,7 @@ SpacebarsCompiler = {};
 //   is a two or three element array, consisting of a type, value, and
 //   optional keyword name.  For example, the `args` of `{{foo "bar" x=3}}`
 //   are `[["STRING", "bar"], ["NUMBER", 3, "x"]]`.  Applies to DOUBLE,
-//   TRIPLE, INCLUSION, and BLOCKOPEN.
+//   TRIPLE, INCLUSION, ELSEIF, and BLOCKOPEN.
 //
 // - `value` - A string of the comment's text. Applies to COMMENT and
 //   BLOCKCOMMENT.
@@ -37,9 +38,9 @@ SpacebarsCompiler = {};
 //   part of an attribute value). Its absence implies
 //   TEMPLATE_TAG_POSITION.ELEMENT.
 //
-// - `content` and `elseContent` - When a BLOCKOPEN tag's contents are
-//   parsed, they are put here.  `elseContent` will only be present if
-//   an `{{else}}` was found.
+// - `content`, `elseifContents`, and `elseContent` - When a BLOCKOPEN tag's contents are
+//   parsed, they are put here.  `elseifContents` will only be present if at least one
+//   {{elseif}} was found. `elseContent` will only be present if an `{{else}}` was found.
 
 var TEMPLATE_TAG_POSITION = HTMLTools.TEMPLATE_TAG_POSITION;
 
@@ -59,6 +60,7 @@ var makeStacheTagStartRegex = function (r) {
 // result, but not the interesting part of the tag.
 var starts = {
   ESCAPE: /^\{\{(?=\{*\|)/,
+  ELSEIF: makeStacheTagStartRegex(/^\{\{\s*(?=elseif[\s}])/i),
   ELSE: makeStacheTagStartRegex(/^\{\{\s*else(?=[\s}])/i),
   DOUBLE: makeStacheTagStartRegex(/^\{\{\s*(?!\s)/),
   TRIPLE: makeStacheTagStartRegex(/^\{\{\{\s*(?!\s)/),
@@ -238,7 +240,7 @@ TemplateTag.parse = function (scannerOrString) {
 
   var scanExpr = function (type) {
     var endType = type;
-    if (type === 'INCLUSION' || type === 'BLOCKOPEN')
+    if (type === 'INCLUSION' || type === 'BLOCKOPEN' || type === 'ELSEIF')
       endType = 'DOUBLE';
 
     var tag = new TemplateTag;
@@ -280,9 +282,11 @@ TemplateTag.parse = function (scannerOrString) {
     error('Expected ' + what);
   };
 
-  // must do ESCAPE first, immediately followed by ELSE
+  // must do ESCAPE first, immediately followed by ELSEIF and ELSE
+  // that is, any tag that would also match as a more generic tag must be parsed first
   // order of others doesn't matter
   if (run(starts.ESCAPE)) type = 'ESCAPE';
+  else if (run(starts.ELSEIF)) type = 'ELSEIF';
   else if (run(starts.ELSE)) type = 'ELSE';
   else if (run(starts.DOUBLE)) type = 'DOUBLE';
   else if (run(starts.TRIPLE)) type = 'TRIPLE';
@@ -318,7 +322,7 @@ TemplateTag.parse = function (scannerOrString) {
     var result = run(/^\{*\|/);
     tag.value = '{{' + result.slice(0, -1);
   } else {
-    // DOUBLE, TRIPLE, BLOCKOPEN, INCLUSION
+    // DOUBLE, TRIPLE, BLOCKOPEN, INCLUSION, ELSEIF
     tag = scanExpr(type);
   }
 
@@ -368,6 +372,9 @@ TemplateTag.parseCompleteTag = function (scannerOrString, position) {
   if (result.type === 'COMMENT')
     return null;
 
+  if (result.type === 'ELSEIF')
+    scanner.fatal("Unexpected {{elseif}}");
+
   if (result.type === 'ELSE')
     scanner.fatal("Unexpected {{else}}");
 
@@ -397,7 +404,7 @@ TemplateTag.parseCompleteTag = function (scannerOrString, position) {
       }
       var parserOptions = {
         getTemplateTag: TemplateTag.parseCompleteTag,
-        shouldStop: isAtBlockCloseOrElse,
+        shouldStop: isAtBlockCloseOrElseIfOrElse,
         textMode: textMode
       };
     result.content = HTMLTools.parseFragment(scanner, parserOptions);
@@ -406,11 +413,28 @@ TemplateTag.parseCompleteTag = function (scannerOrString, position) {
       scanner.fatal("Expected {{else}} or block close for " + blockName);
 
     var lastPos = scanner.pos; // save for error messages
-    var tmplTag = TemplateTag.parse(scanner); // {{else}} or {{/foo}}
+    var tmplTag = TemplateTag.parse(scanner); // {{elseif}}, {{else}}, or {{/foo}}
+
+    var elseIfTreeNode = result;
+    while (tmplTag.type === 'ELSEIF') {
+      // parse {{elseif}} and content up to {{elseif}}, {{else}}, or close tag
+      var elseIf = tmplTag;
+      elseIf.type = 'BLOCKOPEN';
+      elseIf.path = ['if'];
+      elseIf.content = HTMLTools.parseFragment(scanner, parserOptions);
+      elseIfTreeNode.elseContent = elseIf;
+
+      if (scanner.rest().slice(0, 2) !== '{{')
+        scanner.fatal("Expected {{elseif}}, {{else}}, or block close for " + blockName);
+
+      elseIfTreeNode = elseIf;
+      lastPos = scanner.pos;
+      tmplTag = TemplateTag.parse(scanner);
+    }
 
     if (tmplTag.type === 'ELSE') {
       // parse {{else}} and content up to close tag
-      result.elseContent = HTMLTools.parseFragment(scanner, parserOptions);
+      elseIfTreeNode.elseContent = HTMLTools.parseFragment(scanner, parserOptions);
 
       if (scanner.rest().slice(0, 2) !== '{{')
         scanner.fatal("Expected block close for " + blockName);
@@ -441,8 +465,8 @@ TemplateTag.parseCompleteTag = function (scannerOrString, position) {
   return result;
 };
 
-var isAtBlockCloseOrElse = function (scanner) {
-  // Detect `{{else}}` or `{{/foo}}`.
+var isAtBlockCloseOrElseIfOrElse = function (scanner) {
+  // Detect `{{elseif}}`, `{{else}}`, or `{{/foo}}`.
   //
   // We do as much work ourselves before deferring to `TemplateTag.peek`,
   // for efficiency (we're called for every input token) and to be
@@ -451,9 +475,9 @@ var isAtBlockCloseOrElse = function (scanner) {
   var rest, type;
   return (scanner.peek() === '{' &&
           (rest = scanner.rest()).slice(0, 2) === '{{' &&
-          /^\{\{\s*(\/|else\b)/.test(rest) &&
+          /^\{\{\s*(\/|else\b|elseif\b)/.test(rest) &&
           (type = TemplateTag.peek(scanner).type) &&
-          (type === 'BLOCKCLOSE' || type === 'ELSE'));
+          (type === 'BLOCKCLOSE' || type === 'ELSE' || type === 'ELSEIF'));
 };
 
 // Validate that `templateTag` is correctly formed and legal for its
