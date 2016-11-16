@@ -1,5 +1,8 @@
 ## vNEXT
 
+* Added support for `.blaze` file extension.
+  [#158](https://github.com/meteor/blaze/pull/158)
+
 ## v2.2.1, 2016-Dec-31
 
 * Reactive inline `style` attribute now preserves the internal order. Similarly for `class`.
