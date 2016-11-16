@@ -3,7 +3,7 @@ title: Spacebars templates
 description:
 ---
 
-Spacebars is a handlebars-like templating language, built on the concept of rendering a reactively changing *data context*. Spacebars templates look like simple HTML with special "mustache" tags delimited by curly braces: `{% raw %}{{ }}{% endraw %}`.
+Spacebars is a handlebars-like templating language, built on the concept of rendering a reactively changing *data context*. Spacebars templates look like simple HTML with special "mustache" tags delimited by curly braces: `{% raw %}{{ }}{% endraw %}` and can have the extensions `.html` or `.blaze` for file names.
 
 As an example, consider the `Todos_item` template from the Todos example app:
 
