@@ -6,8 +6,6 @@ Package.describe({
 });
 
 Package.onUse(function(api) {
-  api.versionsFrom('METEOR@1.4.1');
-
   api.imply([
     // A library for reactive user interfaces
     'blaze@2.1.9',

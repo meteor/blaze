@@ -6,8 +6,6 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom('METEOR@1.4.1');
-
   api.use('blaze@2.1.9');
   api.imply('blaze@2.1.9');
 

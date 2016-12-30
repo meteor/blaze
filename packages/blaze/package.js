@@ -6,14 +6,12 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom('METEOR@1.4.1');
-
-  api.use('jquery'); // should be a weak dep, by having multiple "DOM backends"
-  api.use('tracker');
-  api.use('check');
-  api.use('underscore');
-  api.use('observe-sequence');
-  api.use('reactive-var');
+  api.use('jquery@1.11.9'); // should be a weak dep, by having multiple "DOM backends"
+  api.use('tracker@1.1.0');
+  api.use('check@1.2.3');
+  api.use('underscore@1.0.9');
+  api.use('observe-sequence@1.0.12');
+  api.use('reactive-var@1.0.10');
 
   api.export([
     'Blaze',
@@ -49,14 +47,12 @@ Package.onUse(function (api) {
 });
 
 Package.onTest(function (api) {
-  api.versionsFrom('METEOR@1.4.1');
-
-  api.use('tinytest');
-  api.use('test-helpers');
-  api.use('jquery'); // strong dependency, for testing jQuery backend
-  api.use('underscore');
-  api.use('reactive-var');
-  api.use('tracker');
+  api.use('tinytest@1.0.11');
+  api.use('test-helpers@1.0.10');
+  api.use('jquery@1.11.9'); // strong dependency, for testing jQuery backend
+  api.use('underscore@1.0.9');
+  api.use('reactive-var@1.0.10');
+  api.use('tracker@1.1.0');
 
   api.use('blaze');
   api.use('blaze-tools@1.0.10'); // for BlazeTools.toJS

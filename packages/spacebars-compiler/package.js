@@ -6,13 +6,11 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom('METEOR@1.4.1');
-
-  api.use('underscore');
+  api.use('underscore@1.0.9');
   // The templating plugin will pull in minifier-js, so that generated code will
   // be beautified. But it's a weak dependency so that eg boilerplate-generator
   // doesn't pull in the minifier.
-  api.use('minifier-js', ['server'], { weak: true });
+  api.use('minifier-js@1.2.14', ['server'], { weak: true });
 
   api.export('SpacebarsCompiler');
 
@@ -30,12 +28,10 @@ Package.onUse(function (api) {
 });
 
 Package.onTest(function (api) {
-  api.versionsFrom('METEOR@1.4.1');
-
   api.use([
-    'underscore',
-    'tinytest',
-    'coffeescript'
+    'underscore@1.0.9',
+    'tinytest@1.0.11',
+    'coffeescript@1.2.4'
   ]);
 
   api.use([

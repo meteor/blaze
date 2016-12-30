@@ -6,12 +6,10 @@ Package.describe({
 });
 
 Package.onUse(function(api) {
-  api.versionsFrom('METEOR@1.4.1');
-
   api.use([
-    'underscore',
-    'caching-compiler',
-    'ecmascript'
+    'underscore@1.0.9',
+    'caching-compiler@1.1.7',
+    'ecmascript@0.5.8'
   ]);
 
   api.export('CachingHtmlCompiler', 'server');

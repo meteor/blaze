@@ -14,11 +14,9 @@ Package.describe({
 // Additional tests are in `spacebars-tests`.
 
 Package.onUse(function (api) {
-  api.versionsFrom('METEOR@1.4.1');
-
-  api.use('observe-sequence');
-  api.use('underscore');
-  api.use('tracker');
+  api.use('observe-sequence@1.0.12');
+  api.use('underscore@1.0.9');
+  api.use('tracker@1.1.0');
 
   api.export('Spacebars');
 

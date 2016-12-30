@@ -6,11 +6,9 @@ Package.describe({
 });
 
 Package.onUse(function(api) {
-  api.versionsFrom('METEOR@1.4.1');
-
   api.use([
-    'underscore',
-    'ecmascript',
+    'underscore@1.0.9',
+    'ecmascript@0.5.8',
 
     // minifier-js is a weak dependency of spacebars-compiler; adding it here
     // ensures that the output is minified.  (Having it as a weak dependency means
@@ -18,7 +16,7 @@ Package.onUse(function(api) {
     // boilerplate-generator uses spacebars-compiler.)
     // XXX maybe uglify should be applied by this plugin instead of via magic
     // weak dependency.
-    'minifier-js'
+    'minifier-js@1.2.14'
   ]);
 
   api.export('TemplatingTools');
@@ -37,11 +35,9 @@ Package.onUse(function(api) {
 });
 
 Package.onTest(function(api) {
-  api.versionsFrom('METEOR@1.4.1');
-
   api.use([
-    'tinytest',
-    'ecmascript'
+    'tinytest@1.0.11',
+    'ecmascript@0.5.8'
   ]);
 
   api.use([

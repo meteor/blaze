@@ -11,8 +11,6 @@ Package.describe({
 // registry and a default templating system, ideally per-package.
 
 Package.onUse(function (api) {
-  api.versionsFrom('METEOR@1.4.1');
-
   api.export('Template', 'client');
 
   api.use('templating-runtime@1.2.15');

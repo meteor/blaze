@@ -6,9 +6,7 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom('METEOR@1.4.1');
-
-  api.use('deps');
+  api.use('tracker@1.1.0');
 
   api.export('HTML');
 
@@ -20,10 +18,8 @@ Package.onUse(function (api) {
 });
 
 Package.onTest(function (api) {
-  api.versionsFrom('METEOR@1.4.1');
-
-  api.use('tinytest');
-  api.use('underscore');
+  api.use('tinytest@1.0.11');
+  api.use('underscore@1.0.9');
 
   api.use('htmljs');
   api.use('html-tools@1.0.11');

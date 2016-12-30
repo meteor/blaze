@@ -25,7 +25,5 @@ Package.registerBuildPlugin({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom('METEOR@1.4.1');
-
   api.use('isobuild:compiler-plugin@1.0.0');
 });

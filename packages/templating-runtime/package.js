@@ -7,9 +7,7 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom('METEOR@1.4.1');
-
-  api.use('underscore');
+  api.use('underscore@1.0.9');
 
   // XXX would like to do the following only when the first html file
   // is encountered
@@ -26,7 +24,7 @@ Package.onUse(function (api) {
     'spacebars@1.0.13'
   ]);
   api.imply([
-    'meteor',
+    'meteor@1.2.17',
     'blaze@2.1.9',
     'spacebars@1.0.13'
   ], 'client');
@@ -43,13 +41,11 @@ Package.onUse(function (api) {
 });
 
 Package.onTest(function (api) {
-  api.versionsFrom('METEOR@1.4.1');
-
   api.use([
-    'tinytest',
-    'test-helpers',
-    'reactive-var',
-    'tracker'
+    'tinytest@1.0.11',
+    'test-helpers@1.0.10',
+    'reactive-var@1.0.10',
+    'tracker@1.1.0'
   ]);
 
   api.use([

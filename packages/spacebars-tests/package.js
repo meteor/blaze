@@ -8,21 +8,19 @@ Package.describe({
 // These tests are in a separate package to avoid a circular dependency
 // between the `spacebars` and `templating` packages.
 Package.onTest(function (api) {
-  api.versionsFrom('METEOR@1.4.1');
-
   api.use([
-    'es5-shim',
-    'underscore',
-    'tinytest',
-    'jquery',
-    'test-helpers',
-    'reactive-var',
-    'showdown',
-    'minimongo',
-    'tracker',
-    'mongo',
-    'random',
-    'session'
+    'es5-shim@4.6.14',
+    'underscore@1.0.9',
+    'tinytest@1.0.11',
+    'jquery@1.11.9',
+    'test-helpers@1.0.10',
+    'reactive-var@1.0.10',
+    'markdown@1.0.10',
+    'minimongo@1.0.17',
+    'tracker@1.1.0',
+    'mongo@1.1.11',
+    'random@1.0.10',
+    'session@1.1.6'
   ]);
 
   api.use([

@@ -19,10 +19,8 @@ Package.registerBuildPlugin({
 });
 
 Package.onUse(function(api) {
-  api.versionsFrom('METEOR@1.4.1');
-
   api.use('isobuild:compiler-plugin@1.0.0');
 
   // Body attributes are compiled to code that uses Meteor.startup
-  api.imply('meteor', 'client');
+  api.imply('meteor@1.2.17', 'client');
 });
