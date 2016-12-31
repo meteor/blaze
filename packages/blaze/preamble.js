@@ -5,6 +5,8 @@
 Blaze = {};
 
 // Utility to HTML-escape a string.  Included for legacy reasons.
+// TODO: Should be replaced with _.escape once underscore is upgraded to a newer
+//       version which escapes ` (backtick) as well. Underscore 1.5.2 does not.
 Blaze._escape = (function() {
   var escape_map = {
     "<": "&lt;",
