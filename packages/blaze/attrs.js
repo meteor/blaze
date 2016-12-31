@@ -294,7 +294,8 @@ Blaze._makeAttributeHandler = function (elem, name, value) {
   } else if (name === 'style') {
     return new StyleHandler(name, value);
   } else if ((elem.tagName === 'OPTION' && name === 'selected') ||
-             (elem.tagName === 'INPUT' && name === 'checked')) {
+             (elem.tagName === 'INPUT' && name === 'checked') ||
+             (elem.tagName === 'VIDEO' && name === 'muted')) {
     return new BooleanHandler(name, value);
   } else if ((elem.tagName === 'TEXTAREA' || elem.tagName === 'INPUT')
              && name === 'value') {
