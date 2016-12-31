@@ -938,3 +938,55 @@ Tinytest.add("ui - attributes", function (test) {
   test.equal(HTML.toHTML(SPAN({title: ['M', amp, 'Ms']}, 'M', amp, 'M candies')),
              '<span title="M&amp;Ms">M&amp;M candies</span>');
 });
+
+if (typeof MutationObserver !== 'undefined') {
+  // This test is not really able to test that Blaze._materializeDOM is called only when
+  // not Blaze._isContentEqual(lastHtmljs, htmljs), which is what we would in fact want to test.
+  Tinytest.addAsync("blaze - render - optimization", function (test, onComplete) {
+    var R = ReactiveVar('aa');
+    var view = Blaze.View(function () { return R.get().substr(0, 1); });
+
+    var renderedCount = 0;
+    test.equal(view.renderCount, 0);
+
+    view._onViewRendered(function () {
+      renderedCount++;
+    });
+
+    var test1 = P(view);
+
+    var div = document.createElement("DIV");
+
+    var observedMutations = [];
+    var observer = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        observedMutations.push(mutation);
+      });
+    });
+
+    observer.observe(div, {childList: true, subtree: true});
+
+    materialize(test1, div);
+    test.equal(canonicalizeHtml(div.innerHTML), "<p>a</p>");
+
+    test.equal(view.renderCount, 1);
+
+    R.set('ab');
+    Tracker.flush();
+    test.equal(canonicalizeHtml(div.innerHTML), "<p>a</p>");
+
+    test.equal(view.renderCount, 2);
+    test.equal(renderedCount, 1);
+
+    // We have to wait a bit, for mutation observer to run.
+    Meteor.setTimeout(function () {
+      // We do not update anything after initial rendering, so only one mutation is there.
+      test.equal(observedMutations.length, 1);
+
+      $(div).remove();
+      observer.disconnect();
+
+      onComplete();
+    }, 0);
+  });
+}

@@ -348,14 +348,12 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
       var htmljs = view._render();
       view._isInRender = false;
 
-      if (! c.firstRun) {
+      if (! c.firstRun && ! Blaze._isContentEqual(lastHtmljs, htmljs)) {
         Tracker.nonreactive(function doMaterialize() {
           // re-render
           var rangesAndNodes = Blaze._materializeDOM(htmljs, [], view);
-          if (! Blaze._isContentEqual(lastHtmljs, htmljs)) {
-            domrange.setMembers(rangesAndNodes);
-            Blaze._fireCallbacks(view, 'rendered');
-          }
+          domrange.setMembers(rangesAndNodes);
+          Blaze._fireCallbacks(view, 'rendered');
         });
       }
       lastHtmljs = htmljs;

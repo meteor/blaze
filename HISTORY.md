@@ -1,5 +1,8 @@
 ## vNEXT
 
+* Prevent unnecessary materialization of DOM.
+  Based on [#103](https://github.com/meteor/blaze/pull/103).
+
 ## v2.2.1, 2016-Dec-31
 
 * Reactive inline `style` attribute now preserves the internal order. Similarly for `class`.
