@@ -128,9 +128,15 @@ var materializeTag = function (tag, parentView, workStack) {
       var flattenedAttrs = HTML.flattenAttributes(expandedAttrs);
       var stringAttrs = {};
       for (var attrName in flattenedAttrs) {
-        stringAttrs[attrName] = Blaze._toText(flattenedAttrs[attrName],
-                                              parentView,
-                                              HTML.TEXTMODE.STRING);
+        // map `null`, `undefined`, and `false` to null, which is important
+        // so that attributes with nully values are considered absent.
+        // stringify anything else (e.g. strings, booleans, numbers including 0).
+        if (flattenedAttrs[attrName] == null || flattenedAttrs[attrName] === false)
+          stringAttrs[attrName] = null;
+        else
+          stringAttrs[attrName] = Blaze._toText(flattenedAttrs[attrName],
+                                                parentView,
+                                                HTML.TEXTMODE.STRING);
       }
       attrUpdater.update(stringAttrs);
     };

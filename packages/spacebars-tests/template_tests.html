@@ -518,6 +518,12 @@ Hi there!
   {{/each}}
 </template>
 
+<template name="spacebars_test_attributes">
+  <input type="checkbox" name="admin" readonly={{isReadonly}} checked={{isChecked}} />
+  <input type="checkbox" name="username" disabled="{{isDisabled}}" {{attrs}} />
+  <input type="text" name="name" readonly value="{{nameValue}}" />
+</template>
+
 <template name="spacebars_test_nonexistent_template">
   {{> this_template_lives_in_outer_space}}
 </template>

@@ -1316,10 +1316,7 @@ Tinytest.add('spacebars-tests - template_tests - nully attributes', function (te
     0: Template.spacebars_template_test_nully_attributes0,
     1: Template.spacebars_template_test_nully_attributes1,
     2: Template.spacebars_template_test_nully_attributes2,
-    3: Template.spacebars_template_test_nully_attributes3,
-    4: Template.spacebars_template_test_nully_attributes4,
-    5: Template.spacebars_template_test_nully_attributes5,
-    6: Template.spacebars_template_test_nully_attributes6
+    3: Template.spacebars_template_test_nully_attributes3
   };
 
   var run = function (whichTemplate, data, expectTrue) {
@@ -1614,7 +1611,6 @@ Tinytest.add("spacebars-tests - template_tests - checkbox", function(test) {
       return Rs[this.toString()].get();
     }
   });
-  var changeBuf = [];
 
   var div = renderToDiv(tmpl);
   document.body.appendChild(div);
@@ -1662,6 +1658,121 @@ Tinytest.add("spacebars-tests - template_tests - checkbox", function(test) {
   Rs.Foo.set(false);
   Tracker.flush();
   test.equal(_.pluck(boxes, 'checked'), [false, false, false]);
+
+  document.body.removeChild(div);
+});
+
+Tinytest.add("spacebars-tests - template_tests - attributes", function(test) {
+  var tmpl = Template.spacebars_test_attributes;
+  var isReadonly = ReactiveVar(false);
+  var isDisabled = ReactiveVar(false);
+  var isChecked = ReactiveVar(false);
+  var nameValue = ReactiveVar('bar');
+  var attrs = ReactiveVar({});
+  tmpl.helpers({
+    isReadonly: function () {
+      return isReadonly.get();
+    },
+    isChecked: function () {
+      return isChecked.get();
+    },
+    attrs: function () {
+      return attrs.get();
+    },
+    isDisabled: function () {
+      return isDisabled.get();
+    },
+    nameValue: function () {
+      return nameValue.get();
+    }
+  });
+
+  var div = renderToDiv(tmpl);
+  document.body.appendChild(div);
+
+  var buttons = nodesToArray(div.getElementsByTagName("INPUT"));
+
+  test.equal(_.pluck(buttons, 'readOnly'), [false, false, true]);
+
+  isReadonly.set(true);
+  Tracker.flush();
+  test.equal(_.pluck(buttons, 'readOnly'), [true, false, true]);
+
+  isReadonly.set(false);
+  Tracker.flush();
+  test.equal(_.pluck(buttons, 'readOnly'), [false, false, true]);
+
+  isReadonly.set('readonly');
+  Tracker.flush();
+  test.equal(_.pluck(buttons, 'readOnly'), [true, false, true]);
+
+  isReadonly.set(null);
+  Tracker.flush();
+  test.equal(_.pluck(buttons, 'readOnly'), [false, false, true]);
+
+  nameValue.set('foo');
+  Tracker.flush();
+  test.equal(_.pluck(buttons, 'readOnly'), [false, false, true]);
+
+  test.equal(_.pluck(buttons, 'disabled'), [false, false, false]);
+
+  isDisabled.set(true);
+  Tracker.flush();
+  test.equal(_.pluck(buttons, 'disabled'), [false, true, false]);
+
+  isDisabled.set(false);
+  Tracker.flush();
+  test.equal(_.pluck(buttons, 'disabled'), [false, false, false]);
+
+  isDisabled.set('disabled');
+  Tracker.flush();
+  test.equal(_.pluck(buttons, 'disabled'), [false, true, false]);
+
+  isDisabled.set(null);
+  Tracker.flush();
+  test.equal(_.pluck(buttons, 'disabled'), [false, false, false]);
+
+  test.equal(_.pluck(buttons, 'checked'), [false, false, false]);
+
+  isChecked.set(true);
+  Tracker.flush();
+  test.equal(_.pluck(buttons, 'checked'), [true, false, false]);
+
+  isChecked.set(false);
+  Tracker.flush();
+  test.equal(_.pluck(buttons, 'checked'), [false, false, false]);
+
+  isChecked.set('checked');
+  Tracker.flush();
+  test.equal(_.pluck(buttons, 'checked'), [true, false, false]);
+
+  isChecked.set(null);
+  Tracker.flush();
+  test.equal(_.pluck(buttons, 'checked'), [false, false, false]);
+
+  attrs.set({disabled: true, checked: true, readonly: true});
+  Tracker.flush();
+  test.equal(_.pluck(buttons, 'readOnly'), [false, true, true]);
+  test.equal(_.pluck(buttons, 'disabled'), [false, true, false]);
+  test.equal(_.pluck(buttons, 'checked'), [false, true, false]);
+
+  attrs.set({disabled: false, checked: false, readonly: false});
+  Tracker.flush();
+  test.equal(_.pluck(buttons, 'readOnly'), [false, false, true]);
+  test.equal(_.pluck(buttons, 'disabled'), [false, false, false]);
+  test.equal(_.pluck(buttons, 'checked'), [false, false, false]);
+
+  attrs.set({disabled: 'disabled', checked: 'checked', readonly: 'readonly'});
+  Tracker.flush();
+  test.equal(_.pluck(buttons, 'readOnly'), [false, true, true]);
+  test.equal(_.pluck(buttons, 'disabled'), [false, true, false]);
+  test.equal(_.pluck(buttons, 'checked'), [false, true, false]);
+
+  attrs.set({disabled: null, checked: null, readonly: null});
+  Tracker.flush();
+  test.equal(_.pluck(buttons, 'readOnly'), [false, false, true]);
+  test.equal(_.pluck(buttons, 'disabled'), [false, false, false]);
+  test.equal(_.pluck(buttons, 'checked'), [false, false, false]);
 
   document.body.removeChild(div);
 });

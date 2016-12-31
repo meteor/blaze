@@ -211,6 +211,7 @@ To summarize:
     <tr><td><code>""</code> or <code>null</code> or <code>{}</code></td></tr>
     <tr><td><code>"checked"</code> or <code>{checked: ""}</code></td><td><code>checked</code></td></tr>
     <tr><td><code>{checked: "", 'class': "foo"}</code></td><td><code>checked  class=foo</code></td></tr>
+    <tr><td><code>{checked: false, 'class': "foo"}</code></td><td><code>class=foo</code></td></tr>
     <tr><td><code>"checked class=foo"</code></td><td>ERROR, string is not an attribute name</td></tr>
   </tbody>
 </table>

@@ -1,5 +1,9 @@
 ## vNEXT
 
+* Reverted [#102](https://github.com/meteor/blaze/pull/102) and made a different fix for removing attributes
+  for `false` values in dynamic attributes ([#52](https://github.com/meteor/blaze/issues/52)).
+  Fixes regression reported in [#151](https://github.com/meteor/blaze/issues/151).
+
 ## v2.2.0, 2016-Nov-01
 
 * Allow nested `template.autorun` calls.
