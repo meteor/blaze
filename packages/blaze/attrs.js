@@ -67,7 +67,7 @@ AttributeHandler.extend = function (options) {
 
 Blaze._DiffingAttributeHandler = AttributeHandler.extend({
   update: function (element, oldValue, value) {
-    if (!this.getCurrentValue || !this.setValue || !this.parseValue)
+    if (!this.getCurrentValue || !this.setValue || !this.parseValue || !this.joinValues)
       throw new Error("Missing methods in subclass of 'DiffingAttributeHandler'");
 
     var oldAttrsMap = oldValue ? this.parseValue(oldValue) : {};
@@ -87,7 +87,7 @@ Blaze._DiffingAttributeHandler = AttributeHandler.extend({
       attrsMap[t] = newAttrsMap[t];
     });
 
-    this.setValue(element, _.values(attrsMap).join(' '));
+    this.setValue(element, this.joinValues(_.values(attrsMap)));
   }
 });
 
@@ -107,6 +107,9 @@ var ClassHandler = Blaze._DiffingAttributeHandler.extend({
         tokens[token] = token;
     });
     return tokens;
+  },
+  joinValues: function (values) {
+    return values.join(' ');
   }
 });
 
@@ -156,6 +159,11 @@ var StyleHandler = Blaze._DiffingAttributeHandler.extend({
     }
 
     return tokens;
+  },
+
+  joinValues: function (values) {
+    // TODO: Assure that there is always ; between values.
+    return values.join(' ');
   }
 });
 
