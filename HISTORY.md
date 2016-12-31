@@ -1,5 +1,7 @@
 ## vNEXT
 
+## v2.2.1, 2016-Dec-31
+
 * Reactive inline `style` attribute now preserves the internal order. Similarly for `class`.
   External changes are appended to the end.
   [#141](https://github.com/meteor/blaze/issues/141) [#159](https://github.com/meteor/blaze/issues/159)
