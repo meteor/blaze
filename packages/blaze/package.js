@@ -12,6 +12,7 @@ Package.onUse(function (api) {
   api.use('underscore@1.0.9');
   api.use('observe-sequence@1.0.12');
   api.use('reactive-var@1.0.10');
+  api.use('ordered-dict@1.0.9');
 
   api.export([
     'Blaze',

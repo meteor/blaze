@@ -59,7 +59,7 @@ AttributeHandler.extend = function (options) {
 /// Apply the diff between the attributes of "oldValue" and "value" to "element."
 //
 // Each subclass must implement a parseValue method which takes a string
-// as an input and returns a dict of attributes. The keys of the dict
+// as an input and returns an ordered dict of attributes. The keys of the dict
 // are unique identifiers (ie. css properties in the case of styles), and the
 // values are the entire attribute which will be injected into the element.
 //
@@ -70,24 +70,36 @@ Blaze._DiffingAttributeHandler = AttributeHandler.extend({
     if (!this.getCurrentValue || !this.setValue || !this.parseValue || !this.joinValues)
       throw new Error("Missing methods in subclass of 'DiffingAttributeHandler'");
 
-    var oldAttrsMap = oldValue ? this.parseValue(oldValue) : {};
-    var newAttrsMap = value ? this.parseValue(value) : {};
+    var oldAttrsMap = oldValue ? this.parseValue(oldValue) : new OrderedDict();
+    var attrsMap = value ? this.parseValue(value) : new OrderedDict();
 
     // the current attributes on the element, which we will mutate.
 
-    var attrString = this.getCurrentValue(element);
-    var attrsMap = attrString ? this.parseValue(attrString) : {};
+    var currentAttrString = this.getCurrentValue(element);
+    var currentAttrsMap = currentAttrString ? this.parseValue(currentAttrString) : new OrderedDict();
 
-    _.each(_.keys(oldAttrsMap), function (t) {
-      if (! (t in newAttrsMap))
-        delete attrsMap[t];
+    // Any outside changes to attributes we add at the end.
+    currentAttrsMap.forEach(function (value, key, i) {
+      // If the key already exists, we do not use the current value, but the new value.
+      if (attrsMap.has(key)) {
+        return;
+      }
+
+      // Key does not already exist, but it existed before. Which means it was explicitly
+      // removed, so we do not add it.
+      if (oldAttrsMap.has(key)) {
+        return;
+      }
+
+      attrsMap.append(key, value);
     });
 
-    _.each(_.keys(newAttrsMap), function (t) {
-      attrsMap[t] = newAttrsMap[t];
+    var values = [];
+    attrsMap.forEach(function (value, key, i) {
+      values.push(value);
     });
 
-    this.setValue(element, this.joinValues(_.values(attrsMap)));
+    this.setValue(element, this.joinValues(values));
   }
 });
 
@@ -100,11 +112,15 @@ var ClassHandler = Blaze._DiffingAttributeHandler.extend({
     element.className = className;
   },
   parseValue: function (attrString) {
-    var tokens = {};
+    var tokens = new OrderedDict();
 
     _.each(attrString.split(' '), function(token) {
-      if (token)
-        tokens[token] = token;
+      if (token) {
+        // Ordered dict requires unique keys.
+        if (! tokens.has(token)) {
+          tokens.append(token, token);
+        }
+      }
     });
     return tokens;
   },
@@ -139,7 +155,7 @@ var StyleHandler = Blaze._DiffingAttributeHandler.extend({
   // Example:
   // "color:red; foo:12px" produces a token {color: "color:red", foo:"foo:12px"}
   parseValue: function (attrString) {
-    var tokens = {};
+    var tokens = new OrderedDict();
 
     // Regex for parsing a css attribute declaration, taken from css-parse:
     // https://github.com/reworkcss/css-parse/blob/7cef3658d0bba872cde05a85339034b187cb3397/index.js#L219
@@ -150,10 +166,14 @@ var StyleHandler = Blaze._DiffingAttributeHandler.extend({
       // match[1] = css property
       // Prefix the token to prevent conflicts with existing properties.
 
+      // We use the last value for the same key.
+      if (tokens.has(match[1])) {
+        tokens.remove(match[1]);
+      }
+
       // XXX No `String.trim` on Safari 4. Swap out $.trim if we want to
       // remove strong dep on jquery.
-      tokens[' ' + match[1]] = match[0].trim ?
-        match[0].trim() : $.trim(match[0]);
+      tokens.append(match[1], match[0].trim ? match[0].trim() : $.trim(match[0]));
 
       match = regex.exec(attrString);
     }
@@ -162,7 +182,7 @@ var StyleHandler = Blaze._DiffingAttributeHandler.extend({
   },
 
   joinValues: function (values) {
-    // TODO: Assure that there is always ; between values.
+    // TODO: Assure that there is always ; between values. But what is an example where it breaks?
     return values.join(' ');
   }
 });

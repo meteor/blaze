@@ -1,5 +1,8 @@
 ## vNEXT
 
+* Reactive inline `style` attribute now preserves the internal order. Similarly for `class`.
+  External changes are appended to the end.
+  [#141](https://github.com/meteor/blaze/issues/141) [#159](https://github.com/meteor/blaze/issues/159)
 * Reverted [#102](https://github.com/meteor/blaze/pull/102) and made a different fix for removing attributes
   for `false` values in dynamic attributes ([#52](https://github.com/meteor/blaze/issues/52)).
   Fixes regression reported in [#151](https://github.com/meteor/blaze/issues/151).

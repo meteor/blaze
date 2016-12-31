@@ -538,7 +538,7 @@ Tinytest.add("blaze - render - reactive attributes", function (test) {
 
     R.set({'class': 'david smith', id: 'bar'});
     Tracker.flush();
-    test.equal(canonicalizeHtml(div.innerHTML), '<span class="david blah smith" id="bar"></span>');
+    test.equal(canonicalizeHtml(div.innerHTML), '<span class="david smith blah" id="bar"></span>');
     test.equal(R._numListeners(), 1);
 
     R.set({});
@@ -549,6 +549,35 @@ Tinytest.add("blaze - render - reactive attributes", function (test) {
     $(div).remove();
 
     test.equal(R._numListeners(), 0);
+  })();
+
+  (function () {
+    var style = ReactiveVar(false);
+
+    var div = document.createElement("DIV");
+
+    var divFunc = function () {
+      return DIV({
+        style: function () {
+          return [Blaze.If(function () {
+            return style.get();
+          }, function () {
+            return "background-color: red; ";
+          }), "padding: 10px"];
+        }
+      });
+    };
+
+    Blaze.render(divFunc, div);
+    test.equal(canonicalizeHtml(div.innerHTML), '<div style="padding: 10px"></div>');
+
+    style.set('blue');
+    Tracker.flush();
+    test.equal(canonicalizeHtml(div.innerHTML), '<div style="background-color: red; padding: 10px"></div>');
+
+    $(div).remove();
+
+    test.equal(style._numListeners(), 0);
   })();
 
   // Test styles.
