@@ -246,30 +246,6 @@ Tinytest.add("blaze - render - form - novalidate", function (test) {
   test.equal(formEl.noValidate, false);
 });
 
-// test that we correctly update the HTML5 <iframe> sandbox boolean property
-Tinytest.add("blaze - render - iframe - sandbox", function (test) {
-  var R = ReactiveVar(null);
-  var div = document.createElement("DIV");
-  materialize(IFRAME({sandbox: function () { return R.get(); }}), div);
-  var iframeEl = div.querySelector('iframe');
-  test.equal(iframeEl.sandbox.contains('sandbox'), false);
-  iframeEl.sandbox.add('sandbox');
-  R.set("sandbox");
-  Tracker.flush();
-  R.set(null);
-  Tracker.flush();
-  test.equal(iframeEl.sandbox.contains('sandbox'), false);
-  
-  // Check non boolean valid values
-  R.set("allow-forms");
-  Tracker.flush();
-  test.equal(iframeEl.sandbox.contains('allow-forms'), true);
-  R.set("allow-forms allow-scripts");
-  Tracker.flush();
-  var containAll = (iframeEl.sandbox.contains('allow-forms') && iframeEl.sandbox.contains('allow-scripts'));
-  test.equal(containAll, true);
-});
-
 // test that we correctly update the HTML5 <image> ismap boolean property
 Tinytest.add("blaze - render - image - ismap", function (test) {
   var R = ReactiveVar(null);
