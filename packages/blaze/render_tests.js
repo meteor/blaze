@@ -966,17 +966,33 @@ if (typeof MutationObserver !== 'undefined') {
 
     observer.observe(div, {childList: true, subtree: true});
 
-    materialize(test1, div);
-    test.equal(canonicalizeHtml(div.innerHTML), "<p>a</p>");
+    var materializeCount = 0;
+    var originalMaterializeDOM = Blaze._materializeDOM;
+    Blaze._materializeDOM = function (htmljs, intoArray, parentView, _existingWorkStack) {
+      if (parentView === view) {
+        materializeCount++;
+      }
+      return originalMaterializeDOM(htmljs, intoArray, parentView, _existingWorkStack);
+    };
 
-    test.equal(view.renderCount, 1);
+    try {
+      materialize(test1, div);
+      test.equal(canonicalizeHtml(div.innerHTML), "<p>a</p>");
 
-    R.set('ab');
-    Tracker.flush();
-    test.equal(canonicalizeHtml(div.innerHTML), "<p>a</p>");
+      test.equal(view.renderCount, 1);
 
-    test.equal(view.renderCount, 2);
-    test.equal(renderedCount, 1);
+      R.set('ab');
+      Tracker.flush();
+      test.equal(canonicalizeHtml(div.innerHTML), "<p>a</p>");
+
+      test.equal(view.renderCount, 2);
+      test.equal(renderedCount, 1);
+    }
+    finally {
+      Blaze._materializeDOM = originalMaterializeDOM;
+    }
+
+    test.equal(materializeCount, 1);
 
     // We have to wait a bit, for mutation observer to run.
     Meteor.setTimeout(function () {
