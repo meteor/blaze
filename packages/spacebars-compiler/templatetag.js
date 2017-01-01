@@ -19,13 +19,13 @@ SpacebarsCompiler = {};
 //
 // - `path` - An array of one or more strings.  The path of `{{foo.bar}}`
 //   is `["foo", "bar"]`.  Applies to DOUBLE, TRIPLE, INCLUSION, BLOCKOPEN,
-//   and BLOCKCLOSE.
+//   BLOCKCLOSE, and ELSE.
 //
 // - `args` - An array of zero or more argument specs.  An argument spec
 //   is a two or three element array, consisting of a type, value, and
 //   optional keyword name.  For example, the `args` of `{{foo "bar" x=3}}`
 //   are `[["STRING", "bar"], ["NUMBER", 3, "x"]]`.  Applies to DOUBLE,
-//   TRIPLE, INCLUSION, and BLOCKOPEN.
+//   TRIPLE, INCLUSION, BLOCKOPEN, and ELSE.
 //
 // - `value` - A string of the comment's text. Applies to COMMENT and
 //   BLOCKCOMMENT.
@@ -59,7 +59,7 @@ var makeStacheTagStartRegex = function (r) {
 // result, but not the interesting part of the tag.
 var starts = {
   ESCAPE: /^\{\{(?=\{*\|)/,
-  ELSE: makeStacheTagStartRegex(/^\{\{\s*else(?=[\s}])/i),
+  ELSE: makeStacheTagStartRegex(/^\{\{\s*else(\s+(?!\s)|(?=[}]))/i),
   DOUBLE: makeStacheTagStartRegex(/^\{\{\s*(?!\s)/),
   TRIPLE: makeStacheTagStartRegex(/^\{\{\{\s*(?!\s)/),
   BLOCKCOMMENT: makeStacheTagStartRegex(/^\{\{\s*!--/),
@@ -238,7 +238,7 @@ TemplateTag.parse = function (scannerOrString) {
 
   var scanExpr = function (type) {
     var endType = type;
-    if (type === 'INCLUSION' || type === 'BLOCKOPEN')
+    if (type === 'INCLUSION' || type === 'BLOCKOPEN' || type === 'ELSE')
       endType = 'DOUBLE';
 
     var tag = new TemplateTag;
@@ -312,8 +312,9 @@ TemplateTag.parse = function (scannerOrString) {
     if (! run(ends.DOUBLE))
       expected('`}}`');
   } else if (type === 'ELSE') {
-    if (! run(ends.DOUBLE))
-      expected('`}}`');
+    if (! run(ends.DOUBLE)) {
+      tag = scanExpr(type);
+    }
   } else if (type === 'ESCAPE') {
     var result = run(/^\{*\|/);
     tag.value = '{{' + result.slice(0, -1);
@@ -408,9 +409,27 @@ TemplateTag.parseCompleteTag = function (scannerOrString, position) {
     var lastPos = scanner.pos; // save for error messages
     var tmplTag = TemplateTag.parse(scanner); // {{else}} or {{/foo}}
 
-    if (tmplTag.type === 'ELSE') {
-      // parse {{else}} and content up to close tag
-      result.elseContent = HTMLTools.parseFragment(scanner, parserOptions);
+    var lastElseContentTag = result;
+    while (tmplTag.type === 'ELSE') {
+      if (lastElseContentTag === null) {
+        scanner.fatal("Unexpected else after {{else}}");
+      }
+
+      if (tmplTag.path) {
+        lastElseContentTag.elseContent = new TemplateTag;
+        lastElseContentTag.elseContent.type = 'BLOCKOPEN';
+        lastElseContentTag.elseContent.path = tmplTag.path;
+        lastElseContentTag.elseContent.args = tmplTag.args;
+        lastElseContentTag.elseContent.content = HTMLTools.parseFragment(scanner, parserOptions);
+
+        lastElseContentTag = lastElseContentTag.elseContent;
+      }
+      else {
+        // parse {{else}} and content up to close tag
+        lastElseContentTag.elseContent = HTMLTools.parseFragment(scanner, parserOptions);
+
+        lastElseContentTag = null;
+      }
 
       if (scanner.rest().slice(0, 2) !== '{{')
         scanner.fatal("Expected block close for " + blockName);

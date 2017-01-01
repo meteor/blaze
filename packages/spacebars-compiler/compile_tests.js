@@ -100,6 +100,9 @@ Tinytest.add("spacebars-compiler - compiler errors", function (test) {
   isError("{{#each ../foo in baz}}{{/each}}", "Bad variable name in #each");
   isError("{{#each 3 in baz}}{{/each}}", "Bad variable name in #each");
 
+  isError("{{#foo}}x{{else bar}}y{{else}}z{{else baz}}q{{/foo}}", "Unexpected else after {{else}}");
+  isError("{{#foo}}x{{else bar}}y{{else}}z{{else}}q{{/foo}}", "Unexpected else after {{else}}");
+
   // errors using `{{> React}}`
   isError("{{> React component=emptyComponent}}",
           "{{> React}} must be used in a container element");

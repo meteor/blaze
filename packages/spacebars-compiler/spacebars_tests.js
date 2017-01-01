@@ -40,8 +40,10 @@ Tinytest.add("spacebars-compiler - stache tags", function (test) {
   run('{{ !-- asdf --}asdf', "Unclosed");
   run('{{else}}', {type: 'ELSE'});
   run('{{ else }}', {type: 'ELSE'});
-  run('{{else x}}', "Expected");
+  run('{{ else}}', {type: 'ELSE'});
+  run('{{ else x}}', {type: 'ELSE', path: ['x'], args: []});
   run('{{else_x}}', {type: 'DOUBLE', path: ['else_x'], args: []});
+  run('{{ else else_x}}', {type: 'ELSE', path: ['else_x'], args: []});
   run('{{/if}}', {type: 'BLOCKCLOSE', path: ['if']});
   run('{{ / if }}', {type: 'BLOCKCLOSE', path: ['if']});
   run('{{/if x}}', "Expected");
@@ -63,6 +65,7 @@ Tinytest.add("spacebars-compiler - stache tags", function (test) {
   run('{{ > foo  3 }}', {type: 'INCLUSION', path: ['foo'],
                          args: [['NUMBER', 3]]});
   run('{{{foo 3}}}', {type: 'TRIPLE', path: ['foo'], args: [['NUMBER', 3]]});
+  run('{{else foo 3}}', {type: 'ELSE', path: ['foo'], args: [['NUMBER', 3]]});
 
   run('{{foo bar ./foo foo/bar a.b.c baz=qux x3=.}}',
       {type: 'DOUBLE', path: ['foo'],
@@ -111,6 +114,12 @@ Tinytest.add("spacebars-compiler - stache tags", function (test) {
               ['PATH', ['.', 'x']],
               ['NULL', null],
               ['NULL', null, 'z']]});
+  run('{{else foo this this.x null z=null}}',
+      {type: 'ELSE', path: ['foo'],
+       args: [['PATH', ['.']],
+              ['PATH', ['.', 'x']],
+              ['NULL', null],
+              ['NULL', null, 'z']]});
 
   run('{{./foo 3}}', {type: 'DOUBLE', path: ['.', 'foo'], args: [['NUMBER', 3]]});
   run('{{this/foo 3}}', {type: 'DOUBLE', path: ['.', 'foo'], args: [['NUMBER', 3]]});
@@ -124,6 +133,8 @@ Tinytest.add("spacebars-compiler - stache tags", function (test) {
                      args: []});
   run('{{> a.b.c}}', {type: 'INCLUSION', path: ['a', 'b', 'c'],
                       args: []});
+  run('{{else a.b.c}}', {type: 'ELSE', path: ['a', 'b', 'c'],
+                     args: []});
 
   run('{{foo.[]/[]}}', {type: 'DOUBLE', path: ['foo', '', ''],
                         args: []});
@@ -276,6 +287,20 @@ Tinytest.add("spacebars-compiler - parse", function (test) {
   test.equal(BlazeTools.toJS(SpacebarsCompiler.parse('<div>hello</div> {{#foo}}<div>{{#bar}}world{{/bar}}</div>{{/foo}}')),
              '[HTML.DIV("hello"), " ", SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["foo"], content: HTML.DIV(SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["bar"], content: "world"}))})]');
 
+  test.equal(BlazeTools.toJS(SpacebarsCompiler.parse('{{#foo}}x{{else}}y{{/foo}}')),
+             'SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["foo"], content: "x", elseContent: "y"})');
+
+  test.equal(BlazeTools.toJS(SpacebarsCompiler.parse('{{#foo}}x{{else bar}}y{{/foo}}')),
+             'SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["foo"], content: "x", elseContent: SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["bar"], content: "y"})})');
+
+  test.equal(BlazeTools.toJS(SpacebarsCompiler.parse('{{#foo}}x{{else bar}}y{{else}}z{{/foo}}')),
+             'SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["foo"], content: "x", elseContent: SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["bar"], content: "y", elseContent: "z"})})');
+
+  test.equal(BlazeTools.toJS(SpacebarsCompiler.parse('{{#foo}}x{{else bar}}y{{else baz}}q{{else}}z{{/foo}}')),
+             'SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["foo"], content: "x", elseContent: SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["bar"], content: "y", elseContent: SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["baz"], content: "q", elseContent: "z"})})})');
+
+  test.equal(BlazeTools.toJS(SpacebarsCompiler.parse('{{#foo}}x{{else bar}}{{#baz}}z{{/baz}}{{/foo}}')),
+             'SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["foo"], content: "x", elseContent: SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["bar"], content: SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["baz"], content: "z"})})})');
 
   test.throws(function () {
     SpacebarsCompiler.parse('<a {{{x}}}></a>');

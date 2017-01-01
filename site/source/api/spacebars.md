@@ -304,6 +304,32 @@ Block tags can be used inside attribute values:
 </div>
 ```
 
+You can chain block tags:
+
+```html
+{{#foo}}
+  <p>Foo</p>
+{{else bar}}
+  <p>Bar</p>
+{{else}}
+  <p></p>
+{{/foo}}
+```
+
+This is equivalent to:
+
+```html
+{{#foo}}
+  <p>Foo</p>
+{{else}}
+  {{#bar}}
+    <p>Bar</p>
+  {{else}}
+    <p></p>
+  {{/bar}}
+{{/foo}}
+```
+
 ## If/Unless
 
 An `#if` template tag renders either its main content or its "else" content,

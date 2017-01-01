@@ -214,11 +214,39 @@ There are also two Spacebars built-in helpers, `{% raw %}{{#each}}{% endraw %}`,
 
 Like `{% raw %}{{#each .. in}}{% endraw %}`, `{% raw %}{{#each}}{% endraw %}` iterates over an array or cursor, changing the data context within its content block to be the item in the current iteration. `{% raw %}{{#with}}{% endraw %}` simply changes the data context inside itself to the provided object. In most cases it's better to use `{% raw %}{{#each .. in}}{% endraw %}` and `{% raw %}{{#let}}{% endraw %}` instead, just like it's better to declare a variable than use the JavaScript `with` keyword.
 
-### Strictness
+## Chaining of Block Helpers
+ 
+You can chain block helpers:
+
+```html
+{{#input isRadio}}
+  <input type="radio" />
+{{else input isCheckbox}}
+  <input type="checkbox" />
+{{else}}
+  <input type="text" />
+{{/foo}}
+```
+
+This is equivalent to:
+
+```html
+{{#input isRadio}}
+  <input type="radio" />
+{{else}}
+  {{#input isCheckbox}}
+    <input type="checkbox" />
+  {{else}}
+    <input type="text" />
+  {{/input}}
+{{/input}}
+```
+
+## Strictness
 
 Spacebars has a very strict HTML parser. For instance, you can't self-close a `div` (`<div/>`) in Spacebars, and you need to close some tags that a browser might not require you to (such as a `<p>` tag). Thankfully, the parser will warn you when it can't understand your code with an exact line number for the error.
 
-### Escaping
+## Escaping
 
 To insert literal curly braces: `{% raw %}{{ }}{% endraw %}` and the like, add a pipe character, `|`, to the opening braces:
 

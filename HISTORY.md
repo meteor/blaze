@@ -1,5 +1,10 @@
 ## vNEXT
 
+* Support for chaining block helpers syntax sugar ([#39](https://github.com/meteor/blaze/issues/39)).
+  Now you can use `{{#if foo}}...{{else if bar}}..{{else}}..{{/if}}`
+  instead of manually nesting block helpers. It works with any block helper, not just `if`.
+  It uses [Handlebars syntax](http://handlebarsjs.com/block_helpers.html#conditionals).
+  Based on [#50](https://github.com/meteor/blaze/pull/50).
 * Prevent unnecessary materialization of DOM.
   Based on [#103](https://github.com/meteor/blaze/pull/103).
 
