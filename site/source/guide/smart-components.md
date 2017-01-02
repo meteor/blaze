@@ -43,7 +43,7 @@ Template.Lists_show_page.helpers({
 As described in the [UI/UX article](https://guide.meteor.com/ui-ux.html#smart-components), you should fetch data in the same component where you subscribed to that data. In a Blaze smart component, it's usually simplest to fetch the data in a helper, which you can then use to pass data into a reusable child component. For example, in the `Lists_show_page`:
 
 ```html
-{{> Lists_show (listArgs listId)}}
+{{> Lists_show_page (listArgs listId)}}
 ```
 
 The `listArgs` helper fetches the data that we've subscribed to above:
