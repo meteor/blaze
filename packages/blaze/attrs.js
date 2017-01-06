@@ -371,14 +371,13 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
 
   for (var k in newAttrs) {
     var handler = null;
-    var oldValue;
+    var oldValue = null;
     var value = newAttrs[k];
     if (! _.has(handlers, k)) {
       if (value !== null) {
         // make new handler
         handler = Blaze._makeAttributeHandler(elem, k, value);
         handlers[k] = handler;
-        oldValue = null;
       }
     } else {
       handler = handlers[k];
