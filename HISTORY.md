@@ -7,6 +7,7 @@
   Based on [#50](https://github.com/meteor/blaze/pull/50).
 * Prevent unnecessary materialization of DOM.
   Based on [#103](https://github.com/meteor/blaze/pull/103).
+* Removes a jQuery dependency on $.trim() in `attrs.js#L175`
 
 ## v2.2.1, 2016-Dec-31
 
