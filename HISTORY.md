@@ -7,6 +7,7 @@
   Based on [#50](https://github.com/meteor/blaze/pull/50).
 * Prevent unnecessary materialization of DOM.
   Based on [#103](https://github.com/meteor/blaze/pull/103).
+* Bugfix: [#228](https://github.com/meteor/blaze/issues/228)
 
 ## v2.2.1, 2016-Dec-31
 
