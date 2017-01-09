@@ -19,7 +19,7 @@ You can see the name of the branch at the top of the GitHub pull request with wo
 If you want to just temporary use the Blaze packages from the repository, you can run Meteor inside your app like:
 
 ```bash
-PACKAGE_DIRS=/home/user/projects/blaze/packages meteor
+METEOR_PACKAGE_DIRS=/home/user/projects/blaze/packages meteor
 ```
 
 ### Using symlinks
