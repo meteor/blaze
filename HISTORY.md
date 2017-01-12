@@ -1,5 +1,7 @@
 ## vNEXT
 
+## v2.3.0, 2017-Jan-12
+
 * Support for chaining block helpers syntax sugar ([#39](https://github.com/meteor/blaze/issues/39)).
   Now you can use `{{#if foo}}...{{else if bar}}..{{else}}..{{/if}}`
   instead of manually nesting block helpers. It works with any block helper, not just `if`.
