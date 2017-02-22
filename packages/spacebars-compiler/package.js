@@ -10,7 +10,7 @@ Package.onUse(function (api) {
   // The templating plugin will pull in minifier-js, so that generated code will
   // be beautified. But it's a weak dependency so that eg boilerplate-generator
   // doesn't pull in the minifier.
-  api.use('minifier-js@1.2.14', ['server'], { weak: true });
+  api.use('minifier-js@=1.2.17', ['server'], { weak: true });
 
   api.export('SpacebarsCompiler');
 
