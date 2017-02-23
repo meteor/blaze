@@ -24,9 +24,9 @@ Package.onUse(function (api) {
   
   api.use('minifier-js@1.2.14', ['server'], { weak: true });
 
-  // Pull in uglify from NPM
+  // Pull in js-beautify from NPM
   Npm.depends({
-    'uglify-js': '2.7.5'
+    'js-beautify': '1.6.11'
   });
 });
 
