@@ -95,8 +95,8 @@ SpacebarsCompiler.codeGen = function (parseTree, options) {
 };
 
 SpacebarsCompiler._beautify = function (code) {
-  var UglifyJSMinify = Npm.require('uglify-js').minify;
-  var result = UglifyJSMinify(
+  var uglify = Npm.require('uglify-js');
+  var result = uglify.minify(
     code,
     { fromString: true,
       mangle: false,
