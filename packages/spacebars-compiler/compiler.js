@@ -1,3 +1,4 @@
+var uglify = Npm.require('uglify-js');
 
 SpacebarsCompiler.parse = function (input) {
 
@@ -95,7 +96,6 @@ SpacebarsCompiler.codeGen = function (parseTree, options) {
 };
 
 SpacebarsCompiler._beautify = function (code) {
-  var uglify = Npm.require('uglify-js');
   var result = uglify.minify(
     code,
     { fromString: true,

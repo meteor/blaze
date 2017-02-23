@@ -21,8 +21,10 @@ Package.onUse(function (api) {
     'codegen.js',
     'compiler.js'
   ]);
+  
+  api.use('minifier-js@1.2.14', ['server'], { weak: true });
 
-  // Pull in uglify
+  // Pull in uglify from NPM
   Npm.depends({
     'uglify-js': '2.7.5'
   });
