@@ -30,7 +30,11 @@ Tinytest.add("templating-tools - html scanner", function (test) {
   // where content is something simple like the string "Hello"
   // (passed in as a source string including the quotes).
   var simpleBody = function (content) {
-    return "\nTemplate.body.addContent((function() {\n  var view = this;\n  return " + content + ";\n}));\nMeteor.startup(Template.body.renderToDocument);\n";
+    if (Package['minifier-js'] && Package['minifier-js'].UglifyJSMinify) {
+      return "\nTemplate.body.addContent((function() {\n  var view = this;\n  return " + content + ";\n}));\nMeteor.startup(Template.body.renderToDocument);\n";
+    } else {
+      return "\nTemplate.body.addContent((function () { var view = this; return " + content + "; }));\nMeteor.startup(Template.body.renderToDocument);\n";
+    }
   };
 
   // arguments are quoted strings like '"hello"'
@@ -38,9 +42,15 @@ Tinytest.add("templating-tools - html scanner", function (test) {
     // '"hello"' into '"Template.hello"'
     var viewName = templateName.slice(0, 1) + 'Template.' + templateName.slice(1);
 
-    return '\nTemplate.__checkName(' + templateName + ');\nTemplate[' + templateName +
-      '] = new Template(' + viewName +
-      ', (function() {\n  var view = this;\n  return ' + content + ';\n}));\n';
+    if (Package['minifier-js'] && Package['minifier-js'].UglifyJSMinify) {
+      return '\nTemplate.__checkName(' + templateName + ');\nTemplate[' + templateName +
+        '] = new Template(' + viewName +
+        ', (function() {\n  var view = this;\n  return ' + content + ';\n}));\n';
+    } else {
+      return '\nTemplate.__checkName(' + templateName + ');\nTemplate[' + templateName +
+        '] = new Template(' + viewName +
+        ', (function () { var view = this; return ' + content + '; }));\n';
+    }
   };
 
   var checkResults = function(results, expectJs, expectHead, expectBodyAttrs) {
