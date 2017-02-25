@@ -35,7 +35,6 @@ Package.onTest(function (api) {
     'underscore@1.0.9',
     'tinytest@1.0.11',
     //'coffeescript@1.2.4',
-    'ecmascript@0.6.3'
   ]);
 
   api.use([

@@ -1,247 +1,27 @@
-"use strict";
-
-const runCompilerOutputTests = (run) => {
-  run("abc",
-  `function () {
-    var view = this;
-    return "abc";
-  }`);
-
-  run("{{foo}}",
-  `function() {
-    var view = this;
-    return Blaze.View("lookup:foo", function() {
-      return Spacebars.mustache(view.lookup("foo"));
-    });
-  }`);
-
-  run("{{foo bar}}",
-  `function() {
-    var view = this;
-    return Blaze.View("lookup:foo", function() {
-      return Spacebars.mustache(view.lookup("foo"),
-                                view.lookup("bar")
-    });
-  }`);
-
-  run("{{foo x=bar}}",
-  `function() {
-    var view = this;
-    return Blaze.View("lookup:foo", function() {
-      return Spacebars.mustache(view.lookup("foo"),
-      Spacebars.kw({
-        x: view.lookup("bar")
-      }));
-    });
-  }`);
-
-  run("{{foo.bar baz}}",
-  `function() {
-    var view = this;
-    return Blaze.View("lookup:foo.bar", function() {
-      return Spacebars.mustache(Spacebars.dot(
-               view.lookup("foo"), "bar"),
-               view.lookup("baz"));
-    });
-  }`);
-
-  run("{{foo.bar (baz qux)}}",
-  `function() {
-    var view = this;
-    return Blaze.View("lookup:foo.bar", function() {
-      return Spacebars.mustache(Spacebars.dot(
-               view.lookup("foo"), "bar"),
-               Spacebars.dataMustache(view.lookup("baz"), view.lookup("qux")));
-    });
-  }`);
-
-  run("{{foo bar.baz}}",
-  `function() {
-    var view = this;
-    return Blaze.View("lookup:foo", function() {
-      return Spacebars.mustache(view.lookup("foo"),
-             Spacebars.dot(view.lookup("bar"), "baz"));
-    });
-  }`);
-
-  run("{{foo x=bar.baz}}",
-  `function() {
-    var view = this;
-    return Blaze.View("lookup:foo", function() {
-      return Spacebars.mustache(view.lookup("foo"), Spacebars.kw({
-        x: Spacebars.dot(view.lookup("bar"), "baz")
-      }));
-    });
-  }`);
-
-  run("{{#foo}}abc{{/foo}}",
-  `function() {
-    var view = this;
-    return Spacebars.include(view.lookupTemplate("foo"), (function() {
-      return "abc";
-    }));
-  }`);
-
-  run("{{#if cond}}aaa{{else}}bbb{{/if}}",
-  `function() {
-    var view = this;
-    return Blaze.If(function () {
-      return Spacebars.call(view.lookup("cond"));
-    }, (function() {
-      return "aaa";
-    }), (function() {
-      return "bbb";
-    }));
-  }`);
-
-  run("{{!-- --}}{{#if cond}}aaa{{!\n}}{{else}}{{!}}bbb{{!-- --}}{{/if}}{{!}}",
-  `function() {
-    var view = this;
-    return Blaze.If(function () {
-      return Spacebars.call(view.lookup("cond"));
-    }, (function() {
-      return "aaa";
-    }), (function() {
-      return "bbb";
-    }));
-  }`);
-
-  run("{{> foo bar}}",
-  `function() {
-    var view = this;
-    return Blaze._TemplateWith(function() {
-      return Spacebars.call(view.lookup("bar"));
-    }, function() {
-      return Spacebars.include(view.lookupTemplate("foo"));
-    });
-  }`);
-
-  run("{{> foo x=bar}}",
-  `function() {
-    var view = this;
-    return Blaze._TemplateWith(function() {
-      return {
-        x: Spacebars.call(view.lookup("bar"))
-      };
-    }, function() {
-      return Spacebars.include(view.lookupTemplate("foo"));
-    });
-  }`);
-
-
-  run("{{> foo bar.baz}}",
-  `function() {
-    var view = this;
-    return Blaze._TemplateWith(function() {
-      return Spacebars.call(Spacebars.dot(view.lookup("bar"), "baz"));
-    }, function() {
-      return Spacebars.include(view.lookupTemplate("foo"));
-    });
-  }`);
-
-  run("{{> foo x=bar.baz}}",
-  `function() {
-    var view = this;
-    return Blaze._TemplateWith(function() {
-      return {
-        x: Spacebars.call(Spacebars.dot(view.lookup("bar"), "baz"))
-      };
-    }, function() {
-      return Spacebars.include(view.lookupTemplate("foo"));
-    });
-  }`);
-
-  run("{{> foo bar baz}}",
-  `function() {
-    var view = this;
-    return Blaze._TemplateWith(function() {
-      return Spacebars.dataMustache(view.lookup("bar"), view.lookup("baz"));
-    }, function() {
-      return Spacebars.include(view.lookupTemplate("foo"));
-    });
-  }`);
-
-  run("{{#foo bar baz}}aaa{{/foo}}",
-  `function() {
-    var view = this;
-    return Blaze._TemplateWith(function() {
-      return Spacebars.dataMustache(view.lookup("bar"), view.lookup("baz"));
-    }, function() {
-      return Spacebars.include(view.lookupTemplate("foo"), (function() {
-        return "aaa";
-      }));
-    });
-  }`);
-
-  run("{{#foo p.q r.s}}aaa{{/foo}}",
-  `function() {
-    var view = this;
-    return Blaze._TemplateWith(function() {
-      return Spacebars.dataMustache(Spacebars.dot(view.lookup("p"), "q"), Spacebars.dot(view.lookup("r"), "s"));
-    }, function() {
-      return Spacebars.include(view.lookupTemplate("foo"), (function() {
-        return "aaa";
-      }));
-    });
-  }`);
-
-  run("<a {{b}}></a>",
-  `function() {
-    var view = this;
-    return HTML.A(HTML.Attrs(function() {
-      return Spacebars.attrMustache(view.lookup("b"));
-    }));
-  }`);
-
-  run("<a {{b}} c=d{{e}}f></a>",
-  `function() {
-    var view = this;
-    return HTML.A(HTML.Attrs({
-      c: (function() { return [
-        "d",
-        Spacebars.mustache(view.lookup("e")),
-        "f" ]; })
-    }, function() {
-      return Spacebars.attrMustache(view.lookup("b"));
-    }));
-  }`);
-
-  run("<asdf>{{foo}}</asdf>",
-  `function() {
-    var view = this;
-    return HTML.getTag("asdf")(Blaze.View("lookup:foo", function() {
-      return Spacebars.mustache(view.lookup("foo"));
-    }));
-  }`);
-
-  run("<textarea>{{foo}}</textarea>",
-  `function() {
-    var view = this;
-    return HTML.TEXTAREA({value: (function () {
-      return Spacebars.mustache(view.lookup("foo"));
-    }) });
-  }`);
-
-  run("<textarea>{{{{|{{|foo}}</textarea>",
-  `function() {
-    var view = this;
-    return HTML.TEXTAREA({value: (function () {
-      return [ "{{{{", "{{", "foo}}" ];
-    }) });
-  }`);
-
-  run("{{|foo}}",
-  `function() {
-    var view = this;
-    return [ "{{", "foo}}" ];
-  }`);
-
-  run("<a b={{{|></a>",
-  `function() {
-    var view = this;
-    return HTML.A({
-      b: (function () {
-        return "{{{";
-      })
-    });
-  }`);
+var runCompilerOutputTests = function(run) {
+    run("abc", "function () {\n  var view = this;\n  return \"abc\";\n}");
+    run("{{foo}}", "function() {\n  var view = this;\n  return Blaze.View(\"lookup:foo\", function() {\n    return Spacebars.mustache(view.lookup(\"foo\"));\n  });\n}");
+    run("{{foo bar}}", "function() {\n  var view = this;\n  return Blaze.View(\"lookup:foo\", function() {\n    return Spacebars.mustache(view.lookup(\"foo\"),\n                              view.lookup(\"bar\"));\n  });\n}");
+    run("{{foo x=bar}}", "function() {\n  var view = this;\n  return Blaze.View(\"lookup:foo\", function() {\n    return Spacebars.mustache(view.lookup(\"foo\"), Spacebars.kw({\n      x: view.lookup(\"bar\")\n    }));\n  });\n}");
+    run("{{foo.bar baz}}", "function() {\n  var view = this;\n  return Blaze.View(\"lookup:foo.bar\", function() {\n    return Spacebars.mustache(Spacebars.dot(\n             view.lookup(\"foo\"), \"bar\"),\n             view.lookup(\"baz\"));\n  });\n}");
+    run("{{foo.bar (baz qux)}}", "function() {\n  var view = this;\n  return Blaze.View(\"lookup:foo.bar\", function() {\n    return Spacebars.mustache(Spacebars.dot(\n             view.lookup(\"foo\"), \"bar\"),\n             Spacebars.dataMustache(view.lookup(\"baz\"), view.lookup(\"qux\")));\n  });\n}");
+    run("{{foo bar.baz}}", "function() {\n  var view = this;\n  return Blaze.View(\"lookup:foo\", function() {\n    return Spacebars.mustache(view.lookup(\"foo\"),\n           Spacebars.dot(view.lookup(\"bar\"), \"baz\"));\n  });\n}");
+    run("{{foo x=bar.baz}}", "function() {\n  var view = this;\n  return Blaze.View(\"lookup:foo\", function() {\n    return Spacebars.mustache(view.lookup(\"foo\"), Spacebars.kw({\n      x: Spacebars.dot(view.lookup(\"bar\"), \"baz\")\n    }));\n  });\n}");
+    run("{{#foo}}abc{{/foo}}", "function() {\n  var view = this;\n  return Spacebars.include(view.lookupTemplate(\"foo\"), (function() {\n    return \"abc\";\n  }));\n}");
+    run("{{#if cond}}aaa{{else}}bbb{{/if}}", "function() {\n  var view = this;\n  return Blaze.If(function () {\n    return Spacebars.call(view.lookup(\"cond\"));\n  }, (function() {\n    return \"aaa\";\n  }), (function() {\n    return \"bbb\";\n  }));\n}");
+    run("{{!-- --}}{{#if cond}}aaa{{!\n}}{{else}}{{!}}bbb{{!-- --}}{{/if}}{{!}}", "function() {\n  var view = this;\n  return Blaze.If(function () {\n    return Spacebars.call(view.lookup(\"cond\"));\n  }, (function() {\n    return \"aaa\";\n  }), (function() {\n    return \"bbb\";\n  }));\n}");
+    run("{{> foo bar}}", "function() {\n  var view = this;\n  return Blaze._TemplateWith(function() {\n    return Spacebars.call(view.lookup(\"bar\"));\n  }, function() {\n    return Spacebars.include(view.lookupTemplate(\"foo\"));\n  });\n}");
+    run("{{> foo x=bar}}", "function() {\n  var view = this;\n  return Blaze._TemplateWith(function() {\n    return {\n      x: Spacebars.call(view.lookup(\"bar\"))\n    };\n  }, function() {\n    return Spacebars.include(view.lookupTemplate(\"foo\"));\n  });\n}\n");
+    run("{{> foo bar.baz}}", "function() {\n  var view = this;\n  return Blaze._TemplateWith(function() {\n    return Spacebars.call(Spacebars.dot(view.lookup(\"bar\"), \"baz\"));\n  }, function() {\n    return Spacebars.include(view.lookupTemplate(\"foo\"));\n  });\n}");
+    run("{{> foo x=bar.baz}}", "function() {\n  var view = this;\n  return Blaze._TemplateWith(function() {\n    return {\n      x: Spacebars.call(Spacebars.dot(view.lookup(\"bar\"), \"baz\"))\n    };\n  }, function() {\n    return Spacebars.include(view.lookupTemplate(\"foo\"));\n  });\n}");
+    run("{{> foo bar baz}}", "function() {\n  var view = this;\n  return Blaze._TemplateWith(function() {\n    return Spacebars.dataMustache(view.lookup(\"bar\"), view.lookup(\"baz\"));\n  }, function() {\n    return Spacebars.include(view.lookupTemplate(\"foo\"));\n  });\n}\n");
+    run("{{#foo bar baz}}aaa{{/foo}}", "function() {\n  var view = this;\n  return Blaze._TemplateWith(function() {\n    return Spacebars.dataMustache(view.lookup(\"bar\"), view.lookup(\"baz\"));\n  }, function() {\n    return Spacebars.include(view.lookupTemplate(\"foo\"), (function() {\n      return \"aaa\";\n    }));\n  });\n}");
+    run("{{#foo p.q r.s}}aaa{{/foo}}", "function() {\n  var view = this;\n  return Blaze._TemplateWith(function() {\n    return Spacebars.dataMustache(Spacebars.dot(view.lookup(\"p\"), \"q\"), Spacebars.dot(view.lookup(\"r\"), \"s\"));\n  }, function() {\n    return Spacebars.include(view.lookupTemplate(\"foo\"), (function() {\n      return \"aaa\";\n    }));\n  });\n}");
+    run("<a {{b}}></a>", "function() {\n  var view = this;\n  return HTML.A(HTML.Attrs(function() {\n    return Spacebars.attrMustache(view.lookup(\"b\"));\n  }));\n}");
+    run("<a {{b}} c=d{{e}}f></a>", "function() {\n  var view = this;\n  return HTML.A(HTML.Attrs({\n    c: (function() { return [\n      \"d\",\n      Spacebars.mustache(view.lookup(\"e\")),\n      \"f\" ]; })\n  }, function() {\n    return Spacebars.attrMustache(view.lookup(\"b\"));\n  }));\n}");
+    run("<asdf>{{foo}}</asdf>", "function() {\n  var view = this;\n  return HTML.getTag(\"asdf\")(Blaze.View(\"lookup:foo\", function() {\n    return Spacebars.mustache(view.lookup(\"foo\"));\n  }));\n}");
+    run("<textarea>{{foo}}</textarea>", "function() {\n  var view = this;\n  return HTML.TEXTAREA({value: (function () {\n    return Spacebars.mustache(view.lookup(\"foo\"));\n  }) });\n}");
+    run("<textarea>{{{{|{{|foo}}</textarea>", "function() {\n  var view = this;\n  return HTML.TEXTAREA({value: (function () {\n    return [ \"{{{{\", \"{{\", \"foo}}\" ];\n  }) });\n}");
+    run("{{|foo}}", "function() {\n  var view = this;\n  return [ \"{{\", \"foo}}\" ];\n}");
+    run("<a b={{{|></a>", "function() {\n  var view = this;\n  return HTML.A({\n    b: (function () {\n      return \"{{{\";\n    })\n  });\n}");
+};
