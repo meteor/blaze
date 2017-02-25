@@ -27,7 +27,7 @@ Tinytest.add("spacebars-compiler - compiler output", function (test) {
 
           // ======================== !!NOTE!! =================================
           // Since we are bringing uglify-js in from NPM, this code should no
-          // longer ever get called. Leaving it just in case.
+          // longer ever be needed. Leaving it just in case.
           // ==================================+================================
 
           // Remove single-line comments, including line nums from build system.
@@ -45,8 +45,12 @@ Tinytest.add("spacebars-compiler - compiler output", function (test) {
     }
   };
 
-  runCompilerOutputTests(run);
+  coffee.runCompilerOutputTests(run);
 });
+
+coffee = {
+  runCompilerOutputTests: null // implemented in compiler_output_tests.coffee
+};
 
 Tinytest.add("spacebars-compiler - compiler errors", function (test) {
 
