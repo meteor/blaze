@@ -49,4 +49,8 @@ Package.onTest(function (api) {
     'compile_tests.js',
     'compiler_output_tests.coffee'
   ]);
+
+  Npm.depends({
+    'uglify-js': '2.7.5'
+  })
 });
