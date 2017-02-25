@@ -7,10 +7,6 @@ Package.describe({
 
 Package.onUse(function (api) {
   api.use('underscore@1.0.9');
-  // The templating plugin will pull in minifier-js, so that generated code will
-  // be beautified. But it's a weak dependency so that eg boilerplate-generator
-  // doesn't pull in the minifier.
-  api.use('minifier-js@1.2.14', ['server'], { weak: true });
 
   api.export('SpacebarsCompiler');
 
@@ -25,6 +21,11 @@ Package.onUse(function (api) {
     'codegen.js',
     'compiler.js'
   ]);
+
+  // Pull in uglify-js from NPM
+  Npm.depends({
+    'uglify-js': '2.7.5'
+  });
 });
 
 Package.onTest(function (api) {
@@ -46,4 +47,8 @@ Package.onTest(function (api) {
     'compile_tests.js',
     'compiler_output_tests.coffee'
   ]);
+
+  Npm.depends({
+    'uglify-js': '2.7.5'
+  })
 });

@@ -1,3 +1,4 @@
+var UglifyJSMinify = Npm.require('uglify-js').minify;
 
 SpacebarsCompiler.parse = function (input) {
 
@@ -95,22 +96,20 @@ SpacebarsCompiler.codeGen = function (parseTree, options) {
 };
 
 SpacebarsCompiler._beautify = function (code) {
-  if (Package['minifier-js'] && Package['minifier-js'].UglifyJSMinify) {
-    var result = Package['minifier-js'].UglifyJSMinify(
-      code,
-      { fromString: true,
-        mangle: false,
-        compress: false,
-        output: { beautify: true,
-                  indent_level: 2,
-                  width: 80 } });
-    var output = result.code;
-    // Uglify interprets our expression as a statement and may add a semicolon.
-    // Strip trailing semicolon.
-    output = output.replace(/;$/, '');
-    return output;
-  } else {
-    // don't actually beautify; no UglifyJS
-    return code;
-  }
+  var result = UglifyJSMinify(code, { 
+    fromString: true,
+    mangle: false,
+    compress: false,
+    output: { 
+      beautify: true,
+      indent_level: 2,
+      width: 80
+    }
+  });
+  
+  var output = result.code;
+  // Uglify interprets our expression as a statement and may add a semicolon.
+  // Strip trailing semicolon.
+  output = output.replace(/;$/, '');
+  return output;
 };
