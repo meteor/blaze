@@ -32,7 +32,7 @@ Package.onTest(function (api) {
   api.use([
     'underscore@1.0.9',
     'tinytest@1.0.11',
-    'coffeescript@1.2.4',
+    'coffeescript@1.2.4'
   ]);
 
   api.use([
