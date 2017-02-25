@@ -25,6 +25,11 @@ Tinytest.add("spacebars-compiler - compiler output", function (test) {
           // but let's at least do some sort of test without it.
           // These regexes may have to be adjusted if new tests are added.
 
+          // ======================== !!NOTE!! =================================
+          // Since we are bringing uglify-js in from NPM, this code should no
+          // longer ever get called. Leaving it just in case.
+          // ==================================+================================
+
           // Remove single-line comments, including line nums from build system.
           string = string.replace(/\/\/.*$/mg, '');
           string = string.replace(/\s+/g, ''); // kill whitespace
@@ -40,13 +45,8 @@ Tinytest.add("spacebars-compiler - compiler output", function (test) {
     }
   };
 
-  coffee.runCompilerOutputTests(run);
+  runCompilerOutputTests(run);
 });
-
-coffee = {
-  runCompilerOutputTests: null // implemented in compiler_output_tests.coffee
-};
-
 
 Tinytest.add("spacebars-compiler - compiler errors", function (test) {
 

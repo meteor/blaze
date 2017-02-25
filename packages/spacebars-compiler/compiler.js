@@ -1,4 +1,4 @@
-var beautify = Npm.require('js-beautify').js_beautify;
+var UglifyJSMinify = Npm.require('uglify-js').minify;
 
 SpacebarsCompiler.parse = function (input) {
 
@@ -96,9 +96,18 @@ SpacebarsCompiler.codeGen = function (parseTree, options) {
 };
 
 SpacebarsCompiler._beautify = function (code) {
-  var output = beautify(code, { indent_size: 2 });
+  var result = UglifyJSMinify(code, { 
+    fromString: true,
+    mangle: false,
+    compress: false,
+    output: { 
+      beautify: true,
+      indent_level: 2,
+      width: 80
+    }
+  });
   
-  // Not sure if js-beautify does the same thing as Uglify, so I'll leave this.
+  var output = result.code;
   // Uglify interprets our expression as a statement and may add a semicolon.
   // Strip trailing semicolon.
   output = output.replace(/;$/, '');

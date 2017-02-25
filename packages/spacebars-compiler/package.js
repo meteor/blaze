@@ -26,7 +26,7 @@ Package.onUse(function (api) {
 
   // Pull in js-beautify from NPM
   Npm.depends({
-    'js-beautify': '1.6.11'
+    'uglify-js': '2.7.5'
   });
 });
 
@@ -34,7 +34,8 @@ Package.onTest(function (api) {
   api.use([
     'underscore@1.0.9',
     'tinytest@1.0.11',
-    'coffeescript@1.2.4'
+    //'coffeescript@1.2.4',
+    'ecmascript@0.6.3'
   ]);
 
   api.use([
@@ -47,6 +48,7 @@ Package.onTest(function (api) {
   api.addFiles([
     'spacebars_tests.js',
     'compile_tests.js',
-    'compiler_output_tests.coffee'
+    //'compiler_output_tests.coffee'
+    'compiler_output_tests.js'
   ]);
 });
