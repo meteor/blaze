@@ -5,6 +5,11 @@ Package.describe({
   git: 'https://github.com/meteor/blaze.git'
 });
 
+// Use uglify-js from NPM
+Npm.depends({
+  'uglify-js': '2.7.5'
+});
+
 Package.onUse(function (api) {
   api.use('underscore@1.0.9');
 
@@ -21,11 +26,6 @@ Package.onUse(function (api) {
     'codegen.js',
     'compiler.js'
   ]);
-
-  // Pull in uglify-js from NPM
-  Npm.depends({
-    'uglify-js': '2.7.5'
-  });
 });
 
 Package.onTest(function (api) {
@@ -47,8 +47,4 @@ Package.onTest(function (api) {
     'compile_tests.js',
     'compiler_output_tests.coffee'
   ]);
-
-  Npm.depends({
-    'uglify-js': '2.7.5'
-  })
 });
