@@ -16,7 +16,7 @@ Package.onUse(function(api) {
     // boilerplate-generator uses spacebars-compiler.)
     // XXX maybe uglify should be applied by this plugin instead of via magic
     // weak dependency.
-    'minifier-js@1.2.14 || =2.0.0'
+    'minifier-js@1.2.14 || 2.0.0'
   ]);
 
   api.export('TemplatingTools');
