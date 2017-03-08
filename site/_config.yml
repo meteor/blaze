@@ -29,6 +29,7 @@ sidebar_categories:
     - guide/smart-components
     - guide/reusing-code
     - guide/understanding-blaze
+    - guide/routing
   API:
     - api/templates
     - api/blaze
