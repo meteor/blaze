@@ -50,7 +50,7 @@ HelperMap.prototype.set = function (name, helper) {
   this[' '+name] = helper;
 };
 HelperMap.prototype.has = function (name) {
-  return (' '+name) in this;
+  return (typeof this[' '+name] !== 'undefined');
 };
 
 /**
