@@ -1,7 +1,9 @@
 ## vNEXT
-* Removed [minifier-js](https://github.com/meteor/meteor/tree/devel/packages/minifier-js) dependency from [templating-tools](https://github.com/meteor/blaze/tree/master/packages/templating-tools). If you need your template output to be minified, you must add the package to your app manually, by running `meteor add standard-minifier-js`. The package is included in a standard meteor app.
-* Based on [#236](https://github.com/meteor/blaze/pull/236).
-* Use [uglify-js](https://github.com/mishoo/UglifyJS) directly in [spacebars-compiler](https://github.com/meteor/blaze/tree/master/packages/spacebars-compiler) for beautification instead of [minifier-js](https://github.com/meteor/meteor/tree/devel/packages/minifier-js).
+
+* Removed [minifier-js](https://github.com/meteor/meteor/tree/devel/packages/minifier-js) dependency from [templating-tools](https://github.com/meteor/blaze/tree/master/packages/templating-tools) package. If you need your template output to be minified, you must add the package to your app manually, by running `meteor add standard-minifier-js`. The package is included in a standard meteor app.
+  [#236](https://github.com/meteor/blaze/pull/236)
+* Switched to use a [uglify-js](https://github.com/mishoo/UglifyJS) NPM package directly in [spacebars-compiler](https://github.com/meteor/blaze/tree/master/packages/spacebars-compiler) for beautification instead of [minifier-js](https://github.com/meteor/meteor/tree/devel/packages/minifier-js) package.
+  [#234](https://github.com/meteor/blaze/pull/234)
 
 ## v2.3.0, 2017-Jan-12
 
