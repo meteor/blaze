@@ -5,7 +5,6 @@ Package.describe({
   git: 'https://github.com/meteor/blaze.git'
 });
 
-// Use uglify-js from NPM
 Npm.depends({
   'uglify-js': '2.7.5'
 });
