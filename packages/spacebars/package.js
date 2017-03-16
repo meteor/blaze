@@ -21,7 +21,7 @@ Package.onUse(function (api) {
   api.export('Spacebars');
 
   api.use('htmljs@1.0.11');
-  api.use('blaze@2.1.9');
+  api.use('blaze@2.3.0-1-beta.2');
 
   api.addFiles([
     'spacebars-runtime.js'
