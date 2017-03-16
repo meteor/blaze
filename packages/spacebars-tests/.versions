@@ -29,7 +29,6 @@ local-test:spacebars-tests@1.1.0
 logging@1.1.15
 markdown@1.0.10
 meteor@1.6.0
-minifier-js@1.2.14
 minimongo@1.0.17
 modules@0.7.6
 modules-runtime@0.7.6

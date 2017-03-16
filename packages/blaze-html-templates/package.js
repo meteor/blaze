@@ -1,7 +1,7 @@
 Package.describe({
   name: 'blaze-html-templates',
   summary: "Compile HTML templates into reactive UI with Meteor Blaze",
-  version: '1.1.0',
+  version: '1.1.0_1',
   git: 'https://github.com/meteor/blaze.git'
 });
 

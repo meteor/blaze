@@ -1,7 +1,7 @@
 Package.describe({
   name: 'templating',
   summary: "Allows templates to be defined in .html files",
-  version: '1.3.0',
+  version: '1.3.0_1',
   git: 'https://github.com/meteor/blaze.git'
 });
 

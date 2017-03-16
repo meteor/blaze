@@ -1,7 +1,7 @@
 Package.describe({
   name: 'templating-runtime',
   summary: "Runtime for compiled .html files",
-  version: '1.3.0',
+  version: '1.3.0_1',
   git: 'https://github.com/meteor/blaze.git',
   documentation: null
 });
