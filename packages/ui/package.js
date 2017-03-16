@@ -6,7 +6,7 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.use('blaze@2.3.0-1-beta.2');
+  api.use('blaze@2.3.1');
   api.imply('blaze');
 
   // XXX COMPAT WITH PACKAGES BUILT FOR 0.9.0.
