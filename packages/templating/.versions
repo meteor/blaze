@@ -16,7 +16,6 @@ htmljs@1.0.11
 id-map@1.0.8
 jquery@1.11.9
 meteor@1.2.17
-minifier-js@1.2.14
 modules@0.7.6
 modules-runtime@0.7.6
 mongo-id@1.0.5

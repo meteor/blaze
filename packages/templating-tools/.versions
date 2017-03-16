@@ -25,7 +25,6 @@ jquery@1.11.9
 local-test:templating-tools@1.1.0
 logging@1.0.14
 meteor@1.2.17
-minifier-js@1.2.14
 minimongo@1.0.17
 modules@0.7.6
 modules-runtime@0.7.6

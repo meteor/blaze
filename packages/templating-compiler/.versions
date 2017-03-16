@@ -9,7 +9,6 @@ ecmascript-runtime@0.3.14
 html-tools@1.0.11
 htmljs@1.0.11
 meteor@1.2.17
-minifier-js@1.2.14
 modules@0.7.6
 modules-runtime@0.7.6
 promise@0.8.7
