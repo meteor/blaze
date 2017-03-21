@@ -1,5 +1,8 @@
 ## vNEXT
 
+* Made beautification of compiled spacebars code happen only on the server.
+  [#244](https://github.com/meteor/blaze/issues/244)
+
 ## v2.3.1, 2017-Mar-16
 
 * Removed [minifier-js](https://github.com/meteor/meteor/tree/devel/packages/minifier-js) dependency from [templating-tools](https://github.com/meteor/blaze/tree/master/packages/templating-tools) package. If you need your template output to be minified, you must add the package to your app manually, by running `meteor add standard-minifier-js`. The package is included in a standard meteor app.
