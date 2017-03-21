@@ -1,5 +1,3 @@
-var UglifyJSMinify = Npm.require('uglify-js').minify;
-
 SpacebarsCompiler.parse = function (input) {
 
   var tree = HTMLTools.parseFragment(
@@ -96,20 +94,26 @@ SpacebarsCompiler.codeGen = function (parseTree, options) {
 };
 
 SpacebarsCompiler._beautify = function (code) {
-  var result = UglifyJSMinify(code, { 
-    fromString: true,
-    mangle: false,
-    compress: false,
-    output: { 
-      beautify: true,
-      indent_level: 2,
-      width: 80
-    }
-  });
-  
-  var output = result.code;
-  // Uglify interprets our expression as a statement and may add a semicolon.
-  // Strip trailing semicolon.
-  output = output.replace(/;$/, '');
-  return output;
+  try {
+    var UglifyJSMinify = Npm.require('uglify-js').minify;
+    var result = UglifyJSMinify(code, {
+      fromString: true,
+      mangle: false,
+      compress: false,
+      output: {
+        beautify: true,
+        indent_level: 2,
+        width: 80
+      }
+    });
+
+    var output = result.code;
+    // Uglify interprets our expression as a statement and may add a semicolon.
+    // Strip trailing semicolon.
+    output = output.replace(/;$/, '');
+    return output;
+
+  } catch (e) {
+    return code;
+  }
 };
