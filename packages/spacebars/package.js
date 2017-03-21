@@ -27,3 +27,17 @@ Package.onUse(function (api) {
     'spacebars-runtime.js'
   ]);
 });
+
+Package.onTest(function (api) {
+  api.use([
+    'tinytest@1.0.11'
+  ]);
+
+  api.use([
+    'spacebars'
+  ]);
+
+  api.addFiles([
+    'spacebars_tests.js'
+  ]);
+});
