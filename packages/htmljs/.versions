@@ -3,7 +3,7 @@ babel-compiler@6.14.1
 babel-runtime@1.0.1
 base64@1.0.10
 binary-heap@1.0.10
-blaze@2.1.9
+blaze@2.3.2
 blaze-tools@1.0.10
 boilerplate-generator@1.0.11
 callback-hook@1.0.10
@@ -37,8 +37,8 @@ random@1.0.10
 reactive-var@1.0.11
 retry@1.0.9
 routepolicy@1.0.12
-spacebars@1.0.13
-spacebars-compiler@1.0.13
+spacebars@1.0.15
+spacebars-compiler@1.1.2
 tinytest@1.0.12
 tracker@1.1.2
 ui@1.0.12

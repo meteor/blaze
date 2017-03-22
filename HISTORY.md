@@ -1,5 +1,7 @@
 ## vNEXT
 
+## v2.3.2, 2017-Mar-21
+
 * Made beautification of compiled spacebars code happen only on the server.
   [#244](https://github.com/meteor/blaze/issues/244)
 
