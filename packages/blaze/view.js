@@ -38,7 +38,7 @@
  * @summary Constructor for a View, which represents a reactive region of DOM.
  * @locus Client
  * @param {String} [name] Optional.  A name for this type of View.  See [`view.name`](#view_name).
- * @param {Function} renderFunction A function that returns [*renderable content*](#renderable_content).  In this function, `this` is bound to the View.
+ * @param {Function} renderFunction A function that returns [*renderable content*](#Renderable-Content).  In this function, `this` is bound to the View.
  */
 Blaze.View = function (name, render) {
   if (! (this instanceof Blaze.View))

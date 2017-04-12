@@ -11,7 +11,7 @@
  * @summary Constructor for a Template, which is used to construct Views with particular name and content.
  * @locus Client
  * @param {String} [viewName] Optional.  A name for Views constructed by this Template.  See [`view.name`](#view_name).
- * @param {Function} renderFunction A function that returns [*renderable content*](#renderable_content).  This function is used as the `renderFunction` for Views constructed by this Template.
+ * @param {Function} renderFunction A function that returns [*renderable content*](#Renderable-Content).  This function is used as the `renderFunction` for Views constructed by this Template.
  */
 Blaze.Template = function (viewName, renderFunction) {
   if (! (this instanceof Blaze.Template))

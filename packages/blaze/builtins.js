@@ -8,7 +8,7 @@ Blaze._calculateCondition = function (cond) {
  * @summary Constructs a View that renders content with a data context.
  * @locus Client
  * @param {Object|Function} data An object to use as the data context, or a function returning such an object.  If a function is provided, it will be reactively re-run.
- * @param {Function} contentFunc A Function that returns [*renderable content*](#renderable_content).
+ * @param {Function} contentFunc A Function that returns [*renderable content*](#Renderable-Content).
  */
 Blaze.With = function (data, contentFunc) {
   var view = Blaze.View('with', contentFunc);
@@ -54,7 +54,7 @@ Blaze._attachBindingsToView = function (bindings, view) {
  * @summary Constructs a View setting the local lexical scope in the block.
  * @param {Function} bindings Dictionary mapping names of bindings to
  * values or computations to reactively re-run.
- * @param {Function} contentFunc A Function that returns [*renderable content*](#renderable_content).
+ * @param {Function} contentFunc A Function that returns [*renderable content*](#Renderable-Content).
  */
 Blaze.Let = function (bindings, contentFunc) {
   var view = Blaze.View('let', contentFunc);
@@ -67,8 +67,8 @@ Blaze.Let = function (bindings, contentFunc) {
  * @summary Constructs a View that renders content conditionally.
  * @locus Client
  * @param {Function} conditionFunc A function to reactively re-run.  Whether the result is truthy or falsy determines whether `contentFunc` or `elseFunc` is shown.  An empty array is considered falsy.
- * @param {Function} contentFunc A Function that returns [*renderable content*](#renderable_content).
- * @param {Function} [elseFunc] Optional.  A Function that returns [*renderable content*](#renderable_content).  If no `elseFunc` is supplied, no content is shown in the "else" case.
+ * @param {Function} contentFunc A Function that returns [*renderable content*](#Renderable-Content).
+ * @param {Function} [elseFunc] Optional.  A Function that returns [*renderable content*](#Renderable-Content).  If no `elseFunc` is supplied, no content is shown in the "else" case.
  */
 Blaze.If = function (conditionFunc, contentFunc, elseFunc, _not) {
   var conditionVar = new ReactiveVar;
@@ -92,8 +92,8 @@ Blaze.If = function (conditionFunc, contentFunc, elseFunc, _not) {
  * @summary An inverted [`Blaze.If`](#blaze_if).
  * @locus Client
  * @param {Function} conditionFunc A function to reactively re-run.  If the result is falsy, `contentFunc` is shown, otherwise `elseFunc` is shown.  An empty array is considered falsy.
- * @param {Function} contentFunc A Function that returns [*renderable content*](#renderable_content).
- * @param {Function} [elseFunc] Optional.  A Function that returns [*renderable content*](#renderable_content).  If no `elseFunc` is supplied, no content is shown in the "else" case.
+ * @param {Function} contentFunc A Function that returns [*renderable content*](#Renderable-Content).
+ * @param {Function} [elseFunc] Optional.  A Function that returns [*renderable content*](#Renderable-Content).  If no `elseFunc` is supplied, no content is shown in the "else" case.
  */
 Blaze.Unless = function (conditionFunc, contentFunc, elseFunc) {
   return Blaze.If(conditionFunc, contentFunc, elseFunc, true /*_not*/);
@@ -114,9 +114,9 @@ Blaze.Unless = function (conditionFunc, contentFunc, elseFunc) {
  *   object. Inside the Each body, the current item will be set as the data
  *   context.
  * @param {Function} contentFunc A Function that returns  [*renderable
- * content*](#renderable_content).
+ * content*](#Renderable-Content).
  * @param {Function} [elseFunc] A Function that returns [*renderable
- * content*](#renderable_content) to display in the case when there are no items
+ * content*](#Renderable-Content) to display in the case when there are no items
  * in the sequence.
  */
 Blaze.Each = function (argFunc, contentFunc, elseFunc) {
