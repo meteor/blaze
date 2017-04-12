@@ -116,7 +116,7 @@ Template.myPictures.onRendered(function () {
 
 Callbacks added with this method are called before your template's logic is
 evaluated for the first time. Inside a callback, `this` is the new [template
-instance](#template_inst) object. Properties you set on this object will be
+instance](#Template-instances) object. Properties you set on this object will be
 visible from the callbacks added with `onRendered` and `onDestroyed` methods and
 from event handlers.
 
@@ -360,7 +360,7 @@ comma-separated list.
 
 The handler function receives two arguments: `event`, an object with
 information about the event, and `template`, a [template
-instance](#template_inst) for the template where the handler is
+instance](#Template-instances) for the template where the handler is
 defined.  The handler also receives some additional context data in
 `this`, depending on the context of the current element handling the
 event.  In a template, an element's context is the

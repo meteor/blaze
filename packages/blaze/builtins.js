@@ -89,7 +89,7 @@ Blaze.If = function (conditionFunc, contentFunc, elseFunc, _not) {
 };
 
 /**
- * @summary An inverted [`Blaze.If`](#blaze_if).
+ * @summary An inverted [`Blaze.If`](#Blaze-If).
  * @locus Client
  * @param {Function} conditionFunc A function to reactively re-run.  If the result is falsy, `contentFunc` is shown, otherwise `elseFunc` is shown.  An empty array is considered falsy.
  * @param {Function} contentFunc A Function that returns [*renderable content*](#Renderable-Content).
