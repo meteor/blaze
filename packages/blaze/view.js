@@ -38,7 +38,7 @@
  * @summary Constructor for a View, which represents a reactive region of DOM.
  * @locus Client
  * @param {String} [name] Optional.  A name for this type of View.  See [`view.name`](#view_name).
- * @param {Function} renderFunction A function that returns [*renderable content*](#renderable_content).  In this function, `this` is bound to the View.
+ * @param {Function} renderFunction A function that returns [*renderable content*](#Renderable-Content).  In this function, `this` is bound to the View.
  */
 Blaze.View = function (name, render) {
   if (! (this instanceof Blaze.View))
@@ -599,7 +599,7 @@ var contentAsFunc = function (content) {
 };
 
 /**
- * @summary Renders a template or View to DOM nodes and inserts it into the DOM, returning a rendered [View](#blaze_view) which can be passed to [`Blaze.remove`](#blaze_remove).
+ * @summary Renders a template or View to DOM nodes and inserts it into the DOM, returning a rendered [View](#Blaze-View) which can be passed to [`Blaze.remove`](#Blaze-remove).
  * @locus Client
  * @param {Template|Blaze.View} templateOrView The template (e.g. `Template.myTemplate`) or View object to render.  If a template, a View object is [constructed](#template_constructview).  If a View, it must be an unrendered View, which becomes a rendered View and is returned.
  * @param {DOMNode} parentNode The node that will be the parent of the rendered template.  It must be an Element node.

@@ -11,7 +11,7 @@
  * @summary Constructor for a Template, which is used to construct Views with particular name and content.
  * @locus Client
  * @param {String} [viewName] Optional.  A name for Views constructed by this Template.  See [`view.name`](#view_name).
- * @param {Function} renderFunction A function that returns [*renderable content*](#renderable_content).  This function is used as the `renderFunction` for Views constructed by this Template.
+ * @param {Function} renderFunction A function that returns [*renderable content*](#Renderable-Content).  This function is used as the `renderFunction` for Views constructed by this Template.
  */
 Blaze.Template = function (viewName, renderFunction) {
   if (! (this instanceof Blaze.Template))
@@ -244,7 +244,7 @@ Blaze.TemplateInstance = function (view) {
    * @name view
    * @memberOf Blaze.TemplateInstance
    * @instance
-   * @summary The [View](#blaze_view) object for this invocation of the template.
+   * @summary The [View](../api/blaze.html#Blaze-View) object for this invocation of the template.
    * @locus Client
    * @type {Blaze.View}
    */
@@ -317,7 +317,7 @@ Blaze.TemplateInstance.prototype.find = function (selector) {
 };
 
 /**
- * @summary A version of [Tracker.autorun](#tracker_autorun) that is stopped when the template is destroyed.
+ * @summary A version of [Tracker.autorun](https://docs.meteor.com/api/tracker.html#Tracker-autorun) that is stopped when the template is destroyed.
  * @locus Client
  * @param {Function} runFunc The function to run. It receives one argument: a Tracker.Computation object.
  */
@@ -326,7 +326,7 @@ Blaze.TemplateInstance.prototype.autorun = function (f) {
 };
 
 /**
- * @summary A version of [Meteor.subscribe](#meteor_subscribe) that is stopped
+ * @summary A version of [Meteor.subscribe](https://docs.meteor.com/api/pubsub.html#Meteor-subscribe) that is stopped
  * when the template is destroyed.
  * @return {SubscriptionHandle} The subscription handle to the newly made
  * subscription. Call `handle.stop()` to manually stop the subscription, or
@@ -339,8 +339,8 @@ Blaze.TemplateInstance.prototype.autorun = function (f) {
  * on server.
  * @param {Function|Object} [options] If a function is passed instead of an
  * object, it is interpreted as an `onReady` callback.
- * @param {Function} [options.onReady] Passed to [`Meteor.subscribe`](#meteor_subscribe).
- * @param {Function} [options.onStop] Passed to [`Meteor.subscribe`](#meteor_subscribe).
+ * @param {Function} [options.onReady] Passed to [`Meteor.subscribe`](https://docs.meteor.com/api/pubsub.html#Meteor-subscribe).
+ * @param {Function} [options.onStop] Passed to [`Meteor.subscribe`](https://docs.meteor.com/api/pubsub.html#Meteor-subscribe).
  * @param {DDP.Connection} [options.connection] The connection on which to make the
  * subscription.
  */
@@ -506,7 +506,7 @@ Template.prototype.events = function (eventMap) {
  * @function
  * @name instance
  * @memberOf Template
- * @summary The [template instance](#template_inst) corresponding to the current template helper, event handler, callback, or autorun.  If there isn't one, `null`.
+ * @summary The [template instance](#Template-instances) corresponding to the current template helper, event handler, callback, or autorun.  If there isn't one, `null`.
  * @locus Client
  * @returns {Blaze.TemplateInstance}
  * @importFromPackage templating
@@ -546,7 +546,7 @@ Template.currentData = Blaze.getData;
 Template.parentData = Blaze._parentData;
 
 /**
- * @summary Defines a [helper function](#template_helpers) which can be used from all templates.
+ * @summary Defines a [helper function](#Template-helpers) which can be used from all templates.
  * @locus Client
  * @function
  * @param {String} name The name of the helper function you are defining.
@@ -556,7 +556,7 @@ Template.parentData = Blaze._parentData;
 Template.registerHelper = Blaze.registerHelper;
 
 /**
- * @summary Removes a global [helper function](#template_helpers).
+ * @summary Removes a global [helper function](#Template-helpers).
  * @locus Client
  * @function
  * @param {String} name The name of the helper function you are defining.

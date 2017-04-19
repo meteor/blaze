@@ -174,25 +174,25 @@ var toOrSentence = function (array) {
 
 var typeNameTranslation = {
   "function": "Function",
-  EJSON: typeLink("EJSON-able Object", "#ejson"),
-  EJSONable: typeLink("EJSON-able Object", "#ejson"),
-  "Tracker.Computation": typeLink("Tracker.Computation", "#tracker_computation"),
+  EJSON: typeLink("EJSON-able Object", "https://docs.meteor.com/api/ejson.html"),
+  EJSONable: typeLink("EJSON-able Object", "https://docs.meteor.com/api/ejson.html"),
+  "Tracker.Computation": typeLink("Tracker.Computation", "https://docs.meteor.com/api/tracker.html#tracker_computation"),
   MongoSelector: [
-    typeLink("Mongo Selector", "#selectors"),
-    typeLink("Object ID", "#mongo_object_id"),
+    typeLink("Mongo Selector", "https://docs.meteor.com/api/collections.html#selectors"),
+    typeLink("Object ID", "https://docs.meteor.com/api/collections.html#Mongo-ObjectID"),
     "String"
   ],
-  MongoModifier: typeLink("Mongo Modifier", "#modifiers"),
-  MongoSortSpecifier: typeLink("Mongo Sort Specifier", "#sortspecifiers"),
-  MongoFieldSpecifier: typeLink("Mongo Field Specifier", "#fieldspecifiers"),
+  MongoModifier: typeLink("Mongo Modifier", "https://docs.meteor.com/api/collections.html#modifiers"),
+  MongoSortSpecifier: typeLink("Mongo Sort Specifier", "https://docs.meteor.com/api/collections.html#sortspecifiers"),
+  MongoFieldSpecifier: typeLink("Mongo Field Specifier", "https://docs.meteor.com/api/collections.html#fieldspecifiers"),
   JSONCompatible: "JSON-compatible Object",
-  EventMap: typeLink("Event Map", "#eventmaps"),
+  EventMap: typeLink("Event Map", "#Event-Maps"),
   DOMNode: typeLink("DOM Node", "https://developer.mozilla.org/en-US/docs/Web/API/Node"),
-  "Blaze.View": typeLink("Blaze.View", "#blaze_view"),
-  Template: typeLink("Blaze.Template", "#blaze_template"),
+  "Blaze.View": typeLink("Blaze.View", "#Blaze-View"),
+  Template: typeLink("Blaze.Template", "#Blaze-Template"),
   DOMElement: typeLink("DOM Element", "https://developer.mozilla.org/en-US/docs/Web/API/element"),
-  MatchPattern: typeLink("Match Pattern", "#matchpatterns"),
-  "DDP.Connection": typeLink("DDP Connection", "#ddp_connect")
+  MatchPattern: typeLink("Match Pattern", "https://docs.meteor.com/api/check.html#matchpatterns"),
+  "DDP.Connection": typeLink("DDP Connection", "https://docs.meteor.com/api/connections.html#DDP-connect")
 };
 
 handlebars.registerHelper('typeNames', function typeNames (nameList) {

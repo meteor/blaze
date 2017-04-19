@@ -81,13 +81,13 @@ Callbacks added with this method are called once when an instance of
 Template.*myTemplate* is rendered into DOM nodes and put into the document for
 the first time.
 
-In the body of a callback, `this` is a [template instance](../api/templates.html#Template-instance)
+In the body of a callback, `this` is a [template instance](../api/templates.html#Template-instances)
 object that is unique to this occurrence of the template and persists across
 re-renderings. Use the `onCreated` and `onDestroyed` callbacks to perform
 initialization or clean-up on the object.
 
 Because your template has been rendered, you can use functions like
-[`this.findAll`](../api/templates.html#Template-findAll) which look at its DOM nodes.
+[`this.findAll`](../api/templates.html#Blaze-TemplateInstance-findAll) which look at its DOM nodes.
 
 This can be a good place to apply any DOM manipulations you want, after the
 template is rendered for the first time.
@@ -116,7 +116,7 @@ Template.myPictures.onRendered(function () {
 
 Callbacks added with this method are called before your template's logic is
 evaluated for the first time. Inside a callback, `this` is the new [template
-instance](#template_inst) object. Properties you set on this object will be
+instance](#Template-instances) object. Properties you set on this object will be
 visible from the callbacks added with `onRendered` and `onDestroyed` methods and
 from event handlers.
 
@@ -138,7 +138,7 @@ Template.myPictures.onCreated(function () {
 
 These callbacks are called when an occurrence of a template is taken off
 the page for any reason and not replaced with a re-rendering.  Inside
-a callback, `this` is the [template instance](../api/templates.html#Template-instance) object
+a callback, `this` is the [template instance](../api/templates.html#Template-instances) object
 being destroyed.
 
 This group of callbacks is most useful for cleaning up or undoing any external
@@ -316,7 +316,7 @@ any `Template.myTemplate` object.
 
 Helpers on `Template.body` are only available in the `<body>` tags of
 your app.  To register a global helper, use
-[Template.registerHelper](../api/templates.html#Template-registerhelper).
+[Template.registerHelper](../api/templates.html#Template-registerHelper).
 Event maps on `Template.body` don't apply to elements added to the
 body via `Blaze.render`, jQuery, or the DOM API, or to the body element
 itself.  To handle events on the body, window, or document, use jQuery
@@ -360,7 +360,7 @@ comma-separated list.
 
 The handler function receives two arguments: `event`, an object with
 information about the event, and `template`, a [template
-instance](#template_inst) for the template where the handler is
+instance](#Template-instances) for the template where the handler is
 defined.  The handler also receives some additional context data in
 `this`, depending on the context of the current element handling the
 event.  In a template, an element's context is the

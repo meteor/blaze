@@ -80,10 +80,10 @@ way to understand and customize Meteor's rendering behavior for more
 advanced applications and packages.
 
 You can obtain a View object by calling [`Blaze.render`](#Blaze-render) on a
-template, or by accessing [`template.view`](../api/templates.html#template-view) on a template
+template, or by accessing [`template.view`](../api/templates.html#Blaze-TemplateInstance-view) on a template
 instance.
 
-At the heart of a View is an [autorun](#tracker_autorun) that calls the View's
+At the heart of a View is an [autorun](https://docs.meteor.com/api/tracker.html#Tracker-autorun) that calls the View's
 `renderFunction`, uses the result to create DOM nodes, and replaces the
 contents of the View with these new DOM nodes.  A View's content may consist
 of any number of consecutive DOM nodes (though if it is zero, a placeholder
@@ -149,9 +149,9 @@ by Meteor have names like "Template.foo" and "if".
 {% enddtdd %}
 
 {% dtdd name:"autorun(runFunc)" id:"view_autorun" %}
-  Like [`Tracker.autorun`](#tracker_autorun), except that the autorun is
+  Like [`Tracker.autorun`](https://docs.meteor.com/api/tracker.html#Tracker-autorun), except that the autorun is
   automatically stopped when the View is destroyed, and the
-  [current View](#blaze_currentview) is always set when running `runFunc`.
+  [current View](#Blaze-currentView) is always set when running `runFunc`.
   There is no relationship to the View's internal autorun or render
   cycle.  In `runFunc`, the View is bound to `this`.
 {% enddtdd %}
@@ -160,19 +160,19 @@ by Meteor have names like "Template.foo" and "if".
   If the View hasn't been created yet, calls `func` when the View
   is created.  In `func`, the View is bound to `this`.
 
-  This hook is the basis for the [`created`](#template_created)
+  This hook is the basis for the [`created`](../api/templates.html#Template-onCreated)
   template callback.
 {% enddtdd %}
 
 {% dtdd name:"onViewReady(func)" id:"view_onviewready" %}
   Calls `func` when the View is rendered and inserted into the DOM,
   after waiting for the end of
-  [flush time](#tracker_afterflush).  Does not fire if the View
+  [flush time](https://docs.meteor.com/api/tracker.html#Tracker-afterFlush).  Does not fire if the View
   is destroyed at any point before it would fire.
   May fire multiple times (if the View re-renders).
   In `func`, the View is bound to `this`.
 
-  This hook is the basis for the [`rendered`](#template_rendered)
+  This hook is the basis for the [`rendered`](../api/templates.html#Template-onRendered)
   template callback.
 {% enddtdd %}
 
@@ -181,7 +181,7 @@ by Meteor have names like "Template.foo" and "if".
   View is destroyed.  A View may be destroyed without ever becoming
   "ready."  In `func`, the View is bound to `this`.
 
-  This hook is the basis for the [`destroyed`](#template_destroyed)
+  This hook is the basis for the [`destroyed`](../api/templates.html#Template-onDestroyed)
   template callback.
 {% enddtdd %}
 
@@ -207,8 +207,8 @@ object.  For example, `Blaze.render(Template.foo).template === Template.foo`.
 
 {% dtdd name:"templateInstance()" type:"Template instance" id:"view_templateinstance" %}
 For Views created by invoking templates,
-returns the [template instance](#template_inst) object for this
-particular View.  For example, in a [`created`](#template_created)
+returns the [template instance](../api/templates.html#Template-instances) object for this
+particular View.  For example, in a [`created`](../api/templates.html#Template-onCreated)
 callback, `this.view.templateInstance() === this`.
 
 Template instance objects have fields like `data`, `firstNode`, and
