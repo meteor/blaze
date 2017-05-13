@@ -163,7 +163,7 @@ When you are setting up event maps in your JS files, you need to 'select' the el
 
 ## Passing HTML content as a template argument
 
-If you need to pass in content to a sub-component (for instance the content of a modal dialog), you can use the [custom block helper](../guide/spacebars.html#block-helpers) to provide a block of content. If you need more flexibility, typically just providing the component name as an argument is the way to go. The sub-component can then just render that component with:
+If you need to pass in content to a sub-component (for instance the content of a modal dialog), you can use the [custom block helper](../guide/spacebars.html#Block-Helpers) to provide a block of content. If you need more flexibility, typically just providing the component name as an argument is the way to go. The sub-component can then just render that component with:
 
 ```html
 {{> Template.dynamic templateName dataContext}}

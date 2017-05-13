@@ -40,7 +40,7 @@ Template.__define__ = function (name, renderFunc) {
 // multiple) will have their contents added to it.
 
 /**
- * @summary The [template object](#templates_api) representing your `<body>`
+ * @summary The [template object](#Template-Declarations) representing your `<body>`
  * tag.
  * @locus Client
  */

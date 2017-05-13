@@ -1,7 +1,7 @@
 Package.describe({
   name: 'templating-tools',
   summary: "Tools to scan HTML and compile tags when building a templating package",
-  version: '1.1.0',
+  version: '1.1.2',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -14,7 +14,7 @@ Package.onUse(function(api) {
   api.export('TemplatingTools');
 
   api.use([
-    'spacebars-compiler@1.1.0'
+    'spacebars-compiler@1.1.2'
   ]);
 
   api.addFiles([

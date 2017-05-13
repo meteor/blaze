@@ -1,7 +1,7 @@
 Package.describe({
   name: 'spacebars-compiler',
   summary: "Compiler for Spacebars template language",
-  version: '1.1.0',
+  version: '1.1.2',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -36,9 +36,7 @@ Package.onTest(function (api) {
 
   api.use([
     'spacebars-compiler',
-    'blaze-tools@1.0.10',
-    'spacebars@1.0.13',
-    'blaze@2.1.9'
+    'blaze-tools@1.0.10'
   ]);
 
   api.addFiles([

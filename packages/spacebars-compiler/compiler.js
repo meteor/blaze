@@ -1,4 +1,7 @@
-var UglifyJSMinify = Npm.require('uglify-js').minify;
+var UglifyJSMinify = null;
+if (Meteor.isServer) {
+  UglifyJSMinify = Npm.require('uglify-js').minify;
+}
 
 SpacebarsCompiler.parse = function (input) {
 
@@ -96,6 +99,10 @@ SpacebarsCompiler.codeGen = function (parseTree, options) {
 };
 
 SpacebarsCompiler._beautify = function (code) {
+  if (!UglifyJSMinify) {
+    return code;
+  }
+
   var result = UglifyJSMinify(code, { 
     fromString: true,
     mangle: false,
