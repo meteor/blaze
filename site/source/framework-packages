@@ -9,3 +9,5 @@ front end frameworks, [official comparison](https://guide.meteor.com/ui-ux.html#
 [components library](https://github.com/peerlibrary/meteor-blaze-components#related-projects) compares all blaze packages.
 
 [React pattern package for blaze](github.com/peerlibrary/meteor-blaze-components) and [Vue.js](https://github.com/ManuelDeLeon/viewmodel).
+In spirit of competition, since it's impossible to simply use blaze outside of meteor builder in interest of rebuild speeds, there's 
+package that has meteor builder seat back and reloads components itself: https://github.com/qualialabs/reval
