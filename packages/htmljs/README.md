@@ -373,7 +373,9 @@ combined into a single attributes dictionary, which is returned.
 Any "nully" attribute values (see `HTML.isNully`) are ignored in
 the process.  If `attrs` is a single attribute dictionary, a copy
 is returned with any nully attributes removed.  If `attrs` is
-equal to null or an empty array, `null` is returned.
+equal to null or an empty array, `null` is returned. If `attrs`
+contains an object, that object is flattened (converted to string)
+as well.
 
 Attribute dictionaries are combined by assigning the name/value
 pairs in array order, with later values overwriting previous

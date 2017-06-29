@@ -231,8 +231,16 @@ HTML.flattenAttributes = function (attrs) {
       if (! HTML.isValidAttributeName(name))
         throw new Error("Illegal HTML attribute name: " + name);
       var value = oneAttrs[name];
-      if (! HTML.isNully(value))
-        result[name] = value;
+      if (! HTML.isNully(value)) {
+        if (typeof value === 'object') {
+          var keys = Object.keys(value);
+          var flattenedObject = [];
+          for (var key in keys)
+            flattenedObject.push(keys[key] + ': ' + value[keys[key]]);
+          result[name] = flattenedObject.join(';') + ';';
+        } else
+          result[name] = value;
+      }
     }
   }
 
