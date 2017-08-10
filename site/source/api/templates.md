@@ -344,7 +344,8 @@ forms:
 
 <dl>
 {% dtdd name:"<em>eventtype</em>" %}
-Matches a particular type of event, such as 'click'.
+Matches a particular type of event, such as 'click'. Can contain 
+multiple types separated by a `/` eg. 'touchend/mouseup/keyup'
 {% enddtdd %}
 
 {% dtdd name:"<em>eventtype selector</em>" %}
@@ -353,7 +354,7 @@ an element that matches a certain CSS selector.
 {% enddtdd %}
 
 {% dtdd name:"<em>event1, event2</em>" %}
-To handle more than one type of event with the same function, use a
+To handle more than one event / selector with the same function, use a
 comma-separated list.
 {% enddtdd %}
 </dl>
@@ -377,8 +378,12 @@ Example:
   // Fires when any element with the 'accept' class is clicked
   'click .accept'(event) { ... },
 
+  // Fires when 'accept' is clicked or focused
+  'click/focus .accept'(event) { ... }
+
   // Fires when 'accept' is clicked or focused, or a key is pressed
-  'click .accept, focus .accept, keypress'(event) { ... }
+  'click/focus .accept, keypress'(event) { ... }
+
 }
 ```
 
