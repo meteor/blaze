@@ -344,8 +344,8 @@ forms:
 
 <dl>
 {% dtdd name:"<em>eventtype</em>" %}
-Matches a particular type of event, such as 'click'. Can contain 
-multiple types separated by a `/` eg. 'touchend/mouseup/keyup'
+Matches the type of events, such as `'click'`, separated by a forward 
+slash, like so `'touchend/mouseup/keyup'`.
 {% enddtdd %}
 
 {% dtdd name:"<em>eventtype selector</em>" %}
@@ -379,9 +379,11 @@ Example:
   'click .accept'(event) { ... },
   
   // Fires when 'accept' is clicked or focused
+  'click .accept, focus .accept'(event) { ... }
   'click/focus .accept'(event) { ... }
   
   // Fires when 'accept' is clicked or focused, or a key is pressed
+  'click .accept, focus .accept, keypress'(event) { ... }
   'click/focus .accept, keypress'(event) { ... }
   
 }
