@@ -128,7 +128,7 @@ instance that are read from template helpers using `Template.instance()`.
 Template.myPictures.onCreated(function () {
   // set up local reactive variables
   this.highlightedPicture = new ReactiveVar(null);
-
+  
   // register this template within some central store
   GalleryTemplates.push(this);
 });
@@ -284,7 +284,7 @@ done:
 ```js
 Template.listing.onRendered(function () {
   var template = this;
-
+  
   template.subscribe('listOfThings', () => {
     // Wait for the data to load using the callback
     Tracker.afterFlush(() => {
@@ -374,16 +374,16 @@ Example:
 {
   // Fires when any element is clicked
   'click'(event) { ... },
-
+  
   // Fires when any element with the 'accept' class is clicked
   'click .accept'(event) { ... },
-
+  
   // Fires when 'accept' is clicked or focused
   'click/focus .accept'(event) { ... }
-
+  
   // Fires when 'accept' is clicked or focused, or a key is pressed
   'click/focus .accept, keypress'(event) { ... }
-
+  
 }
 ```
 
