@@ -128,7 +128,7 @@ instance that are read from template helpers using `Template.instance()`.
 Template.myPictures.onCreated(function () {
   // set up local reactive variables
   this.highlightedPicture = new ReactiveVar(null);
-
+  
   // register this template within some central store
   GalleryTemplates.push(this);
 });
@@ -284,7 +284,7 @@ done:
 ```js
 Template.listing.onRendered(function () {
   var template = this;
-
+  
   template.subscribe('listOfThings', () => {
     // Wait for the data to load using the callback
     Tracker.afterFlush(() => {
@@ -344,7 +344,8 @@ forms:
 
 <dl>
 {% dtdd name:"<em>eventtype</em>" %}
-Matches a particular type of event, such as 'click'.
+Matches the type of events, such as `'click'`, separated by a forward 
+slash, like so `'touchend/mouseup/keyup'`.
 {% enddtdd %}
 
 {% dtdd name:"<em>eventtype selector</em>" %}
@@ -353,7 +354,7 @@ an element that matches a certain CSS selector.
 {% enddtdd %}
 
 {% dtdd name:"<em>event1, event2</em>" %}
-To handle more than one type of event with the same function, use a
+To handle more than one event / selector with the same function, use a
 comma-separated list.
 {% enddtdd %}
 </dl>
@@ -373,12 +374,18 @@ Example:
 {
   // Fires when any element is clicked
   'click'(event) { ... },
-
+  
   // Fires when any element with the 'accept' class is clicked
   'click .accept'(event) { ... },
-
+  
+  // Fires when 'accept' is clicked or focused
+  'click .accept, focus .accept'(event) { ... }
+  'click/focus .accept'(event) { ... }
+  
   // Fires when 'accept' is clicked or focused, or a key is pressed
   'click .accept, focus .accept, keypress'(event) { ... }
+  'click/focus .accept, keypress'(event) { ... }
+  
 }
 ```
 
