@@ -1,7 +1,7 @@
 Package.describe({
   name: 'templating-compiler',
   summary: "Compile templates in .html files",
-  version: '1.3.2',
+  version: '1.3.3',
   git: 'https://github.com/meteor/blaze.git',
   documentation: null
 });
