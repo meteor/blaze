@@ -171,10 +171,7 @@ Raw.prototype.htmljsType = Raw.htmljsType = ['Raw'];
 
 
 HTML.isArray = function (x) {
-  // could change this to use the more convoluted Object.prototype.toString
-  // approach that works when objects are passed between frames, but does
-  // it matter?
-  return (x instanceof Array);
+  return x instanceof Array || Array.isArray(x);
 };
 
 HTML.isConstructedObject = function (x) {
