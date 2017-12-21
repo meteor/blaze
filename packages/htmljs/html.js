@@ -184,11 +184,17 @@ HTML.isConstructedObject = function (x) {
   // `(new Foo).constructor` is `Object`, not `Foo`).
   if(!x || (typeof x !== 'object')) return false;
   // Is this a plain object?
-  let proto = x;
-  while(Object.getPrototypeOf(proto) !== null) {
-    proto = Object.getPrototypeOf(proto);
+  let plain = false;
+  if(Object.getPrototypeOf(x) === null) {
+    plain = true;
+  } else {
+    let proto = x;
+    while(Object.getPrototypeOf(proto) !== null) {
+      proto = Object.getPrototypeOf(proto);
+    }
+    plain = Object.getPrototypeOf(x) === proto;
   }
-  let plain = Object.getPrototypeOf(x) === proto;
+
   return !plain &&
     (typeof x.constructor === 'function') &&
     (x instanceof x.constructor);
