@@ -137,6 +137,23 @@ function() {
 `
   );
 
+  run("{{!-- --}}{{#if cond}}<p>aaa</p><p>ppp</p>{{!\n}}{{else}}{{!}}<p>{{bbb}}</p>{{!-- --}}{{/if}}{{!}}",
+  `\
+function() {
+  var view = this;
+  return Blaze.If(function () {
+    return Spacebars.call(view.lookup("cond"));
+  }, (function() {
+    return HTML.Raw("<p>aaa</p><p>ppp</p>");
+  }), (function() {
+    return HTML.P(Blaze.View("lookup:bbb", function() {
+      return Spacebars.mustache(view.lookup("bbb"));
+    }));
+  }));
+}\
+`
+  );
+
   run("{{> foo bar}}",
   `\
 function() {
