@@ -348,4 +348,15 @@ function() {
 `
   );
 
+  run("<table><colgroup><col></colgroup><tr><td>aaa</td><td>bbb</td></tr></table>",
+  `\
+function() {
+  var view = this;
+  return HTML.TABLE(
+    HTML.Raw("<colgroup><col></colgroup>"),
+    HTML.TR(HTML.Raw("<td>aaa</td><td>bbb</td>"))
+  );
+}\
+`
+  );
 }
