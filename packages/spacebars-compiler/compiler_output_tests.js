@@ -324,7 +324,7 @@ function() {
 `
   );
 
-  return run("<a b={{{|></a>",
+  run("<a b={{{|></a>",
   `\
 function() {
   var view = this;
@@ -336,4 +336,16 @@ function() {
 }\
 `
   );
+
+  run("<div><div>{{helper}}<div>a</div><div>b</div></div></div>",
+  `\
+function() {
+  var view = this;
+  return HTML.DIV(HTML.DIV(Blaze.View("lookup:helper",function(){
+      return Spacebars.mustache(view.lookup("helper"));
+  }), HTML.Raw("<div>a</div><div>b</div>")));
+}\
+`
+  );
+
 }
