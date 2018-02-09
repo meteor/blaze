@@ -4,7 +4,7 @@ checkout:
     - git submodule update --init --recursive
 machine:
   node:
-    version: 0.12
+    version: 8
   pre:
     - git config --global user.name "circleci"
     - git config --global user.email "circleci@users.noreply.github.com"
@@ -22,7 +22,7 @@ test:
     #    parallel: true
     - METEOR_COMMAND=/tmp/meteor/meteor tests/test-runner/test-all.sh:
         parallel: true
-    - cd site; npm run generate
+    - cd site; npm run build
 deployment:
   s3:
     branch: /^(master|version-.*)/
