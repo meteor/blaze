@@ -121,7 +121,22 @@ TransformingVisitor.def({
   visitComment: IDENTITY,
   visitCharRef: IDENTITY,
   visitRaw: IDENTITY,
-  visitObject: IDENTITY,
+  visitObject: function(obj/*, ...*/){
+    // Don't parse Markdown & RCData as HTML
+    if (obj.textMode != null){
+      return obj;
+    }
+    var argsCopy = SLICE.call(arguments);
+    if ('content' in obj) {
+      argsCopy[0] = obj.content;
+      obj.content = this.visit.apply(this, argsCopy);
+    }
+    if ('elseContent' in obj){
+      argsCopy[0] = obj.elseContent;
+      obj.elseContent = this.visit.apply(this, argsCopy);
+    }
+    return obj;
+  },
   visitFunction: IDENTITY,
   visitTag: function (tag, ...args) {
     var oldChildren = tag.children;

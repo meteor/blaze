@@ -404,6 +404,7 @@ TemplateTag.parseCompleteTag = function (scannerOrString, position) {
         shouldStop: isAtBlockCloseOrElse,
         textMode: textMode
       };
+    result.textMode = textMode;
     result.content = HTMLTools.parseFragment(scanner, parserOptions);
 
     if (scanner.rest().slice(0, 2) !== '{{')
@@ -423,6 +424,7 @@ TemplateTag.parseCompleteTag = function (scannerOrString, position) {
         lastElseContentTag.elseContent.type = 'BLOCKOPEN';
         lastElseContentTag.elseContent.path = tmplTag.path;
         lastElseContentTag.elseContent.args = tmplTag.args;
+        lastElseContentTag.elseContent.textMode = textMode;
         lastElseContentTag.elseContent.content = HTMLTools.parseFragment(scanner, parserOptions);
 
         lastElseContentTag = lastElseContentTag.elseContent;
