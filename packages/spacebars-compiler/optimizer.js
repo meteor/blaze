@@ -160,7 +160,7 @@ RawCompactingVisitor.def({
             result[result.length - 1].value + item.value);
         }
       } else {
-        result.push(item);
+        result.push(this.visit(item));
       }
     }
     return result;
