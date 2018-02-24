@@ -3,7 +3,7 @@ title: Reusable components in Blaze
 description:
 ---
 
-In [UI/UX article](https://guide.meteor.com/ui-ux.html#smart-components) we discussed the merits of creating reusable components that interact with their environment in clear and minimal ways.
+In the [UI/UX article](https://guide.meteor.com/ui-ux.html#smart-components) we discussed the merits of creating reusable components that interact with their environment in clear and minimal ways.
 
 Although Blaze, which is a simple template-based rendering engine, doesn't enforce a lot of these principles (unlike other frameworks like React and Angular) you can enjoy most of the same benefits by following some conventions when writing your Blaze components. This section will outline some of these "best practices" for writing reusable Blaze components.
 
