@@ -31,6 +31,8 @@ sidebar_categories:
     - guide/reusing-code
     - guide/understanding-blaze
     - guide/routing
+  TUTORIALS:
+    - tutorials/todo-app
   API:
     - api/templates
     - api/blaze
