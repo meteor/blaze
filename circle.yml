@@ -4,7 +4,7 @@ checkout:
     - git submodule update --init --recursive
 machine:
   node:
-    version: 0.12
+    version: 8
   pre:
     - git config --global user.name "circleci"
     - git config --global user.email "circleci@users.noreply.github.com"

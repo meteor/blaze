@@ -3,12 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "hexo": {
-    "version": "3.2.2"
+    "version": "3.3.9"
   },
   "dependencies": {
     "canonical-json": "0.0.4",
     "handlebars": "^4.0.5",
-    "hexo": "^3.1.0",
+    "hexo": "^3.3.9",
     "hexo-generator-archive": "^0.1.2",
     "hexo-generator-category": "^0.1.2",
     "hexo-generator-index": "^0.1.2",
