@@ -37,14 +37,17 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
   // Overrides method from CachingCompiler
   processFilesForTarget(inputFiles) {
     this._bodyAttrInfo = {};
-    super.processFilesForTarget(inputFiles);
+    return super.processFilesForTarget(inputFiles);
   }
 
   // Implements method from CachingCompilerBase
   getCacheKey(inputFile) {
     // Note: the path is only used for errors, so it doesn't have to be part
     // of the cache key.
-    return inputFile.getSourceHash();
+    return [
+      inputFile.getArch(),
+      inputFile.getSourceHash(),
+    ];
   }
 
   // Implements method from CachingCompiler
