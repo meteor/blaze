@@ -31,7 +31,7 @@ run_log_mem_use: &run_log_mem_use
 # This environment is set to every job (and the initial build).
 build_machine_environment: &build_machine_environment
   docker:
-    - image: circleci/node:8
+    - image: circleci/node:8-browsers
   environment:
     # This multiplier scales the waitSecs for selftests.
     TIMEOUT_SCALE_FACTOR: 8
