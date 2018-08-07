@@ -84,7 +84,7 @@ jobs:
           command: git clone --recursive -b devel https://github.com/meteor/meteor.git /tmp/meteor
       - restore_cache:
           keys:
-            - v1-dev-bundle-cache-{{ checksum "meteor" }}
+            - v1-dev-bundle-cache-{{ checksum "/tmp/meteor/meteor" }}
             - v1-dev-bundle-cache-
       - restore_cache:
           keys:
@@ -160,7 +160,7 @@ jobs:
       - attach_workspace:
           at: .
       - save_cache:
-          key: v1-dev-bundle-cache-{{ checksum "meteor" }}
+          key: v1-dev-bundle-cache-{{ checksum "/tmp/meteor/meteor" }}
           paths:
             - "dev_bundle"
       - save_cache:
