@@ -108,6 +108,9 @@ jobs:
       - persist_to_workspace:
           root: .
           paths: .
+      - persist_to_workspace:
+          root: /tmp/meteor
+          paths: .
       - store_artifacts:
           path: /tmp/core_dumps
       - store_artifacts:
@@ -122,6 +125,8 @@ jobs:
           <<: *run_env_change
       - attach_workspace:
           at: .
+      - attach_workspace:
+          at: /tmp/meteor
       - run:
           name: "Print environment"
           command: printenv
@@ -159,6 +164,8 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - attach_workspace:
+          at: /tmp/meteor
       - save_cache:
           key: v1-dev-bundle-cache-{{ checksum "/tmp/meteor/meteor" }}
           paths:
