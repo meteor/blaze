@@ -81,7 +81,7 @@ jobs:
           command: (git submodule sync && git submodule update --init --recursive) || (rm -fr .git/config .git/modules && git submodule deinit -f . && git submodule update --init --recursive)
       - run:
           name: Meteor clone
-          command: git clone --recursive -b devel https://github.com/meteor/meteor.git /tmp/meteor
+          command: git clone --recursive -b master https://github.com/meteor/meteor.git /tmp/meteor
       - restore_cache:
           keys:
             - v1-dev-bundle-cache-{{ checksum "/tmp/meteor/meteor" }}
