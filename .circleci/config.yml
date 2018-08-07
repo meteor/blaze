@@ -162,7 +162,7 @@ jobs:
       - save_cache:
           key: v1-dev-bundle-cache-{{ checksum "/tmp/meteor/meteor" }}
           paths:
-            - "dev_bundle"
+            - "/tmp/meteor/dev_bundle"
       - save_cache:
           key: v2-other-deps-cache-{{ .Branch }}-{{ .Revision }}
           paths:
