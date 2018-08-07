@@ -134,6 +134,7 @@ jobs:
           name: "Running Blaze tests"
           command: |
             eval $PRE_TEST_COMMANDS;
+            npm install mkdirp
             METEOR_COMMAND=/tmp/meteor/meteor tests/test-runner/test-all.sh
           no_output_timeout: 20m
       - store_artifacts:
