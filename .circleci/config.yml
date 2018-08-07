@@ -134,7 +134,8 @@ jobs:
           name: "Running Blaze tests"
           command: |
             eval $PRE_TEST_COMMANDS;
-            npm install mkdirp
+            # These are require dependencies of the test-all script.
+            npm install selenium-webdriver@2.47.0 mkdirp
             METEOR_COMMAND=/tmp/meteor/meteor tests/test-runner/test-all.sh
           no_output_timeout: 20m
       - store_artifacts:
