@@ -147,7 +147,7 @@ jobs:
       # This Node version should match that in the meteor/docs CircleCI config.
       - image: circleci/node:8
     steps:
-      # Run almost the same steps the meteor/docs repository runs, minus deploy.
+      - checkout
       - run:
           name: Generating Meteor documentation for JSDoc testing
           command: |
