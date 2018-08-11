@@ -41,7 +41,9 @@ class StaticHtmlTagHandler {
         this.throwCompileError("Attributes on <head> not supported");
       }
 
-      this.results.head += this.tag.contents;
+      // strip away any block content but remain html tags
+      const contents = this.tag.contents.replace(/{{[^<>]*}}/g, '');
+      this.results.head += contents;
       return;
     }
 
