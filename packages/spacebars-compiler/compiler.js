@@ -67,8 +67,13 @@ SpacebarsCompiler.codeGen = function (parseTree, options) {
   var isTemplate = (options && options.isTemplate);
   var isBody = (options && options.isBody);
   var sourceName = (options && options.sourceName);
+  var isHead = (options && options.isHead);
 
   var tree = parseTree;
+
+  if (isHead) {
+    return new HTML.ToHTMLVisitor().visit(tree)
+  }
 
   // The flags `isTemplate` and `isBody` are kind of a hack.
   if (isTemplate || isBody) {

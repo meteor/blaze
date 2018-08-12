@@ -33,10 +33,22 @@ class SpacebarsTagCompiler {
         this.throwCompileError("Attributes on <head> not supported");
       }
 
+      const parsed = SpacebarsCompiler.parse(this.tag.contents);
 
-      // strip away any block content but remain html tags
-      const contents = this.tag.contents.replace(/{{[^<>]*}}/g, '');
-      this.results.head += contents;
+      // filters out all non HTMLElement entries and strips newlines
+      // on string entries.
+      // derived via https://stackoverflow.com/a/38132582/3098783
+      var filtered = parsed.filter(function filterParsed(element) {
+
+        if (typeof element === 'string')
+          element = element.replace(/[\\n\s*]*/g, '');
+
+        if (element.children && element.children.length > 0) {
+          return (element.children = element.children.filter(filterParsed)).length;
+        }
+        if (!element.type) return true;
+      })
+      this.results.head += SpacebarsCompiler.codeGen(filtered, {isHead: true})
       return;
     }
 
