@@ -33,7 +33,15 @@ class SpacebarsTagCompiler {
         this.throwCompileError("Attributes on <head> not supported");
       }
 
-      const parsed = SpacebarsCompiler.parse(this.tag.contents);
+      if (this.tag.contents && this.tag.contents.indexOf('{') === -1) {
+        this.results.head += this.tag.contents;
+        return;
+      }
+
+      let parsed = SpacebarsCompiler.parse(this.tag.contents);
+      if (!Array.isArray(parsed)) {
+        parsed = [parsed]
+      }
 
       // filters out all non HTMLElement entries and strips newlines
       // on string entries.
@@ -48,7 +56,8 @@ class SpacebarsTagCompiler {
         }
         if (!element.type) return true;
       })
-      this.results.head += SpacebarsCompiler.codeGen(filtered, {isHead: true})
+      console.log(filtered, SpacebarsCompiler.codeGen(filtered, {isHead: true}))
+      this.results.head += SpacebarsCompiler.codeGen(filtered, {isHead: true});
       return;
     }
 

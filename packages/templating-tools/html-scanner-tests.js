@@ -82,9 +82,21 @@ Tinytest.add("templating-tools - html scanner", function (test) {
 
   // head and body
   checkResults(
-    scanForTest("<head>\n<title>Hello</title>\n</head>\n\n<body>World</body>\n\n"),
+    scanForTest("<head>\n<title>Hello</title>\n<meta name=\"author\" content=\"John Doe\">\n</head>\n\n<body>World</body>\n\n"),
     simpleBody('"World"'),
-    "<title>Hello</title>");
+    "<title>Hello</title>\n<meta name=\"author\" content=\"John Doe\">");
+
+  // head with single line comments
+  checkResults(
+    scanForTest("<head>\n{{! this is the title}}\n<title>Hello Comment</title>\n</head>\n\n<body>World</body>\n\n"),
+    simpleBody('"World"'),
+    "<title>Hello Comment</title>");
+
+  // head with multi line comments
+  checkResults(
+    scanForTest("<head>\n{{! this is \n the title}}\n<title>Hello Comment</title>\n</head>\n\n<body>World</body>\n\n"),
+    simpleBody('"World"'),
+    "<title>Hello Comment</title>");
 
   // head and body with tag whitespace
   checkResults(
