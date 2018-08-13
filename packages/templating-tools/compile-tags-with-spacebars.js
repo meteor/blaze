@@ -48,15 +48,19 @@ class SpacebarsTagCompiler {
       // derived via https://stackoverflow.com/a/38132582/3098783
       var filtered = parsed.filter(function filterParsed(element) {
 
-        if (typeof element === 'string')
-          element = element.replace(/[\\n\s*]*/g, '');
+        if (typeof element === 'string') {
+          return element.match(/\S+/g)
+        }
+
+        if (element.type) {
+          return false;
+        }
 
         if (element.children && element.children.length > 0) {
           return (element.children = element.children.filter(filterParsed)).length;
         }
-        if (!element.type) return true;
       })
-      console.log(filtered, SpacebarsCompiler.codeGen(filtered, {isHead: true}))
+
       this.results.head += SpacebarsCompiler.codeGen(filtered, {isHead: true});
       return;
     }
