@@ -1,3 +1,8 @@
+import { asciiLowerCase, properCaseTagName, properCaseAttributeName } from './utils';
+import { TemplateTag } from './templatetag';
+import { getCharacterReference } from './charref';
+import { makeRegexMatcher } from './scanner';
+
 // Token types:
 //
 // { t: 'Doctype',
@@ -54,7 +59,7 @@ var convertCRLF = function (str) {
   return str.replace(/\r\n?/g, '\n');
 };
 
-getComment = HTMLTools.Parse.getComment = function (scanner) {
+export function getComment (scanner) {
   if (scanner.rest().slice(0, 4) !== '<!--')
     return null;
   scanner.pos += 4;
@@ -82,7 +87,7 @@ getComment = HTMLTools.Parse.getComment = function (scanner) {
 
   return { t: 'Comment',
            v: convertCRLF(commentContents) };
-};
+}
 
 var skipSpaces = function (scanner) {
   while (HTML_SPACE.test(scanner.peek()))
@@ -122,8 +127,8 @@ var getDoctypeQuotedString = function (scanner) {
 // See http://www.whatwg.org/specs/web-apps/current-work/multipage/syntax.html#the-doctype.
 //
 // If `getDocType` sees "<!DOCTYPE" (case-insensitive), it will match or fail fatally.
-getDoctype = HTMLTools.Parse.getDoctype = function (scanner) {
-  if (HTMLTools.asciiLowerCase(scanner.rest().slice(0, 9)) !== '<!doctype')
+export function getDoctype (scanner) {
+  if (asciiLowerCase(scanner.rest().slice(0, 9)) !== '<!doctype')
     return null;
   var start = scanner.pos;
   scanner.pos += 9;
@@ -142,7 +147,7 @@ getDoctype = HTMLTools.Parse.getDoctype = function (scanner) {
     name += ch;
     scanner.pos++;
   }
-  name = HTMLTools.asciiLowerCase(name);
+  name = asciiLowerCase(name);
 
   // Now we're looking at a space or a `>`.
   skipSpaces(scanner);
@@ -155,7 +160,7 @@ getDoctype = HTMLTools.Parse.getDoctype = function (scanner) {
     // but we're not looking at space or `>`.
 
     // this should be "public" or "system".
-    var publicOrSystem = HTMLTools.asciiLowerCase(scanner.rest().slice(0, 6));
+    var publicOrSystem = asciiLowerCase(scanner.rest().slice(0, 6));
 
     if (publicOrSystem === 'system') {
       scanner.pos += 6;
@@ -194,14 +199,14 @@ getDoctype = HTMLTools.Parse.getDoctype = function (scanner) {
     result.publicId = publicId;
 
   return result;
-};
+}
 
 // The special character `{` is only allowed as the first character
 // of a Chars, so that we have a chance to detect template tags.
 var getChars = makeRegexMatcher(/^[^&<\u0000][^&<\u0000{]*/);
 
 var assertIsTemplateTag = function (x) {
-  if (! (x instanceof HTMLTools.TemplateTag))
+  if (! (x instanceof TemplateTag))
     throw new Error("Expected an instance of HTMLTools.TemplateTag");
   return x;
 };
@@ -212,7 +217,7 @@ var assertIsTemplateTag = function (x) {
 // consumes characters and emits nothing (e.g. in the case of template
 // comments), we may go from not-at-EOF to at-EOF and return `null`,
 // while otherwise we always find some token to return.
-getHTMLToken = HTMLTools.Parse.getHTMLToken = function (scanner, dataMode) {
+export function getHTMLToken (scanner, dataMode) {
   var result = null;
   if (scanner.getTemplateTag) {
     // Try to parse a template tag by calling out to the provided
@@ -277,7 +282,7 @@ getHTMLToken = HTMLTools.Parse.getHTMLToken = function (scanner, dataMode) {
     return result;
 
   scanner.fatal("Unexpected `<!` directive.");
-};
+}
 
 var getTagName = makeRegexMatcher(/^[a-zA-Z][^\f\n\r\t />{]*/);
 var getClangle = makeRegexMatcher(/^>/);
@@ -355,7 +360,7 @@ var getAttributeValue = function (scanner, quote) {
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
-getTagToken = HTMLTools.Parse.getTagToken = function (scanner) {
+export function getTagToken(scanner) {
   if (! (scanner.peek() === '<' && scanner.rest().charAt(1) !== '!'))
     return null;
   scanner.pos++;
@@ -371,7 +376,7 @@ getTagToken = HTMLTools.Parse.getTagToken = function (scanner) {
   var tagName = getTagName(scanner);
   if (! tagName)
     scanner.fatal("Expected tag name after `<`");
-  tag.n = HTMLTools.properCaseTagName(tagName);
+  tag.n = properCaseTagName(tagName);
 
   if (scanner.peek() === '/' && tag.isEnd)
     scanner.fatal("End tag can't have trailing slash");
@@ -431,7 +436,7 @@ getTagToken = HTMLTools.Parse.getTagToken = function (scanner) {
       // allow it, so who cares.
       if (attributeName.indexOf('{') >= 0)
         scanner.fatal("Unexpected `{` in attribute name.");
-      attributeName = HTMLTools.properCaseAttributeName(attributeName);
+      attributeName = properCaseAttributeName(attributeName);
 
       if (hasOwnProperty.call(nondynamicAttrs, attributeName))
         scanner.fatal("Duplicate attribute in tag: " + attributeName);
@@ -485,9 +490,9 @@ getTagToken = HTMLTools.Parse.getTagToken = function (scanner) {
     if (handleEndOfTag(scanner, tag))
       return tag;
   }
-};
+}
 
-TEMPLATE_TAG_POSITION = HTMLTools.TEMPLATE_TAG_POSITION = {
+export const TEMPLATE_TAG_POSITION = {
   ELEMENT: 1,
   IN_START_TAG: 2,
   IN_ATTRIBUTE: 3,
@@ -496,12 +501,12 @@ TEMPLATE_TAG_POSITION = HTMLTools.TEMPLATE_TAG_POSITION = {
 };
 
 // tagName must be proper case
-isLookingAtEndTag = function (scanner, tagName) {
+export function isLookingAtEndTag (scanner, tagName) {
   var rest = scanner.rest();
   var pos = 0; // into rest
   var firstPart = /^<\/([a-zA-Z]+)/.exec(rest);
   if (firstPart &&
-      HTMLTools.properCaseTagName(firstPart[1]) === tagName) {
+      properCaseTagName(firstPart[1]) === tagName) {
     // we've seen `</foo`, now see if the end tag continues
     pos += firstPart[0].length;
     while (pos < rest.length && HTML_SPACE.test(rest.charAt(pos)))
@@ -510,4 +515,4 @@ isLookingAtEndTag = function (scanner, tagName) {
       return true;
   }
   return false;
-};
+}

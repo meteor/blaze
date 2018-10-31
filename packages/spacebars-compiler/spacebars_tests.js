@@ -1,3 +1,8 @@
+import { HTMLTools } from 'meteor/html-tools';
+import { HTML } from 'meteor/htmljs';
+import { BlazeTools } from 'meteor/blaze-tools';
+import { SpacebarsCompiler } from 'meteor/spacebars-compiler';
+
 Tinytest.add("spacebars-compiler - stache tags", function (test) {
 
   var run = function (input, expected) {

@@ -1,4 +1,6 @@
-SpacebarsCompiler = {};
+import { HTMLTools } from 'meteor/html-tools';
+import { HTML } from 'meteor/htmljs';
+import { BlazeTools } from 'meteor/blaze-tools';
 
 // A TemplateTag is the result of parsing a single `{{...}}` tag.
 //
@@ -43,9 +45,10 @@ SpacebarsCompiler = {};
 
 var TEMPLATE_TAG_POSITION = HTMLTools.TEMPLATE_TAG_POSITION;
 
-TemplateTag = SpacebarsCompiler.TemplateTag = function () {
+export function TemplateTag () {
   HTMLTools.TemplateTag.apply(this, arguments);
-};
+}
+
 TemplateTag.prototype = new HTMLTools.TemplateTag;
 TemplateTag.prototype.constructorName = 'SpacebarsCompiler.TemplateTag';
 

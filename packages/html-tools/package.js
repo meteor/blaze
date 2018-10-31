@@ -6,28 +6,23 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.export('HTMLTools');
-
-  api.use('htmljs@1.0.11');
+  api.use([
+    'ecmascript@0.5.8',
+    'htmljs@1.0.11'
+  ]);
   api.imply('htmljs@1.0.11');
 
-  api.addFiles([
-    'utils.js',
-    'scanner.js',
-    'charref.js',
-    'tokenize.js',
-    'templatetag.js',
-    'parse.js'
-  ]);
+  api.mainModule('main.js');
 });
 
 Package.onTest(function (api) {
-  api.use('tinytest@1.0.11');
-  api.use('underscore@1.0.9');
-
-  api.use('html-tools');
-  api.use('htmljs@1.0.11');
-  api.use('blaze-tools@1.0.10'); // for `toJS`
+  api.use([
+    'tinytest',
+    'ecmascript',
+    'html-tools',
+    'htmljs',
+    'blaze-tools' // for `toJS`
+  ]);
 
   api.addFiles([
     'charref_tests.js',

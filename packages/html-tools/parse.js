@@ -1,7 +1,11 @@
+import { HTML } from 'meteor/htmljs';
+import { Scanner } from './scanner';
+import { properCaseAttributeName } from './utils';
+import { getHTMLToken, isLookingAtEndTag } from './tokenize';
 
 // Parse a "fragment" of HTML, up to the end of the input or a particular
 // template tag (using the "shouldStop" option).
-HTMLTools.parseFragment = function (input, options) {
+export function parseFragment(input, options) {
   var scanner;
   if (typeof input === 'string')
     scanner = new Scanner(input);
@@ -69,14 +73,14 @@ HTMLTools.parseFragment = function (input, options) {
   }
 
   return result;
-};
+}
 
 // Take a numeric Unicode code point, which may be larger than 16 bits,
 // and encode it as a JavaScript UTF-16 string.
 //
 // Adapted from
 // http://stackoverflow.com/questions/7126384/expressing-utf-16-unicode-characters-in-javascript/7126661.
-codePointToString = HTMLTools.codePointToString = function(cp) {
+export function codePointToString(cp) {
   if (cp >= 0 && cp <= 0xD7FF || cp >= 0xE000 && cp <= 0xFFFF) {
     return String.fromCharCode(cp);
   } else if (cp >= 0x10000 && cp <= 0x10FFFF) {
@@ -97,9 +101,9 @@ codePointToString = HTMLTools.codePointToString = function(cp) {
   } else {
     return '';
   }
-};
+}
 
-getContent = HTMLTools.Parse.getContent = function (scanner, shouldStopFunc) {
+export function getContent (scanner, shouldStopFunc) {
   var items = [];
 
   while (! scanner.isEOF()) {
@@ -204,7 +208,7 @@ getContent = HTMLTools.Parse.getContent = function (scanner, shouldStopFunc) {
     return items[0];
   else
     return items;
-};
+}
 
 var pushOrAppendString = function (items, string) {
   if (items.length &&
@@ -215,7 +219,7 @@ var pushOrAppendString = function (items, string) {
 };
 
 // get RCDATA to go in the lowercase (or camel case) tagName (e.g. "textarea")
-getRCData = HTMLTools.Parse.getRCData = function (scanner, tagName, shouldStopFunc) {
+export function getRCData(scanner, tagName, shouldStopFunc) {
   var items = [];
 
   while (! scanner.isEOF()) {
@@ -250,7 +254,7 @@ getRCData = HTMLTools.Parse.getRCData = function (scanner, tagName, shouldStopFu
     return items[0];
   else
     return items;
-};
+}
 
 var getRawText = function (scanner, tagName, shouldStopFunc) {
   var items = [];
@@ -350,7 +354,7 @@ var parseAttrs = function (attrs) {
 
     var outValue = (inValue.length === 0 ? '' :
                     (outParts.length === 1 ? outParts[0] : outParts));
-    var properKey = HTMLTools.properCaseAttributeName(k);
+    var properKey = properCaseAttributeName(k);
     result[properKey] = outValue;
   }
 

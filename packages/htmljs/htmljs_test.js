@@ -1,3 +1,5 @@
+import { HTML } from 'meteor/htmljs';
+import { HTMLTools } from 'meteor/html-tools';
 
 Tinytest.add("htmljs - getTag", function (test) {
   var FOO = HTML.getTag('foo');

@@ -1,3 +1,6 @@
+import { BlazeTools } from 'meteor/blaze-tools';
+import { HTMLTools } from 'meteor/html-tools';
+
 Tinytest.add("blaze-tools - token parsers", function (test) {
 
   var run = function (func, input, expected) {
@@ -40,7 +43,7 @@ Tinytest.add("blaze-tools - token parsers", function (test) {
   runValue(parseNumber, "-0xa", -10);
   runValue(parseNumber, "1e+1", 10);
 
-  _.each([parseIdentifierName, parseExtendedIdentifierName], function (f) {
+  [parseIdentifierName, parseExtendedIdentifierName].forEach(function (f) {
     run(f, "a", "a");
     run(f, "true", "true");
     run(f, "null", "null");
