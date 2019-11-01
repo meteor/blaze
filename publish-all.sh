@@ -4,3 +4,4 @@ for package in htmljs html-tools blaze-tools spacebars-compiler templating-tools
   echo "Publishing $package"
   (cd packages/$package && meteor publish)
 done
+Ctrl+
