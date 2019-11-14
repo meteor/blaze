@@ -171,9 +171,7 @@ var StyleHandler = Blaze._DiffingAttributeHandler.extend({
         tokens.remove(match[1]);
       }
 
-      // XXX No `String.trim` on Safari 4. Swap out $.trim if we want to
-      // remove strong dep on jquery.
-      tokens.append(match[1], match[0].trim ? match[0].trim() : $.trim(match[0]));
+      tokens.append(match[1], match[0].trim());
 
       match = regex.exec(attrString);
     }
