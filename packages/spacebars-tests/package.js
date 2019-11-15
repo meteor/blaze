@@ -12,7 +12,7 @@ Package.onTest(function (api) {
     'es5-shim@4.6.14',
     'underscore@1.0.9',
     'tinytest@1.0.11',
-    'jquery@1.11.9',
+    'jquery@1.11.9 || 3.0.0',
     'test-helpers@1.0.10',
     'reactive-var@1.0.10',
     'markdown@1.0.10',

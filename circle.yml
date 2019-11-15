@@ -20,7 +20,7 @@ test:
   override:
     # - tests/test-runner/test-all.sh:
     #    parallel: true
-    - METEOR_COMMAND=/tmp/meteor/meteor tests/test-runner/test-all.sh:
+    - METEOR_COMMAND=/tmp/meteor/meteor METEOR_COMMAND_EXTRA_ARGS="--test-app-path test-app" tests/test-runner/test-all.sh:
         parallel: true
     - cd site; npm run generate
 deployment:
