@@ -13,7 +13,7 @@ Package.onUse(function (api) {
   api.use('observe-sequence@1.0.12');
   api.use('reactive-var@1.0.10');
   api.use('ordered-dict@1.0.9');
-  api.user('ecmascript@0.12.7');
+  api.use('ecmascript@0.12.7');
 
   api.export([
     'Blaze',
