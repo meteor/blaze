@@ -1,5 +1,10 @@
 ## vNEXT
 
+## v2.3.4, 2019-Dec-13
+
+* jquery 3 support
+  [#299](https://github.com/meteor/blaze/pull/299)
+  
 ## v2.3.2, 2017-Mar-21
 
 * Made beautification of compiled spacebars code happen only on the server.
