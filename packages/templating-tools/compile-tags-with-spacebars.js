@@ -1,8 +1,8 @@
-TemplatingTools.compileTagsWithSpacebars = function compileTagsWithSpacebars(tags) {
+TemplatingTools.compileTagsWithSpacebars = function compileTagsWithSpacebars(tags, hmrAvailable) {
   var handler = new SpacebarsTagCompiler();
 
   tags.forEach((tag) => {
-    handler.addTagToResults(tag);
+    handler.addTagToResults(tag, hmrAvailable);
   });
 
   return handler.getResults();
@@ -22,7 +22,7 @@ class SpacebarsTagCompiler {
     return this.results;
   }
 
-  addTagToResults(tag) {
+  addTagToResults(tag, hmrAvailable) {
     this.tag = tag;
 
     // do we have 1 or more attributes?
@@ -58,7 +58,7 @@ class SpacebarsTagCompiler {
         });
 
         this.results.js += TemplatingTools.generateTemplateJS(
-          name, renderFuncCode);
+          name, renderFuncCode, hmrAvailable);
       } else if (this.tag.tagName === "body") {
         this.addBodyAttrs(this.tag.attribs);
 
@@ -68,7 +68,7 @@ class SpacebarsTagCompiler {
         });
 
         // We may be one of many `<body>` tags.
-        this.results.js += TemplatingTools.generateBodyJS(renderFuncCode);
+        this.results.js += TemplatingTools.generateBodyJS(renderFuncCode, hmrAvailable);
       } else {
         this.throwCompileError("Expected <template>, <head>, or <body> tag in template file", tagStartIndex);
       }
