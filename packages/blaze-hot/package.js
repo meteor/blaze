@@ -1,7 +1,7 @@
 Package.describe({
   name: 'blaze-hot',
   summary: "Update files using Blaze's API with HMR",
-  version: '1.3.2',
+  version: '1.0.0-beta.0',
   git: 'https://github.com/meteor/blaze.git',
   documentation: null,
   debugOnly: true
