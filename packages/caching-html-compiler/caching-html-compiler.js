@@ -47,6 +47,7 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
     return [
       inputFile.getArch(),
       inputFile.getSourceHash(),
+      inputFile.hmrAvailable && inputFile.hmrAvailable()
     ];
   }
 
