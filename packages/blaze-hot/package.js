@@ -8,12 +8,12 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.use('modules');
-  api.use('ecmascript');
-  api.use('blaze');
-  api.use('underscore');
-  api.use('templating-runtime');
-  api.use('hot-module-replacement', { weak: true });
+  api.use('modules@0.15.0');
+  api.use('ecmascript@0.14.4');
+  api.use('blaze@2.4.0-beta.0');
+  api.use('underscore@1.0.9');
+  api.use('templating-runtime@1.4.0-beta.0');
+  api.use('hot-module-replacement@0.2.0-rc200.2', { weak: true });
 
   api.addFiles('hot.js', 'client');
 });

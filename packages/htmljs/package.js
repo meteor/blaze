@@ -1,7 +1,7 @@
 Package.describe({
   name: 'htmljs',
   summary: "Small library for expressing HTML trees",
-  version: '1.0.11',
+  version: '1.1.0-beta.0',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -22,7 +22,6 @@ Package.onTest(function (api) {
   api.use('underscore@1.0.9');
 
   api.use('htmljs');
-  api.use('html-tools@1.0.11');
 
   api.addFiles([
     'htmljs_test.js'

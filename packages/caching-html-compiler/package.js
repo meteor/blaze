@@ -9,13 +9,13 @@ Package.onUse(function(api) {
   api.use([
     'underscore@1.0.9',
     'caching-compiler@1.1.7',
-    'ecmascript@0.5.8'
+    'ecmascript@0.14.4'
   ]);
 
   api.export('CachingHtmlCompiler', 'server');
 
   api.use([
-    'templating-tools@1.1.2'
+    'templating-tools@1.2.0-beta.0'
   ]);
 
   api.addFiles([

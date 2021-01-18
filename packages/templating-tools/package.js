@@ -8,13 +8,13 @@ Package.describe({
 Package.onUse(function(api) {
   api.use([
     'underscore@1.0.9',
-    'ecmascript@0.5.8'
+    'ecmascript@0.14.4'
   ]);
 
   api.export('TemplatingTools');
 
   api.use([
-    'spacebars-compiler@1.1.2'
+    'spacebars-compiler@1.2.0-beta.0'
   ]);
 
   api.addFiles([
@@ -29,7 +29,7 @@ Package.onUse(function(api) {
 Package.onTest(function(api) {
   api.use([
     'tinytest@1.0.11',
-    'ecmascript@0.5.8'
+    'ecmascript@0.14.4'
   ]);
 
   api.use([
