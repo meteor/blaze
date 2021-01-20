@@ -1,7 +1,7 @@
 Package.describe({
   name: 'blaze-tools',
   summary: "Compile-time tools for Blaze",
-  version: '1.1.0-beta.0',
+  version: '1.1.0-beta.1',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -10,7 +10,7 @@ Package.onUse(function (api) {
 
   api.export('BlazeTools');
 
-  api.use('htmljs@1.1.0-beta.0');
+  api.use('htmljs@1.1.0-beta.1');
 
   api.addFiles([
     'preamble.js',
@@ -24,7 +24,7 @@ Package.onTest(function (api) {
   api.use('underscore@1.0.9');
 
   api.use('blaze-tools');
-  api.use('html-tools@1.1.0-beta.0');
+  api.use('html-tools@1.1.0-beta.1');
 
   api.addFiles([
     'token_tests.js'

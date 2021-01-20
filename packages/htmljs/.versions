@@ -19,10 +19,10 @@ ecmascript-runtime-server@0.10.0
 ejson@1.1.1
 fetch@0.1.1
 geojson-utils@1.0.10
-htmljs@1.1.0-beta.0
+htmljs@1.1.0-beta.1
 id-map@1.1.0
 inter-process-messaging@0.1.1
-local-test:htmljs@1.1.0-beta.0
+local-test:htmljs@1.1.0-beta.1
 logging@1.1.20
 meteor@1.9.3
 minimongo@1.6.1
