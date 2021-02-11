@@ -3,3 +3,6 @@ Thumbs.db
 db.json
 *.log
 .idea
+test-app/packages
+node_modules
+package-lock.json
