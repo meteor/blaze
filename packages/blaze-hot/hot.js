@@ -1,5 +1,6 @@
 import { Blaze } from 'meteor/blaze';
 import { Template as Templates} from 'meteor/templating-runtime';
+import { UpdateAll } from './update-templates.js';
 
 let importedTemplating = new WeakMap();
 let currentModule = {id: null};
@@ -110,7 +111,8 @@ if (module.hot) {
           Object.values(Templates).forEach(template => {
             cleanTemplate(template, module.id);
           });
-          Template._applyHmrChanges();
+          // TODO: only update the templates that were affected
+          Template._applyHmrChanges(UpdateAll);
         });
       }
       currentModule = previousModule

@@ -16,4 +16,5 @@ Package.onUse(function (api) {
   api.use('hot-module-replacement@0.2.0', { weak: true });
 
   api.addFiles('hot.js', 'client');
+  api.addFiles('update-templates.js', 'client');
 });
