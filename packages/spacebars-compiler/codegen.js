@@ -37,7 +37,9 @@ var additionalReservedNames = ["body", "toString", "instance",  "constructor",
   "toString", "toLocaleString", "valueOf", "hasOwnProperty", "isPrototypeOf",
   "propertyIsEnumerable", "__defineGetter__", "__lookupGetter__",
   "__defineSetter__", "__lookupSetter__", "__proto__", "dynamic",
-  "registerHelper", "currentData", "parentData"];
+  "registerHelper", "currentData", "parentData", "_migrateTemplate",
+  "_applyHmrChanges"
+];
 
 // A "reserved name" can't be used as a <template> name.  This
 // function is used by the template file scanner.
