@@ -99,8 +99,6 @@ Template._applyHmrChanges = function (templateName = UpdateAll) {
         if (!parent) {
           // TODO: we only need to update a single root view
           return updateRootViews();
-          console.log('[Blaze HMR] Error: unable to update - no parent');
-          continue;
         }
 
         // TODO: this can be removed if we don't update a view, and then update
