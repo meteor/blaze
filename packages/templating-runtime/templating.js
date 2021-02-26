@@ -106,7 +106,7 @@ Template._applyHmrChanges = function (templateName) {
         Blaze.render(renderFunc, parentEl, comment);
       }
 
-      parentElement.removeChild(comment);
+      parentEl.removeChild(comment);
     }
   });
 }
