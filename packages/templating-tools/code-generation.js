@@ -42,7 +42,7 @@ function generateBodyJS(renderFuncCode, useHMR) {
     module.hot.accept();
     module.hot.dispose(() => {
       var index = Template.body.contentRenderFuncs.indexOf(renderFunc)
-      Template.body.contentRenderFuncs.splice(renderFunc, 1);
+      Template.body.contentRenderFuncs.splice(index, 1);
       Template._applyHmrChanges();
     });
   }
