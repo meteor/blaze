@@ -68,44 +68,62 @@ Template.body.renderToDocument = function () {
   Template.body.view = view;
 };
 
-Template._migrateTemplate = function (templateName, newTemplate) {
+var updateTimeout = null;
+
+// Simple HMR integration to re-render all of the root views
+// when a template is modified. This function can be overridden to provide
+// an alternative method of applying changes from HMR.
+Template._applyHmrChanges = function (templateName) {
+  if (updateTimeout) {
+    return;
+  }
+
+  // debounce so we only re-render once per rebuild
+  updateTimeout = setTimeout(function () {
+    updateTimeout = null;
+
+    var views = Blaze.__rootViews.slice();
+    for(let i = 0; i < views.length; i++) {
+      let view = views[i];
+      if (view.destroyed) {
+        continue;
+      }
+
+      var renderFunc = view._render;
+      var parentEl = view._domrange.parentElement;
+      var next = view._domrange.lastNode().nextSibling;
+
+      Blaze.remove(view);
+
+      var newView;
+      if (view.dataVar) {
+        newView = Blaze.renderWithData(renderFunc, view.dataVar.curValue, parentEl, next);
+      } else {
+        newView = Blaze.render(renderFunc, parentEl, next);
+      }
+
+      if (parentEl === document.body) {
+        Template.body.view = newView;
+      }
+    }
+  });
+}
+
+Template._migrateTemplate = function (templateName, newTemplate, migrate) {
   const oldTemplate = Template[templateName];
-  
-  if (oldTemplate) {
+
+  if (oldTemplate && migrate) {
     newTemplate.__helpers = oldTemplate.__helpers;
     newTemplate.__eventMaps = oldTemplate.__eventMaps;
     newTemplate._callbacks.created = oldTemplate._callbacks.created;
     newTemplate._callbacks.rendered = oldTemplate._callbacks.rendered;
     newTemplate._callbacks.destroyed = oldTemplate._callbacks.destroyed;
     delete Template[templateName];
+    Template._applyHmrChanges(templateName);
   }
 
   Template.__checkName(templateName);
   Template[templateName] = newTemplate;
-};
-
-let timeout = null;
-Template._applyHmrChanges = function () {
-  if (timeout) {
-    return;
-  }
-
-  timeout = setTimeout(() => {
-    Blaze.remove(Template.body.view);
-    delete Template.body.view;
-
-    Object.keys(Template._removed || {}).forEach(key => {
-     if (Template[key] === Template._removed[key]) {
-       // This template was removed from the new version of its module
-       delete Template[key];
-     }
-    });
-
-    delete Template._removed;
-    timeout = null;
-
-    Template.body.renderToDocument();
-  });
 };
 
 // XXX COMPAT WITH 0.9.0

@@ -4,14 +4,21 @@ function generateTemplateJS(name, renderFuncCode, useHMR) {
   const templateDotNameLiteral = JSON.stringify(`Template.${name}`);
 
   if (useHMR) {
+    // module.hot.data is used to make sure Template.__checkName can still
+    // detect duplicates
     return `
-Template._migrateTemplate(${nameLiteral}, new Template(${templateDotNameLiteral}, ${renderFuncCode}));
+Template._migrateTemplate(
+  ${nameLiteral},
+  new Template(${templateDotNameLiteral}, ${renderFuncCode}),
+  module && module.hot && module.hot.data && module.hot.data[${nameLiteral}]
+);
 if (typeof module === "object" && module.hot) {
+  if (module.hot.data) {
+    module.hot.data[${nameLiteral}] = false;
+  }
   module.hot.accept();
-  module.hot.dispose(() => {
-    Template._removed = Template._removed || {};
-    Template._removed[${nameLiteral}] = Template[${nameLiteral}];
-    Template._applyHmrChanges();
+  module.hot.dispose((data) => {
+    data[${nameLiteral}] = true;
   });
 }
 `
