@@ -91,20 +91,22 @@ Template._applyHmrChanges = function (templateName) {
 
       var renderFunc = view._render;
       var parentEl = view._domrange.parentElement;
-      var next = view._domrange.lastNode().nextSibling;
+      var first = view._domrange.firstNode();
+      var comment = document.createComment('Blaze HMR PLaceholder');
+      parentEl.insertBefore(comment, first);
 
       Blaze.remove(view);
 
-      var newView;
-      if (view.dataVar) {
-        newView = Blaze.renderWithData(renderFunc, view.dataVar.curValue, parentEl, next);
+      if (view === Template.body.view) {
+        var newView = Blaze.render(Template.body, document.body, comment);
+        Template.body.view = newView;
+      } else if (view.dataVar) {
+        Blaze.renderWithData(renderFunc, view.dataVar.curValue, parentEl, comment);
       } else {
-        newView = Blaze.render(renderFunc, parentEl, next);
+        Blaze.render(renderFunc, parentEl, comment);
       }
 
-      if (parentEl === document.body) {
-        Template.body.view = newView;
-      }
+      parentElement.removeChild(comment);
     }
   });
 }
