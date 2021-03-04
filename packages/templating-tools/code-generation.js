@@ -13,8 +13,9 @@ Template._migrateTemplate(
 );
 if (typeof module === "object" && module.hot) {
   module.hot.accept();
-  module.hot.dispose((data) => {
+  module.hot.dispose(function () {
     Template.__pendingReplacement.push(${nameLiteral});
+    Template._applyHmrChanges(${nameLiteral});
   });
 }
 `
@@ -36,7 +37,7 @@ function generateBodyJS(renderFuncCode, useHMR) {
   Meteor.startup(Template.body.renderToDocument);
   if (typeof module === "object" && module.hot) {
     module.hot.accept();
-    module.hot.dispose(() => {
+    module.hot.dispose(function () {
       var index = Template.body.contentRenderFuncs.indexOf(renderFunc)
       Template.body.contentRenderFuncs.splice(index, 1);
       Template._applyHmrChanges();
