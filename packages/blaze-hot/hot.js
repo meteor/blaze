@@ -7,6 +7,12 @@ let currentModule = {id: null};
 const SourceModule = Symbol();
 
 function patchTemplate(Template) {
+  const oldRegisterHelper = Template.registerHelper;
+  Template.registerHelper = function (name, func) {
+    func[SourceModule] = currentModule.id;
+    oldRegisterHelper(name, func);
+  }
+
   const oldOnCreated = Template.prototype.onCreated;
   Template.prototype.onCreated = function (cb) {
     if (cb) {
@@ -56,14 +62,16 @@ function patchTemplate(Template) {
 }
 
 function cleanTemplate(template, moduleId) {
+  let usedModule = false
   if (!template || !Blaze.isTemplate(template)) {
-    return;
+    return usedModule;
   }
 
   function cleanArray(array) {
     for (let i = array.length - 1; i >= 0; i--) {
       let item = array[i];
       if (item && item[SourceModule] === moduleId) {
+        usedModule = true
         array.splice(i, 1);
       }
     }
@@ -75,10 +83,13 @@ function cleanTemplate(template, moduleId) {
   cleanArray(template.__eventMaps);
 
   Object.keys(template.__helpers).forEach(key => {
-    if (template.__helpers[key] && template.__helpers[key][SourceModule]) {
+    if (template.__helpers[key] && template.__helpers[key][SourceModule] === moduleId) {
+      usedModule = true
       delete template.__helpers[key];
     }
   });
+
+  return usedModule
 }
 
 function shouldAccept(module) {
@@ -108,11 +119,19 @@ if (module.hot) {
       if (shouldAccept(module)) {
         module.hot.accept();
         module.hot.dispose(() => {
-          Object.values(Templates).forEach(template => {
-            cleanTemplate(template, module.id);
+          Object.keys(Templates).forEach(templateName => {
+            let template = Templates[templateName]
+            let usedByModule = cleanTemplate(template, module.id);
+            if (usedByModule) {
+              Template._applyHmrChanges(templateName);
+            }
           });
-          // TODO: only update the templates that were affected
-          Template._applyHmrChanges(UpdateAll);
+
+          Object.values(Blaze._globalHelpers).forEach(helper => {
+            if (helper && helper[SourceModule] === module.id) {
+              Template._applyHmrChanges(UpdateAll);
+            }
+          });
         });
       }
       currentModule = previousModule
