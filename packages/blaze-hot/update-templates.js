@@ -38,10 +38,15 @@ Template.prototype.constructView = function () {
 let updateRootViews = Template._applyHmrChanges;
 
 let timeout = null;
+let lastUpdateFailed = false;
 let modifiedTemplates = new Set();
 let templateViewPrefix = 'Template.';
+
+// Overrides the default _applyHmrChanges with one that updates the specific
+// views for modified templates instead of updating everything.
 Template._applyHmrChanges = function (templateName = UpdateAll) {
-  if (templateName === UpdateAll) {
+  if (templateName === UpdateAll || lastUpdateFailed) {
+    lastUpdateFailed = false;
     clearTimeout(timeout);
     updateRootViews();
     return;
@@ -54,6 +59,12 @@ Template._applyHmrChanges = function (templateName = UpdateAll) {
   }
 
   timeout = setTimeout(() => {
+    for (var i = 0; i < Template.__pendingReplacement.length; i++) {
+      delete Template[Template.__pendingReplacement[i]]
+    }
+
+    Template.__pendingReplacement = [];
+
     timeout = null;
     modifiedTemplates.forEach(templateName => {
       modifiedTemplates.delete(templateName);
@@ -85,6 +96,14 @@ Template._applyHmrChanges = function (templateName = UpdateAll) {
           view = view.parentView;
         }
 
+        if (!view.isRendered) {
+          continue;
+        }
+
+        // TODO: this can be removed if we don't update a view, and then update
+        // one of its children (we only need to update the parent).
+        Package.tracker.Tracker.flush();
+
         let parent = view.parentView;
         let parentElement = view._domrange.parentElement;
         let next = view._domrange.lastNode().nextSibling;
@@ -101,10 +120,6 @@ Template._applyHmrChanges = function (templateName = UpdateAll) {
           return updateRootViews();
         }
 
-        // TODO: this can be removed if we don't update a view, and then update
-        // one of its children (we only need to update the parent).
-        Package.tracker.Tracker.flush();
-
         if (view.templateContentBlock) {
           overrideTemplateContentBlock = view.templateContentBlock;
         }
@@ -116,17 +131,29 @@ Template._applyHmrChanges = function (templateName = UpdateAll) {
         // detach the dom range.
         view._domrange.detach();
         view._domrange.destroy();
-        let newView = Blaze.render(
-          Template[view.template.viewName.slice('Template.'.length)],
-          parentElement,
-          next,
-          parent
-        );
+        let newView;
+
+        try {
+          newView = Blaze.render(
+            Template[view.template.viewName.slice('Template.'.length)],
+            parentElement,
+            next,
+            parent
+          );
+        } catch (error) {
+          console.log('[Blaze HMR] Error re-rending template:');
+          console.error(error);
+          lastUpdateFailed = true;
+        }
 
         let index = parent._domrange.members.findIndex(member => {
           return member && member.view === view;
         });
-        parent._domrange.members.splice(index, 1, newView._domrange);
+        if (newView) {
+          parent._domrange.members.splice(index, 1, newView._domrange);
+        } else {
+          parent._domrange.members.splice(index, 1);
+        }
 
         if (nextComment) {
           parentElement.removeChild(nextComment);
