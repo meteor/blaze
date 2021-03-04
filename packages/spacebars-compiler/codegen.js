@@ -38,7 +38,7 @@ var additionalReservedNames = ["body", "toString", "instance",  "constructor",
   "propertyIsEnumerable", "__defineGetter__", "__lookupGetter__",
   "__defineSetter__", "__lookupSetter__", "__proto__", "dynamic",
   "registerHelper", "currentData", "parentData", "_migrateTemplate",
-  "_applyHmrChanges"
+  "_applyHmrChanges", "__pendingReplacement"
 ];
 
 // A "reserved name" can't be used as a <template> name.  This

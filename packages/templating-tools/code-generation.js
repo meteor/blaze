@@ -10,15 +10,11 @@ function generateTemplateJS(name, renderFuncCode, useHMR) {
 Template._migrateTemplate(
   ${nameLiteral},
   new Template(${templateDotNameLiteral}, ${renderFuncCode}),
-  module && module.hot && module.hot.data && module.hot.data[${nameLiteral}]
 );
 if (typeof module === "object" && module.hot) {
-  if (module.hot.data) {
-    module.hot.data[${nameLiteral}] = false;
-  }
   module.hot.accept();
   module.hot.dispose((data) => {
-    data[${nameLiteral}] = true;
+    Template.__pendingReplacement.push(${nameLiteral});
   });
 }
 `

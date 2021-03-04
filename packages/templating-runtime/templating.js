@@ -68,6 +68,8 @@ Template.body.renderToDocument = function () {
   Template.body.view = view;
 };
 
+Template.__pendingReplacement = []
+
 var updateTimeout = null;
 
 // Simple HMR integration to re-render all of the root views
@@ -82,9 +84,15 @@ Template._applyHmrChanges = function (templateName) {
   updateTimeout = setTimeout(function () {
     updateTimeout = null;
 
+    for (var i = 0; i < Template.__pendingReplacement.length; i++) {
+      delete Template[Template.__pendingReplacement[i]]
+    }
+
+    Template.__pendingReplacement = [];
+
     var views = Blaze.__rootViews.slice();
-    for(let i = 0; i < views.length; i++) {
-      let view = views[i];
+    for(var i = 0; i < views.length; i++) {
+      var view = views[i];
       if (view.destroyed) {
         continue;
       }
@@ -112,7 +120,8 @@ Template._applyHmrChanges = function (templateName) {
 }
 
 Template._migrateTemplate = function (templateName, newTemplate, migrate) {
-  const oldTemplate = Template[templateName];
+  var oldTemplate = Template[templateName];
+  var migrate = Template.__pendingReplacement.indexOf(templateName) > -1
 
   if (oldTemplate && migrate) {
     newTemplate.__helpers = oldTemplate.__helpers;
@@ -122,6 +131,14 @@ Template._migrateTemplate = function (templateName, newTemplate, migrate) {
     newTemplate._callbacks.destroyed = oldTemplate._callbacks.destroyed;
     delete Template[templateName];
     Template._applyHmrChanges(templateName);
+  }
+
+
+  if (migrate) {
+    Template.__pendingReplacement.splice(
+      Template.__pendingReplacement.indexOf(templateName),
+      1
+    )
   }
 
   Template.__checkName(templateName);
