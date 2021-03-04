@@ -98,23 +98,52 @@ Template._applyHmrChanges = function (templateName) {
       }
 
       var renderFunc = view._render;
-      var parentEl = view._domrange.parentElement;
-      var first = view._domrange.firstNode();
-      var comment = document.createComment('Blaze HMR PLaceholder');
-      parentEl.insertBefore(comment, first);
-
-      Blaze.remove(view);
-
-      if (view === Template.body.view) {
-        var newView = Blaze.render(Template.body, document.body, comment);
-        Template.body.view = newView;
-      } else if (view.dataVar) {
-        Blaze.renderWithData(renderFunc, view.dataVar.curValue, parentEl, comment);
-      } else {
-        Blaze.render(renderFunc, parentEl, comment);
+      var parentEl;
+      if (view._domrange && view._domrange.parentElement) {
+        parentEl = view._domrange.parentElement;
+      } else if (view._hmrParent) {
+        parentEl = view._hmrParent;
       }
 
-      parentEl.removeChild(comment);
+      var comment;
+      if (view._hmrAfter) {
+        comment = view._hmrAfter;
+      } else {
+        var first = view._domrange.firstNode();
+        comment = document.createComment('Blaze HMR PLaceholder');
+        parentEl.insertBefore(comment, first);
+      }
+
+      view._hmrAfter = null;
+      view._hmrParent = null;
+
+      if (view._domrange) {
+        Blaze.remove(view);
+      }
+
+      try {
+        if (view === Template.body.view) {
+          var newView = Blaze.render(Template.body, document.body, comment);
+          Template.body.view = newView;
+        } else if (view.dataVar) {
+          Blaze.renderWithData(renderFunc, view.dataVar.curValue, parentEl, comment);
+        } else {
+          Blaze.render(renderFunc, parentEl, comment);
+        }
+
+        parentEl.removeChild(comment);
+      } catch (e) {
+        console.log('[Blaze HMR] Error re-rending template:');
+        console.error(e);
+
+        // Record where the view should have been so we can still render it
+        // during the next update
+        var newestRoot = Blaze.__rootViews[Blaze.__rootViews.length - 1];
+        if (newestRoot && newestRoot.isCreated && !newestRoot.isRendered) {
+          newestRoot._hmrAfter = comment;
+          newestRoot._hmrParent = parentEl;
+        }
+      }
     }
   });
 }
