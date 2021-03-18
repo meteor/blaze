@@ -1,6 +1,9 @@
 version: 2
+
 jobs:
   one:
+    docker:
+      - image: meteor/circleci:android-28-node-12
     steps:
       - checkout
       - run: |
