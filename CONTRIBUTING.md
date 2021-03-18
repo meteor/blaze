@@ -33,4 +33,27 @@ ln -s /home/user/projects/blaze/packages/blaze-html-templates packages/
 ...
 ```
 
-And so on for all the packages.
+### Run local tests
+
+The `test-app` folder contains a bare Meteor project you can utilize for local
+testing. In order to run local tests, please setup the project first:
+
+#### Setting up the local test environment
+
+Everything is already prepared in scripts:
+
+```bash
+$ cd test-app
+$ meteor npm install   # install dependencies
+$ meteor npm run setup # create link to packages
+```
+
+This has to be done only once.
+
+#### Run the tests
+
+Simply execute the test script:
+
+```bash
+$ meteor npm run test:watch
+```
