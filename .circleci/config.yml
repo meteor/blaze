@@ -6,9 +6,14 @@ jobs:
       - image: meteor/circleci:android-28-node-12
     steps:
       - checkout
-      - run: |
-          curl https://install.meteor.com/ | sh
+      - run:
+        name: "Install Meteor"
+        command: curl https://install.meteor.com/ | sh
+      - run:
+        name: "Run Tests"
+        command: |
           cd test-app
+          pwd
           ./ci.sh
 
 workflows:
