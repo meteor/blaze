@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+ln -sfn ../packages ./packages
 meteor npm install
 
 export URL='http://localhost:4096/'

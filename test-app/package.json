@@ -6,14 +6,12 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "meteor run",
     "setup": "ln -sfn ../packages ./packages",
     "test:watch": "meteor test-packages --raw-logs ./packages/*",
     "test:ci": "ci.sh"
   },
-  "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "jquery": "^3.4.1",
     "@babel/runtime": "^7.13.10",
