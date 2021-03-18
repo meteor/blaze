@@ -19,7 +19,7 @@ commands:
             npm i puppeteer
 
 jobs:
-  Blaze Tests:
+  BlazeTests:
     steps:
       - checkout
       - run:
@@ -27,3 +27,9 @@ jobs:
         command: |
           cd test-app
           ./ci.sh
+
+workflows:
+  version: 2
+  Tests:
+    jobs:
+      - BlazeTests
