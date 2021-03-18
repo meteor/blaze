@@ -8,7 +8,8 @@ jobs:
       - checkout
       - run:
         name: "Install Meteor"
-        command: curl https://install.meteor.com/ | sh
+        command: |
+          curl https://install.meteor.com/ | sh
       - run:
         name: "Run Tests"
         command: |
