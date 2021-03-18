@@ -6,13 +6,16 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "meteor run",
+    "setup": "ln -sfn ../packages ./packages",
+    "test:watch": "meteor test-packages --raw-logs ./packages/*",
+    "test:ci": "ci.sh"
   },
-  "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "jquery": "^3.4.1",
-    "@babel/runtime": "^7.6.0",
-    "meteor-node-stubs": "^1.0.0"
+    "@babel/runtime": "^7.13.10",
+    "meteor-node-stubs": "^1.0.2",
+    "puppeteer": "^8.0.0"
   }
 }
