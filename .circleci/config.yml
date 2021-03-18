@@ -12,4 +12,3 @@ workflows:
   onejob:
     jobs:
       - one
-      - two
