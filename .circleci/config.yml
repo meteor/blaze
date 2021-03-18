@@ -7,15 +7,15 @@ jobs:
     steps:
       - checkout
       - run:
-        name: "Install Meteor"
-        command: |
-          curl https://install.meteor.com/ | sh
+          name: "Install Meteor"
+          command: |
+            curl https://install.meteor.com/ | sh
       - run:
-        name: "Run Tests"
-        command: |
-          cd test-app
-          pwd
-          ./ci.sh
+          name: "Run Tests"
+          command: |
+            cd test-app
+            pwd
+            ./ci.sh
 
 workflows:
   version: 2
