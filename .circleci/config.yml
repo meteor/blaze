@@ -1,7 +1,7 @@
 version: 2
 
 jobs:
-  one:
+  test app:
     docker:
       - image: meteor/circleci:android-28-node-12
     steps:
@@ -18,6 +18,6 @@ jobs:
 
 workflows:
   version: 2
-  onejob:
+  Blaze Tests:
     jobs:
-      - one
+      - test app
