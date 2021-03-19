@@ -171,10 +171,7 @@ Raw.prototype.htmljsType = Raw.htmljsType = ['Raw'];
 
 
 HTML.isArray = function (x) {
-  // could change this to use the more convoluted Object.prototype.toString
-  // approach that works when objects are passed between frames, but does
-  // it matter?
-  return (x instanceof Array);
+  return x instanceof Array || Array.isArray(x);
 };
 
 HTML.isConstructedObject = function (x) {
@@ -185,10 +182,22 @@ HTML.isConstructedObject = function (x) {
   // if you assign to a prototype when setting up the class as in:
   // `Foo = function () { ... }; Foo.prototype = { ... }`, then
   // `(new Foo).constructor` is `Object`, not `Foo`).
-  return (x && (typeof x === 'object') &&
-          (x.constructor !== Object) &&
-          (typeof x.constructor === 'function') &&
-          (x instanceof x.constructor));
+  if(!x || (typeof x !== 'object')) return false;
+  // Is this a plain object?
+  let plain = false;
+  if(Object.getPrototypeOf(x) === null) {
+    plain = true;
+  } else {
+    let proto = x;
+    while(Object.getPrototypeOf(proto) !== null) {
+      proto = Object.getPrototypeOf(proto);
+    }
+    plain = Object.getPrototypeOf(x) === proto;
+  }
+
+  return !plain &&
+    (typeof x.constructor === 'function') &&
+    (x instanceof x.constructor);
 };
 
 HTML.isNully = function (node) {
