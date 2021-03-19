@@ -55,7 +55,9 @@ CanOptimizeVisitor.def({
       // browser will insert a TBODY.  If we just `createElement("table")` and
       // `createElement("tr")`, on the other hand, no TBODY is necessary
       // (assuming IE 8+).
-      return OPTIMIZABLE.NONE;
+      return OPTIMIZABLE.PARTS;
+    } else if (tagName === 'tr'){
+      return OPTIMIZABLE.PARTS;
     }
 
     var children = tag.children;
@@ -160,7 +162,7 @@ RawCompactingVisitor.def({
             result[result.length - 1].value + item.value);
         }
       } else {
-        result.push(item);
+        result.push(this.visit(item));
       }
     }
     return result;
