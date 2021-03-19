@@ -1393,11 +1393,11 @@ Tinytest.add("spacebars-tests - old - template_tests - radio", function(test) {
   var btns = nodesToArray(div.getElementsByTagName("INPUT"));
   var text = function () {
     var text = div.innerText || div.textContent;
-    return text.replace(/[ \n\r]+/g, " ");
+    return text.replace(/[ \n\r]+/g, " ").replace(/^\s+|\s+$/g, "");
   };
 
   test.equal(_.pluck(btns, 'checked'), [false, false, false]);
-  test.equal(text(), "Band: ");
+  test.equal(text(), "Band:");
 
   clickIt(btns[0]);
   test.equal(change_buf, ['AM']);

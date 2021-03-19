@@ -1555,11 +1555,11 @@ Tinytest.add("spacebars-tests - template_tests - radio", function(test) {
   var btns = nodesToArray(div.getElementsByTagName("INPUT"));
   var text = function () {
     var text = div.innerText || div.textContent;
-    return text.replace(/[ \n\r]+/g, " ");
+    return text.replace(/[ \n\r]+/g, " ").replace(/^\s+|\s+$/g, "");
   };
 
   test.equal(_.pluck(btns, 'checked'), [false, false, false]);
-  test.equal(text(), "Band: ");
+  test.equal(text(), "Band:");
 
   clickIt(btns[0]);
   test.equal(change_buf, ['AM']);
@@ -2219,10 +2219,23 @@ Tinytest.add("spacebars-tests - template_tests - javascript scheme urls",
           _.each(
             div.getElementsByTagName(attrInfo[0]),
             function (elem) {
-              test.equal(
-                elem[attrInfo[1]],
-                isJavascriptProtocol && attrInfo[2] ? "" : normalizedUrl
-              );
+              // Intentional Change in Form Action behaviour in Chrome 66 
+              // Safari 11.0 and Firefox 59. An empty or missing form action will
+              // now return the document's base URL. To recieve the actual action
+              // getAttribute('action') must be called. If HTML attribute being checked
+              // is form, check against getAttribute('action') instead. 
+              // https://bugs.chromium.org/p/chromium/issues/detail?id=724596
+              if (attrInfo[0] === "FORM" && isJavascriptProtocol === true) {
+                test.equal(
+                  elem.getAttribute('action'),
+                  isJavascriptProtocol && attrInfo[2] ? null : normalizedUrl
+                );
+              } else {
+                test.equal(
+                  elem[attrInfo[1]],
+                  isJavascriptProtocol && attrInfo[2] ? "" : normalizedUrl
+                );
+              }
             }
           );
         }

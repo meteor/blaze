@@ -1,0 +1,21 @@
+{
+  "name": "blaze-test-app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "meteor run",
+    "setup": "ln -sfn ../packages ./packages",
+    "test:watch": "meteor test-packages --raw-logs ./packages/*",
+    "test:ci": "ci.sh"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "jquery": "^3.4.1",
+    "@babel/runtime": "^7.13.10",
+    "meteor-node-stubs": "^1.0.2",
+    "puppeteer": "^8.0.0"
+  }
+}

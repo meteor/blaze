@@ -449,24 +449,67 @@ Template.prototype.helpers = function (dict) {
     this.__helpers.set(k, dict[k]);
 };
 
-// Kind of like Blaze.currentView but for the template instance.
-// This is a function, not a value -- so that not all helpers
-// are implicitly dependent on the current template instance's `data` property,
-// which would make them dependenct on the data context of the template
-// inclusion.
-Template._currentTemplateInstanceFunc = null;
-
-Template._withTemplateInstanceFunc = function (templateInstanceFunc, func) {
-  if (typeof func !== 'function')
-    throw new Error("Expected function, got: " + func);
-  var oldTmplInstanceFunc = Template._currentTemplateInstanceFunc;
-  try {
-    Template._currentTemplateInstanceFunc = templateInstanceFunc;
-    return func();
-  } finally {
-    Template._currentTemplateInstanceFunc = oldTmplInstanceFunc;
+var canUseGetters = function() {
+  if (Object.defineProperty) {
+    var obj = {};
+    try {
+      Object.defineProperty(obj, "self", {
+        get: function () { return obj; }
+      });
+    } catch (e) {
+      return false;
+    }
+    return obj.self === obj;
   }
-};
+  return false;
+}();
+
+if (canUseGetters) {
+  // Like Blaze.currentView but for the template instance. A function
+  // rather than a value so that not all helpers are implicitly dependent
+  // on the current template instance's `data` property, which would make
+  // them dependent on the data context of the template inclusion.
+  var currentTemplateInstanceFunc = null;
+
+  // If getters are supported, define this property with a getter function
+  // to make it effectively read-only, and to work around this bizarre JSC
+  // bug: https://github.com/meteor/meteor/issues/9926
+  Object.defineProperty(Template, "_currentTemplateInstanceFunc", {
+    get: function () {
+      return currentTemplateInstanceFunc;
+    }
+  });
+
+  Template._withTemplateInstanceFunc = function (templateInstanceFunc, func) {
+    if (typeof func !== 'function') {
+      throw new Error("Expected function, got: " + func);
+    }
+    var oldTmplInstanceFunc = currentTemplateInstanceFunc;
+    try {
+      currentTemplateInstanceFunc = templateInstanceFunc;
+      return func();
+    } finally {
+      currentTemplateInstanceFunc = oldTmplInstanceFunc;
+    }
+  };
+
+} else {
+  // If getters are not supported, just use a normal property.
+  Template._currentTemplateInstanceFunc = null;
+
+  Template._withTemplateInstanceFunc = function (templateInstanceFunc, func) {
+    if (typeof func !== 'function') {
+      throw new Error("Expected function, got: " + func);
+    }
+    var oldTmplInstanceFunc = Template._currentTemplateInstanceFunc;
+    try {
+      Template._currentTemplateInstanceFunc = templateInstanceFunc;
+      return func();
+    } finally {
+      Template._currentTemplateInstanceFunc = oldTmplInstanceFunc;
+    }
+  };
+}
 
 /**
  * @summary Specify event handlers for this template.
