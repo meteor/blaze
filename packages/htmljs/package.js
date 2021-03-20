@@ -22,6 +22,7 @@ Package.onTest(function (api) {
   api.use('underscore@1.0.9');
 
   api.use('htmljs');
+  api.use('html-tools@1.1.0-beta.2');
 
   api.addFiles([
     'htmljs_test.js'
