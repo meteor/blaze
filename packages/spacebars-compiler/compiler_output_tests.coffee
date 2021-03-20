@@ -126,6 +126,22 @@ function() {
 }
   """
 
+  run "{{!-- --}}{{#if cond}}<p>aaa</p><p>ppp</p>{{!\n}}{{else}}{{!}}<p>{{bbb}}</p>{{!-- --}}{{/if}}{{!}}",
+  """
+function() {
+  var view = this;
+  return Blaze.If(function () {
+    return Spacebars.call(view.lookup("cond"));
+  }, (function() {
+    return HTML.Raw("<p>aaa</p><p>ppp</p>");
+  }), (function() {
+    return HTML.P(Blaze.View("lookup:bbb", function() {
+      return Spacebars.mustache(view.lookup("bbb"));
+    }));
+  }));
+}
+  """
+
   run "{{> foo bar}}",
   """
   function() {
@@ -293,4 +309,25 @@ function() {
       })
     });
   }
+  """
+
+  run "<div><div>{{helper}}<div>a</div><div>b</div></div></div>",
+  """
+function() {
+  var view = this;
+  return HTML.DIV(HTML.DIV(Blaze.View("lookup:helper",function(){
+      return Spacebars.mustache(view.lookup("helper"));
+  }), HTML.Raw("<div>a</div><div>b</div>")));
+}
+  """
+
+  run "<table><colgroup><col></colgroup><tr><td>aaa</td><td>bbb</td></tr></table>",
+  """
+function() {
+  var view = this;
+  return HTML.TABLE(
+    HTML.Raw("<colgroup><col></colgroup>"),
+    HTML.TR(HTML.Raw("<td>aaa</td><td>bbb</td>"))
+  );
+}
   """

@@ -1,5 +1,5 @@
 Blaze._calculateCondition = function (cond) {
-  if (cond instanceof Array && cond.length === 0)
+  if (HTML.isArray(cond) && cond.length === 0)
     cond = false;
   return !! cond;
 };

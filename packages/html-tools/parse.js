@@ -187,7 +187,7 @@ getContent = HTMLTools.Parse.getContent = function (scanner, shouldStopFunc) {
         // as in `FOO.apply(null, content)`.
         if (content == null)
           content = [];
-        else if (! (content instanceof Array))
+        else if (! HTML.isArray(content))
           content = [content];
 
         items.push(HTML.getTag(tagName).apply(
