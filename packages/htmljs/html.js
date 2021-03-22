@@ -1,28 +1,27 @@
 
-
-HTML.Tag = function () {};
-HTML.Tag.prototype.tagName = ''; // this will be set per Tag subclass
-HTML.Tag.prototype.attrs = null;
-HTML.Tag.prototype.children = Object.freeze ? Object.freeze([]) : [];
-HTML.Tag.prototype.htmljsType = HTML.Tag.htmljsType = ['Tag'];
+export const Tag = function () {};
+Tag.prototype.tagName = ''; // this will be set per Tag subclass
+Tag.prototype.attrs = null;
+Tag.prototype.children = Object.freeze ? Object.freeze([]) : [];
+Tag.prototype.htmljsType = Tag.htmljsType = ['Tag'];
 
 // Given "p" create the function `HTML.P`.
 var makeTagConstructor = function (tagName) {
-  // HTMLTag is the per-tagName constructor of a HTML.Tag subclass
-  var HTMLTag = function (/*arguments*/) {
+  // Tag is the per-tagName constructor of a HTML.Tag subclass
+  var HTMLTag = function (...args) {
     // Work with or without `new`.  If not called with `new`,
     // perform instantiation by recursively calling this constructor.
     // We can't pass varargs, so pass no args.
-    var instance = (this instanceof HTML.Tag) ? this : new HTMLTag;
+    var instance = (this instanceof Tag) ? this : new HTMLTag;
 
     var i = 0;
-    var attrs = arguments.length && arguments[0];
+    var attrs = args.length && args[0];
     if (attrs && (typeof attrs === 'object')) {
       // Treat vanilla JS object as an attributes dictionary.
-      if (! HTML.isConstructedObject(attrs)) {
+      if (! isConstructedObject(attrs)) {
         instance.attrs = attrs;
         i++;
-      } else if (attrs instanceof HTML.Attrs) {
+      } else if (attrs instanceof Attrs) {
         var array = attrs.value;
         if (array.length === 1) {
           instance.attrs = array[0];
@@ -38,12 +37,12 @@ var makeTagConstructor = function (tagName) {
     // (frozen, empty) array.  This way we don't create an empty array
     // every time someone creates a tag without `new` and this constructor
     // calls itself with no arguments (above).
-    if (i < arguments.length)
-      instance.children = SLICE.call(arguments, i);
+    if (i < args.length)
+      instance.children = args.slice(i);
 
     return instance;
   };
-  HTMLTag.prototype = new HTML.Tag;
+  HTMLTag.prototype = new Tag;
   HTMLTag.prototype.constructor = HTMLTag;
   HTMLTag.prototype.tagName = tagName;
 
@@ -52,84 +51,76 @@ var makeTagConstructor = function (tagName) {
 
 // Not an HTMLjs node, but a wrapper to pass multiple attrs dictionaries
 // to a tag (for the purpose of implementing dynamic attributes).
-var Attrs = HTML.Attrs = function (/*attrs dictionaries*/) {
+export function Attrs(...args) {
   // Work with or without `new`.  If not called with `new`,
   // perform instantiation by recursively calling this constructor.
   // We can't pass varargs, so pass no args.
   var instance = (this instanceof Attrs) ? this : new Attrs;
 
-  instance.value = SLICE.call(arguments);
+  instance.value = args;
 
   return instance;
-};
+}
 
 ////////////////////////////// KNOWN ELEMENTS
+export const HTMLTags = {};
 
-HTML.getTag = function (tagName) {
-  var symbolName = HTML.getSymbolName(tagName);
+export function getTag (tagName) {
+  var symbolName = getSymbolName(tagName);
   if (symbolName === tagName) // all-caps tagName
     throw new Error("Use the lowercase or camelCase form of '" + tagName + "' here");
 
-  if (! HTML[symbolName])
-    HTML[symbolName] = makeTagConstructor(tagName);
+  if (! HTMLTags[symbolName])
+    HTMLTags[symbolName] = makeTagConstructor(tagName);
 
-  return HTML[symbolName];
-};
+  return HTMLTags[symbolName];
+}
 
-HTML.ensureTag = function (tagName) {
-  HTML.getTag(tagName); // don't return it
-};
+export function ensureTag(tagName) {
+  getTag(tagName); // don't return it
+}
 
-HTML.isTagEnsured = function (tagName) {
-  return HTML.isKnownElement(tagName);
-};
+export function isTagEnsured (tagName) {
+  return isKnownElement(tagName);
+}
 
-HTML.getSymbolName = function (tagName) {
+export function getSymbolName (tagName) {
   // "foo-bar" -> "FOO_BAR"
   return tagName.toUpperCase().replace(/-/g, '_');
-};
+}
 
-HTML.knownElementNames = 'a abbr acronym address applet area article aside audio b base basefont bdi bdo big blockquote body br button canvas caption center cite code col colgroup command data datagrid datalist dd del details dfn dir div dl dt em embed eventsource fieldset figcaption figure font footer form frame frameset h1 h2 h3 h4 h5 h6 head header hgroup hr html i iframe img input ins isindex kbd keygen label legend li link main map mark menu meta meter nav noframes noscript object ol optgroup option output p param pre progress q rp rt ruby s samp script section select small source span strike strong style sub summary sup table tbody td textarea tfoot th thead time title tr track tt u ul var video wbr'.split(' ');
+export const knownHTMLElementNames = 'a abbr acronym address applet area article aside audio b base basefont bdi bdo big blockquote body br button canvas caption center cite code col colgroup command data datagrid datalist dd del details dfn dir div dl dt em embed eventsource fieldset figcaption figure font footer form frame frameset h1 h2 h3 h4 h5 h6 head header hgroup hr html i iframe img input ins isindex kbd keygen label legend li link main map mark menu meta meter nav noframes noscript object ol optgroup option output p param pre progress q rp rt ruby s samp script section select small source span strike strong style sub summary sup table tbody td textarea tfoot th thead time title tr track tt u ul var video wbr'.split(' ');
 // (we add the SVG ones below)
 
-HTML.knownSVGElementNames = 'altGlyph altGlyphDef altGlyphItem animate animateColor animateMotion animateTransform circle clipPath color-profile cursor defs desc ellipse feBlend feColorMatrix feComponentTransfer feComposite feConvolveMatrix feDiffuseLighting feDisplacementMap feDistantLight feFlood feFuncA feFuncB feFuncG feFuncR feGaussianBlur feImage feMerge feMergeNode feMorphology feOffset fePointLight feSpecularLighting feSpotLight feTile feTurbulence filter font font-face font-face-format font-face-name font-face-src font-face-uri foreignObject g glyph glyphRef hkern image line linearGradient marker mask metadata missing-glyph path pattern polygon polyline radialGradient rect set stop style svg switch symbol text textPath title tref tspan use view vkern'.split(' ');
+export const knownSVGElementNames = 'altGlyph altGlyphDef altGlyphItem animate animateColor animateMotion animateTransform circle clipPath color-profile cursor defs desc ellipse feBlend feColorMatrix feComponentTransfer feComposite feConvolveMatrix feDiffuseLighting feDisplacementMap feDistantLight feFlood feFuncA feFuncB feFuncG feFuncR feGaussianBlur feImage feMerge feMergeNode feMorphology feOffset fePointLight feSpecularLighting feSpotLight feTile feTurbulence filter font font-face font-face-format font-face-name font-face-src font-face-uri foreignObject g glyph glyphRef hkern image line linearGradient marker mask metadata missing-glyph path pattern polygon polyline radialGradient rect set stop style svg switch symbol text textPath title tref tspan use view vkern'.split(' ');
 // Append SVG element names to list of known element names
-HTML.knownElementNames = HTML.knownElementNames.concat(HTML.knownSVGElementNames);
+export const knownElementNames = knownHTMLElementNames.concat(knownSVGElementNames);
 
-HTML.voidElementNames = 'area base br col command embed hr img input keygen link meta param source track wbr'.split(' ');
+export const voidElementNames = 'area base br col command embed hr img input keygen link meta param source track wbr'.split(' ');
 
-// Speed up search through lists of known elements by creating internal "sets"
-// of strings.
-var YES = {yes:true};
-var makeSet = function (array) {
-  var set = {};
-  for (var i = 0; i < array.length; i++)
-    set[array[i]] = YES;
-  return set;
-};
-var voidElementSet = makeSet(HTML.voidElementNames);
-var knownElementSet = makeSet(HTML.knownElementNames);
-var knownSVGElementSet = makeSet(HTML.knownSVGElementNames);
 
-HTML.isKnownElement = function (tagName) {
-  return knownElementSet[tagName] === YES;
-};
+var voidElementSet = new Set(voidElementNames);
+var knownElementSet = new Set(knownElementNames);
+var knownSVGElementSet = new Set(knownSVGElementNames);
 
-HTML.isKnownSVGElement = function (tagName) {
-  return knownSVGElementSet[tagName] === YES;
-};
+export function isKnownElement(tagName) {
+  return knownElementSet.has(tagName);
+}
 
-HTML.isVoidElement = function (tagName) {
-  return voidElementSet[tagName] === YES;
-};
+export function isKnownSVGElement(tagName) {
+  return knownSVGElementSet.has(tagName);
+}
+
+export function isVoidElement(tagName) {
+  return voidElementSet.has(tagName);
+}
 
 
 // Ensure tags for all known elements
-for (var i = 0; i < HTML.knownElementNames.length; i++)
-  HTML.ensureTag(HTML.knownElementNames[i]);
+knownElementNames.forEach(ensureTag);
 
 
-var CharRef = HTML.CharRef = function (attrs) {
+export function CharRef(attrs) {
   if (! (this instanceof CharRef))
     // called without `new`
     return new CharRef(attrs);
@@ -140,10 +131,10 @@ var CharRef = HTML.CharRef = function (attrs) {
 
   this.html = attrs.html;
   this.str = attrs.str;
-};
+}
 CharRef.prototype.htmljsType = CharRef.htmljsType = ['CharRef'];
 
-var Comment = HTML.Comment = function (value) {
+export function Comment(value) {
   if (! (this instanceof Comment))
     // called without `new`
     return new Comment(value);
@@ -154,10 +145,10 @@ var Comment = HTML.Comment = function (value) {
   this.value = value;
   // Kill illegal hyphens in comment value (no way to escape them in HTML)
   this.sanitizedValue = value.replace(/^-|--+|-$/g, '');
-};
+}
 Comment.prototype.htmljsType = Comment.htmljsType = ['Comment'];
 
-var Raw = HTML.Raw = function (value) {
+export function Raw(value) {
   if (! (this instanceof Raw))
     // called without `new`
     return new Raw(value);
@@ -166,15 +157,15 @@ var Raw = HTML.Raw = function (value) {
     throw new Error('HTML.Raw must be constructed with a string');
 
   this.value = value;
-};
+}
 Raw.prototype.htmljsType = Raw.htmljsType = ['Raw'];
 
 
-HTML.isArray = function (x) {
+export function isArray (x) {
   return x instanceof Array || Array.isArray(x);
-};
+}
 
-HTML.isConstructedObject = function (x) {
+export function isConstructedObject (x) {
   // Figure out if `x` is "an instance of some class" or just a plain
   // object literal.  It correctly treats an object literal like
   // `{ constructor: ... }` as an object literal.  It won't detect
@@ -198,80 +189,52 @@ HTML.isConstructedObject = function (x) {
   return !plain &&
     (typeof x.constructor === 'function') &&
     (x instanceof x.constructor);
-};
+}
 
-HTML.isNully = function (node) {
+export function isNully (node) {
   if (node == null)
     // null or undefined
     return true;
 
-  if (HTML.isArray(node)) {
+  if (isArray(node)) {
     // is it an empty array or an array of all nully items?
     for (var i = 0; i < node.length; i++)
-      if (! HTML.isNully(node[i]))
+      if (! isNully(node[i]))
         return false;
     return true;
   }
 
   return false;
-};
+}
 
-HTML.isValidAttributeName = function (name) {
+export function isValidAttributeName (name) {
   return /^[:_A-Za-z][:_A-Za-z0-9.\-]*/.test(name);
-};
+}
 
 // If `attrs` is an array of attributes dictionaries, combines them
 // into one.  Removes attributes that are "nully."
-HTML.flattenAttributes = function (attrs) {
+export function flattenAttributes (attrs) {
   if (! attrs)
     return attrs;
 
-  var isArray = HTML.isArray(attrs);
-  if (isArray && attrs.length === 0)
+  var isList = isArray(attrs);
+  if (isList && attrs.length === 0)
     return null;
 
   var result = {};
-  for (var i = 0, N = (isArray ? attrs.length : 1); i < N; i++) {
-    var oneAttrs = (isArray ? attrs[i] : attrs);
+  for (var i = 0, N = (isList ? attrs.length : 1); i < N; i++) {
+    var oneAttrs = (isList ? attrs[i] : attrs);
     if ((typeof oneAttrs !== 'object') ||
-        HTML.isConstructedObject(oneAttrs))
+        isConstructedObject(oneAttrs))
       throw new Error("Expected plain JS object as attrs, found: " + oneAttrs);
     for (var name in oneAttrs) {
-      if (! HTML.isValidAttributeName(name))
+      if (! isValidAttributeName(name))
         throw new Error("Illegal HTML attribute name: " + name);
       var value = oneAttrs[name];
-      if (! HTML.isNully(value))
+      if (! isNully(value))
         result[name] = value;
     }
   }
 
   return result;
-};
-
-
-
-////////////////////////////// TOHTML
-
-HTML.toHTML = function (content) {
-  return (new HTML.ToHTMLVisitor).visit(content);
-};
-
-// Escaping modes for outputting text when generating HTML.
-HTML.TEXTMODE = {
-  STRING: 1,
-  RCDATA: 2,
-  ATTRIBUTE: 3
-};
-
-
-HTML.toText = function (content, textMode) {
-  if (! textMode)
-    throw new Error("textMode required for HTML.toText");
-  if (! (textMode === HTML.TEXTMODE.STRING ||
-         textMode === HTML.TEXTMODE.RCDATA ||
-         textMode === HTML.TEXTMODE.ATTRIBUTE))
-    throw new Error("Unknown textMode: " + textMode);
-
-  var visitor = new HTML.ToTextVisitor({textMode: textMode});;
-  return visitor.visit(content);
-};
+}

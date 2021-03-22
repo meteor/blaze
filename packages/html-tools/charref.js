@@ -1,3 +1,4 @@
+import { makeRegexMatcher } from './scanner';
 
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/entities.json
 
@@ -2360,7 +2361,7 @@ var isLegalCodepoint = function (cp) {
 // either `"`, `'`, or `>` and is supplied when parsing attribute values.  NOTE: In the current spec, the
 // value of `allowedChar` doesn't actually seem to end up mattering, but there is still some debate about
 // the right approach to ampersands.
-getCharacterReference = HTMLTools.Parse.getCharacterReference = function (scanner, inAttribute, allowedChar) {
+export function getCharacterReference (scanner, inAttribute, allowedChar) {
   if (scanner.peek() !== '&')
     // no ampersand
     return null;
@@ -2411,4 +2412,4 @@ getCharacterReference = HTMLTools.Parse.getCharacterReference = function (scanne
       return null;
     }
   }
-};
+}

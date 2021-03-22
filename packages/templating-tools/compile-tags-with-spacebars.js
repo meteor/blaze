@@ -1,4 +1,8 @@
-TemplatingTools.compileTagsWithSpacebars = function compileTagsWithSpacebars(tags, hmrAvailable) {
+import { SpacebarsCompiler } from 'meteor/spacebars-compiler';
+import { generateBodyJS, generateTemplateJS } from './code-generation';
+import { throwCompileError } from './throw-compile-error';
+
+export function compileTagsWithSpacebars(tags, hmrAvailable) {
   var handler = new SpacebarsTagCompiler();
 
   tags.forEach((tag) => {
@@ -6,7 +10,7 @@ TemplatingTools.compileTagsWithSpacebars = function compileTagsWithSpacebars(tag
   });
 
   return handler.getResults();
-};
+}
 
 class SpacebarsTagCompiler {
   constructor() {
@@ -57,7 +61,7 @@ class SpacebarsTagCompiler {
           sourceName: `Template "${name}"`
         });
 
-        this.results.js += TemplatingTools.generateTemplateJS(
+        this.results.js += generateTemplateJS(
           name, renderFuncCode, hmrAvailable);
       } else if (this.tag.tagName === "body") {
         this.addBodyAttrs(this.tag.attribs);
@@ -68,7 +72,7 @@ class SpacebarsTagCompiler {
         });
 
         // We may be one of many `<body>` tags.
-        this.results.js += TemplatingTools.generateBodyJS(renderFuncCode, hmrAvailable);
+        this.results.js += generateBodyJS(renderFuncCode, hmrAvailable);
       } else {
         this.throwCompileError("Expected <template>, <head>, or <body> tag in template file", tagStartIndex);
       }
@@ -99,6 +103,6 @@ class SpacebarsTagCompiler {
   }
 
   throwCompileError(message, overrideIndex) {
-    TemplatingTools.throwCompileError(this.tag, message, overrideIndex);
+    throwCompileError(this.tag, message, overrideIndex);
   }
 }

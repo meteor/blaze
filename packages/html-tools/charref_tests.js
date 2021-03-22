@@ -1,3 +1,5 @@
+import { HTMLTools } from 'meteor/html-tools';
+
 var Scanner = HTMLTools.Scanner;
 var getCharacterReference = HTMLTools.Parse.getCharacterReference;
 
@@ -19,7 +21,7 @@ Tinytest.add("html-tools - entities", function (test) {
     test.equal(result, {
       t: 'CharRef',
       v: match,
-      cp: _.map(codepoints,
+      cp: codepoints.map(
                 function (x) { return (typeof x === 'string' ?
                                        x.charCodeAt(0) : x); })
     });

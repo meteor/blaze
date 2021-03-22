@@ -1,4 +1,68 @@
-HTML = {};
+import {
+  HTMLTags,
+  Tag,
+  Attrs,
+  getTag,
+  ensureTag,
+  isTagEnsured,
+  getSymbolName,
+  knownHTMLElementNames,
+  knownSVGElementNames,
+  knownElementNames,
+  voidElementNames,
+  isKnownElement,
+  isKnownSVGElement,
+  isVoidElement,
+  CharRef,
+  Comment,
+  Raw,
+  isArray,
+  isConstructedObject,
+  isNully,
+  isValidAttributeName,
+  flattenAttributes,
+} from './html';
 
-IDENTITY = function (x) { return x; };
-SLICE = Array.prototype.slice;
+import {
+  Visitor,
+  TransformingVisitor,
+  ToHTMLVisitor,
+  ToTextVisitor,
+  toHTML,
+  TEXTMODE,
+  toText
+} from './visitors';
+
+
+// we're actually exporting the HTMLTags object.
+//  because it is dynamically altered by getTag/ensureTag
+export const HTML = Object.assign(HTMLTags, {
+  Tag,
+  Attrs,
+  getTag,
+  ensureTag,
+  isTagEnsured,
+  getSymbolName,
+  knownHTMLElementNames,
+  knownSVGElementNames,
+  knownElementNames,
+  voidElementNames,
+  isKnownElement,
+  isKnownSVGElement,
+  isVoidElement,
+  CharRef,
+  Comment,
+  Raw,
+  isArray,
+  isConstructedObject,
+  isNully,
+  isValidAttributeName,
+  flattenAttributes,
+  toHTML,
+  TEXTMODE,
+  toText,
+  Visitor,
+  TransformingVisitor,
+  ToHTMLVisitor,
+  ToTextVisitor,
+});

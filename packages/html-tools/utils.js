@@ -1,12 +1,10 @@
+import { HTML } from 'meteor/htmljs';
 
-HTMLTools = {};
-HTMLTools.Parse = {};
-
-var asciiLowerCase = HTMLTools.asciiLowerCase = function (str) {
+export function asciiLowerCase (str) {
   return str.replace(/[A-Z]/g, function (c) {
     return String.fromCharCode(c.charCodeAt(0) + 32);
   });
-};
+}
 
 var svgCamelCaseAttributes = 'attributeName attributeType baseFrequency baseProfile calcMode clipPathUnits contentScriptType contentStyleType diffuseConstant edgeMode externalResourcesRequired filterRes filterUnits glyphRef glyphRef gradientTransform gradientTransform gradientUnits gradientUnits kernelMatrix kernelUnitLength kernelUnitLength kernelUnitLength keyPoints keySplines keyTimes lengthAdjust limitingConeAngle markerHeight markerUnits markerWidth maskContentUnits maskUnits numOctaves pathLength patternContentUnits patternTransform patternUnits pointsAtX pointsAtY pointsAtZ preserveAlpha preserveAspectRatio primitiveUnits refX refY repeatCount repeatDur requiredExtensions requiredFeatures specularConstant specularExponent specularExponent spreadMethod spreadMethod startOffset stdDeviation stitchTiles surfaceScale surfaceScale systemLanguage tableValues targetX targetY textLength textLength viewBox viewTarget xChannelSelector yChannelSelector zoomAndPan'.split(' ');
 
@@ -36,15 +34,15 @@ var properTagCaseMap = (function (map) {
 // and will fix the case for you, so if you write `<svg viewbox="...">`
 // you actually get a `"viewBox"` attribute.  Any HTML-parsing toolchain
 // must do the same.
-HTMLTools.properCaseTagName = function (name) {
+export function properCaseTagName (name) {
   var lowered = asciiLowerCase(name);
   return properTagCaseMap.hasOwnProperty(lowered) ?
     properTagCaseMap[lowered] : lowered;
-};
+}
 
 // See docs for properCaseTagName.
-HTMLTools.properCaseAttributeName = function (name) {
+export function properCaseAttributeName(name) {
   var lowered = asciiLowerCase(name);
   return properAttributeCaseMap.hasOwnProperty(lowered) ?
     properAttributeCaseMap[lowered] : lowered;
-};
+}

@@ -1,50 +1,51 @@
+import { HTML } from 'meteor/htmljs';
 
-BlazeTools.EmitCode = function (value) {
-  if (! (this instanceof BlazeTools.EmitCode))
+
+export function EmitCode (value) {
+  if (! (this instanceof EmitCode))
     // called without `new`
-    return new BlazeTools.EmitCode(value);
+    return new EmitCode(value);
 
   if (typeof value !== 'string')
-    throw new Error('BlazeTools.EmitCode must be constructed with a string');
+    throw new Error('EmitCode must be constructed with a string');
 
   this.value = value;
-};
-BlazeTools.EmitCode.prototype.toJS = function (visitor) {
+}
+
+EmitCode.prototype.toJS = function (visitor) {
   return this.value;
 };
 
 // Turns any JSONable value into a JavaScript literal.
-toJSLiteral = function (obj) {
+export function toJSLiteral (obj) {
   // See <http://timelessrepo.com/json-isnt-a-javascript-subset> for `\u2028\u2029`.
   // Also escape Unicode surrogates.
   return (JSON.stringify(obj)
           .replace(/[\u2028\u2029\ud800-\udfff]/g, function (c) {
             return '\\u' + ('000' + c.charCodeAt(0).toString(16)).slice(-4);
           }));
-};
-BlazeTools.toJSLiteral = toJSLiteral;
+}
 
 
 
 var jsReservedWordSet = (function (set) {
-  _.each("abstract else instanceof super boolean enum int switch break export interface synchronized byte extends let this case false long throw catch final native throws char finally new transient class float null true const for package try continue function private typeof debugger goto protected var default if public void delete implements return volatile do import short while double in static with".split(' '), function (w) {
+  "abstract else instanceof super boolean enum int switch break export interface synchronized byte extends let this case false long throw catch final native throws char finally new transient class float null true const for package try continue function private typeof debugger goto protected var default if public void delete implements return volatile do import short while double in static with".split(' ').forEach(function (w) {
     set[w] = 1;
   });
   return set;
 })({});
 
-toObjectLiteralKey = function (k) {
+export function toObjectLiteralKey (k) {
   if (/^[a-zA-Z$_][a-zA-Z$0-9_]*$/.test(k) && jsReservedWordSet[k] !== 1)
     return k;
   return toJSLiteral(k);
-};
-BlazeTools.toObjectLiteralKey = toObjectLiteralKey;
+}
 
 var hasToJS = function (x) {
   return x.toJS && (typeof (x.toJS) === 'function');
 };
 
-ToJSVisitor = HTML.Visitor.extend();
+export const ToJSVisitor = HTML.Visitor.extend();
 ToJSVisitor.def({
   visitNull: function (nullOrUndefined) {
     return 'null';
@@ -149,8 +150,7 @@ ToJSVisitor.def({
     return null;
   }
 });
-BlazeTools.ToJSVisitor = ToJSVisitor;
 
-BlazeTools.toJS = function (content) {
+export function toJS (content) {
   return (new ToJSVisitor).visit(content);
-};
+}

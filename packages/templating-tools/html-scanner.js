@@ -1,13 +1,15 @@
-TemplatingTools.scanHtmlForTags = function scanHtmlForTags(options) {
+import { CompileError } from './throw-compile-error';
+
+export function scanHtmlForTags(options) {
   const scan = new HtmlScan(options);
   return scan.getTags();
-};
+}
 
 /**
  * Scan an HTML file for top-level tags and extract their contents. Pass them to
  * a tag handler (an object with a handleTag method)
  *
- * This is a primitive, regex-based scanner.  It scans 
+ * This is a primitive, regex-based scanner.  It scans
  * top-level tags, which are allowed to have attributes,
  * and ignores top-level HTML comments.
  */
@@ -33,7 +35,7 @@ class HtmlScan {
 
     this.tags = [];
 
-    tagNameRegex = this.tagNames.join("|");
+    const tagNameRegex = this.tagNames.join("|");
     const openTagRegex = new RegExp(`^((<(${tagNameRegex})\\b)|(<!--)|(<!DOCTYPE|{{!)|$)`, "i");
 
     while (this.rest) {
@@ -154,7 +156,7 @@ class HtmlScan {
   throwCompileError(msg, overrideIndex) {
     const finalIndex = (typeof overrideIndex === 'number' ? overrideIndex : this.index);
 
-    const err = new TemplatingTools.CompileError();
+    const err = new CompileError();
     err.message = msg || "bad formatting in template file";
     err.file = this.sourceName;
     err.line = this.contents.substring(0, finalIndex).split('\n').length;
