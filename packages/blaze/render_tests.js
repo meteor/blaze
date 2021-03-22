@@ -1,3 +1,5 @@
+import { BlazeTools } from 'meteor/blaze-tools';
+
 var toCode = BlazeTools.toJS;
 
 var P = HTML.P;

@@ -52,7 +52,7 @@ var rLineContinuation =
       /^\\(\r\n|[\u000A\u000D\u2028\u2029])/;
 
 
-BlazeTools.parseNumber = function (scanner) {
+export function parseNumber (scanner) {
   var startPos = scanner.pos;
 
   var isNegative = false;
@@ -75,9 +75,9 @@ BlazeTools.parseNumber = function (scanner) {
   var value = Number(matchText);
   value = (isNegative ? -value : value);
   return { text: text, value: value };
-};
+}
 
-BlazeTools.parseIdentifierName = function (scanner) {
+export function parseIdentifierName (scanner) {
   var startPos = scanner.pos;
   var rest = scanner.rest();
   var match = rIdentifierPrefix.exec(rest);
@@ -106,13 +106,13 @@ BlazeTools.parseIdentifierName = function (scanner) {
   }
 
   return scanner.input.substring(startPos, scanner.pos);
-};
+}
 
-BlazeTools.parseExtendedIdentifierName = function (scanner) {
+export function parseExtendedIdentifierName (scanner) {
   // parse an identifier name optionally preceded by '@'
   if (scanner.peek() === '@') {
     scanner.pos++;
-    var afterAt = BlazeTools.parseIdentifierName(scanner);
+    var afterAt = parseIdentifierName(scanner);
     if (afterAt) {
       return '@' + afterAt;
     } else {
@@ -120,11 +120,11 @@ BlazeTools.parseExtendedIdentifierName = function (scanner) {
       return null;
     }
   } else {
-    return BlazeTools.parseIdentifierName(scanner);
+    return parseIdentifierName(scanner);
   }
-};
+}
 
-BlazeTools.parseStringLiteral = function (scanner) {
+export function parseStringLiteral (scanner) {
   var startPos = scanner.pos;
   var rest = scanner.rest();
   var match = rStringQuote.exec(rest);
@@ -190,4 +190,4 @@ BlazeTools.parseStringLiteral = function (scanner) {
   var text = scanner.input.substring(startPos, scanner.pos);
   var value = JSON.parse(jsonLiteral);
   return { text: text, value: value };
-};
+}

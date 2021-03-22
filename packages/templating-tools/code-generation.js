@@ -1,5 +1,4 @@
-TemplatingTools.generateTemplateJS =
-function generateTemplateJS(name, renderFuncCode, useHMR) {
+export function generateTemplateJS(name, renderFuncCode, useHMR) {
   const nameLiteral = JSON.stringify(name);
   const templateDotNameLiteral = JSON.stringify(`Template.${name}`);
 
@@ -27,8 +26,7 @@ Template[${nameLiteral}] = new Template(${templateDotNameLiteral}, ${renderFuncC
 `;
 }
 
-TemplatingTools.generateBodyJS =
-function generateBodyJS(renderFuncCode, useHMR) {
+export function generateBodyJS(renderFuncCode, useHMR) {
   if (useHMR) {
     return `
 (function () {

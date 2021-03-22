@@ -17,13 +17,7 @@ Package.onUse(function(api) {
     'spacebars-compiler@1.2.0-beta.2'
   ]);
 
-  api.addFiles([
-    'templating-tools.js',
-    'html-scanner.js',
-    'compile-tags-with-spacebars.js',
-    'throw-compile-error.js',
-    'code-generation.js'
-  ]);
+  api.mainModule('templating-tools.js')
 });
 
 Package.onTest(function(api) {

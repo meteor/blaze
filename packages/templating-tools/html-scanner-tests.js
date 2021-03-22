@@ -1,3 +1,5 @@
+import { TemplatingTools } from 'meteor/templating-tools';
+
 Tinytest.add("templating-tools - html scanner", function (test) {
   var testInString = function(actualStr, wantedContents) {
     if (actualStr.indexOf(wantedContents) >= 0)

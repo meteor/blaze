@@ -1,3 +1,5 @@
+import { HTMLTools } from 'meteor/html-tools';
+
 var Scanner = HTMLTools.Scanner;
 var getComment = HTMLTools.Parse.getComment;
 var getDoctype = HTMLTools.Parse.getDoctype;
@@ -87,7 +89,7 @@ Tinytest.add("html-tools - doctype", function (test) {
     test.isTrue(result);
     test.equal(scanner.pos, result.v.length);
     test.equal(input.slice(0, result.v.length), result.v);
-    var actualProps = _.extend({}, result);
+    var actualProps = Object.assign({}, result);
     delete actualProps.t;
     delete actualProps.v;
     test.equal(actualProps, expectedProps);

@@ -6,24 +6,16 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.export('HTMLTools');
-
+  api.use('ecmascript@0.14.4');
   api.use('htmljs@1.1.0-beta.2');
   api.imply('htmljs@1.1.0-beta.2');
 
-  api.addFiles([
-    'utils.js',
-    'scanner.js',
-    'charref.js',
-    'tokenize.js',
-    'templatetag.js',
-    'parse.js'
-  ]);
+  api.mainModule('main.js');
 });
 
 Package.onTest(function (api) {
+  api.use('ecmascript');
   api.use('tinytest@1.0.11');
-  api.use('underscore@1.0.9');
 
   api.use('html-tools');
   api.use('htmljs@1.1.0-beta.2');

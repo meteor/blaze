@@ -1,3 +1,7 @@
+import { HTMLTools } from 'meteor/html-tools';
+import { HTML } from 'meteor/htmljs';
+import { BlazeTools } from 'meteor/blaze-tools';
+
 // A visitor to ensure that React components included via the `{{>
 // React}}` template defined in the react-template-helper package are
 // the only child in their parent component. Otherwise `React.render`
@@ -6,7 +10,7 @@
 // It's a little strange that this logic is in spacebars-compiler if
 // it's only relevant to a specific package but there's no way to have
 // a package hook into a build plugin.
-ReactComponentSiblingForbidder = HTML.Visitor.extend();
+export const ReactComponentSiblingForbidder = HTML.Visitor.extend();
 ReactComponentSiblingForbidder.def({
   visitArray: function (array, parentTag) {
     for (var i = 0; i < array.length; i++) {

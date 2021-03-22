@@ -49,6 +49,7 @@ Package.onUse(function (api) {
 });
 
 Package.onTest(function (api) {
+  api.use('ecmascript@0.14.4')
   api.use('tinytest@1.0.11');
   api.use('test-helpers@1.0.10');
   api.use('jquery@1.11.9 || 3.0.0'); // strong dependency, for testing jQuery backend
