@@ -219,4 +219,38 @@ export function runCompilerOutputTests(run) {
     HTML.TR(HTML.Raw("<td>aaa</td><td>bbb</td>"))
   );
 }`);
+  run(`<div>
+    {{helper}}
+</div>`, `function() {
+  var view = this;
+  return HTML.DIV(
+    "\\n    ",
+    Blaze.View("lookup:helper",function(){
+      return Spacebars.mustache(view.lookup("helper"));
+    }),
+    "\\n"
+  );
+}`);
+  run(`<div>
+    {{helper}}
+</div>`, `function() {
+  var view = this;
+  return HTML.DIV(
+    Blaze.View("lookup:helper",function(){
+      return Spacebars.mustache(view.lookup("helper"));
+    })
+  );
+}`, 'strip');
+  run(`<div>
+    {{helper}}
+    <span>Test</span> <span>Spaces</span>
+</div>`, `function() {
+  var view = this;
+  return HTML.DIV(
+    Blaze.View("lookup:helper",function(){
+      return Spacebars.mustache(view.lookup("helper"));
+    }),
+    HTML.Raw("<span>Test</span> <span>Spaces</span>")
+  );
+}`, 'strip');
 }

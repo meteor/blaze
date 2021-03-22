@@ -6,6 +6,7 @@ import { CodeGen } from './codegen';
 import { optimize } from './optimizer';
 import { ReactComponentSiblingForbidder} from './react';
 import { TemplateTag } from './templatetag';
+import { removeWhitespace } from './whitespace';
 
 var UglifyJSMinify = null;
 if (Meteor.isServer) {
@@ -72,12 +73,16 @@ export function codeGen (parseTree, options) {
   // a block helper, say
   var isTemplate = (options && options.isTemplate);
   var isBody = (options && options.isBody);
+  var whitespace = (options && options.whitespace)
   var sourceName = (options && options.sourceName);
 
   var tree = parseTree;
 
   // The flags `isTemplate` and `isBody` are kind of a hack.
   if (isTemplate || isBody) {
+    if (typeof whitespace === 'string' && whitespace.toLowerCase() === 'strip') {
+      tree = removeWhitespace(tree);
+    }
     // optimizing fragments would require being smarter about whether we are
     // in a TEXTAREA, say.
     tree = optimize(tree);
