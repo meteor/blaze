@@ -56,7 +56,10 @@ class SpacebarsTagCompiler {
           this.throwCompileError(`Template can't be named "${name}"`);
         }
 
+        const whitespace = this.tag.attribs.whitespace || '';
+
         const renderFuncCode = SpacebarsCompiler.compile(this.tag.contents, {
+          whitespace,
           isTemplate: true,
           sourceName: `Template "${name}"`
         });
@@ -64,9 +67,11 @@ class SpacebarsTagCompiler {
         this.results.js += generateTemplateJS(
           name, renderFuncCode, hmrAvailable);
       } else if (this.tag.tagName === "body") {
-        this.addBodyAttrs(this.tag.attribs);
+        const { whitespace = '', ...attribs } = this.tag.attribs;
+        this.addBodyAttrs(attribs);
 
         const renderFuncCode = SpacebarsCompiler.compile(this.tag.contents, {
+          whitespace,
           isBody: true,
           sourceName: "<body>"
         });

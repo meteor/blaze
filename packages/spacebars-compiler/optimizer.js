@@ -1,6 +1,5 @@
 import { HTMLTools } from 'meteor/html-tools';
 import { HTML } from 'meteor/htmljs';
-import { BlazeTools } from 'meteor/blaze-tools';
 
 // Optimize parts of an HTMLjs tree into raw HTML strings when they don't
 // contain template tags.
@@ -94,11 +93,11 @@ var getOptimizability = function (content) {
   return (new CanOptimizeVisitor).visit(content);
 };
 
-var toRaw = function (x) {
+export function toRaw(x) {
   return HTML.Raw(HTML.toHTML(x));
-};
+}
 
-var TreeTransformer = HTML.TransformingVisitor.extend();
+export const TreeTransformer = HTML.TransformingVisitor.extend();
 TreeTransformer.def({
   visitAttributes: function (attrs/*, ...*/) {
     // pass template tags through by default
