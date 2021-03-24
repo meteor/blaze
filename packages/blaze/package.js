@@ -1,7 +1,7 @@
 Package.describe({
   name: 'blaze',
   summary: "Meteor Reactive Templating library",
-  version: '2.4.0-beta.2',
+  version: '2.4.0-beta.3',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -21,8 +21,8 @@ Package.onUse(function (api) {
     'Handlebars'
   ]);
 
-  api.use('htmljs@1.1.0-beta.2');
-  api.imply('htmljs@1.1.0-beta.2');
+  api.use('htmljs@1.1.0-beta.3');
+  api.imply('htmljs@1.1.0-beta.3');
 
   api.addFiles([
     'preamble.js'
@@ -58,8 +58,8 @@ Package.onTest(function (api) {
   api.use('tracker@1.1.0');
 
   api.use('blaze');
-  api.use('blaze-tools@1.1.0-beta.2'); // for BlazeTools.toJS
-  api.use('html-tools@1.1.0-beta.2');
+  api.use('blaze-tools@1.1.0-beta.3'); // for BlazeTools.toJS
+  api.use('html-tools@1.1.0-beta.3');
   api.use('templating');
 
   api.addFiles('view_tests.js');
