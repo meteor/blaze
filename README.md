@@ -26,6 +26,8 @@ Blaze is a powerful library for creating user interfaces by writing reactive HTM
 
 * A reactive DOM engine that builds and manages the DOM at runtime, invoked via templates or directly from the app, which features reactively updating regions, lists, and attributes; event delegation; and many callbacks and hooks to aid the app developer.
 
+Check our [Overview](OVERVIEW.md) to learn more.
+
 ## Quick Start
 
 Blaze is a [Meteor](http://meteor.com/)-only package for now. Soon we will have Blaze on npm so you can use it in your stack.
