@@ -2,6 +2,8 @@
 
 ## v.2.4.0, 2021-March-26?
 
+* [#313](https://github.com/meteor/blaze/pull/313) Implemented HMR for Blaze
+
 * [#319](https://github.com/meteor/blaze/pull/319) Fixed a few situations where the template compiler wouldn't optimise it's output javascript. Should make rendering faster (if the initial optimisation reasoning holds true)
 
 * [#321](https://github.com/meteor/blaze/pull/321) Just source code modernisation, making it easier to read. Shouldn't change any API's; except may need explicit import if other packages are using directly.
