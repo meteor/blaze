@@ -1,3 +1,6 @@
+import { HTMLTools } from 'meteor/html-tools';
+import { HTML } from 'meteor/htmljs';
+
 // Optimize parts of an HTMLjs tree into raw HTML strings when they don't
 // contain template tags.
 
@@ -55,7 +58,9 @@ CanOptimizeVisitor.def({
       // browser will insert a TBODY.  If we just `createElement("table")` and
       // `createElement("tr")`, on the other hand, no TBODY is necessary
       // (assuming IE 8+).
-      return OPTIMIZABLE.NONE;
+      return OPTIMIZABLE.PARTS;
+    } else if (tagName === 'tr'){
+      return OPTIMIZABLE.PARTS;
     }
 
     var children = tag.children;
@@ -88,11 +93,11 @@ var getOptimizability = function (content) {
   return (new CanOptimizeVisitor).visit(content);
 };
 
-var toRaw = function (x) {
+export function toRaw(x) {
   return HTML.Raw(HTML.toHTML(x));
-};
+}
 
-var TreeTransformer = HTML.TransformingVisitor.extend();
+export const TreeTransformer = HTML.TransformingVisitor.extend();
 TreeTransformer.def({
   visitAttributes: function (attrs/*, ...*/) {
     // pass template tags through by default
@@ -160,7 +165,7 @@ RawCompactingVisitor.def({
             result[result.length - 1].value + item.value);
         }
       } else {
-        result.push(item);
+        result.push(this.visit(item));
       }
     }
     return result;
@@ -181,9 +186,9 @@ RawReplacingVisitor.def({
   }
 });
 
-SpacebarsCompiler.optimize = function (tree) {
+export function optimize (tree) {
   tree = (new OptimizingVisitor).visit(tree);
   tree = (new RawCompactingVisitor).visit(tree);
   tree = (new RawReplacingVisitor).visit(tree);
   return tree;
-};
+}

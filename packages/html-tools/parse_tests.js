@@ -1,3 +1,7 @@
+import { HTML } from 'meteor/htmljs';
+import { HTMLTools } from 'meteor/html-tools';
+import { BlazeTools} from 'meteor/blaze-tools';
+
 var Scanner = HTMLTools.Scanner;
 var getContent = HTMLTools.Parse.getContent;
 
@@ -190,8 +194,8 @@ Tinytest.add("html-tools - parseFragment", function (test) {
   test.equal(BlazeTools.toJS(HTMLTools.parseFragment("<div><p id=foo>Hello</p></div>")),
              BlazeTools.toJS(DIV(P({id:'foo'}, 'Hello'))));
 
-  _.each(['asdf</br>', '{{!foo}}</br>', '{{!foo}} </br>',
-          'asdf</a>', '{{!foo}}</a>', '{{!foo}} </a>'], function (badFrag) {
+  ['asdf</br>', '{{!foo}}</br>', '{{!foo}} </br>',
+          'asdf</a>', '{{!foo}}</a>', '{{!foo}} </a>'].forEach(function (badFrag) {
             test.throws(function() {
               HTMLTools.parseFragment(badFrag);
             }, /Unexpected HTML close tag/);

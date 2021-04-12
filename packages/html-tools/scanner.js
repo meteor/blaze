@@ -9,10 +9,10 @@
 // * `scanner.isEOF()` - true if `pos` is at or beyond the end of `input`
 // * `scanner.fatal(msg)` - throw an error indicating a problem at `pos`
 
-Scanner = HTMLTools.Scanner = function (input) {
+export function Scanner (input) {
   this.input = input; // public, read-only
   this.pos = 0; // public, read-write
-};
+}
 
 Scanner.prototype.rest = function () {
   // Slicing a string is O(1) in modern JavaScript VMs (including old IE).
@@ -69,7 +69,7 @@ Scanner.prototype.peek = function () {
 // the current position of the scanner is advanced.  If it fails, the
 // current position is not advanced and a falsy value (typically null)
 // is returned.
-makeRegexMatcher = function (regex) {
+export function makeRegexMatcher(regex) {
   return function (scanner) {
     var match = regex.exec(scanner.rest());
 
@@ -79,4 +79,4 @@ makeRegexMatcher = function (regex) {
     scanner.pos += match[0].length;
     return match[1] || match[0];
   };
-};
+}

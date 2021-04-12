@@ -1,3 +1,4 @@
+import { HTML } from 'meteor/htmljs';
 
 Tinytest.add("htmljs - getTag", function (test) {
   var FOO = HTML.getTag('foo');
@@ -69,12 +70,21 @@ Tinytest.add("htmljs - construction", function (test) {
   });
 });
 
+// copied from here https://github.com/meteor/blaze/blob/ed9299ea32afdd04f33124957f22ce2b18b7f3ff/packages/html-tools/utils.js#L3
+// to avoid circular dependency between htmljs and html-tools pacakge.
+// this circular dependency was blocking the publish process.
+var asciiLowerCase = function (str) {
+  return str.replace(/[A-Z]/g, function (c) {
+    return String.fromCharCode(c.charCodeAt(0) + 32);
+  });
+};
+
 Tinytest.add("htmljs - utils", function (test) {
 
   test.notEqual("\u00c9".toLowerCase(), "\u00c9");
-  test.equal(HTMLTools.asciiLowerCase("\u00c9"), "\u00c9");
+  test.equal(asciiLowerCase("\u00c9"), "\u00c9");
 
-  test.equal(HTMLTools.asciiLowerCase("Hello There"), "hello there");
+  test.equal(asciiLowerCase("Hello There"), "hello there");
 
   test.isTrue(HTML.isVoidElement("br"));
   test.isFalse(HTML.isVoidElement("div"));

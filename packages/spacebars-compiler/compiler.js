@@ -1,24 +1,31 @@
+import { Meteor } from 'meteor/meteor';
+import { HTMLTools } from 'meteor/html-tools';
+import { HTML } from 'meteor/htmljs';
+import { BlazeTools } from 'meteor/blaze-tools';
+import { CodeGen } from './codegen';
+import { optimize } from './optimizer';
+import { ReactComponentSiblingForbidder} from './react';
+import { TemplateTag } from './templatetag';
+import { removeWhitespace } from './whitespace';
+
 var UglifyJSMinify = null;
 if (Meteor.isServer) {
   UglifyJSMinify = Npm.require('uglify-js').minify;
 }
 
-SpacebarsCompiler.parse = function (input) {
-
-  var tree = HTMLTools.parseFragment(
+export function parse(input) {
+  return HTMLTools.parseFragment(
     input,
     { getTemplateTag: TemplateTag.parseCompleteTag });
+}
 
-  return tree;
-};
+export function compile(input, options) {
+  var tree = parse(input);
+  return codeGen(tree, options);
+}
 
-SpacebarsCompiler.compile = function (input, options) {
-  var tree = SpacebarsCompiler.parse(input);
-  return SpacebarsCompiler.codeGen(tree, options);
-};
-
-SpacebarsCompiler._TemplateTagReplacer = HTML.TransformingVisitor.extend();
-SpacebarsCompiler._TemplateTagReplacer.def({
+export const TemplateTagReplacer = HTML.TransformingVisitor.extend();
+TemplateTagReplacer.def({
   visitObject: function (x) {
     if (x instanceof HTMLTools.TemplateTag) {
 
@@ -61,28 +68,32 @@ SpacebarsCompiler._TemplateTagReplacer.def({
   }
 });
 
-SpacebarsCompiler.codeGen = function (parseTree, options) {
+export function codeGen (parseTree, options) {
   // is this a template, rather than a block passed to
   // a block helper, say
   var isTemplate = (options && options.isTemplate);
   var isBody = (options && options.isBody);
+  var whitespace = (options && options.whitespace)
   var sourceName = (options && options.sourceName);
 
   var tree = parseTree;
 
   // The flags `isTemplate` and `isBody` are kind of a hack.
   if (isTemplate || isBody) {
+    if (typeof whitespace === 'string' && whitespace.toLowerCase() === 'strip') {
+      tree = removeWhitespace(tree);
+    }
     // optimizing fragments would require being smarter about whether we are
     // in a TEXTAREA, say.
-    tree = SpacebarsCompiler.optimize(tree);
+    tree = optimize(tree);
   }
 
   // throws an error if using `{{> React}}` with siblings
   new ReactComponentSiblingForbidder({sourceName: sourceName})
     .visit(tree);
 
-  var codegen = new SpacebarsCompiler.CodeGen;
-  tree = (new SpacebarsCompiler._TemplateTagReplacer(
+  var codegen = new CodeGen;
+  tree = (new TemplateTagReplacer(
     {codegen: codegen})).visit(tree);
 
   var code = '(function () { ';
@@ -93,30 +104,30 @@ SpacebarsCompiler.codeGen = function (parseTree, options) {
   code += BlazeTools.toJS(tree);
   code += '; })';
 
-  code = SpacebarsCompiler._beautify(code);
+  code = beautify(code);
 
   return code;
-};
+}
 
-SpacebarsCompiler._beautify = function (code) {
+export function beautify (code) {
   if (!UglifyJSMinify) {
     return code;
   }
 
-  var result = UglifyJSMinify(code, { 
+  var result = UglifyJSMinify(code, {
     fromString: true,
     mangle: false,
     compress: false,
-    output: { 
+    output: {
       beautify: true,
       indent_level: 2,
       width: 80
     }
   });
-  
+
   var output = result.code;
   // Uglify interprets our expression as a statement and may add a semicolon.
   // Strip trailing semicolon.
   output = output.replace(/;$/, '');
   return output;
-};
+}

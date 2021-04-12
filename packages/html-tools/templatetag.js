@@ -11,17 +11,17 @@ var _assign = function (tgt, src) {
 };
 
 
-HTMLTools.TemplateTag = function (props) {
-  if (! (this instanceof HTMLTools.TemplateTag))
+export function TemplateTag (props) {
+  if (! (this instanceof TemplateTag))
     // called without `new`
-    return new HTMLTools.TemplateTag;
+    return new TemplateTag;
 
   if (props)
     _assign(this, props);
-};
+}
 
-_assign(HTMLTools.TemplateTag.prototype, {
-  constructorName: 'HTMLTools.TemplateTag',
+_assign(TemplateTag.prototype, {
+  constructorName: 'TemplateTag',
   toJS: function (visitor) {
     return visitor.generateCall(this.constructorName,
                                 _assign({}, this));

@@ -1,13 +1,20 @@
+import { HTMLTools } from 'meteor/html-tools';
+import { HTML } from 'meteor/htmljs';
+import { BlazeTools } from 'meteor/blaze-tools';
+import { SpacebarsCompiler } from 'meteor/spacebars-compiler';
+import { runCompilerOutputTests } from './compiler_output_tests';
+
+
 Tinytest.add("spacebars-compiler - compiler output", function (test) {
 
-  var run = function (input, expected) {
+  var run = function (input, expected, whitespace = '') {
     if (expected.fail) {
       var expectedMessage = expected.fail;
       // test for error starting with expectedMessage
       var msg = '';
       test.throws(function () {
         try {
-          SpacebarsCompiler.compile(input, {isTemplate: true});
+          SpacebarsCompiler.compile(input, {isTemplate: true, whitespace});
         } catch (e) {
           msg = e.message;
           throw e;
@@ -16,7 +23,7 @@ Tinytest.add("spacebars-compiler - compiler output", function (test) {
       test.equal(msg.slice(0, expectedMessage.length),
                  expectedMessage);
     } else {
-      var output = SpacebarsCompiler.compile(input, {isTemplate: true});
+      var output = SpacebarsCompiler.compile(input, {isTemplate: true, whitespace});
       var postProcess = function (string) {
         // remove initial and trailing parens
         string = string.replace(/^\(([\S\s]*)\)$/, '$1');
@@ -45,12 +52,9 @@ Tinytest.add("spacebars-compiler - compiler output", function (test) {
     }
   };
 
-  coffee.runCompilerOutputTests(run);
+  runCompilerOutputTests(run);
 });
 
-coffee = {
-  runCompilerOutputTests: null // implemented in compiler_output_tests.coffee
-};
 
 Tinytest.add("spacebars-compiler - compiler errors", function (test) {
 

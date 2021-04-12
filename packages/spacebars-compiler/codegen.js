@@ -1,12 +1,18 @@
+import { HTMLTools } from 'meteor/html-tools';
+import { HTML } from 'meteor/htmljs';
+import { BlazeTools } from 'meteor/blaze-tools';
+import { codeGen } from './compiler';
+
+
 // ============================================================
 // Code-generation of template tags
 
 // The `CodeGen` class currently has no instance state, but in theory
 // it could be useful to track per-function state, like whether we
 // need to emit `var self = this` or not.
-var CodeGen = SpacebarsCompiler.CodeGen = function () {};
+export function CodeGen() {}
 
-var builtInBlockHelpers = SpacebarsCompiler._builtInBlockHelpers = {
+export const builtInBlockHelpers = {
   'if': 'Blaze.If',
   'unless': 'Blaze.Unless',
   'with': 'Spacebars.With',
@@ -37,7 +43,9 @@ var additionalReservedNames = ["body", "toString", "instance",  "constructor",
   "toString", "toLocaleString", "valueOf", "hasOwnProperty", "isPrototypeOf",
   "propertyIsEnumerable", "__defineGetter__", "__lookupGetter__",
   "__defineSetter__", "__lookupSetter__", "__proto__", "dynamic",
-  "registerHelper", "currentData", "parentData"];
+  "registerHelper", "currentData", "parentData", "_migrateTemplate",
+  "_applyHmrChanges", "__pendingReplacement"
+];
 
 // A "reserved name" can't be used as a <template> name.  This
 // function is used by the template file scanner.
@@ -45,11 +53,11 @@ var additionalReservedNames = ["body", "toString", "instance",  "constructor",
 // Note that the runtime imposes additional restrictions, for example
 // banning the name "body" and names of built-in object properties
 // like "toString".
-SpacebarsCompiler.isReservedName = function (name) {
+export function isReservedName(name) {
   return builtInBlockHelpers.hasOwnProperty(name) ||
     builtInTemplateMacros.hasOwnProperty(name) ||
     _.indexOf(additionalReservedNames, name) > -1;
-};
+}
 
 var makeObjectLiteral = function (obj) {
   var parts = [];
@@ -341,7 +349,7 @@ _.extend(CodeGen.prototype, {
   },
 
   codeGenBlock: function (content) {
-    return SpacebarsCompiler.codeGen(content);
+    return codeGen(content);
   },
 
   codeGenInclusionData: function (args) {

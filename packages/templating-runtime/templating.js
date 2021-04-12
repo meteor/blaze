@@ -68,6 +68,112 @@ Template.body.renderToDocument = function () {
   Template.body.view = view;
 };
 
+Template.__pendingReplacement = []
+
+var updateTimeout = null;
+
+// Simple HMR integration to re-render all of the root views
+// when a template is modified. This function can be overridden to provide
+// an alternative method of applying changes from HMR.
+Template._applyHmrChanges = function (templateName) {
+  if (updateTimeout) {
+    return;
+  }
+
+  // debounce so we only re-render once per rebuild
+  updateTimeout = setTimeout(function () {
+    updateTimeout = null;
+
+    for (var i = 0; i < Template.__pendingReplacement.length; i++) {
+      delete Template[Template.__pendingReplacement[i]]
+    }
+
+    Template.__pendingReplacement = [];
+
+    var views = Blaze.__rootViews.slice();
+    for(var i = 0; i < views.length; i++) {
+      var view = views[i];
+      if (view.destroyed) {
+        continue;
+      }
+
+      var renderFunc = view._render;
+      var parentEl;
+      if (view._domrange && view._domrange.parentElement) {
+        parentEl = view._domrange.parentElement;
+      } else if (view._hmrParent) {
+        parentEl = view._hmrParent;
+      }
+
+      var comment;
+      if (view._hmrAfter) {
+        comment = view._hmrAfter;
+      } else {
+        var first = view._domrange.firstNode();
+        comment = document.createComment('Blaze HMR PLaceholder');
+        parentEl.insertBefore(comment, first);
+      }
+
+      view._hmrAfter = null;
+      view._hmrParent = null;
+
+      if (view._domrange) {
+        Blaze.remove(view);
+      }
+
+      try {
+        if (view === Template.body.view) {
+          var newView = Blaze.render(Template.body, document.body, comment);
+          Template.body.view = newView;
+        } else if (view.dataVar) {
+          Blaze.renderWithData(renderFunc, view.dataVar.curValue, parentEl, comment);
+        } else {
+          Blaze.render(renderFunc, parentEl, comment);
+        }
+
+        parentEl.removeChild(comment);
+      } catch (e) {
+        console.log('[Blaze HMR] Error re-rending template:');
+        console.error(e);
+
+        // Record where the view should have been so we can still render it
+        // during the next update
+        var newestRoot = Blaze.__rootViews[Blaze.__rootViews.length - 1];
+        if (newestRoot && newestRoot.isCreated && !newestRoot.isRendered) {
+          newestRoot._hmrAfter = comment;
+          newestRoot._hmrParent = parentEl;
+        }
+      }
+    }
+  });
+}
+
+Template._migrateTemplate = function (templateName, newTemplate, migrate) {
+  var oldTemplate = Template[templateName];
+  var migrate = Template.__pendingReplacement.indexOf(templateName) > -1
+
+  if (oldTemplate && migrate) {
+    newTemplate.__helpers = oldTemplate.__helpers;
+    newTemplate.__eventMaps = oldTemplate.__eventMaps;
+    newTemplate._callbacks.created = oldTemplate._callbacks.created;
+    newTemplate._callbacks.rendered = oldTemplate._callbacks.rendered;
+    newTemplate._callbacks.destroyed = oldTemplate._callbacks.destroyed;
+    delete Template[templateName];
+    Template._applyHmrChanges(templateName);
+  }
+
+
+  if (migrate) {
+    Template.__pendingReplacement.splice(
+      Template.__pendingReplacement.indexOf(templateName),
+      1
+    )
+  }
+
+  Template.__checkName(templateName);
+  Template[templateName] = newTemplate;
+};
+
 // XXX COMPAT WITH 0.9.0
 UI.body = Template.body;
 

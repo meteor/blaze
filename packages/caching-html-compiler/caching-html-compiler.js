@@ -47,6 +47,7 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
     return [
       inputFile.getArch(),
       inputFile.getSourceHash(),
+      inputFile.hmrAvailable && inputFile.hmrAvailable()
     ];
   }
 
@@ -61,7 +62,7 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
         tagNames: ["body", "head", "template"]
       });
 
-      return this.tagHandlerFunc(tags);
+      return this.tagHandlerFunc(tags, inputFile.hmrAvailable && inputFile.hmrAvailable());
     } catch (e) {
       if (e instanceof TemplatingTools.CompileError) {
         inputFile.error({

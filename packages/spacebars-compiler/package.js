@@ -1,7 +1,7 @@
 Package.describe({
   name: 'spacebars-compiler',
   summary: "Compiler for Spacebars template language",
-  version: '1.1.3',
+  version: '1.2.0-beta.3',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -10,28 +10,21 @@ Npm.depends({
 });
 
 Package.onUse(function (api) {
+  api.use('ecmascript@0.14.4');
   api.use('underscore@1.0.9');
 
-  api.export('SpacebarsCompiler');
+  api.use('htmljs@1.1.0-beta.3');
+  api.use('html-tools@1.1.0-beta.3');
+  api.use('blaze-tools@1.1.0-beta.3');
 
-  api.use('htmljs@1.0.11');
-  api.use('html-tools@1.0.11');
-  api.use('blaze-tools@1.0.10');
-
-  api.addFiles([
-    'templatetag.js',
-    'optimizer.js',
-    'react.js',
-    'codegen.js',
-    'compiler.js'
-  ]);
+  api.mainModule('preamble.js');
 });
 
 Package.onTest(function (api) {
   api.use([
     'underscore',
+    'ecmascript',
     'tinytest',
-    'coffeescript',
     'spacebars-compiler',
     'blaze-tools'
   ]);
@@ -39,6 +32,5 @@ Package.onTest(function (api) {
   api.addFiles([
     'spacebars_tests.js',
     'compile_tests.js',
-    'compiler_output_tests.coffee'
   ]);
 });

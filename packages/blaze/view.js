@@ -598,6 +598,8 @@ var contentAsFunc = function (content) {
   }
 };
 
+Blaze.__rootViews = [];
+
 /**
  * @summary Renders a template or View to DOM nodes and inserts it into the DOM, returning a rendered [View](#Blaze-View) which can be passed to [`Blaze.remove`](#Blaze-remove).
  * @locus Client
@@ -629,8 +631,22 @@ Blaze.render = function (content, parentElement, nextNode, parentView) {
   parentView = parentView || currentViewIfRendering();
 
   var view = contentAsView(content);
-  Blaze._materializeView(view, parentView);
 
+  // TODO: this is only needed in development
+  if (!parentView) {
+    view.onViewCreated(function () {
+      Blaze.__rootViews.push(view);
+    });
+
+    view.onViewDestroyed(function () {
+      var index = Blaze.__rootViews.indexOf(view);
+      if (index > -1) {
+        Blaze.__rootViews.splice(index, 1);
+      }
+    });
+  }
+
+  Blaze._materializeView(view, parentView);
   if (parentElement) {
     view._domrange.attach(parentElement, nextNode);
   }

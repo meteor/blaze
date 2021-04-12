@@ -1,5 +1,19 @@
 ## vNEXT
 
+## v.2.4.0, 2021-March-26?
+
+* [#313](https://github.com/meteor/blaze/pull/313) Implemented HMR for Blaze
+
+* [#319](https://github.com/meteor/blaze/pull/319) Fixed a few situations where the template compiler wouldn't optimise it's output javascript. Should make rendering faster (if the initial optimisation reasoning holds true)
+
+* [#321](https://github.com/meteor/blaze/pull/321) Just source code modernisation, making it easier to read. Shouldn't change any API's; except may need explicit import if other packages are using directly.
+
+* [#324](https://github.com/meteor/blaze/pull/324) Add a whitespace="strip" option to templates, which removes any whitespace that crosses newlines.
+  
+* [#276](https://github.com/meteor/blaze/pull/276) [HTML.isArray](https://github.com/brucejo75/blaze/blob/release-2.4/packages/htmljs/README.md#htmlisarrayx) works across iFrames.  This supports running blaze in sandboxed iFrames.
+
+* [#326](https://github.com/meteor/blaze/pull/326) Remove old ui package code from this repository.
+
 ## v2.3.4, 2019-Dec-13
 
 * jquery 3 support

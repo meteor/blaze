@@ -1,4 +1,17 @@
-////////////////////////////// VISITORS
+import {
+  Tag,
+  CharRef,
+  Comment,
+  Raw,
+  isArray,
+  getTag,
+  isConstructedObject,
+  flattenAttributes,
+  isVoidElement,
+} from './html';
+
+
+var IDENTITY = function (x) { return x; };
 
 // _assign is like _.extend or the upcoming Object.assign.
 // Copy src's own, enumerable properties onto tgt and return
@@ -12,18 +25,18 @@ var _assign = function (tgt, src) {
   return tgt;
 };
 
-HTML.Visitor = function (props) {
+export const Visitor = function (props) {
   _assign(this, props);
 };
 
-HTML.Visitor.def = function (options) {
+Visitor.def = function (options) {
   _assign(this.prototype, options);
 };
 
-HTML.Visitor.extend = function (options) {
+Visitor.extend = function (options) {
   var curType = this;
   var subType = function HTMLVisitorSubtype(/*arguments*/) {
-    HTML.Visitor.apply(this, arguments);
+    Visitor.apply(this, arguments);
   };
   subType.prototype = new curType;
   subType.extend = curType.extend;
@@ -33,7 +46,7 @@ HTML.Visitor.extend = function (options) {
   return subType;
 };
 
-HTML.Visitor.def({
+Visitor.def({
   visit: function (content/*, ...*/) {
     if (content == null)
       // null or undefined.
@@ -42,20 +55,20 @@ HTML.Visitor.def({
     if (typeof content === 'object') {
       if (content.htmljsType) {
         switch (content.htmljsType) {
-        case HTML.Tag.htmljsType:
+        case Tag.htmljsType:
           return this.visitTag.apply(this, arguments);
-        case HTML.CharRef.htmljsType:
+        case CharRef.htmljsType:
           return this.visitCharRef.apply(this, arguments);
-        case HTML.Comment.htmljsType:
+        case Comment.htmljsType:
           return this.visitComment.apply(this, arguments);
-        case HTML.Raw.htmljsType:
+        case Raw.htmljsType:
           return this.visitRaw.apply(this, arguments);
         default:
           throw new Error("Unknown htmljs type: " + content.htmljsType);
         }
       }
 
-      if (HTML.isArray(content))
+      if (isArray(content))
         return this.visitArray.apply(this, arguments);
 
       return this.visitObject.apply(this, arguments);
@@ -87,17 +100,15 @@ HTML.Visitor.def({
   }
 });
 
-HTML.TransformingVisitor = HTML.Visitor.extend();
-HTML.TransformingVisitor.def({
+export const TransformingVisitor = Visitor.extend();
+TransformingVisitor.def({
   visitNull: IDENTITY,
   visitPrimitive: IDENTITY,
-  visitArray: function (array/*, ...*/) {
-    var argsCopy = SLICE.call(arguments);
+  visitArray: function (array, ...args) {
     var result = array;
     for (var i = 0; i < array.length; i++) {
       var oldItem = array[i];
-      argsCopy[0] = oldItem;
-      var newItem = this.visit.apply(this, argsCopy);
+      var newItem = this.visit(oldItem, ...args);
       if (newItem !== oldItem) {
         // copy `array` on write
         if (result === array)
@@ -110,39 +121,46 @@ HTML.TransformingVisitor.def({
   visitComment: IDENTITY,
   visitCharRef: IDENTITY,
   visitRaw: IDENTITY,
-  visitObject: IDENTITY,
+  visitObject: function(obj, ...args){
+    // Don't parse Markdown & RCData as HTML
+    if (obj.textMode != null){
+      return obj;
+    }
+    if ('content' in obj) {
+      obj.content = this.visit(obj.content, ...args);
+    }
+    if ('elseContent' in obj){
+      obj.elseContent = this.visit(obj.elseContent, ...args);
+    }
+    return obj;
+  },
   visitFunction: IDENTITY,
-  visitTag: function (tag/*, ...*/) {
+  visitTag: function (tag, ...args) {
     var oldChildren = tag.children;
-    var argsCopy = SLICE.call(arguments);
-    argsCopy[0] = oldChildren;
-    var newChildren = this.visitChildren.apply(this, argsCopy);
+    var newChildren = this.visitChildren(oldChildren, ...args);
 
     var oldAttrs = tag.attrs;
-    argsCopy[0] = oldAttrs;
-    var newAttrs = this.visitAttributes.apply(this, argsCopy);
+    var newAttrs = this.visitAttributes(oldAttrs, ...args);
 
     if (newAttrs === oldAttrs && newChildren === oldChildren)
       return tag;
 
-    var newTag = HTML.getTag(tag.tagName).apply(null, newChildren);
+    var newTag = getTag(tag.tagName).apply(null, newChildren);
     newTag.attrs = newAttrs;
     return newTag;
   },
-  visitChildren: function (children/*, ...*/) {
-    return this.visitArray.apply(this, arguments);
+  visitChildren: function (children, ...args) {
+    return this.visitArray(children, ...args);
   },
   // Transform the `.attrs` property of a tag, which may be a dictionary,
   // an array, or in some uses, a foreign object (such as
   // a template tag).
-  visitAttributes: function (attrs/*, ...*/) {
-    if (HTML.isArray(attrs)) {
-      var argsCopy = SLICE.call(arguments);
+  visitAttributes: function (attrs, ...args) {
+    if (isArray(attrs)) {
       var result = attrs;
       for (var i = 0; i < attrs.length; i++) {
         var oldItem = attrs[i];
-        argsCopy[0] = oldItem;
-        var newItem = this.visitAttributes.apply(this, argsCopy);
+        var newItem = this.visitAttributes(oldItem, ...args);
         if (newItem !== oldItem) {
           // copy on write
           if (result === attrs)
@@ -153,8 +171,8 @@ HTML.TransformingVisitor.def({
       return result;
     }
 
-    if (attrs && HTML.isConstructedObject(attrs)) {
-      throw new Error("The basic HTML.TransformingVisitor does not support " +
+    if (attrs && isConstructedObject(attrs)) {
+      throw new Error("The basic TransformingVisitor does not support " +
                       "foreign objects in attributes.  Define a custom " +
                       "visitAttributes for this case.");
     }
@@ -182,24 +200,22 @@ HTML.TransformingVisitor.def({
   },
   // Transform the value of one attribute name/value in an
   // attributes dictionary.
-  visitAttribute: function (name, value, tag/*, ...*/) {
-    var args = SLICE.call(arguments, 2);
-    args[0] = value;
-    return this.visit.apply(this, args);
+  visitAttribute: function (name, value, tag, ...args) {
+    return this.visit(value, ...args);
   }
 });
 
 
-HTML.ToTextVisitor = HTML.Visitor.extend();
-HTML.ToTextVisitor.def({
+export const ToTextVisitor = Visitor.extend();
+ToTextVisitor.def({
   visitNull: function (nullOrUndefined) {
     return '';
   },
   visitPrimitive: function (stringBooleanOrNumber) {
     var str = String(stringBooleanOrNumber);
-    if (this.textMode === HTML.TEXTMODE.RCDATA) {
+    if (this.textMode === TEXTMODE.RCDATA) {
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-    } else if (this.textMode === HTML.TEXTMODE.ATTRIBUTE) {
+    } else if (this.textMode === TEXTMODE.ATTRIBUTE) {
       // escape `&` and `"` this time, not `&` and `<`
       return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
     } else {
@@ -216,8 +232,8 @@ HTML.ToTextVisitor.def({
     throw new Error("Can't have a comment here");
   },
   visitCharRef: function (charRef) {
-    if (this.textMode === HTML.TEXTMODE.RCDATA ||
-        this.textMode === HTML.TEXTMODE.ATTRIBUTE) {
+    if (this.textMode === TEXTMODE.RCDATA ||
+        this.textMode === TEXTMODE.ATTRIBUTE) {
       return charRef.html;
     } else {
       return charRef.str;
@@ -240,14 +256,14 @@ HTML.ToTextVisitor.def({
     throw new Error("Unexpected object in htmljs in toText: " + x);
   },
   toHTML: function (node) {
-    return HTML.toHTML(node);
+    return toHTML(node);
   }
 });
 
 
 
-HTML.ToHTMLVisitor = HTML.Visitor.extend();
-HTML.ToHTMLVisitor.def({
+export const ToHTMLVisitor = Visitor.extend();
+ToHTMLVisitor.def({
   visitNull: function (nullOrUndefined) {
     return '';
   },
@@ -278,12 +294,12 @@ HTML.ToHTMLVisitor.def({
 
     var attrs = tag.attrs;
     if (attrs) {
-      attrs = HTML.flattenAttributes(attrs);
+      attrs = flattenAttributes(attrs);
       for (var k in attrs) {
         if (k === 'value' && tagName === 'textarea') {
           children = [attrs[k], children];
         } else {
-          var v = this.toText(attrs[k], HTML.TEXTMODE.ATTRIBUTE);
+          var v = this.toText(attrs[k], TEXTMODE.ATTRIBUTE);
           attrStrs.push(' ' + k + '="' + v + '"');
         }
       }
@@ -296,7 +312,7 @@ HTML.ToHTMLVisitor.def({
     if (tagName === 'textarea') {
 
       for (var i = 0; i < children.length; i++)
-        childStrs.push(this.toText(children[i], HTML.TEXTMODE.RCDATA));
+        childStrs.push(this.toText(children[i], TEXTMODE.RCDATA));
 
       content = childStrs.join('');
       if (content.slice(0, 1) === '\n')
@@ -313,7 +329,7 @@ HTML.ToHTMLVisitor.def({
 
     var result = startTag + content;
 
-    if (children.length || ! HTML.isVoidElement(tagName)) {
+    if (children.length || ! isVoidElement(tagName)) {
       // "Void" elements like BR are the only ones that don't get a close
       // tag in HTML5.  They shouldn't have contents, either, so we could
       // throw an error upon seeing contents here.
@@ -326,6 +342,34 @@ HTML.ToHTMLVisitor.def({
     throw new Error("Unexpected object in htmljs in toHTML: " + x);
   },
   toText: function (node, textMode) {
-    return HTML.toText(node, textMode);
+    return toText(node, textMode);
   }
 });
+
+
+
+////////////////////////////// TOHTML
+
+export function toHTML(content) {
+  return (new ToHTMLVisitor).visit(content);
+}
+
+// Escaping modes for outputting text when generating HTML.
+export const TEXTMODE = {
+  STRING: 1,
+  RCDATA: 2,
+  ATTRIBUTE: 3
+};
+
+
+export function toText(content, textMode) {
+  if (! textMode)
+    throw new Error("textMode required for HTML.toText");
+  if (! (textMode === TEXTMODE.STRING ||
+         textMode === TEXTMODE.RCDATA ||
+         textMode === TEXTMODE.ATTRIBUTE))
+    throw new Error("Unknown textMode: " + textMode);
+
+  var visitor = new ToTextVisitor({textMode: textMode});
+  return visitor.visit(content);
+}
