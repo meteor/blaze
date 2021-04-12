@@ -10,8 +10,6 @@
   
 * [#276](https://github.com/meteor/blaze/pull/276) [HTML.isArray](https://github.com/brucejo75/blaze/blob/release-2.4/packages/htmljs/README.md#htmlisarrayx) works across iFrames.  This supports running blaze in sandboxed iFrames.
 
-* [#326](https://github.com/meteor/blaze/pull/326) Remove old ui package code from this repository.
-
 ## v2.3.4, 2019-Dec-13
 
 * jquery 3 support
