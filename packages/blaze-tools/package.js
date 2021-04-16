@@ -1,7 +1,7 @@
 Package.describe({
   name: 'blaze-tools',
   summary: "Compile-time tools for Blaze",
-  version: '1.1.0',
+  version: '1.1.1',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -9,6 +9,7 @@ Package.onUse(function (api) {
   api.use('ecmascript@0.14.4');
   api.use('htmljs@1.1.0');
 
+  api.export('BlazeTools')
   api.mainModule('preamble.js');
 });
 
