@@ -10,6 +10,7 @@ Package.onUse(function (api) {
   api.use('htmljs@1.1.0');
   api.imply('htmljs@1.1.0');
 
+  api.export('HTMLTools');
   api.mainModule('main.js');
 });
 

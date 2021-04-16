@@ -9,6 +9,7 @@ Package.onUse(function (api) {
   api.use('ecmascript@0.14.4');
   api.use('htmljs@1.1.0');
 
+  api.export('BlazeTools')
   api.mainModule('preamble.js');
 });
 

@@ -17,6 +17,8 @@ Package.onUse(function (api) {
   api.use('html-tools@1.1.0');
   api.use('blaze-tools@1.1.0');
 
+  api.export('SpacebarsCompiler');
+
   api.mainModule('preamble.js');
 });
 

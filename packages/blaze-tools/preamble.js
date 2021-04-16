@@ -14,7 +14,7 @@ import {
   parseStringLiteral
 } from './tokens';
 
-export const BlazeTools = {
+BlazeTools = {
   EmitCode,
   toJSLiteral,
   toObjectLiteralKey,
@@ -25,3 +25,5 @@ export const BlazeTools = {
   parseExtendedIdentifierName,
   parseStringLiteral
 };
+
+export { BlazeTools };
