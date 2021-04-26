@@ -16,6 +16,8 @@ function compileTagsToStaticHtml(tags) {
   return handler.getResults();
 };
 
+var isEmpty = obj => [Object, Array].includes((obj || {}).constructor) && !Object.entries((obj || {})).length;
+
 class StaticHtmlTagHandler {
   constructor() {
     this.results = {
@@ -34,7 +36,7 @@ class StaticHtmlTagHandler {
     this.tag = tag;
 
     // do we have 1 or more attributes?
-    const hasAttribs = ! _.isEmpty(this.tag.attribs);
+    const hasAttribs = ! isEmpty(this.tag.attribs);
 
     if (this.tag.tagName === "head") {
       if (hasAttribs) {
