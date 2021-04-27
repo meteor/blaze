@@ -1,5 +1,7 @@
 const path = Plugin.path;
 
+const isEmpty = obj => [Object, Array].includes((obj || {}).constructor) && !Object.entries((obj || {})).length;
+
 // The CompileResult type for this CachingCompiler is the return value of
 // htmlScanner.scan: a {js, head, body, bodyAttrs} object.
 CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
@@ -92,7 +94,7 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
       allJavaScript += compileResult.js;
     }
 
-    if (! _.isEmpty(compileResult.bodyAttrs)) {
+    if (!isEmpty(compileResult.bodyAttrs)) {
       Object.keys(compileResult.bodyAttrs).forEach((attr) => {
         const value = compileResult.bodyAttrs[attr];
         if (this._bodyAttrInfo.hasOwnProperty(attr) &&

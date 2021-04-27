@@ -11,7 +11,6 @@ Npm.depends({
 
 Package.onUse(function (api) {
   api.use('ecmascript@0.14.4');
-  api.use('underscore@1.0.9');
 
   api.use('htmljs@1.1.0');
   api.use('html-tools@1.1.0');
@@ -24,7 +23,6 @@ Package.onUse(function (api) {
 
 Package.onTest(function (api) {
   api.use([
-    'underscore',
     'ecmascript',
     'tinytest',
     'spacebars-compiler',

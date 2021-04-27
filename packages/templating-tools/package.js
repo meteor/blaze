@@ -7,7 +7,6 @@ Package.describe({
 
 Package.onUse(function(api) {
   api.use([
-    'underscore@1.0.9',
     'ecmascript@0.14.4'
   ]);
 

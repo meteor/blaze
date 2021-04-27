@@ -1,3 +1,14 @@
+has = function (obj, key) {
+  var keyParts = key.split('.');
+
+  return (
+    !!obj &&
+    (keyParts.length > 1
+      ? has(obj[key.split('.')[0]], keyParts.slice(1).join('.'))
+      : hasOwnProperty.call(obj, key))
+  );
+};
+
 var Template = Blaze.Template;
 
 /**
@@ -16,24 +27,25 @@ Template.__dynamicWithDataContext.helpers({
     return Blaze._getTemplate(name, function () {
       return Template.instance();
     });
-  }
+  },
 });
 
 Template.__dynamic.helpers({
   dataContextPresent: function () {
-    return _.has(this, "data");
+    return has(this, 'data');
   },
   checkContext: function () {
-    if (! _.has(this, "template")) {
-      throw new Error("Must specify name in the 'template' argument " +
-                      "to {{> Template.dynamic}}.");
+    if (!has(this, 'template')) {
+      throw new Error(
+        "Must specify name in the 'template' argument " +
+          'to {{> Template.dynamic}}.'
+      );
     }
 
-    _.each(this, function (v, k) {
-      if (k !== "template" && k !== "data") {
-        throw new Error("Invalid argument to {{> Template.dynamic}}: " +
-                        k);
+    Object.keys(this).forEach(function (k) {
+      if (k !== 'template' && k !== 'data') {
+        throw new Error('Invalid argument to {{> Template.dynamic}}: ' + k);
       }
     });
-  }
+  },
 });

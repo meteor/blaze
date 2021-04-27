@@ -55,5 +55,7 @@ if (nativeBind) {
 }
 else {
   // A slower but backwards compatible version.
-  Blaze._bind = _.bind;
+  Blaze._bind = function(objA, objB) {
+    objA.bind(objB);
+  };
 }

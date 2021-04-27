@@ -7,7 +7,6 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.use('underscore@1.0.9');
 
   // XXX would like to do the following only when the first html file
   // is encountered

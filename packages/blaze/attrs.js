@@ -37,8 +37,7 @@ Blaze._AttributeHandler = AttributeHandler;
 
 AttributeHandler.prototype.update = function (element, oldValue, value) {
   if (value === null) {
-    if (oldValue !== null)
-      element.removeAttribute(this.name);
+    if (oldValue !== null) element.removeAttribute(this.name);
   } else {
     element.setAttribute(this.name, value);
   }
@@ -49,10 +48,11 @@ AttributeHandler.extend = function (options) {
   var subType = function AttributeHandlerSubtype(/*arguments*/) {
     AttributeHandler.apply(this, arguments);
   };
-  subType.prototype = new curType;
+  subType.prototype = new curType();
   subType.extend = curType.extend;
-  if (options)
-    _.extend(subType.prototype, options);
+  if (options) {
+    Object.assign(subType.prototype, options);
+  }
   return subType;
 };
 
@@ -67,8 +67,15 @@ AttributeHandler.extend = function (options) {
 
 Blaze._DiffingAttributeHandler = AttributeHandler.extend({
   update: function (element, oldValue, value) {
-    if (!this.getCurrentValue || !this.setValue || !this.parseValue || !this.joinValues)
-      throw new Error("Missing methods in subclass of 'DiffingAttributeHandler'");
+    if (
+      !this.getCurrentValue ||
+      !this.setValue ||
+      !this.parseValue ||
+      !this.joinValues
+    )
+      throw new Error(
+        "Missing methods in subclass of 'DiffingAttributeHandler'"
+      );
 
     var oldAttrsMap = oldValue ? this.parseValue(oldValue) : new OrderedDict();
     var attrsMap = value ? this.parseValue(value) : new OrderedDict();
@@ -76,7 +83,9 @@ Blaze._DiffingAttributeHandler = AttributeHandler.extend({
     // the current attributes on the element, which we will mutate.
 
     var currentAttrString = this.getCurrentValue(element);
-    var currentAttrsMap = currentAttrString ? this.parseValue(currentAttrString) : new OrderedDict();
+    var currentAttrsMap = currentAttrString
+      ? this.parseValue(currentAttrString)
+      : new OrderedDict();
 
     // Any outside changes to attributes we add at the end.
     currentAttrsMap.forEach(function (value, key, i) {
@@ -100,7 +109,7 @@ Blaze._DiffingAttributeHandler = AttributeHandler.extend({
     });
 
     this.setValue(element, this.joinValues(values));
-  }
+  },
 });
 
 var ClassHandler = Blaze._DiffingAttributeHandler.extend({
@@ -114,10 +123,10 @@ var ClassHandler = Blaze._DiffingAttributeHandler.extend({
   parseValue: function (attrString) {
     var tokens = new OrderedDict();
 
-    _.each(attrString.split(' '), function(token) {
+    attrString.split(' ').forEach(function (token) {
       if (token) {
         // Ordered dict requires unique keys.
-        if (! tokens.has(token)) {
+        if (!tokens.has(token)) {
           tokens.append(token, token);
         }
       }
@@ -126,7 +135,7 @@ var ClassHandler = Blaze._DiffingAttributeHandler.extend({
   },
   joinValues: function (values) {
     return values.join(' ');
-  }
+  },
 });
 
 var SVGClassHandler = ClassHandler.extend({
@@ -135,7 +144,7 @@ var SVGClassHandler = ClassHandler.extend({
   },
   setValue: function (element, className) {
     element.setAttribute('class', className);
-  }
+  },
 });
 
 var StyleHandler = Blaze._DiffingAttributeHandler.extend({
@@ -182,41 +191,38 @@ var StyleHandler = Blaze._DiffingAttributeHandler.extend({
   joinValues: function (values) {
     // TODO: Assure that there is always ; between values. But what is an example where it breaks?
     return values.join(' ');
-  }
+  },
 });
 
 var BooleanHandler = AttributeHandler.extend({
   update: function (element, oldValue, value) {
     var name = this.name;
     if (value == null) {
-      if (oldValue != null)
-        element[name] = false;
+      if (oldValue != null) element[name] = false;
     } else {
       element[name] = true;
     }
-  }
+  },
 });
 
 var DOMPropertyHandler = AttributeHandler.extend({
   update: function (element, oldValue, value) {
     var name = this.name;
-    if (value !== element[name])
-      element[name] = value;
-  }
+    if (value !== element[name]) element[name] = value;
+  },
 });
 
 // attributes of the type 'xlink:something' should be set using
 // the correct namespace in order to work
 var XlinkHandler = AttributeHandler.extend({
-  update: function(element, oldValue, value) {
+  update: function (element, oldValue, value) {
     var NS = 'http://www.w3.org/1999/xlink';
     if (value === null) {
-      if (oldValue !== null)
-        element.removeAttributeNS(NS, this.name);
+      if (oldValue !== null) element.removeAttributeNS(NS, this.name);
     } else {
       element.setAttributeNS(NS, this.name, this.value);
     }
-  }
+  },
 });
 
 // cross-browser version of `instanceof SVGElement`
@@ -251,7 +257,7 @@ var isUrlAttribute = function (tagName, attrName) {
     BASE: ['href'],
     MENUITEM: ['icon'],
     HTML: ['manifest'],
-    VIDEO: ['poster']
+    VIDEO: ['poster'],
   };
 
   if (attrName === 'itemid') {
@@ -259,7 +265,7 @@ var isUrlAttribute = function (tagName, attrName) {
   }
 
   var urlAttrNames = urlAttrs[tagName] || [];
-  return _.contains(urlAttrNames, attrName);
+  return urlAttrNames.includes(attrName);
 };
 
 // To get the protocol for a URL, we let the browser normalize it for
@@ -272,7 +278,7 @@ if (Meteor.isClient) {
 var getUrlProtocol = function (url) {
   if (Meteor.isClient) {
     anchorForNormalization.href = url;
-    return (anchorForNormalization.protocol || "").toLowerCase();
+    return (anchorForNormalization.protocol || '').toLowerCase();
   } else {
     throw new Error('getUrlProtocol not implemented on the server');
   }
@@ -292,19 +298,21 @@ var UrlHandler = AttributeHandler.extend({
     if (Blaze._javascriptUrlsAllowed()) {
       origUpdate.apply(self, args);
     } else {
-      var isJavascriptProtocol = (getUrlProtocol(value) === "javascript:");
-      var isVBScriptProtocol   = (getUrlProtocol(value) === "vbscript:");
+      var isJavascriptProtocol = getUrlProtocol(value) === 'javascript:';
+      var isVBScriptProtocol = getUrlProtocol(value) === 'vbscript:';
       if (isJavascriptProtocol || isVBScriptProtocol) {
-        Blaze._warn("URLs that use the 'javascript:' or 'vbscript:' protocol are not " +
-                    "allowed in URL attribute values. " +
-                    "Call Blaze._allowJavascriptUrls() " +
-                    "to enable them.");
+        Blaze._warn(
+          "URLs that use the 'javascript:' or 'vbscript:' protocol are not " +
+            'allowed in URL attribute values. ' +
+            'Call Blaze._allowJavascriptUrls() ' +
+            'to enable them.'
+        );
         origUpdate.apply(self, [element, oldValue, null]);
       } else {
         origUpdate.apply(self, args);
       }
     }
-  }
+  },
 });
 
 // XXX make it possible for users to register attribute handlers!
@@ -319,16 +327,20 @@ Blaze._makeAttributeHandler = function (elem, name, value) {
     }
   } else if (name === 'style') {
     return new StyleHandler(name, value);
-  } else if ((elem.tagName === 'OPTION' && name === 'selected') ||
-             (elem.tagName === 'INPUT' && name === 'checked') ||
-             (elem.tagName === 'VIDEO' && name === 'muted')) {
+  } else if (
+    (elem.tagName === 'OPTION' && name === 'selected') ||
+    (elem.tagName === 'INPUT' && name === 'checked') ||
+    (elem.tagName === 'VIDEO' && name === 'muted')
+  ) {
     return new BooleanHandler(name, value);
-  } else if ((elem.tagName === 'TEXTAREA' || elem.tagName === 'INPUT')
-             && name === 'value') {
+  } else if (
+    (elem.tagName === 'TEXTAREA' || elem.tagName === 'INPUT') &&
+    name === 'value'
+  ) {
     // internally, TEXTAREAs tracks their value in the 'value'
     // attribute just like INPUTs.
     return new DOMPropertyHandler(name, value);
-  } else if (name.substring(0,6) === 'xlink:') {
+  } else if (name.substring(0, 6) === 'xlink:') {
     return new XlinkHandler(name.substring(6), value);
   } else if (isUrlAttribute(elem.tagName, name)) {
     return new UrlHandler(name, value);
@@ -340,7 +352,6 @@ Blaze._makeAttributeHandler = function (elem, name, value) {
   // seem to handle setAttribute ok.
 };
 
-
 ElementAttributesUpdater = function (elem) {
   this.elem = elem;
   this.handlers = {};
@@ -348,12 +359,12 @@ ElementAttributesUpdater = function (elem) {
 
 // Update attributes on `elem` to the dictionary `attrs`, whose
 // values are strings.
-ElementAttributesUpdater.prototype.update = function(newAttrs) {
+ElementAttributesUpdater.prototype.update = function (newAttrs) {
   var elem = this.elem;
   var handlers = this.handlers;
 
   for (var k in handlers) {
-    if (! _.has(newAttrs, k)) {
+    if (!has(newAttrs, k)) {
       // remove attributes (and handlers) for attribute names
       // that don't exist as keys of `newAttrs` and so won't
       // be visited when traversing it.  (Attributes that
@@ -371,7 +382,7 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
     var handler = null;
     var oldValue = null;
     var value = newAttrs[k];
-    if (! _.has(handlers, k)) {
+    if (!has(handlers, k)) {
       if (value !== null) {
         // make new handler
         handler = Blaze._makeAttributeHandler(elem, k, value);
@@ -384,8 +395,7 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
     if (oldValue !== value) {
       handler.value = value;
       handler.update(elem, oldValue, value);
-      if (value === null)
-        delete handlers[k];
+      if (value === null) delete handlers[k];
     }
   }
 };

@@ -135,7 +135,7 @@ TemplateTag.parse = function (scannerOrString) {
       if (endsWithSlash)
         dots = dots.slice(0, -1);
 
-      _.each(dots.split('/'), function(dotClause, index) {
+      dots.split('/').forEach(function(dotClause, index) {
         if (index === 0) {
           if (dotClause !== '.' && dotClause !== '..')
             expected("`.`, `..`, `./` or `../`");

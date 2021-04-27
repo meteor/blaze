@@ -14,7 +14,7 @@
  * @param {Function} renderFunction A function that returns [*renderable content*](#Renderable-Content).  This function is used as the `renderFunction` for Views constructed by this Template.
  */
 Blaze.Template = function (viewName, renderFunction) {
-  if (! (this instanceof Blaze.Template))
+  if (!(this instanceof Blaze.Template))
     // called without `new`
     return new Blaze.Template(viewName, renderFunction);
 
@@ -24,33 +24,33 @@ Blaze.Template = function (viewName, renderFunction) {
     viewName = '';
   }
   if (typeof viewName !== 'string')
-    throw new Error("viewName must be a String (or omitted)");
+    throw new Error('viewName must be a String (or omitted)');
   if (typeof renderFunction !== 'function')
-    throw new Error("renderFunction must be a function");
+    throw new Error('renderFunction must be a function');
 
   this.viewName = viewName;
   this.renderFunction = renderFunction;
 
-  this.__helpers = new HelperMap;
+  this.__helpers = new HelperMap();
   this.__eventMaps = [];
 
   this._callbacks = {
     created: [],
     rendered: [],
-    destroyed: []
+    destroyed: [],
   };
 };
 var Template = Blaze.Template;
 
 var HelperMap = function () {};
 HelperMap.prototype.get = function (name) {
-  return this[' '+name];
+  return this[' ' + name];
 };
 HelperMap.prototype.set = function (name, helper) {
-  this[' '+name] = helper;
+  this[' ' + name] = helper;
 };
 HelperMap.prototype.has = function (name) {
-  return (typeof this[' '+name] !== 'undefined');
+  return typeof this[' ' + name] !== 'undefined';
 };
 
 /**
@@ -59,7 +59,7 @@ HelperMap.prototype.has = function (name) {
  * @param {Any} value The value to test.
  */
 Blaze.isTemplate = function (t) {
-  return (t instanceof Blaze.Template);
+  return t instanceof Blaze.Template;
 };
 
 /**
@@ -113,12 +113,15 @@ Template.prototype._getCallbacks = function (which) {
 
 var fireCallbacks = function (callbacks, template) {
   Template._withTemplateInstanceFunc(
-    function () { return template; },
+    function () {
+      return template;
+    },
     function () {
       for (var i = 0, N = callbacks.length; i < N; i++) {
         callbacks[i].call(template);
       }
-    });
+    }
+  );
 };
 
 Template.prototype.constructView = function (contentFunc, elseFunc) {
@@ -126,17 +129,18 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
   var view = Blaze.View(self.viewName, self.renderFunction);
   view.template = self;
 
-  view.templateContentBlock = (
-    contentFunc ? new Template('(contentBlock)', contentFunc) : null);
-  view.templateElseBlock = (
-    elseFunc ? new Template('(elseBlock)', elseFunc) : null);
+  view.templateContentBlock = contentFunc
+    ? new Template('(contentBlock)', contentFunc)
+    : null;
+  view.templateElseBlock = elseFunc
+    ? new Template('(elseBlock)', elseFunc)
+    : null;
 
   if (self.__eventMaps || typeof self.events === 'object') {
     view._onViewRendered(function () {
-      if (view.renderCount !== 1)
-        return;
+      if (view.renderCount !== 1) return;
 
-      if (! self.__eventMaps.length && typeof self.events === "object") {
+      if (!self.__eventMaps.length && typeof self.events === 'object') {
         // Provide limited back-compat support for `.events = {...}`
         // syntax.  Pass `template.events` to the original `.events(...)`
         // function.  This code must run only once per template, in
@@ -146,7 +150,7 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
         Template.prototype.events.call(self, self.events);
       }
 
-      _.each(self.__eventMaps, function (m) {
+      self.__eventMaps.forEach(function (m) {
         Blaze._addEventMap(view, m, view);
       });
     });
@@ -231,12 +235,11 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
  * @instanceName template
  */
 Blaze.TemplateInstance = function (view) {
-  if (! (this instanceof Blaze.TemplateInstance))
+  if (!(this instanceof Blaze.TemplateInstance))
     // called without `new`
     return new Blaze.TemplateInstance(view);
 
-  if (! (view instanceof Blaze.View))
-    throw new Error("View required");
+  if (!(view instanceof Blaze.View)) throw new Error('View required');
 
   view._templateInstance = this;
 
@@ -290,7 +293,7 @@ Blaze.TemplateInstance = function (view) {
  */
 Blaze.TemplateInstance.prototype.$ = function (selector) {
   var view = this.view;
-  if (! view._domrange)
+  if (!view._domrange)
     throw new Error("Can't use $ on template instance with no DOM");
   return view._domrange.$(selector);
 };
@@ -344,16 +347,15 @@ Blaze.TemplateInstance.prototype.autorun = function (f) {
  * @param {DDP.Connection} [options.connection] The connection on which to make the
  * subscription.
  */
-Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
+Blaze.TemplateInstance.prototype.subscribe = function (...args) {
   var self = this;
 
   var subHandles = self._subscriptionHandles;
-  var args = _.toArray(arguments);
 
   // Duplicate logic from Meteor.subscribe
   var options = {};
   if (args.length) {
-    var lastParam = _.last(args);
+    var lastParam = args[args.length - 1];
 
     // Match pattern to check if the last arg is an options argument
     var lastParamOptionsPattern = {
@@ -362,12 +364,16 @@ Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
       // onStop with an error callback instead.
       onError: Match.Optional(Function),
       onStop: Match.Optional(Function),
-      connection: Match.Optional(Match.Any)
+      connection: Match.Optional(Match.Any),
     };
 
-    if (_.isFunction(lastParam)) {
+    if (isFunction(lastParam)) {
       options.onReady = args.pop();
-    } else if (lastParam && ! _.isEmpty(lastParam) && Match.test(lastParam, lastParamOptionsPattern)) {
+    } else if (
+      lastParam &&
+      !isEmpty(lastParam) &&
+      Match.test(lastParam, lastParamOptionsPattern)
+    ) {
       options = args.pop();
     }
   }
@@ -382,7 +388,7 @@ Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
     // Removing a subscription can only change the result of subscriptionsReady
     // if we are not ready (that subscription could be the one blocking us being
     // ready).
-    if (! self._allSubsReady) {
+    if (!self._allSubsReady) {
       self._allSubsReadyDep.changed();
     }
 
@@ -392,7 +398,8 @@ Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
   };
 
   var connection = options.connection;
-  var callbacks = _.pick(options, ["onReady", "onError", "onStop"]);
+  const { onReady, onError, onStop } = options;
+  var callbacks = { onReady, onError, onStop };
 
   // The callbacks are passed as the last item in the arguments array passed to
   // View#subscribe
@@ -401,10 +408,10 @@ Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
   // View#subscribe takes the connection as one of the options in the last
   // argument
   subHandle = self.view.subscribe.call(self.view, args, {
-    connection: connection
+    connection: connection,
   });
 
-  if (! _.has(subHandles, subHandle.subscriptionId)) {
+  if (!has(subHandles, subHandle.subscriptionId)) {
     subHandles[subHandle.subscriptionId] = subHandle;
 
     // Adding a new subscription will always cause us to transition from ready
@@ -426,9 +433,8 @@ Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
  */
 Blaze.TemplateInstance.prototype.subscriptionsReady = function () {
   this._allSubsReadyDep.depend();
-
-  this._allSubsReady = _.all(this._subscriptionHandles, function (handle) {
-    return handle.ready();
+  this._allSubsReady = Object.keys(this._subscriptionHandles).every((handle) => {  
+    return this._subscriptionHandles[handle].ready();
   });
 
   return this._allSubsReady;
@@ -441,20 +447,21 @@ Blaze.TemplateInstance.prototype.subscriptionsReady = function () {
  * @importFromPackage templating
  */
 Template.prototype.helpers = function (dict) {
-  if (! _.isObject(dict)) {
-    throw new Error("Helpers dictionary has to be an object");
+  if (!isObject(dict)) {
+    throw new Error('Helpers dictionary has to be an object');
   }
 
-  for (var k in dict)
-    this.__helpers.set(k, dict[k]);
+  for (var k in dict) this.__helpers.set(k, dict[k]);
 };
 
-var canUseGetters = function() {
+var canUseGetters = (function () {
   if (Object.defineProperty) {
     var obj = {};
     try {
-      Object.defineProperty(obj, "self", {
-        get: function () { return obj; }
+      Object.defineProperty(obj, 'self', {
+        get: function () {
+          return obj;
+        },
       });
     } catch (e) {
       return false;
@@ -462,7 +469,7 @@ var canUseGetters = function() {
     return obj.self === obj;
   }
   return false;
-}();
+})();
 
 if (canUseGetters) {
   // Like Blaze.currentView but for the template instance. A function
@@ -474,15 +481,15 @@ if (canUseGetters) {
   // If getters are supported, define this property with a getter function
   // to make it effectively read-only, and to work around this bizarre JSC
   // bug: https://github.com/meteor/meteor/issues/9926
-  Object.defineProperty(Template, "_currentTemplateInstanceFunc", {
+  Object.defineProperty(Template, '_currentTemplateInstanceFunc', {
     get: function () {
       return currentTemplateInstanceFunc;
-    }
+    },
   });
 
   Template._withTemplateInstanceFunc = function (templateInstanceFunc, func) {
     if (typeof func !== 'function') {
-      throw new Error("Expected function, got: " + func);
+      throw new Error('Expected function, got: ' + func);
     }
     var oldTmplInstanceFunc = currentTemplateInstanceFunc;
     try {
@@ -492,14 +499,13 @@ if (canUseGetters) {
       currentTemplateInstanceFunc = oldTmplInstanceFunc;
     }
   };
-
 } else {
   // If getters are not supported, just use a normal property.
   Template._currentTemplateInstanceFunc = null;
 
   Template._withTemplateInstanceFunc = function (templateInstanceFunc, func) {
     if (typeof func !== 'function') {
-      throw new Error("Expected function, got: " + func);
+      throw new Error('Expected function, got: ' + func);
     }
     var oldTmplInstanceFunc = Template._currentTemplateInstanceFunc;
     try {
@@ -518,26 +524,28 @@ if (canUseGetters) {
  * @importFromPackage templating
  */
 Template.prototype.events = function (eventMap) {
-  if (! _.isObject(eventMap)) {
-    throw new Error("Event map has to be an object");
+  if (!isObject(eventMap)) {
+    throw new Error('Event map has to be an object');
   }
 
   var template = this;
   var eventMap2 = {};
   for (var k in eventMap) {
     eventMap2[k] = (function (k, v) {
-      return function (event/*, ...*/) {
+      return function (event /*, ...*/) {
         var view = this; // passed by EventAugmenter
         var data = Blaze.getData(event.currentTarget);
-        if (data == null)
-          data = {};
+        if (data == null) data = {};
         var args = Array.prototype.slice.call(arguments);
         var tmplInstanceFunc = Blaze._bind(view.templateInstance, view);
         args.splice(1, 0, tmplInstanceFunc());
 
-        return Template._withTemplateInstanceFunc(tmplInstanceFunc, function () {
-          return v.apply(data, args);
-        });
+        return Template._withTemplateInstanceFunc(
+          tmplInstanceFunc,
+          function () {
+            return v.apply(data, args);
+          }
+        );
       };
     })(k, eventMap[k]);
   }
@@ -555,8 +563,10 @@ Template.prototype.events = function (eventMap) {
  * @importFromPackage templating
  */
 Template.instance = function () {
-  return Template._currentTemplateInstanceFunc
-    && Template._currentTemplateInstanceFunc();
+  return (
+    Template._currentTemplateInstanceFunc &&
+    Template._currentTemplateInstanceFunc()
+  );
 };
 
 // Note: Template.currentData() is documented to take zero arguments,

@@ -1,4 +1,3 @@
-
 // Packages and apps add templates on to this object.
 
 /**
@@ -8,7 +7,7 @@
  */
 Template = Blaze.Template;
 
-var RESERVED_TEMPLATE_NAMES = "__proto__ name".split(" ");
+var RESERVED_TEMPLATE_NAMES = '__proto__ name'.split(' ');
 
 // Check for duplicate template names and illegal names that won't work.
 Template.__checkName = function (name) {
@@ -16,17 +15,21 @@ Template.__checkName = function (name) {
   //  - Properties Blaze sets on the Template object.
   //  - Properties that some browsers don't let the code to set.
   //    These are specified in RESERVED_TEMPLATE_NAMES.
-  if (name in Template || _.contains(RESERVED_TEMPLATE_NAMES, name)) {
-    if ((Template[name] instanceof Template) && name !== "body")
-      throw new Error("There are multiple templates named '" + name + "'. Each template needs a unique name.");
-    throw new Error("This template name is reserved: " + name);
+  if (name in Template || RESERVED_TEMPLATE_NAMES.includes(name)) {
+    if (Template[name] instanceof Template && name !== 'body')
+      throw new Error(
+        "There are multiple templates named '" +
+          name +
+          "'. Each template needs a unique name."
+      );
+    throw new Error('This template name is reserved: ' + name);
   }
 };
 
 // XXX COMPAT WITH 0.8.3
 Template.__define__ = function (name, renderFunc) {
   Template.__checkName(name);
-  Template[name] = new Template("Template." + name, renderFunc);
+  Template[name] = new Template('Template.' + name, renderFunc);
   // Exempt packages built pre-0.9.0 from warnings about using old
   // helper syntax, because we can.  It's not very useful to get a
   // warning about someone else's code (like a package on Atmosphere),
@@ -46,7 +49,7 @@ Template.__define__ = function (name, renderFunc) {
  */
 Template.body = new Template('body', function () {
   var view = this;
-  return _.map(Template.body.contentRenderFuncs, function (func) {
+  return Template.body.contentRenderFuncs.map(function (func) {
     return func.apply(view);
   });
 });
@@ -61,14 +64,13 @@ Template.body.addContent = function (renderFunc) {
 // as `Meteor.startup(Template.body.renderIntoDocument)`.
 Template.body.renderToDocument = function () {
   // Only do it once.
-  if (Template.body.view)
-    return;
+  if (Template.body.view) return;
 
   var view = Blaze.render(Template.body, document.body);
   Template.body.view = view;
 };
 
-Template.__pendingReplacement = []
+Template.__pendingReplacement = [];
 
 var updateTimeout = null;
 
@@ -85,13 +87,13 @@ Template._applyHmrChanges = function (templateName) {
     updateTimeout = null;
 
     for (var i = 0; i < Template.__pendingReplacement.length; i++) {
-      delete Template[Template.__pendingReplacement[i]]
+      delete Template[Template.__pendingReplacement[i]];
     }
 
     Template.__pendingReplacement = [];
 
     var views = Blaze.__rootViews.slice();
-    for(var i = 0; i < views.length; i++) {
+    for (var i = 0; i < views.length; i++) {
       var view = views[i];
       if (view.destroyed) {
         continue;
@@ -126,7 +128,12 @@ Template._applyHmrChanges = function (templateName) {
           var newView = Blaze.render(Template.body, document.body, comment);
           Template.body.view = newView;
         } else if (view.dataVar) {
-          Blaze.renderWithData(renderFunc, view.dataVar.curValue, parentEl, comment);
+          Blaze.renderWithData(
+            renderFunc,
+            view.dataVar.curValue,
+            parentEl,
+            comment
+          );
         } else {
           Blaze.render(renderFunc, parentEl, comment);
         }
@@ -146,11 +153,11 @@ Template._applyHmrChanges = function (templateName) {
       }
     }
   });
-}
+};
 
 Template._migrateTemplate = function (templateName, newTemplate, migrate) {
   var oldTemplate = Template[templateName];
-  var migrate = Template.__pendingReplacement.indexOf(templateName) > -1
+  var migrate = Template.__pendingReplacement.indexOf(templateName) > -1;
 
   if (oldTemplate && migrate) {
     newTemplate.__helpers = oldTemplate.__helpers;
@@ -162,12 +169,11 @@ Template._migrateTemplate = function (templateName, newTemplate, migrate) {
     Template._applyHmrChanges(templateName);
   }
 
-
   if (migrate) {
     Template.__pendingReplacement.splice(
       Template.__pendingReplacement.indexOf(templateName),
       1
-    )
+    );
   }
 
   Template.__checkName(templateName);
