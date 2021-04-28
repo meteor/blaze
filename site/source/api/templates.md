@@ -8,11 +8,11 @@ When you write a template as `<template name="foo"> ... </template>` in an HTML 
 contain hyphens and other special characters.
 
 The same template may occur many times on a page, and these
-occurrences are called template instances. Template instances have a
+occurrences are called template instances.  Template instances have a
 life cycle of being created, put into the document, and later taken
-out of the document and destroyed. Meteor manages these stages for
+out of the document and destroyed.  Meteor manages these stages for
 you, including determining when a template instance has been removed
-or replaced and should be cleaned up. You can associate data with a
+or replaced and should be cleaned up.  You can associate data with a
 template instance, and you can access its DOM nodes when it is in the
 document.
 
@@ -38,8 +38,8 @@ Example:
 ```js
 Template.myTemplate.helpers({
   foo() {
-    return Session.get('foo');
-  },
+    return Session.get("foo");
+  }
 });
 ```
 
@@ -51,9 +51,9 @@ Helpers can accept positional and keyword arguments:
 ```js
 Template.myTemplate.helpers({
   displayName(firstName, lastName, keyword) {
-    var prefix = keyword.hash.title ? keyword.hash.title + ' ' : '';
-    return prefix + firstName + ' ' + lastName;
-  },
+    var prefix = keyword.hash.title ? keyword.hash.title + " " : "";
+    return prefix + firstName + " " + lastName;
+  }
 });
 ```
 
@@ -66,7 +66,7 @@ Then you can call this helper from template like this:
 You can learn more about arguments to helpers in [Spacebars](../api/spacebars.html).
 
 Under the hood, each helper starts a new
-[`Tracker.autorun`](http://docs.meteor.com/api/tracker.html#Tracker-autorun). When its reactive
+[`Tracker.autorun`](http://docs.meteor.com/api/tracker.html#Tracker-autorun).  When its reactive
 dependencies change, the helper is rerun. Helpers depend on their data
 context, passed arguments and other reactive data sources accessed during
 execution.
@@ -74,10 +74,11 @@ execution.
 To create a helper that can be used in any template, use
 [`Template.registerHelper`](../api/templates.html#Template-registerHelper).
 
+
 {% apibox "Template#onRendered" instanceDelimiter:. %}
 
 Callbacks added with this method are called once when an instance of
-Template._myTemplate_ is rendered into DOM nodes and put into the document for
+Template.*myTemplate* is rendered into DOM nodes and put into the document for
 the first time.
 
 In the body of a callback, `this` is a [template instance](../api/templates.html#Template-instances)
@@ -95,7 +96,7 @@ template is rendered for the first time.
 <template name="myPictures">
   <div class="container">
     {{#each pictures}}
-    <img class="item" src="/{{.}}" />
+      <img class="item" src="/{{.}}"/>
     {{/each}}
   </div>
 </template>
@@ -106,7 +107,7 @@ Template.myPictures.onRendered(function () {
   // Use the Packery jQuery plugin
   this.$('.container').packery({
     itemSelector: '.item',
-    gutter: 10,
+    gutter: 10
   });
 });
 ```
@@ -127,7 +128,7 @@ instance that are read from template helpers using `Template.instance()`.
 Template.myPictures.onCreated(function () {
   // set up local reactive variables
   this.highlightedPicture = new ReactiveVar(null);
-
+  
   // register this template within some central store
   GalleryTemplates.push(this);
 });
@@ -136,7 +137,7 @@ Template.myPictures.onCreated(function () {
 {% apibox "Template#onDestroyed" instanceDelimiter:. %}
 
 These callbacks are called when an occurrence of a template is taken off
-the page for any reason and not replaced with a re-rendering. Inside
+the page for any reason and not replaced with a re-rendering.  Inside
 a callback, `this` is the [template instance](../api/templates.html#Template-instances) object
 being destroyed.
 
@@ -147,21 +148,20 @@ callback to fire.
 ```js
 Template.myPictures.onDestroyed(function () {
   // deregister from some central store
-  GalleryTemplates = GalleryTemplates.filter(function (value) {
-    return value !== this;
-  });
+  GalleryTemplates = _.without(GalleryTemplates, this);
 });
 ```
+
 
 ## Template instances
 
 A template instance object represents an occurrence of a template in
-the document. It can be used to access the DOM and it can be
+the document.  It can be used to access the DOM and it can be
 assigned properties that persist as the template is reactively updated.
 
 Template instance objects are found as the value of `this` in the
 `onCreated`, `onRendered`, and `onDestroyed` template callbacks, and as an
-argument to event handlers. You can access the current template instance
+argument to event handlers.  You can access the current template instance
 from helpers using [`Template.instance()`](../api/templates.html#Template-instance).
 
 In addition to the properties and functions described below, you can assign
@@ -201,8 +201,8 @@ the selector.
 {% apibox "Blaze.TemplateInstance#firstNode" %}
 
 The two nodes `firstNode` and `lastNode` indicate the extent of the
-rendered template in the DOM. The rendered template includes these
-nodes, their intervening siblings, and their descendents. These two
+rendered template in the DOM.  The rendered template includes these
+nodes, their intervening siblings, and their descendents.  These two
 nodes are siblings (they have the same parent), and `lastNode` comes
 after `firstNode`, or else they are the same node.
 
@@ -211,14 +211,14 @@ after `firstNode`, or else they are the same node.
 {% apibox "Blaze.TemplateInstance#data" %}
 
 This property provides access to the data context at the top level of
-the template. It is updated each time the template is re-rendered.
+the template.  It is updated each time the template is re-rendered.
 Access is read-only and non-reactive.
 
 {% apibox "Blaze.TemplateInstance#autorun" %}
 
 You can use `this.autorun` from an [`onCreated`](../api/templates.html#Template-onCreated) or
 [`onRendered`](../api/templates.html#Template-onRendered) callback to reactively update the DOM
-or the template instance. You can use `Template.currentData()` inside
+or the template instance.  You can use `Template.currentData()` inside
 of this callback to access reactive data context of the template instance.
 The Computation is automatically stopped when the template is destroyed.
 
@@ -243,15 +243,19 @@ Example:
 ```js
 Template.notifications.onCreated(function () {
   // Use this.subscribe inside onCreated callback
-  this.subscribe('notifications');
+  this.subscribe("notifications");
 });
 ```
 
 ```html
 <template name="notifications">
   {{#if Template.subscriptionsReady}}
-  <!-- This is displayed when all data is ready. -->
-  {{#each notifications}} {{> notification}} {{/each}} {{else}} Loading...
+    <!-- This is displayed when all data is ready. -->
+    {{#each notifications}}
+      {{> notification}}
+    {{/each}}
+  {{else}}
+    Loading...
   {{/if}}
 </template>
 ```
@@ -263,13 +267,15 @@ Template.comments.onCreated(function () {
   // Use this.subscribe with the data context reactively
   this.autorun(() => {
     var dataContext = Template.currentData();
-    this.subscribe('comments', dataContext.postId);
+    this.subscribe("comments", dataContext.postId);
   });
 });
 ```
 
 ```html
-{{#with post}} {{> comments postId=_id}} {{/with}}
+{{#with post}}
+  {{> comments postId=_id}}
+{{/with}}
 ```
 
 Another example where you want to initialize a plugin when the subscription is
@@ -278,7 +284,7 @@ done:
 ```js
 Template.listing.onRendered(function () {
   var template = this;
-
+  
   template.subscribe('listOfThings', () => {
     // Wait for the data to load using the callback
     Tracker.afterFlush(() => {
@@ -300,7 +306,7 @@ Template.listing.onRendered(function () {
 
 {% apibox "Template.parentData" %}
 
-For example, `Template.parentData(0)` is equivalent to `Template.currentData()`. `Template.parentData(2)`
+For example, `Template.parentData(0)` is equivalent to `Template.currentData()`.  `Template.parentData(2)`
 is equivalent to `{% raw %}{{../..}}{% endraw %}` in a template.
 
 {% apibox "Template.body" %}
@@ -309,22 +315,23 @@ You can define helpers and event maps on `Template.body` just like on
 any `Template.myTemplate` object.
 
 Helpers on `Template.body` are only available in the `<body>` tags of
-your app. To register a global helper, use
+your app.  To register a global helper, use
 [Template.registerHelper](../api/templates.html#Template-registerHelper).
 Event maps on `Template.body` don't apply to elements added to the
 body via `Blaze.render`, jQuery, or the DOM API, or to the body element
-itself. To handle events on the body, window, or document, use jQuery
+itself.  To handle events on the body, window, or document, use jQuery
 or the DOM API.
 
 {% apibox "Template.dynamic" %}
 
 `Template.dynamic` allows you to include a template by name, where the name
-may be calculated by a helper and may change reactively. The `data`
+may be calculated by a helper and may change reactively.  The `data`
 argument is optional, and if it is omitted, the current data context
 is used. It's also possible, to use `Template.dynamic` as a block helper
 (`{% raw %}{{#Template.dynamic}} ... {{/Template.dynamic}}{% endraw %}`)
 
-For example, if there is a template named "foo", `{% raw %}{{> Template.dynamic template="foo"}}{% endraw %}` is equivalent to `{% raw %}{{> foo}}{% endraw %}` and
+For example, if there is a template named "foo", `{% raw %}{{> Template.dynamic
+template="foo"}}{% endraw %}` is equivalent to `{% raw %}{{> foo}}{% endraw %}` and
 `{% raw %}{{#Template.dynamic template="foo"}} ... {{/Template.dynamic}}{% endraw %}`
 is equivalent to `{% raw %}{{#foo}} ... {{/foo}}{% endraw %}`.
 
@@ -350,15 +357,14 @@ an element that matches a certain CSS selector.
 To handle more than one event / selector with the same function, use a
 comma-separated list.
 {% enddtdd %}
-
 </dl>
 
 The handler function receives two arguments: `event`, an object with
 information about the event, and `template`, a [template
 instance](#Template-instances) for the template where the handler is
-defined. The handler also receives some additional context data in
+defined.  The handler also receives some additional context data in
 `this`, depending on the context of the current element handling the
-event. In a template, an element's context is the
+event.  In a template, an element's context is the
 data context where that element occurs, which is set by
 block helpers such as `#with` and `#each`.
 
@@ -368,25 +374,25 @@ Example:
 {
   // Fires when any element is clicked
   'click'(event) { ... },
-
+  
   // Fires when any element with the 'accept' class is clicked
   'click .accept'(event) { ... },
-
+  
   // Fires when 'accept' is clicked or focused
   'click .accept, focus .accept'(event) { ... }
   'click/focus .accept'(event) { ... }
-
+  
   // Fires when 'accept' is clicked or focused, or a key is pressed
   'click .accept, focus .accept, keypress'(event) { ... }
   'click/focus .accept, keypress'(event) { ... }
-
+  
 }
 ```
 
 Most events bubble up the document tree from their originating
-element. For example, `'click p'` catches a click anywhere in a
+element.  For example, `'click p'` catches a click anywhere in a
 paragraph, even if the click originated on a link, span, or some other
-element inside the paragraph. The originating element of the event
+element inside the paragraph.  The originating element of the event
 is available as the `target` property, while the element that matched
 the selector and is currently handling it is called `currentTarget`.
 
@@ -400,7 +406,8 @@ the selector and is currently handling it is called `currentTarget`.
 ```
 
 If a selector matches multiple elements that an event bubbles to, it
-will be called multiple times, for example in the case of `'click div'` or `'click *'`. If no selector is given, the handler
+will be called multiple times, for example in the case of `'click
+div'` or `'click *'`.  If no selector is given, the handler
 will only be called once, on the original target element.
 
 The following properties and methods are available on the event object
@@ -416,8 +423,8 @@ The element that originated the event.
 {% enddtdd %}
 
 {% dtdd name:"currentTarget" type:"DOM Element" %}
-The element currently handling the event. This is the element that
-matched the selector in the event map. For events that bubble, it may
+The element currently handling the event.  This is the element that
+matched the selector in the event map.  For events that bubble, it may
 be `target` or an ancestor of `target`, and its value changes as the
 event bubbles.
 {% enddtdd %}
@@ -441,7 +448,7 @@ bubbling, and handlers in other event maps.
 
 {% dtdd name:"preventDefault()" %}
 Prevents the action the browser would normally take in response to this
-event, such as following a link or submitting a form. Further handlers
+event, such as following a link or submitting a form.  Further handlers
 are still called, but cannot reverse the effect.
 {% enddtdd %}
 
@@ -456,7 +463,6 @@ Returns whether `stopImmediatePropagation()` has been called for this event.
 {% dtdd name:"isDefaultPrevented()" %}
 Returns whether `preventDefault()` has been called for this event.
 {% enddtdd %}
-
 </dl>
 
 Returning `false` from a handler is the same as calling
@@ -476,19 +482,19 @@ Double-click.
 {% enddtdd %}
 
 {% dtdd name:"<code>focus, blur</code>" %}
-A text input field or other form control gains or loses focus. You
+A text input field or other form control gains or loses focus.  You
 can make any element focusable by giving it a `tabindex` property.
 Browsers differ on whether links, checkboxes, and radio buttons are
-natively focusable. These events do not bubble.
+natively focusable.  These events do not bubble.
 {% enddtdd %}
 
 {% dtdd name:"<code>change</code>" %}
-A checkbox or radio button changes state. For text fields, use
+A checkbox or radio button changes state.  For text fields, use
 `blur` or key events to respond to changes.
 {% enddtdd %}
 
 {% dtdd name:"<code>mouseenter, mouseleave</code>" %} The pointer enters or
-leaves the bounds of an element. These events do not bubble.
+leaves the bounds of an element.  These events do not bubble.
 {% enddtdd %}
 
 {% dtdd name:"<code>mousedown, mouseup</code>" %}
@@ -496,7 +502,7 @@ The mouse button is newly down or up.
 {% enddtdd %}
 
 {% dtdd name:"<code>keydown, keypress, keyup</code>" %}
-The user presses a keyboard key. `keypress` is most useful for
+The user presses a keyboard key.  `keypress` is most useful for
 catching typing in text fields, while `keydown` and `keyup` can be
 used for arrow keys or modifier keys.
 {% enddtdd %}

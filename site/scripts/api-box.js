@@ -3,19 +3,10 @@
 var path = require('path');
 var fs = require('fs');
 var handlebars = require('handlebars');
+var _ = require('underscore');
 var parseTagOptions = require('./parseTagOptions');
 var showdown  = require('showdown');
 var converter = new showdown.Converter();
-
-var reject = function (arr, predicate) {
-  var complement = function (f) {
-    return function (x) {
-      return !f(x);
-    }
-  };
-
-  return arr.filter(complement(predicate));
-};
 
 // can't put this file in this folder annoyingly
 var html = fs.readFileSync(path.join(__dirname, '..', 'assets', 'api-box.html'), 'utf8');
@@ -36,7 +27,7 @@ hexo.extend.tag.register('apibox', function(args) {
     nested: name.indexOf('#') !== -1,
     instanceDelimiter: '#'
   };
-  var data = Object.assign({}, defaults, options, apiData({ name: name }));
+  var data = _.extend({}, defaults, options, apiData({ name: name }));
 
   data.id = data.longname.replace(/[.#]/g, "-");
 
@@ -64,11 +55,11 @@ var apiData = function (options) {
     console.log("API Data not found: " + options.name);
   }
 
-  if (has(options, 'options')) {
-    root = Object.assign({}, root);
+  if (_.has(options, 'options')) {
+    root = _.clone(root);
     var includedOptions = options.options.split(';');
-    root.options = root.options.filter(function (option) {
-      return includedOptions.includes(option.name);
+    root.options = _.filter(root.options, function (option) {
+      return _.contains(includedOptions, option.name);
     });
   }
 
@@ -84,7 +75,7 @@ signature = function (data, options) {
     if (data.istemplate || data.ishelper) {
       var params = data.params;
 
-      var paramNames = params.map(function (param) {
+      var paramNames = _.map(params, function (param) {
         var name = param.name;
 
         name = name + "=" + name;
@@ -99,10 +90,10 @@ signature = function (data, options) {
       paramsStr = ' ' + paramNames.join(" ") + ' ';
     } else {
       // if it is a function, and therefore has arguments
-      if (["function", "class"].includes(data.kind)) {
+      if (_.contains(["function", "class"], data.kind)) {
         var params = data.params;
 
-        var paramNames = params.map(function (param) {
+        var paramNames = _.map(params, function (param) {
           if (param.optional) {
             return "[" + param.name + "]";
           }
@@ -162,7 +153,7 @@ var importName = function(doc) {
 };
 
 var paramsNoOptions = function (doc) {
-  return reject(doc.params, function (param) {
+  return _.reject(doc.params, function (param) {
     return param.name === "options";
   });
 };
@@ -206,7 +197,7 @@ var typeNameTranslation = {
 
 handlebars.registerHelper('typeNames', function typeNames (nameList) {
   // change names if necessary
-  nameList = nameList.map(function (name) {
+  nameList = _.map(nameList, function (name) {
     // decode the "Array.<Type>" syntax
     if (name.slice(0, 7) === "Array.<") {
       // get the part inside angle brackets like in Array<String>
@@ -235,7 +226,7 @@ handlebars.registerHelper('typeNames', function typeNames (nameList) {
     return name;
   });
 
-  nameList =  nameList.flat();
+  nameList = _.flatten(nameList);
 
   return toOrSentence(nameList);
 });

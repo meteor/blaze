@@ -26,7 +26,7 @@
     var tagDict = {};
 
     if (data.tags) {
-      data.tags.forEach(function (tag) {
+      _.each(data.tags, function (tag) {
         tagDict[tag.title] = tag.value;
       });
     }
@@ -36,7 +36,7 @@
 
   // Fix up a JSDoc entry and add it to `dataContents`.
   var addToData = function (entry) {
-    Object.assign(entry, getTagDict(entry));
+    _.extend(entry, getTagDict(entry));
 
     // strip properties we don't want
     entry.comment = undefined;
@@ -82,7 +82,7 @@
     var namespaces = helper.find(data, {kind: "namespace"});
 
     // prepare all of the namespaces
-    namespaces.forEach(function (namespace) {
+    _.each(namespaces, function (namespace) {
       if (namespace.summary) {
         addToData(namespace);
       }
@@ -90,7 +90,7 @@
 
     var properties = helper.find(data, {kind: "member"});
 
-    properties.forEach(function (property) {
+    _.each(properties, function (property) {
       if (property.summary) {
         addToData(property);
       }
@@ -100,7 +100,7 @@
     // when they are used as arguments, so we always attach them to reference
     // them later.
     var callbacks = helper.find(data, {kind: "typedef"});
-    callbacks.forEach(function (cb) {
+    _.each(callbacks, function (cb) {
       delete cb.comment;
       addToData(cb);
     });
@@ -112,7 +112,7 @@
     functions = functions.concat(constructors);
 
     // insert all of the function data into the namespaces
-    functions.forEach(function (func) {
+    _.each(functions, function (func) {
       if (! func.summary) {
         // we use the @summary tag to indicate that an item is documented
         return;
@@ -126,7 +126,7 @@
       // `options.foo,bar` will create an option named `foo, bar`
       // (representing two options in the docs).  We process pipes so
       // that `options.foo|bar` also results in `foo, bar`.
-      func.params.forEach(function (param) {
+      _.each(func.params, function (param) {
         param.name = param.name.replace(/,|\|/g, ", ");
 
         var splitName = param.name.split(".");
