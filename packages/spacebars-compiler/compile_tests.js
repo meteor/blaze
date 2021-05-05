@@ -84,12 +84,12 @@ Tinytest.add("spacebars-compiler - compiler errors", function (test) {
     "Unexpected HTML close tag.  <input> should have no close tag."
   );
 
-  isError("{{#if}}{{/if}}', '#if requires an argument");
-  isError("{{#with}}{{/with}}', '#with requires an argument");
-  isError("{{#each}}{{/each}}', '#each requires an argument");
-  isError("{{#unless}}{{/unless}}', '#unless requires an argument");
+  isError("{{#if}}{{/if}}", "#if requires an argument");
+  isError("{{#with}}{{/with}}", "#with requires an argument");
+  isError("{{#each}}{{/each}}", "#each requires an argument");
+  isError("{{#unless}}{{/unless}}", "#unless requires an argument");
 
-  isError("{{0 0}}', 'Expected IDENTIFIER");
+  isError("{{0 0}}", "Expected IDENTIFIER");
 
   isError("{{> foo 0 0}}", "First argument must be a function");
   isError("{{> foo 0 x=0}}", "First argument must be a function");
