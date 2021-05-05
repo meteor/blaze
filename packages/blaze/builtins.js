@@ -1,6 +1,7 @@
 Blaze._calculateCondition = function (cond) {
-  if (HTML.isArray(cond) && cond.length === 0) cond = false;
-  return !!cond;
+  if (HTML.isArray(cond) && cond.length === 0)
+    cond = false;
+  return !! cond;
 };
 
 /**
@@ -12,18 +13,14 @@ Blaze._calculateCondition = function (cond) {
 Blaze.With = function (data, contentFunc) {
   var view = Blaze.View('with', contentFunc);
 
-  view.dataVar = new ReactiveVar();
+  view.dataVar = new ReactiveVar;
 
   view.onViewCreated(function () {
     if (typeof data === 'function') {
       // `data` is a reactive function
-      view.autorun(
-        function () {
-          view.dataVar.set(data());
-        },
-        view.parentView,
-        'setData'
-      );
+      view.autorun(function () {
+        view.dataVar.set(data());
+      }, view.parentView, 'setData');
     } else {
       view.dataVar.set(data);
     }
@@ -75,21 +72,18 @@ Blaze.Let = function (bindings, contentFunc) {
  * @param {Function} [elseFunc] Optional.  A Function that returns [*renderable content*](#Renderable-Content).  If no `elseFunc` is supplied, no content is shown in the "else" case.
  */
 Blaze.If = function (conditionFunc, contentFunc, elseFunc, _not) {
-  var conditionVar = new ReactiveVar();
+  var conditionVar = new ReactiveVar;
 
   var view = Blaze.View(_not ? 'unless' : 'if', function () {
-    return conditionVar.get() ? contentFunc() : elseFunc ? elseFunc() : null;
+    return conditionVar.get() ? contentFunc() :
+      (elseFunc ? elseFunc() : null);
   });
   view.__conditionVar = conditionVar;
   view.onViewCreated(function () {
-    this.autorun(
-      function () {
-        var cond = Blaze._calculateCondition(conditionFunc());
-        conditionVar.set(_not ? !cond : cond);
-      },
-      this.parentView,
-      'condition'
-    );
+    this.autorun(function () {
+      var cond = Blaze._calculateCondition(conditionFunc());
+      conditionVar.set(_not ? (! cond) : cond);
+    }, this.parentView, 'condition');
   });
 
   return view;
@@ -131,7 +125,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
     var subviews = this.initialSubviews;
     this.initialSubviews = null;
     if (this._isCreatedForExpansion) {
-      this.expandedValueDep = new Tracker.Dependency();
+      this.expandedValueDep = new Tracker.Dependency;
       this.expandedValueDep.depend();
     }
     return subviews;
@@ -142,7 +136,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
   eachView.stopHandle = null;
   eachView.contentFunc = contentFunc;
   eachView.elseFunc = elseFunc;
-  eachView.argVar = new ReactiveVar();
+  eachView.argVar = new ReactiveVar;
   eachView.variableName = null;
 
   // update the @index value in the scope of all subviews in the range
@@ -287,12 +281,14 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
 
     if (eachView.elseFunc && eachView.numItems === 0) {
       eachView.inElseMode = true;
-      eachView.initialSubviews[0] = Blaze.View('each_else', eachView.elseFunc);
+      eachView.initialSubviews[0] =
+      Blaze.View('each_else', eachView.elseFunc);
     }
   });
 
   eachView.onViewDestroyed(function () {
-    if (eachView.stopHandle) eachView.stopHandle.stop();
+    if (eachView.stopHandle)
+      eachView.stopHandle.stop();
   });
 
   return eachView;
@@ -360,7 +356,8 @@ Blaze._InOuterTemplateScope = function (templateView, contentFunc) {
   // `{{#with bar}}{{> foo}}{{/with}}`, and then `foo` is a template
   // that inserts `{{> Template.contentBlock}}`, the data context for
   // `Template.contentBlock` is not `bar` but the one enclosing that.
-  if (parentView.__isTemplateWith) parentView = parentView.parentView;
+  if (parentView.__isTemplateWith)
+    parentView = parentView.parentView;
 
   view.onViewCreated(function () {
     this.originalParentView = this.parentView;
