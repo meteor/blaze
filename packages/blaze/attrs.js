@@ -118,7 +118,7 @@ var ClassHandler = Blaze._DiffingAttributeHandler.extend({
     attrString.split(' ').forEach(function (token) {
       if (token) {
         // Ordered dict requires unique keys.
-        if (!tokens.has(token)) {
+        if (! tokens.has(token)) {
           tokens.append(token, token);
         }
       }
@@ -127,7 +127,7 @@ var ClassHandler = Blaze._DiffingAttributeHandler.extend({
   },
   joinValues: function (values) {
     return values.join(' ');
-  },
+  }
 });
 
 var SVGClassHandler = ClassHandler.extend({
@@ -384,7 +384,8 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
     if (oldValue !== value) {
       handler.value = value;
       handler.update(elem, oldValue, value);
-      if (value === null) delete handlers[k];
+      if (value === null)
+        delete handlers[k];
     }
   }
 };

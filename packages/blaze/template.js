@@ -50,7 +50,7 @@ HelperMap.prototype.set = function (name, helper) {
   this[' '+name] = helper;
 };
 HelperMap.prototype.has = function (name) {
-  return typeof this[' '+name] !== 'undefined';
+  return (typeof this[' '+name] !== 'undefined');
 };
 
 /**
@@ -133,9 +133,10 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
 
   if (self.__eventMaps || typeof self.events === 'object') {
     view._onViewRendered(function () {
-      if (view.renderCount !== 1) return;
+      if (view.renderCount !== 1)
+        return;
 
-      if (! self.__eventMaps.length && typeof self.events === 'object') {
+      if (! self.__eventMaps.length && typeof self.events === "object") {
         // Provide limited back-compat support for `.events = {...}`
         // syntax.  Pass `template.events` to the original `.events(...)`
         // function.  This code must run only once per template, in
@@ -365,11 +366,7 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
 
     if (isFunction(lastParam)) {
       options.onReady = args.pop();
-    } else if (
-      lastParam &&
-      !isEmpty(lastParam) &&
-      Match.test(lastParam, lastParamOptionsPattern)
-    ) {
+    } else if (lastParam && ! _.isEmpty(lastParam) && Match.test(lastParam, lastParamOptionsPattern)) {
       options = args.pop();
     }
   }
@@ -404,7 +401,7 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
   // View#subscribe takes the connection as one of the options in the last
   // argument
   subHandle = self.view.subscribe.call(self.view, args, {
-    connection: connection,
+    connection: connection
   });
 
   if (!has(subHandles, subHandle.subscriptionId)) {
@@ -444,7 +441,7 @@ Blaze.TemplateInstance.prototype.subscriptionsReady = function () {
  */
 Template.prototype.helpers = function (dict) {
   if (!isObject(dict)) {
-    throw new Error('Helpers dictionary has to be an object');
+    throw new Error("Helpers dictionary has to be an object");
   }
 
   for (var k in dict) this.__helpers.set(k, dict[k]);
@@ -454,10 +451,8 @@ var canUseGetters = (function () {
   if (Object.defineProperty) {
     var obj = {};
     try {
-      Object.defineProperty(obj, 'self', {
-        get: function () {
-          return obj;
-        },
+      Object.defineProperty(obj, "self", {
+        get: function () { return obj; }
       });
     } catch (e) {
       return false;

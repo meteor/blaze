@@ -21,10 +21,7 @@ Tinytest.add("spacebars-compiler - compiler output", function (test) {
       test.equal(msg.slice(0, expectedMessage.length),
                  expectedMessage);
     } else {
-      var output = SpacebarsCompiler.compile(input, {
-        isTemplate: true,
-        whitespace,
-      });
+      var output = SpacebarsCompiler.compile(input, {isTemplate: true, whitespace});
       var postProcess = function (string) {
         // remove initial and trailing parens
         string = string.replace(/^\(([\S\s]*)\)$/, '$1');
