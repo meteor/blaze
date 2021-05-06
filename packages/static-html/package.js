@@ -1,15 +1,14 @@
 Package.describe({
   name: 'static-html',
   summary: "Define static page content in .html files",
-  version: '1.3.0',
+  version: '1.3.1',
   git: 'https://github.com/meteor/blaze.git'
 });
 
 Package.registerBuildPlugin({
   name: "compileStaticHtmlBatch",
   use: [
-    'ecmascript@0.14.4',
-    'underscore@1.0.9',
+    'ecmascript@0.15.1',
     'caching-html-compiler@1.2.0',
     'templating-tools@1.2.0'
   ],
