@@ -11,7 +11,6 @@ DOMBackend._$jq = $jq;
 
 
 DOMBackend.getContext = function() {
-  return document;
   if (DOMBackend._context) {
     return DOMBackend._context;
   }
