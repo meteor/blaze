@@ -37,8 +37,7 @@ Blaze.With = function (data, contentFunc) {
  */
 Blaze._attachBindingsToView = function (bindings, view) {
   view.onViewCreated(function () {
-    Object.keys(bindings).forEach(function (name) {
-      let binding = bindings[name];
+    Object.entries(bindings).forEach(function ([name, binding]) {
       view._scopeBindings[name] = new ReactiveVar();
       if (typeof binding === 'function') {
         view.autorun(function () {
