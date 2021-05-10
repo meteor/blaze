@@ -5,6 +5,13 @@ Package.describe({
   git: 'https://github.com/meteor/blaze.git'
 });
 
+Npm.depends({
+  'lodash.has': '4.5.2',
+  'lodash.isfunction': '3.0.9',
+  'lodash.isempty': '4.4.0',
+  'lodash.isobject': '3.0.2' 
+});
+
 Package.onUse(function (api) {
   api.use('jquery@1.11.9 || 3.0.0', { weak: true }); // should be a weak dep, by having multiple "DOM backends"
   api.use('tracker@1.1.0');
@@ -43,8 +50,7 @@ Package.onUse(function (api) {
     'builtins.js',
     'lookup.js',
     'template.js',
-    'backcompat.js',
-    'util.js'
+    'backcompat.js'
   ]);
 });
 

@@ -1,3 +1,5 @@
+import has from 'lodash.has';
+
 Blaze._calculateCondition = function (cond) {
   if (HTML.isArray(cond) && cond.length === 0)
     cond = false;

@@ -1,3 +1,5 @@
+import has from 'lodash.has';
+
 Blaze._globalHelpers = {};
 
 // Documented as Template.registerHelper.

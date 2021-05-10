@@ -1,3 +1,8 @@
+import isObject from 'lodash.isobject';
+import isFunction from 'lodash.isfunction';
+import has from 'lodash.has';
+import isEmpty from 'lodash.isempty';
+
 // [new] Blaze.Template([viewName], renderFunction)
 //
 // `Blaze.Template` is the class of templates, like `Template.foo` in

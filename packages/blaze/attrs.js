@@ -1,3 +1,5 @@
+import has from 'lodash.has';
+
 var jsUrlsAllowed = false;
 Blaze._allowJavascriptUrls = function () {
   jsUrlsAllowed = true;

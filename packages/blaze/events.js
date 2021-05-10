@@ -1,3 +1,5 @@
+import has from 'lodash.has';
+
 var EventSupport = Blaze._EventSupport = {};
 
 var DOMBackend = Blaze._DOMBackend;
