@@ -1,3 +1,6 @@
+## v.2.4.1, 2021-May-12
+* [#334](https://github.com/meteor/blaze/pull/334) Faster fragnent parsing by retaining a reference to the current document context
+
 ## v.2.4.0, 2021-April-12
 
 * [#313](https://github.com/meteor/blaze/pull/313) Implemented HMR for Blaze
