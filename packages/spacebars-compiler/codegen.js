@@ -56,7 +56,7 @@ var additionalReservedNames = ["body", "toString", "instance",  "constructor",
 export function isReservedName(name) {
   return builtInBlockHelpers.hasOwnProperty(name) ||
     builtInTemplateMacros.hasOwnProperty(name) ||
-    additionalReservedNames.indexOf(name) > -1;
+    additionalReservedNames.includes(name);
 }
 
 var makeObjectLiteral = function (obj) {
