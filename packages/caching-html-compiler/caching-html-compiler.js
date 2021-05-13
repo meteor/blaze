@@ -1,6 +1,6 @@
-const path = Plugin.path;
+import isEmpty from 'lodash.isempty';
 
-const isEmpty = obj => [Object, Array].includes((obj || {}).constructor) && !Object.entries((obj || {})).length;
+const path = Plugin.path;
 
 // The CompileResult type for this CachingCompiler is the return value of
 // htmlScanner.scan: a {js, head, body, bodyAttrs} object.
