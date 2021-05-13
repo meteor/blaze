@@ -431,8 +431,8 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
  */
 Blaze.TemplateInstance.prototype.subscriptionsReady = function () {
   this._allSubsReadyDep.depend();
-  this._allSubsReady = Object.keys(this._subscriptionHandles).every((handle) => {  
-    return this._subscriptionHandles[handle].ready();
+  this._allSubsReady = Object.values(this._subscriptionHandles).every((handle) => {  
+    return handle.ready();
   });
 
   return this._allSubsReady;
