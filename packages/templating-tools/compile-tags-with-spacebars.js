@@ -1,3 +1,4 @@
+import isEmpty from 'lodash.isempty';
 import { SpacebarsCompiler } from 'meteor/spacebars-compiler';
 import { generateBodyJS, generateTemplateJS } from './code-generation';
 import { throwCompileError } from './throw-compile-error';
@@ -12,7 +13,6 @@ export function compileTagsWithSpacebars(tags, hmrAvailable) {
   return handler.getResults();
 }
 
-const isEmpty = obj => [Object, Array].includes((obj || {}).constructor) && !Object.entries((obj || {})).length;
 
 class SpacebarsTagCompiler {
   constructor() {
