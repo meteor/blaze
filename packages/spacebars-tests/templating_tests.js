@@ -44,7 +44,7 @@ Tinytest.add("spacebars-tests - templating_tests - assembly", function (test) {
 
 Tinytest.add("spacebars-tests - templating_tests - table assembly", function(test) {
   var childWithTag = function(node, tag) {
-    return _.find(node.childNodes, function(n) {
+    return Array.from(node.childNodes).find(function(n) {
       return n.nodeName === tag;
     });
   };
@@ -237,7 +237,7 @@ Tinytest.add("spacebars-tests - templating_tests - helpers and dots", function(t
 
   var listFour = function(a, b, c, d, options) {
     test.isTrue(options instanceof Spacebars.kw);
-    var keywordArgs = _.map(_.keys(options.hash), function(k) {
+    var keywordArgs = Object.keys(options.hash).map(function(k) {
       var val = options.hash[k];
       return k+':'+val;
     });
@@ -556,8 +556,8 @@ Tinytest.add("spacebars-tests - templating_tests - events", function (test) {
   cleanupDiv = addToBody(div);
   clickElement($(div).find('u')[0]);
   test.equal(buf.length, 2);
-  test.isTrue(_.contains(buf, 'a'));
-  test.isTrue(_.contains(buf, 'b'));
+  test.isTrue(buf.includes('a'));
+  test.isTrue(buf.includes('b'));
   cleanupDiv();
   Tracker.flush();
 });
@@ -569,12 +569,11 @@ Tinytest.add('spacebars-tests - templating_tests - helper typecast Issue #617', 
     // Return a string representing the arguments passed to this
     // function, including types. eg:
     // (1, true) -> "[number,1][boolean,true]"
-    return _.reduce(_.toArray(arguments), function (memo, arg) {
+    return Array.from(arguments).reduce(function (memo, arg) {
       if (typeof arg === 'object')
         return memo + "[object]";
       return memo + "[" + typeof arg + "," + arg + "]";
     }, "");
-    return x;
   });
 
   var div = renderToDiv(Template.test_type_casting);
@@ -610,7 +609,7 @@ Tinytest.add('spacebars-tests - templating_tests - duplicate template error', fu
 
 Tinytest.add('spacebars-tests - templating_tests - reserved template name error', function (test) {
 
-  _.each('length __proto__ prototype name body currentData instance'.split(' '),
+  'length __proto__ prototype name body currentData instance'.split(' ').forEach(
          function (name) {
            test.throws(function () {
              Template.__checkName(name);

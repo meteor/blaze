@@ -1,3 +1,6 @@
+import has from 'lodash.has';
+import isObject from 'lodash.isobject';
+
 Blaze._calculateCondition = function (cond) {
   if (HTML.isArray(cond) && cond.length === 0)
     cond = false;
@@ -37,8 +40,8 @@ Blaze.With = function (data, contentFunc) {
  */
 Blaze._attachBindingsToView = function (bindings, view) {
   view.onViewCreated(function () {
-    _.each(bindings, function (binding, name) {
-      view._scopeBindings[name] = new ReactiveVar;
+    Object.entries(bindings).forEach(function ([name, binding]) {
+      view._scopeBindings[name] = new ReactiveVar();
       if (typeof binding === 'function') {
         view.autorun(function () {
           view._scopeBindings[name].set(binding());
@@ -158,7 +161,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
       // argFunc can return either a sequence as is or a wrapper object with a
       // _sequence and _variable fields set.
       var arg = argFunc();
-      if (_.isObject(arg) && _.has(arg, '_sequence')) {
+      if (isObject(arg) && has(arg, '_sequence')) {
         eachView.variableName = arg._variable || null;
         arg = arg._sequence;
       }

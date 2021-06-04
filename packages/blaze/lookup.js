@@ -1,3 +1,5 @@
+import has from 'lodash.has';
+
 Blaze._globalHelpers = {};
 
 // Documented as Template.registerHelper.
@@ -91,7 +93,7 @@ Blaze._lexicalBindingLookup = function (view, name) {
   do {
     // skip block helpers views
     // if we found the binding on the scope, return it
-    if (_.has(currentView._scopeBindings, name)) {
+    if (has(currentView._scopeBindings, name)) {
       var bindingReactiveVar = currentView._scopeBindings[name];
       return function () {
         return bindingReactiveVar.get();

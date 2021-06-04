@@ -6,8 +6,11 @@ Package.describe({
   documentation: null
 });
 
+Npm.depends({
+  'lodash.has': '4.5.2'
+})
+
 Package.onUse(function (api) {
-  api.use('underscore@1.0.9');
 
   // XXX would like to do the following only when the first html file
   // is encountered
@@ -21,7 +24,8 @@ Package.onUse(function (api) {
   // 'meteor' and 'blaze'.
   api.use([
     'blaze@2.4.0',
-    'spacebars@1.1.0'
+    'spacebars@1.1.0',
+    'ecmascript'
   ]);
   api.imply([
     'meteor@1.2.17',

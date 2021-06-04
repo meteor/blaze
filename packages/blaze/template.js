@@ -1,3 +1,8 @@
+import isObject from 'lodash.isobject';
+import isFunction from 'lodash.isfunction';
+import has from 'lodash.has';
+import isEmpty from 'lodash.isempty';
+
 // [new] Blaze.Template([viewName], renderFunction)
 //
 // `Blaze.Template` is the class of templates, like `Template.foo` in
@@ -146,7 +151,7 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
         Template.prototype.events.call(self, self.events);
       }
 
-      _.each(self.__eventMaps, function (m) {
+      self.__eventMaps.forEach(function (m) {
         Blaze._addEventMap(view, m, view);
       });
     });
@@ -344,16 +349,15 @@ Blaze.TemplateInstance.prototype.autorun = function (f) {
  * @param {DDP.Connection} [options.connection] The connection on which to make the
  * subscription.
  */
-Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
+Blaze.TemplateInstance.prototype.subscribe = function (...args) {
   var self = this;
 
   var subHandles = self._subscriptionHandles;
-  var args = _.toArray(arguments);
 
   // Duplicate logic from Meteor.subscribe
   var options = {};
   if (args.length) {
-    var lastParam = _.last(args);
+    var lastParam = args[args.length - 1];
 
     // Match pattern to check if the last arg is an options argument
     var lastParamOptionsPattern = {
@@ -365,9 +369,9 @@ Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
       connection: Match.Optional(Match.Any)
     };
 
-    if (_.isFunction(lastParam)) {
+    if (isFunction(lastParam)) {
       options.onReady = args.pop();
-    } else if (lastParam && ! _.isEmpty(lastParam) && Match.test(lastParam, lastParamOptionsPattern)) {
+    } else if (lastParam && ! isEmpty(lastParam) && Match.test(lastParam, lastParamOptionsPattern)) {
       options = args.pop();
     }
   }
@@ -392,7 +396,8 @@ Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
   };
 
   var connection = options.connection;
-  var callbacks = _.pick(options, ["onReady", "onError", "onStop"]);
+  const { onReady, onError, onStop } = options;
+  var callbacks = { onReady, onError, onStop };
 
   // The callbacks are passed as the last item in the arguments array passed to
   // View#subscribe
@@ -404,7 +409,7 @@ Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
     connection: connection
   });
 
-  if (! _.has(subHandles, subHandle.subscriptionId)) {
+  if (!has(subHandles, subHandle.subscriptionId)) {
     subHandles[subHandle.subscriptionId] = subHandle;
 
     // Adding a new subscription will always cause us to transition from ready
@@ -426,8 +431,7 @@ Blaze.TemplateInstance.prototype.subscribe = function (/* arguments */) {
  */
 Blaze.TemplateInstance.prototype.subscriptionsReady = function () {
   this._allSubsReadyDep.depend();
-
-  this._allSubsReady = _.all(this._subscriptionHandles, function (handle) {
+  this._allSubsReady = Object.values(this._subscriptionHandles).every((handle) => {  
     return handle.ready();
   });
 
@@ -441,15 +445,14 @@ Blaze.TemplateInstance.prototype.subscriptionsReady = function () {
  * @importFromPackage templating
  */
 Template.prototype.helpers = function (dict) {
-  if (! _.isObject(dict)) {
+  if (!isObject(dict)) {
     throw new Error("Helpers dictionary has to be an object");
   }
 
-  for (var k in dict)
-    this.__helpers.set(k, dict[k]);
+  for (var k in dict) this.__helpers.set(k, dict[k]);
 };
 
-var canUseGetters = function() {
+var canUseGetters = (function () {
   if (Object.defineProperty) {
     var obj = {};
     try {
@@ -462,7 +465,7 @@ var canUseGetters = function() {
     return obj.self === obj;
   }
   return false;
-}();
+})();
 
 if (canUseGetters) {
   // Like Blaze.currentView but for the template instance. A function
@@ -492,7 +495,6 @@ if (canUseGetters) {
       currentTemplateInstanceFunc = oldTmplInstanceFunc;
     }
   };
-
 } else {
   // If getters are not supported, just use a normal property.
   Template._currentTemplateInstanceFunc = null;
@@ -518,7 +520,7 @@ if (canUseGetters) {
  * @importFromPackage templating
  */
 Template.prototype.events = function (eventMap) {
-  if (! _.isObject(eventMap)) {
+  if (!isObject(eventMap)) {
     throw new Error("Event map has to be an object");
   }
 
@@ -526,11 +528,10 @@ Template.prototype.events = function (eventMap) {
   var eventMap2 = {};
   for (var k in eventMap) {
     eventMap2[k] = (function (k, v) {
-      return function (event/*, ...*/) {
+      return function (event /*, ...*/) {
         var view = this; // passed by EventAugmenter
         var data = Blaze.getData(event.currentTarget);
-        if (data == null)
-          data = {};
+        if (data == null) data = {};
         var args = Array.prototype.slice.call(arguments);
         var tmplInstanceFunc = Blaze._bind(view.templateInstance, view);
         args.splice(1, 0, tmplInstanceFunc());
