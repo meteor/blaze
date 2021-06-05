@@ -7,7 +7,7 @@ Package.describe({
 
 Package.onUse(function (api) {
   api.use('ecmascript@0.15.1');
-  api.use('htmljs@1.1.0');
+  api.use('htmljs@1.1.1');
 
   api.export('BlazeTools');
   api.mainModule('preamble.js');

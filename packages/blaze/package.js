@@ -27,8 +27,8 @@ Package.onUse(function (api) {
     'Handlebars'
   ]);
 
-  api.use('htmljs@1.1.0');
-  api.imply('htmljs@1.1.0');
+  api.use('htmljs@1.1.1');
+  api.imply('htmljs@1.1.1');
 
   api.addFiles([
     'preamble.js'
