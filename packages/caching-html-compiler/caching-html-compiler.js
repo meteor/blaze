@@ -1,3 +1,5 @@
+import isEmpty from 'lodash.isempty';
+
 const path = Plugin.path;
 
 // The CompileResult type for this CachingCompiler is the return value of
@@ -92,7 +94,7 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
       allJavaScript += compileResult.js;
     }
 
-    if (! _.isEmpty(compileResult.bodyAttrs)) {
+    if (!isEmpty(compileResult.bodyAttrs)) {
       Object.keys(compileResult.bodyAttrs).forEach((attr) => {
         const value = compileResult.bodyAttrs[attr];
         if (this._bodyAttrInfo.hasOwnProperty(attr) &&

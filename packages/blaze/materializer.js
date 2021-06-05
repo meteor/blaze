@@ -116,7 +116,7 @@ var materializeTag = function (tag, parentView, workStack) {
       throw new Error("Can't have reactive children of TEXTAREA node; " +
                       "use the 'value' attribute instead.");
     }
-    rawAttrs = _.extend({}, rawAttrs || null);
+    rawAttrs = Object.assign({}, rawAttrs || null);
     rawAttrs.value = Blaze._expand(children, parentView);
     children = [];
   }

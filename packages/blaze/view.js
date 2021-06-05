@@ -127,7 +127,7 @@ Blaze.View.prototype.removeViewDestroyedListener = function (cb) {
   var destroyed = this._callbacks.destroyed;
   if (! destroyed)
     return;
-  var index = _.lastIndexOf(destroyed, cb);
+  var index = destroyed.lastIndexOf(cb);
   if (index !== -1) {
     // XXX You'd think the right thing to do would be splice, but _fireCallbacks
     // gets sad if you remove callbacks while iterating over the list.  Should
@@ -874,10 +874,11 @@ Blaze._addEventMap = function (view, eventMap, thisInHandler) {
     throw new Error("View must have a DOMRange");
 
   view._domrange.onAttached(function attached_eventMaps(range, element) {
-    _.each(eventMap, function (handler, spec) {
+    Object.keys(eventMap).forEach(function (spec) {
+      let handler = eventMap[spec];
       var clauses = spec.split(/,\s+/);
       // iterate over clauses of spec, e.g. ['click .foo', 'click .bar']
-      _.each(clauses, function (clause) {
+      clauses.forEach(function (clause) {
         var parts = clause.split(/\s+/);
         if (parts.length === 0)
           return;
@@ -903,7 +904,7 @@ Blaze._addEventMap = function (view, eventMap, thisInHandler) {
   });
 
   view.onViewDestroyed(function () {
-    _.each(handles, function (h) {
+    handles.forEach(function (h) {
       h.stop();
     });
     handles.length = 0;

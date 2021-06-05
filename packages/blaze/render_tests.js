@@ -617,8 +617,8 @@ Tinytest.add("blaze - render - findAll", function (test) {
   Blaze.render(myTemplate, div);
   Tracker.flush();
 
-  test.equal(_.isArray(found), true);
-  test.equal(_.isArray($found), false);
+  test.equal(Array.isArray(found), true);
+  test.equal(Array.isArray($found), false);
   test.equal(found.length, 2);
   test.equal($found.length, 2);
 });

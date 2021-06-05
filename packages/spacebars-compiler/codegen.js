@@ -56,7 +56,7 @@ var additionalReservedNames = ["body", "toString", "instance",  "constructor",
 export function isReservedName(name) {
   return builtInBlockHelpers.hasOwnProperty(name) ||
     builtInTemplateMacros.hasOwnProperty(name) ||
-    _.indexOf(additionalReservedNames, name) > -1;
+    additionalReservedNames.includes(name);
 }
 
 var makeObjectLiteral = function (obj) {
@@ -66,7 +66,7 @@ var makeObjectLiteral = function (obj) {
   return '{' + parts.join(', ') + '}';
 };
 
-_.extend(CodeGen.prototype, {
+Object.assign(CodeGen.prototype, {
   codeGenTemplateTag: function (tag) {
     var self = this;
     if (tag.position === HTMLTools.TEMPLATE_TAG_POSITION.IN_START_TAG) {
@@ -136,7 +136,7 @@ _.extend(CodeGen.prototype, {
               ', _variable: ' + BlazeTools.toJSLiteral(variable) + ' }; }';
           } else if (path[0] === 'let') {
             var dataProps = {};
-            _.each(args, function (arg) {
+            args.forEach(function (arg) {
               if (arg.length !== 3) {
                 // not a keyword arg (x=y)
                 throw new Error("Incorrect form of #let");
@@ -262,7 +262,7 @@ _.extend(CodeGen.prototype, {
 
     if (path.length > 1) {
       code = 'Spacebars.dot(' + code + ', ' +
-        _.map(path.slice(1), BlazeTools.toJSLiteral).join(', ') + ')';
+      path.slice(1).map(BlazeTools.toJSLiteral).join(', ') + ')';
     }
 
     return code;
@@ -325,7 +325,7 @@ _.extend(CodeGen.prototype, {
     var args = null; // [source]
 
     // tagArgs may be null
-    _.each(tagArgs, function (arg) {
+    tagArgs.forEach(function (arg) {
       var argCode = self.codeGenArgValue(arg);
 
       if (arg.length > 2) {
@@ -361,7 +361,7 @@ _.extend(CodeGen.prototype, {
     } else if (args[0].length === 3) {
       // keyword arguments only, e.g. `{{> point x=1 y=2}}`
       var dataProps = {};
-      _.each(args, function (arg) {
+      args.forEach(function (arg) {
         var argKey = arg[2];
         dataProps[argKey] = 'Spacebars.call(' + self.codeGenArgValue(arg) + ')';
       });

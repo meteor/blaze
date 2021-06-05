@@ -1,3 +1,5 @@
+import has from 'lodash.has';
+
 var jsUrlsAllowed = false;
 Blaze._allowJavascriptUrls = function () {
   jsUrlsAllowed = true;
@@ -51,8 +53,9 @@ AttributeHandler.extend = function (options) {
   };
   subType.prototype = new curType;
   subType.extend = curType.extend;
-  if (options)
-    _.extend(subType.prototype, options);
+  if (options) {
+    Object.assign(subType.prototype, options);
+  }
   return subType;
 };
 
@@ -114,7 +117,7 @@ var ClassHandler = Blaze._DiffingAttributeHandler.extend({
   parseValue: function (attrString) {
     var tokens = new OrderedDict();
 
-    _.each(attrString.split(' '), function(token) {
+    attrString.split(' ').forEach(function (token) {
       if (token) {
         // Ordered dict requires unique keys.
         if (! tokens.has(token)) {
@@ -259,7 +262,7 @@ var isUrlAttribute = function (tagName, attrName) {
   }
 
   var urlAttrNames = urlAttrs[tagName] || [];
-  return _.contains(urlAttrNames, attrName);
+  return urlAttrNames.includes(attrName);
 };
 
 // To get the protocol for a URL, we let the browser normalize it for
@@ -296,9 +299,9 @@ var UrlHandler = AttributeHandler.extend({
       var isVBScriptProtocol   = (getUrlProtocol(value) === "vbscript:");
       if (isJavascriptProtocol || isVBScriptProtocol) {
         Blaze._warn("URLs that use the 'javascript:' or 'vbscript:' protocol are not " +
-                    "allowed in URL attribute values. " +
-                    "Call Blaze._allowJavascriptUrls() " +
-                    "to enable them.");
+        "allowed in URL attribute values. " +
+        "Call Blaze._allowJavascriptUrls() " +
+        "to enable them.");
         origUpdate.apply(self, [element, oldValue, null]);
       } else {
         origUpdate.apply(self, args);
@@ -320,11 +323,11 @@ Blaze._makeAttributeHandler = function (elem, name, value) {
   } else if (name === 'style') {
     return new StyleHandler(name, value);
   } else if ((elem.tagName === 'OPTION' && name === 'selected') ||
-             (elem.tagName === 'INPUT' && name === 'checked') ||
-             (elem.tagName === 'VIDEO' && name === 'muted')) {
+  (elem.tagName === 'INPUT' && name === 'checked') ||
+  (elem.tagName === 'VIDEO' && name === 'muted')) {
     return new BooleanHandler(name, value);
   } else if ((elem.tagName === 'TEXTAREA' || elem.tagName === 'INPUT')
-             && name === 'value') {
+  && name === 'value') {
     // internally, TEXTAREAs tracks their value in the 'value'
     // attribute just like INPUTs.
     return new DOMPropertyHandler(name, value);
@@ -340,7 +343,6 @@ Blaze._makeAttributeHandler = function (elem, name, value) {
   // seem to handle setAttribute ok.
 };
 
-
 ElementAttributesUpdater = function (elem) {
   this.elem = elem;
   this.handlers = {};
@@ -353,7 +355,7 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
   var handlers = this.handlers;
 
   for (var k in handlers) {
-    if (! _.has(newAttrs, k)) {
+    if (!has(newAttrs, k)) {
       // remove attributes (and handlers) for attribute names
       // that don't exist as keys of `newAttrs` and so won't
       // be visited when traversing it.  (Attributes that
@@ -371,7 +373,7 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
     var handler = null;
     var oldValue = null;
     var value = newAttrs[k];
-    if (! _.has(handlers, k)) {
+    if (!has(handlers, k)) {
       if (value !== null) {
         // make new handler
         handler = Blaze._makeAttributeHandler(elem, k, value);
