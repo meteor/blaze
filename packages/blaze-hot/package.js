@@ -1,16 +1,16 @@
 Package.describe({
   name: 'blaze-hot',
   summary: "Update files using Blaze's API with HMR",
-  version: '1.0.0',
+  version: '1.1.0',
   git: 'https://github.com/meteor/blaze.git',
   documentation: null,
   debugOnly: true
 });
 
 Package.onUse(function (api) {
-  api.use('modules@0.15.0');
-  api.use('ecmascript@0.14.4');
-  api.use('blaze@2.4.0');
+  api.use('modules@0.16.0');
+  api.use('ecmascript@0.15.1');
+  api.use('blaze@2.5.0');
   api.use('templating-runtime@1.4.0');
   api.use('hot-module-replacement@0.2.0', { weak: true });
 

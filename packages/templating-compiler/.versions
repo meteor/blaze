@@ -1,10 +1,10 @@
-babel-compiler@7.6.0
+babel-compiler@7.6.1
 babel-runtime@1.5.0
 blaze-tools@1.1.0
 caching-compiler@1.2.2
 caching-html-compiler@1.2.0
 dynamic-import@0.6.0
-ecmascript@0.15.0
+ecmascript@0.15.1
 ecmascript-runtime@0.7.0
 ecmascript-runtime-client@0.11.0
 ecmascript-runtime-server@0.10.0
@@ -20,6 +20,6 @@ promise@0.11.2
 random@1.2.0
 react-fast-refresh@0.1.0
 spacebars-compiler@1.2.0
-templating-compiler@1.4.0
+templating-compiler@1.4.1
 templating-tools@1.2.0
 underscore@1.0.10

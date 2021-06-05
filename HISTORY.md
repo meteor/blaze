@@ -1,4 +1,10 @@
-## v.2.4.0, 2021-April-12
+## v2.5.0, 2021-June-5
+
+* [#331](https://github.com/meteor/blaze/pull/331) Remove underscore and all of its methods in the code
+
+* Updated dependencies
+
+## v2.4.0, 2021-April-12
 
 * [#313](https://github.com/meteor/blaze/pull/313) Implemented HMR for Blaze
 
