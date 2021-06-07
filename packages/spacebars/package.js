@@ -1,7 +1,7 @@
 Package.describe({
   name: 'spacebars',
   summary: "Handlebars-like template language for Meteor",
-  version: '1.2.0',
+  version: '1.2.1',
   git: 'https://github.com/meteor/blaze.git'
 });
 
