@@ -125,4 +125,7 @@ marked:
 # Deployment
 ## Docs: http://hexo.io/docs/deployment.html
 deploy:
-  type:
+  type: aws-s3             # The name of this plugin
+  region: us-east-1        # The region where your bucket is located
+  bucket: my-bucket        # The name of your bucket
+  prefix: blog-resources   # The s3 key prefix
