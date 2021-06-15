@@ -278,6 +278,3 @@ Spacebars.With = function (argFunc, contentFunc, elseFunc) {
 
   return view;
 };
-
-// XXX COMPAT WITH 0.9.0
-Spacebars.TemplateWith = Blaze._TemplateWith;
