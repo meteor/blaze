@@ -1,6 +1,7 @@
 ## v2.6.0, 2021-June-XX
 
 * [#330](https://github.com/meteor/blaze/pull/330) Removed deprecated APIs
+* [#341](https://github.com/meteor/blaze/pull/341) Add support for arbitrary iterables in #each templates
 
 ## v2.5.0, 2021-June-5
 
