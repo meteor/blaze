@@ -205,6 +205,19 @@ Tinytest.add('observe-sequence - initial data for all sequence types', function 
     {addedAt: ["13", {_id: "13", foo: 1}, 0, null]},
     {addedAt: [{NOT: "13"}, {_id: "13", foo: 2}, 1, null]}
   ], /*numExpectedWarnings = */1);
+
+  // non-array iterable (empty)
+  if(typeof Map == 'function') runOneObserveSequenceTestCase(test, function () {
+    return new Map();
+  }, function () {}, []);
+
+  // non-array iterable (non-empty)
+  if(typeof Set == 'function') runOneObserveSequenceTestCase(test, function () {
+    return new Set([{foo: 1}, {bar: 2}]);
+  }, function () {}, [
+    {addedAt: [0, {foo: 1}, 0, null]},
+    {addedAt: [1, {bar: 2}, 1, null]}
+  ]);
 });
 
 Tinytest.add('observe-sequence - array to other array', function (test) {
