@@ -167,7 +167,8 @@ function toDebugStr(value, maxLength) {
       } else if(Symbol.iterator in value) { // Map and Set are not handled by JSON.stringify
         var out = value.constructor.name + ' [';
         var sep = '';
-        for(var item of value) {
+        for(var i = 0; i < value.length; i++) {
+          var item = value[i];
           out += sep + toDebugStr(item, maxLength);
           if(out.length > maxLength) return out;
           sep = ', ';
