@@ -151,6 +151,17 @@ function ellipsis(longStr, maxLength) {
   return longStr.substr(0, maxLength-1) + '…';
 }
 
+function arrayToDebugStr(value, maxLength) {
+  var out = '', sep = '';
+  for(var i = 0; i < value.length; i++) {
+    var item = value[i];
+    out += sep + toDebugStr(item, maxLength);
+    if(out.length > maxLength) return out;
+    sep = ', ';
+  }
+  return out;
+}
+
 function toDebugStr(value, maxLength) {
   if(!maxLength) maxLength = 150;
   const type = typeof value;
@@ -164,16 +175,12 @@ function toDebugStr(value, maxLength) {
     case 'object':
       if(value === null) {
         return 'null';
+      } else if(Array.isArray(value)) {
+        return 'Array [' + arrayToDebugStr(value, maxLength) + ']';
       } else if(Symbol.iterator in value) { // Map and Set are not handled by JSON.stringify
-        var out = value.constructor.name + ' [';
-        var sep = '';
-        for(var i = 0; i < value.length; i++) {
-          var item = value[i];
-          out += sep + toDebugStr(item, maxLength);
-          if(out.length > maxLength) return out;
-          sep = ', ';
-        }
-        return out + ']';
+        return value.constructor.name
+          + ' [' + arrayToDebugStr(Array.from(value), maxLength)
+          + ']'; // Array.from doesn't work in IE, but neither do iterators so it's unreachable
       } else { // use JSON.stringify (sometimes toString can be better but we don't know)
         return value.constructor.name + ' '
              + ellipsis(JSON.stringify(value), maxLength);
