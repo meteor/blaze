@@ -134,7 +134,8 @@ if (module.hot) {
           });
         });
       }
-      currentModule = previousModule
+      // for example, main.html doesn't have a previous module
+      currentModule = previousModule || {id: null};
     }
   });
 }
