@@ -243,7 +243,6 @@ var isUrlAttribute = function (tagName, attrName) {
     A: ['href'],
     AREA: ['href'],
     LINK: ['href'],
-    BASE: ['href'],
     IMG: ['longdesc', 'src', 'usemap'],
     FRAME: ['longdesc', 'src'],
     IFRAME: ['longdesc', 'src'],
