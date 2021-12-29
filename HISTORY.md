@@ -1,3 +1,6 @@
+## v2.5.1, 2022-XXX
+* [#358](https://github.com/meteor/blaze/pull/358) Make Template.contentBlock consistent with/out data provided
+
 ## v2.5.0, 2021-June-5
 
 * [#331](https://github.com/meteor/blaze/pull/331) Remove underscore and all of its methods in the code
