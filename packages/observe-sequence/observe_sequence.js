@@ -1,3 +1,6 @@
+import isObject from 'lodash.isobject';
+import has from 'lodash.has';
+
 const warn = function () {
   if (ObserveSequence._suppressWarnings) {
     ObserveSequence._suppressWarnings--;
@@ -15,7 +18,7 @@ const warn = function () {
 // subclassed arrays: instanceof Array === true, _.isArray(arr) === false
 // see specific tests
 function isArray(arr) {
-  return arr instanceof Array || _.isArray(arr);
+  return arr instanceof Array || Array.isArray(arr);
 }
 
 const idStringify = MongoID.idStringify;
@@ -94,7 +97,7 @@ ObserveSequence = {
         if (activeObserveHandle) {
           // If we were previously observing a cursor, replace lastSeqArray with
           // more up-to-date information.  Then stop the old observe.
-          lastSeqArray = _.map(lastSeq.fetch(), function (doc) {
+          lastSeqArray = lastSeq.fetch().map(function (doc) {
             return {_id: doc._id, item: doc};
           });
           activeObserveHandle.stop();
@@ -204,9 +207,13 @@ const badSequenceError = function (sequence) {
                    sequenceGotValue(sequence));
 };
 
+const isFunction = (func) => {
+  return typeof func === "function";
+}
+
 const isStoreCursor = function (cursor) {
-  return cursor && _.isObject(cursor) &&
-    _.isFunction(cursor.observe) && _.isFunction(cursor.fetch);
+  return cursor && isObject(cursor) &&
+    isFunction(cursor.observe) && isFunction(cursor.fetch);
 };
 
 // Calculates the differences between `lastSeqArray` and
@@ -221,11 +228,11 @@ const diffArray = function (lastSeqArray, seqArray, callbacks) {
   var posCur = {};
   var lengthCur = lastSeqArray.length;
 
-  _.each(seqArray, function (doc, i) {
+  seqArray.forEach(function (doc, i) {
     newIdObjects.push({_id: doc._id});
     posNew[idStringify(doc._id)] = i;
   });
-  _.each(lastSeqArray, function (doc, i) {
+  lastSeqArray.forEach(function (doc, i) {
     oldIdObjects.push({_id: doc._id});
     posOld[idStringify(doc._id)] = i;
     posCur[idStringify(doc._id)] = i;
@@ -242,7 +249,7 @@ const diffArray = function (lastSeqArray, seqArray, callbacks) {
       if (before) {
         // If not adding at the end, we need to update indexes.
         // XXX this can still be improved greatly!
-        _.each(posCur, function (pos, id) {
+        posCur.forEach(function (pos, id) {
           if (pos >= position)
             posCur[id]++;
         });
@@ -285,7 +292,7 @@ const diffArray = function (lastSeqArray, seqArray, callbacks) {
       //   2. The element is moved back. Then the positions in between *and* the
       //   element that is currently standing on the moved element's future
       //   position are moved forward.
-      _.each(posCur, function (elCurPosition, id) {
+      posCur.forEach(function (elCurPosition, id) {
         if (oldPosition < elCurPosition && elCurPosition < newPosition)
           posCur[id]--;
         else if (newPosition <= elCurPosition && elCurPosition < oldPosition)
@@ -305,7 +312,7 @@ const diffArray = function (lastSeqArray, seqArray, callbacks) {
     removed: function (id) {
       var prevPosition = posCur[idStringify(id)];
 
-      _.each(posCur, function (pos, id) {
+      posCur.forEach(function (pos, id) {
         if (pos >= prevPosition)
           posCur[id]--;
       });
@@ -320,9 +327,9 @@ const diffArray = function (lastSeqArray, seqArray, callbacks) {
     }
   });
 
-  _.each(posNew, function (pos, idString) {
+  posNew.forEach(function (pos, idString) {
     var id = idParse(idString);
-    if (_.has(posOld, idString)) {
+    if (has(posOld, idString)) {
       // specifically for primitive types, compare equality before
       // firing the 'changedAt' callback. otherwise, always fire it
       // because doing a deep EJSON comparison is not guaranteed to
@@ -345,7 +352,7 @@ seqChangedToEmpty = function (lastSeqArray, callbacks) {
 
 seqChangedToArray = function (lastSeqArray, array, callbacks) {
   var idsUsed = {};
-  var seqArray = _.map(array, function (item, index) {
+  var seqArray = array.map(function (item, index) {
     var id;
     if (typeof item === 'string') {
       // ensure not empty, since other layers (eg DomRange) assume this as well
