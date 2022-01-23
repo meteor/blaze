@@ -4,7 +4,7 @@ Package.describe({
 });
 
 Npm.depends({
-  "lodash.isobject": "^3.0.2",
+  "lodash.isobject": "3.0.2",
   "lodash.has": "4.5.2"
 })
 
