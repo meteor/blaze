@@ -1,5 +1,5 @@
-import isObject from 'lodash.isobject';
-import has from 'lodash.has';
+const isObject = Npm.require('lodash.isobject');
+const has = Npm.require('lodash.has');
 
 const warn = function () {
   if (ObserveSequence._suppressWarnings) {
