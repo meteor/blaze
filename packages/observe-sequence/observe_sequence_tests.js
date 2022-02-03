@@ -48,7 +48,7 @@ runOneObserveSequenceTestCase = function (test, sequenceFunc,
     removedAt: function (...args) {
       firedCallbacks.push({removedAt: args});
     },
-    movedTo: function () {
+    movedTo: function (...args) {
       firedCallbacks.push({movedTo: args});
     }
   });
@@ -678,7 +678,7 @@ Tinytest.add('observe-sequence - vm generated number arrays', function (test) {
 });
 
 Tinytest.add('observe-sequence - number arrays, _id:0 correctly handled, no duplicate ids warning #4049', function (test) {
-  var seq = [...Array(2).keys()].map(function (i) { return { _id: i}; });
+  var seq = [...Array(3).keys()].map(function (i) { return { _id: i}; });
   var dep = new Tracker.Dependency;
 
   runOneObserveSequenceTestCase(test, function () {
