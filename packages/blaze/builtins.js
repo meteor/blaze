@@ -353,5 +353,3 @@ Blaze._InOuterTemplateScope = function (templateView, contentFunc) {
   return view;
 };
 
-// XXX COMPAT WITH 0.9.0
-Blaze.InOuterTemplateScope = Blaze._InOuterTemplateScope;

@@ -1,4 +1,7 @@
-## v2.5.1, 2022-XXX
+## v2.6.0, 2022-April-XX
+
+* [#330](https://github.com/meteor/blaze/pull/330) Removed deprecated APIs
+* [#341](https://github.com/meteor/blaze/pull/341) Add support for arbitrary iterables in #each templates
 * [#358](https://github.com/meteor/blaze/pull/358) Make Template.contentBlock consistent with/out data provided
 
 ## v2.5.0, 2021-June-5

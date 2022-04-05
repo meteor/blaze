@@ -1,7 +1,7 @@
 Package.describe({
   name: 'templating',
   summary: "Allows templates to be defined in .html files",
-  version: '1.4.1',
+  version: '1.4.2',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -13,7 +13,7 @@ Package.describe({
 Package.onUse(function (api) {
   api.export('Template', 'client');
 
-  api.use('templating-runtime@1.5.0');
+  api.use('templating-runtime@1.6.0');
   api.imply('templating-runtime');
 
   api.imply('templating-compiler@1.4.1');
