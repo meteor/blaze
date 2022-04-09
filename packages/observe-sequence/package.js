@@ -3,11 +3,6 @@ Package.describe({
   version: "1.0.19"
 });
 
-Npm.depends({
-  "lodash.isobject": "3.0.2",
-  "lodash.has": "4.5.2"
-})
-
 Package.onUse(function (api) {
   api.use('tracker@1.2.0');
   api.use('mongo-id@1.0.8');  // for idStringify
