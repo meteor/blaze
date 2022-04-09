@@ -16,6 +16,7 @@
     * `Template.__body__.__instantiate` has been removed, you should be using `Template.body.renderToDocument`
 * [#341](https://github.com/meteor/blaze/pull/341) Add support for arbitrary iterables in #each templates
 * [#358](https://github.com/meteor/blaze/pull/358) Make Template.contentBlock consistent with/out data provided
+* Updated testing dependencies
 
 ## v2.5.0, 2021-June-5
 
