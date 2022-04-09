@@ -260,7 +260,7 @@ const diffArray = function (lastSeqArray, seqArray, callbacks) {
       if (before) {
         // If not adding at the end, we need to update indexes.
         // XXX this can still be improved greatly!
-        posCur.forEach(function (pos, id) {
+        Object.entries(posCur).forEach(function ([id, pos]) {
           if (pos >= position)
             posCur[id]++;
         });
@@ -303,7 +303,7 @@ const diffArray = function (lastSeqArray, seqArray, callbacks) {
       //   2. The element is moved back. Then the positions in between *and* the
       //   element that is currently standing on the moved element's future
       //   position are moved forward.
-      posCur.forEach(function (elCurPosition, id) {
+      Object.entries(posCur).forEach(function ([id, elCurPosition]) {
         if (oldPosition < elCurPosition && elCurPosition < newPosition)
           posCur[id]--;
         else if (newPosition <= elCurPosition && elCurPosition < oldPosition)
@@ -323,7 +323,7 @@ const diffArray = function (lastSeqArray, seqArray, callbacks) {
     removed: function (id) {
       var prevPosition = posCur[idStringify(id)];
 
-      posCur.forEach(function (pos, id) {
+      Object.entries(posCur).forEach(function ([id, pos]) {
         if (pos >= prevPosition)
           posCur[id]--;
       });
@@ -337,9 +337,11 @@ const diffArray = function (lastSeqArray, seqArray, callbacks) {
         prevPosition);
     }
   });
+  
+  Object.entries(posNew).forEach(function ([idString, pos]) {
 
-  posNew.forEach(function (pos, idString) {
     var id = idParse(idString);
+    
     if (has(posOld, idString)) {
       // specifically for primitive types, compare equality before
       // firing the 'changedAt' callback. otherwise, always fire it
