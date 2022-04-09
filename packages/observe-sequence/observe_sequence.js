@@ -1,5 +1,16 @@
-const isObject = Npm.require('lodash.isobject');
-const has = Npm.require('lodash.has');
+const isObject = function (value) {
+  var type = typeof value;
+  return value != null && (type == 'object' || type == 'function');
+}
+const has = function (obj, key) {
+  var keyParts = key.split('.');
+
+  return !!obj && (
+    keyParts.length > 1
+      ? has(obj[key.split('.')[0]], keyParts.slice(1).join('.'))
+      : hasOwnProperty.call(obj, key)
+  );
+};
 
 const warn = function () {
   if (ObserveSequence._suppressWarnings) {
