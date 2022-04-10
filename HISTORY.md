@@ -5,7 +5,7 @@
   * `blaze-html-templates@2.0.0`
     * Dependency on `ui` and `spacebars` package has been removed
   * `spacebars@1.3.0`
-    * `Spacebars.TemplateWith` has beer removed, please use `Blaze._TemplateWith` if you need it.
+    * `Spacebars.TemplateWith` has been removed, please use `Blaze._TemplateWith` if you need it.
   * `blaze@2.6.0`
     * `Blaze.InOuterTemplateScope` has been removed, if you need it, you can use `Blaze._InOuterTemplateScope`
   * `templating-runtime@1.6.0`
