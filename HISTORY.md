@@ -1,3 +1,24 @@
+## v2.6.0, 2022-April-13
+
+* [#330](https://github.com/meteor/blaze/pull/330) Removed deprecated APIs from before Meteor 1.0
+  * This is potentially breaking, especially for old packages and apps.
+  * `blaze-html-templates@2.0.0`
+    * Dependency on `ui` and `spacebars` package has been removed
+  * `spacebars@1.3.0`
+    * `Spacebars.TemplateWith` has been removed, please use `Blaze._TemplateWith` if you need it.
+  * `blaze@2.6.0`
+    * `Blaze.InOuterTemplateScope` has been removed, if you need it, you can use `Blaze._InOuterTemplateScope`
+  * `templating-runtime@1.6.0`
+    * `Template.__define__` has been removed
+    * `UI.body` has been removed, you should be using `Template.body`
+    * `Template.__body__` has been removed, you should be using `Template.body`
+    * `Template.__body__.__contentParts` has been removed, you should be using `Template.body.contentViews`
+    * `Template.__body__.__instantiate` has been removed, you should be using `Template.body.renderToDocument`
+* [#341](https://github.com/meteor/blaze/pull/341) Add support for arbitrary iterables in #each templates
+* [#358](https://github.com/meteor/blaze/pull/358) Make Template.contentBlock consistent with/out data provided
+* [#359](https://github.com/meteor/blaze/pull/359) Underscore has been removed from observe sequence
+* Updated testing dependencies
+
 ## v2.5.0, 2021-June-5
 
 * [#331](https://github.com/meteor/blaze/pull/331) Remove underscore and all of its methods in the code

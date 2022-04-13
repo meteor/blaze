@@ -84,6 +84,25 @@ var wrapHelper = function (f, templateFunc) {
   };
 };
 
+function _lexicalKeepGoing(currentView) {
+  if (!currentView.parentView) {
+    return undefined;
+  }
+  if (!currentView.__startsNewLexicalScope) {
+    return currentView.parentView;
+  }
+  if (currentView.parentView.__childDoesntStartNewLexicalScope) {
+    return currentView.parentView;
+  }
+  
+  // in the case of {{> Template.contentBlock data}} the contentBlock loses the lexical scope of it's parent, wheras {{> Template.contentBlock}} it does not
+  // this is because a #with sits between the include InOuterTemplateScope
+  if (currentView.parentView.name === "with" && currentView.parentView.parentView && currentView.parentView.parentView.__childDoesntStartNewLexicalScope) {
+    return currentView.parentView;
+  }
+  return undefined;
+}
+
 Blaze._lexicalBindingLookup = function (view, name) {
   var currentView = view;
   var blockHelpersStack = [];
@@ -99,10 +118,7 @@ Blaze._lexicalBindingLookup = function (view, name) {
         return bindingReactiveVar.get();
       };
     }
-  } while (! (currentView.__startsNewLexicalScope &&
-              ! (currentView.parentView &&
-                 currentView.parentView.__childDoesntStartNewLexicalScope))
-           && (currentView = currentView.parentView));
+  } while (currentView = _lexicalKeepGoing(currentView));
 
   return null;
 };

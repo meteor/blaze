@@ -20,11 +20,11 @@ runOneObserveSequenceTestCase = function (test, sequenceFunc,
 
   var firedCallbacks = [];
   var handle = ObserveSequence.observe(sequenceFunc, {
-    addedAt: function () {
-      firedCallbacks.push({addedAt: _.toArray(arguments)});
+    addedAt: function (...args) {
+      firedCallbacks.push({addedAt: args});
     },
-    changedAt: function () {
-      var obj = {changedAt: _.toArray(arguments)};
+    changedAt: function (...args) {
+      var obj = {changedAt: args};
 
       // Browsers are inconsistent about the order in which 'changedAt'
       // callbacks fire. To ensure consistent behavior of these tests,
@@ -45,11 +45,11 @@ runOneObserveSequenceTestCase = function (test, sequenceFunc,
 
       firedCallbacks.splice(i, 0, obj);
     },
-    removedAt: function () {
-      firedCallbacks.push({removedAt: _.toArray(arguments)});
+    removedAt: function (...args) {
+      firedCallbacks.push({removedAt: args});
     },
-    movedTo: function () {
-      firedCallbacks.push({movedTo: _.toArray(arguments)});
+    movedTo: function (...args) {
+      firedCallbacks.push({movedTo: args});
     }
   });
 
@@ -69,11 +69,11 @@ runOneObserveSequenceTestCase = function (test, sequenceFunc,
   var commonLength = Math.min(firedCallbacks.length, expectedCallbacks.length);
   for (var i = 0; i < commonLength; i++) {
     var callback = expectedCallbacks[i];
-    if (_.keys(callback).length !== 1)
+    if (Object.keys(callback).length !== 1)
       throw new Error("Callbacks should be objects with one key, eg `addedAt`");
-    var callbackName = _.keys(callback)[0];
-    var args = _.values(callback)[0];
-    _.each(args, function (arg, argIndex) {
+    var callbackName = Object.keys(callback)[0];
+    var args = Object.values(callback)[0];
+    args.forEach(function (arg, argIndex) {
       if (arg && typeof arg === 'object' &&
           'NOT' in arg &&
           firedCallbacks[i][callbackName]) {
@@ -205,6 +205,19 @@ Tinytest.add('observe-sequence - initial data for all sequence types', function 
     {addedAt: ["13", {_id: "13", foo: 1}, 0, null]},
     {addedAt: [{NOT: "13"}, {_id: "13", foo: 2}, 1, null]}
   ], /*numExpectedWarnings = */1);
+
+  // non-array iterable (empty)
+  if(typeof Map == 'function') runOneObserveSequenceTestCase(test, function () {
+    return new Map();
+  }, function () {}, []);
+
+  // non-array iterable (non-empty)
+  if(typeof Set == 'function') runOneObserveSequenceTestCase(test, function () {
+    return new Set([{foo: 1}, {bar: 2}]);
+  }, function () {}, [
+    {addedAt: [0, {foo: 1}, 0, null]},
+    {addedAt: [1, {bar: 2}, 1, null]}
+  ]);
 });
 
 Tinytest.add('observe-sequence - array to other array', function (test) {
@@ -544,7 +557,7 @@ Tinytest.add('observe-sequence - cursor to other cursor', function (test) {
 Tinytest.add('observe-sequence - cursor to other cursor with transform', function (test) {
   var dep = new Tracker.Dependency;
   var transform = function(doc) {
-    return _.extend({idCopy: doc._id}, doc);
+    return Object.assign({idCopy: doc._id}, doc);
   };
 
   var coll = new Mongo.Collection(null, {transform: transform});
@@ -678,7 +691,7 @@ Tinytest.add('observe-sequence - vm generated number arrays', function (test) {
 });
 
 Tinytest.add('observe-sequence - number arrays, _id:0 correctly handled, no duplicate ids warning #4049', function (test) {
-  var seq = _.map(_.range(3), function (i) { return { _id: i}; });
+  var seq = [...Array(3).keys()].map(function (i) { return { _id: i}; });
   var dep = new Tracker.Dependency;
 
   runOneObserveSequenceTestCase(test, function () {
@@ -689,7 +702,7 @@ Tinytest.add('observe-sequence - number arrays, _id:0 correctly handled, no dupl
     // _id. An expression like `(item && item._id) || index` would incorrectly
     // return '2' for the last item because the _id is falsy (although it is not
     // undefined, but 0!).
-    seq = _.map([1, 2, 0], function (i) { return { _id: i}; });
+    seq = [1, 2, 0].map(function (i) { return { _id: i}; });
     dep.changed();
   }, [
     {addedAt: [0, {_id: 0}, 0, null]},

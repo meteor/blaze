@@ -1,3 +1,17 @@
+const isObject = function (value) {
+  var type = typeof value;
+  return value != null && (type == 'object' || type == 'function');
+}
+const has = function (obj, key) {
+  var keyParts = key.split('.');
+
+  return !!obj && (
+    keyParts.length > 1
+      ? has(obj[key.split('.')[0]], keyParts.slice(1).join('.'))
+      : hasOwnProperty.call(obj, key)
+  );
+};
+
 const warn = function () {
   if (ObserveSequence._suppressWarnings) {
     ObserveSequence._suppressWarnings--;
@@ -15,7 +29,18 @@ const warn = function () {
 // subclassed arrays: instanceof Array === true, _.isArray(arr) === false
 // see specific tests
 function isArray(arr) {
-  return arr instanceof Array || _.isArray(arr);
+  return arr instanceof Array || Array.isArray(arr);
+}
+
+// isIterable returns trues for objects implementing iterable protocol,
+// except strings, as {{#each 'string'}} doesn't make much sense.
+// Requires ES6+ and does not work in IE (but degrades gracefully).
+// Does not support the `length` + index protocol also supported by Array.from
+function isIterable (object) {
+  const iter = typeof Symbol != 'undefined' && Symbol.iterator;
+  return iter
+    && object instanceof Object // note: returns false for strings
+    && typeof object[iter] == 'function'; // implements iterable protocol
 }
 
 const idStringify = MongoID.idStringify;
@@ -94,7 +119,7 @@ ObserveSequence = {
         if (activeObserveHandle) {
           // If we were previously observing a cursor, replace lastSeqArray with
           // more up-to-date information.  Then stop the old observe.
-          lastSeqArray = _.map(lastSeq.fetch(), function (doc) {
+          lastSeqArray = lastSeq.fetch().map(function (doc) {
             return {_id: doc._id, item: doc};
           });
           activeObserveHandle.stop();
@@ -110,6 +135,9 @@ ObserveSequence = {
                 seqChangedToCursor(lastSeqArray, seq, callbacks);
           seqArray = result[0];
           activeObserveHandle = result[1];
+        } else if (isIterable(seq)) {
+          const array = Array.from(seq);
+          seqArray = seqChangedToArray(lastSeqArray, array, callbacks);
         } else {
           throw badSequenceError(seq);
         }
@@ -139,6 +167,8 @@ ObserveSequence = {
       return seq;
     } else if (isStoreCursor(seq)) {
       return seq.fetch();
+    } else if (isIterable(seq)) {
+      return Array.from(seq);
     } else {
       throw badSequenceError(seq);
     }
@@ -200,13 +230,17 @@ function sequenceGotValue(sequence) {
 
 const badSequenceError = function (sequence) {
   return new Error("{{#each}} currently only accepts " +
-                   "arrays, cursors or falsey values." +
+                   "arrays, cursors, iterables or falsey values." +
                    sequenceGotValue(sequence));
 };
 
+const isFunction = (func) => {
+  return typeof func === "function";
+}
+
 const isStoreCursor = function (cursor) {
-  return cursor && _.isObject(cursor) &&
-    _.isFunction(cursor.observe) && _.isFunction(cursor.fetch);
+  return cursor && isObject(cursor) &&
+    isFunction(cursor.observe) && isFunction(cursor.fetch);
 };
 
 // Calculates the differences between `lastSeqArray` and
@@ -221,11 +255,11 @@ const diffArray = function (lastSeqArray, seqArray, callbacks) {
   var posCur = {};
   var lengthCur = lastSeqArray.length;
 
-  _.each(seqArray, function (doc, i) {
+  seqArray.forEach(function (doc, i) {
     newIdObjects.push({_id: doc._id});
     posNew[idStringify(doc._id)] = i;
   });
-  _.each(lastSeqArray, function (doc, i) {
+  lastSeqArray.forEach(function (doc, i) {
     oldIdObjects.push({_id: doc._id});
     posOld[idStringify(doc._id)] = i;
     posCur[idStringify(doc._id)] = i;
@@ -242,7 +276,7 @@ const diffArray = function (lastSeqArray, seqArray, callbacks) {
       if (before) {
         // If not adding at the end, we need to update indexes.
         // XXX this can still be improved greatly!
-        _.each(posCur, function (pos, id) {
+        Object.entries(posCur).forEach(function ([id, pos]) {
           if (pos >= position)
             posCur[id]++;
         });
@@ -285,7 +319,7 @@ const diffArray = function (lastSeqArray, seqArray, callbacks) {
       //   2. The element is moved back. Then the positions in between *and* the
       //   element that is currently standing on the moved element's future
       //   position are moved forward.
-      _.each(posCur, function (elCurPosition, id) {
+      Object.entries(posCur).forEach(function ([id, elCurPosition]) {
         if (oldPosition < elCurPosition && elCurPosition < newPosition)
           posCur[id]--;
         else if (newPosition <= elCurPosition && elCurPosition < oldPosition)
@@ -305,7 +339,7 @@ const diffArray = function (lastSeqArray, seqArray, callbacks) {
     removed: function (id) {
       var prevPosition = posCur[idStringify(id)];
 
-      _.each(posCur, function (pos, id) {
+      Object.entries(posCur).forEach(function ([id, pos]) {
         if (pos >= prevPosition)
           posCur[id]--;
       });
@@ -319,10 +353,12 @@ const diffArray = function (lastSeqArray, seqArray, callbacks) {
         prevPosition);
     }
   });
+  
+  Object.entries(posNew).forEach(function ([idString, pos]) {
 
-  _.each(posNew, function (pos, idString) {
     var id = idParse(idString);
-    if (_.has(posOld, idString)) {
+    
+    if (has(posOld, idString)) {
       // specifically for primitive types, compare equality before
       // firing the 'changedAt' callback. otherwise, always fire it
       // because doing a deep EJSON comparison is not guaranteed to
@@ -345,7 +381,7 @@ seqChangedToEmpty = function (lastSeqArray, callbacks) {
 
 seqChangedToArray = function (lastSeqArray, array, callbacks) {
   var idsUsed = {};
-  var seqArray = _.map(array, function (item, index) {
+  var seqArray = array.map(function (item, index) {
     var id;
     if (typeof item === 'string') {
       // ensure not empty, since other layers (eg DomRange) assume this as well
