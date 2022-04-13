@@ -1,6 +1,6 @@
 Package.describe({
   summary: "Observe changes to various sequence types such as arrays, cursors and objects",
-  version: "1.0.19"
+  version: "1.0.20"
 });
 
 Package.onUse(function (api) {

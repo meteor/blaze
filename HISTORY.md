@@ -1,4 +1,4 @@
-## v2.6.0, 2022-April-XX
+## v2.6.0, 2022-April-13
 
 * [#330](https://github.com/meteor/blaze/pull/330) Removed deprecated APIs from before Meteor 1.0
   * This is potentially breaking, especially for old packages and apps.
