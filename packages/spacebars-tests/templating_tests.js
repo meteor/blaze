@@ -468,7 +468,7 @@ Tinytest.add("spacebars-tests - templating_tests - template arg", function (test
 Tinytest.add("spacebars-tests - templating_tests - helpers", function (test) {
   var tmpl = Template.test_template_helpers_a;
 
-  tmpl._NOWARN_OLDSTYLE_HELPERS = true;
+  // tmpl._NOWARN_OLDSTYLE_HELPERS = true;
   tmpl.foo = 'z';
   tmpl.helpers({bar: 'b'});
   // helpers(...) takes precendence of assigned helper

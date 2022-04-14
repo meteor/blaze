@@ -3782,20 +3782,26 @@ Tinytest.add(
 
     // Test old-style helper
     tmpl.foo = 'hello';
-    var div = renderToDiv(tmpl);
-    test.equal(canonicalizeHtml(div.innerHTML), 'hello');
+    test.throws(function () {
+      var div = renderToDiv(tmpl);
+      test.equal(canonicalizeHtml(div.innerHTML), 'hello');
+    }, /We removed support for old style templates/)
 
     // Test that replacing a helper still works (i.e. we don't cache them).
     // We can change this behavior if we need to, but it is more breaking
     // to do so.  It breaks some unit tests, for example.
     tmpl.foo = 'world';
-    var div = renderToDiv(tmpl);
-    test.equal(canonicalizeHtml(div.innerHTML), 'world');
+
+    test.throws(function () {
+      var div = renderToDiv(tmpl);
+      test.equal(canonicalizeHtml(div.innerHTML), 'world');
+    }, /We removed support for old style templates/)
 
     // Test that you can delete an old-style helper with `delete`.
     // As with the previous case, we can break this functionality, but
     // we should do it intentionally.
     delete tmpl.foo;
+
     var div = renderToDiv(tmpl);
     test.equal(canonicalizeHtml(div.innerHTML), '');
   }

@@ -50,6 +50,12 @@ Blaze._getTemplateHelper = function (template, name, tmplInstanceFunc) {
       return null;
     }
   }
+
+  // all unkown-old style helpers
+  if (name in template) {
+    throw new Meteor.Error("not-suported", "We removed support for old style templates");
+  }
+
   return null;
 };
 
