@@ -33,6 +33,9 @@ Package.onTest(function (api) {
     'template_tests.js',
     'templating_tests.html',
     'templating_tests.js',
+
+    'old_templates.js', // backcompat for packages built with old Blaze APIs.
+    'old_templates_tests.js'
   ], 'client');
 
   api.addFiles('template_tests_server.js', 'server');
