@@ -24,7 +24,7 @@ var bindIfIsFunction = function (x, target) {
 var bindDataContext = function (x) {
   if (typeof x === 'function') {
     return function () {
-      var data = Blaze.getData();
+      let data = Blaze.getData();
       if (data == null)
         data = {};
       return x.apply(data, arguments);
@@ -36,40 +36,24 @@ var bindDataContext = function (x) {
 Blaze._OLDSTYLE_HELPER = {};
 
 Blaze._getTemplateHelper = function (template, name, tmplInstanceFunc) {
-  // XXX COMPAT WITH 0.9.3
-  var isKnownOldStyleHelper = false;
-
   if (template.__helpers.has(name)) {
-    var helper = template.__helpers.get(name);
+    let helper = template.__helpers.get(name);
     if (helper === Blaze._OLDSTYLE_HELPER) {
-      isKnownOldStyleHelper = true;
-    } else if (helper != null) {
-      return wrapHelper(bindDataContext(helper), tmplInstanceFunc);
+      throw new Meteor.Error("not-suported", "We removed support for old style templates");
+    } else if (helper !== null) {
+      return wrapHelper(
+        bindDataContext(helper),
+        tmplInstanceFunc,
+        `${template.viewName} ${name}`
+      );
     } else {
       return null;
     }
   }
-
-  // old-style helper
-  if (name in template) {
-    // Only warn once per helper
-    if (! isKnownOldStyleHelper) {
-      template.__helpers.set(name, Blaze._OLDSTYLE_HELPER);
-      if (! template._NOWARN_OLDSTYLE_HELPERS) {
-        Blaze._warn('Assigning helper with `' + template.viewName + '.' +
-                    name + ' = ...` is deprecated.  Use `' + template.viewName +
-                    '.helpers(...)` instead.');
-      }
-    }
-    if (template[name] != null) {
-      return wrapHelper(bindDataContext(template[name]), tmplInstanceFunc);
-    }
-  }
-
   return null;
 };
 
-var wrapHelper = function (f, templateFunc) {
+var wrapHelper = function (f, templateFunc, name) {
   if (typeof f !== "function") {
     return f;
   }
@@ -79,7 +63,7 @@ var wrapHelper = function (f, templateFunc) {
     var args = arguments;
 
     return Blaze.Template._withTemplateInstanceFunc(templateFunc, function () {
-      return Blaze._wrapCatchingExceptions(f, 'template helper').apply(self, args);
+      return Blaze._wrapCatchingExceptions(f, name).apply(self, args);
     });
   };
 };
@@ -134,7 +118,10 @@ Blaze._getTemplate = function (name, templateInstance) {
 
 Blaze._getGlobalHelper = function (name, templateInstance) {
   if (Blaze._globalHelpers[name] != null) {
-    return wrapHelper(bindDataContext(Blaze._globalHelpers[name]), templateInstance);
+    return wrapHelper(
+      bindDataContext(Blaze._globalHelpers[name]),
+      templateInstance,
+      `global helper ${name}`);
   }
   return null;
 };
