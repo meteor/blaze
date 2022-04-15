@@ -1,7 +1,7 @@
 Package.describe({
   name: 'templating-runtime',
   summary: "Runtime for compiled .html files",
-  version: '1.6.0',
+  version: '1.6.1',
   git: 'https://github.com/meteor/blaze.git',
   documentation: null
 });
@@ -28,7 +28,7 @@ Package.onUse(function (api) {
     'ecmascript@0.15.1'
   ]);
   api.imply([
-    'meteor@1.2.17', // TODO update
+    'meteor@1.10.0',
     'blaze@2.6.0',
     'spacebars@1.2.1'
   ], 'client');
