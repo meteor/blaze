@@ -1,3 +1,7 @@
+## v2.6.1, 2022-April-XX
+
+* [#370](https://github.com/meteor/blaze/pull/370) `templating-runtime@1.6.1`, returned the `Template.__define__` with warning message
+
 ## v2.6.0, 2022-April-13
 
 * [#330](https://github.com/meteor/blaze/pull/330) Removed deprecated APIs from before Meteor 1.0
