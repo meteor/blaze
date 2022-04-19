@@ -1,7 +1,7 @@
 Package.describe({
   name: 'blaze',
   summary: "Meteor Reactive Templating library",
-  version: '2.6.0',
+  version: '2.6.1-rc.0',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -9,7 +9,7 @@ Npm.depends({
   'lodash.has': '4.5.2',
   'lodash.isfunction': '3.0.9',
   'lodash.isempty': '4.4.0',
-  'lodash.isobject': '3.0.2' 
+  'lodash.isobject': '3.0.2'
 });
 
 Package.onUse(function (api) {
