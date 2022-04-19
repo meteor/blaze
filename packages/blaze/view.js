@@ -489,14 +489,19 @@ Blaze._destroyView = function (view, _skipNodes) {
     return;
   view.isDestroyed = true;
 
-  Blaze._fireCallbacks(view, 'destroyed');
 
   // Destroy views and elements recursively.  If _skipNodes,
   // only recurse up to views, not elements, for the case where
   // the backend (jQuery) is recursing over the elements already.
 
-  if (view._domrange)
-    view._domrange.destroyMembers(_skipNodes);
+  if (view._domrange) view._domrange.destroyMembers(_skipNodes);
+
+  // XXX: fire callbacks after potential members are destroyed
+  // otherwise it's tracker.flush will cause the above line will
+  // not be called and their views won't be destroyed
+  // Involved issues: DOMRange "Must be attached" error, mem leak
+  
+  Blaze._fireCallbacks(view, 'destroyed');
 };
 
 Blaze._destroyNode = function (node) {
