@@ -1,7 +1,7 @@
 Package.describe({
   name: 'templating-runtime',
   summary: "Runtime for compiled .html files",
-  version: '1.6.1',
+  version: '1.6.1-rc.1',
   git: 'https://github.com/meteor/blaze.git',
   documentation: null
 });
@@ -23,13 +23,13 @@ Package.onUse(function (api) {
   // Blaze, so anybody using templating (eg apps) need to implicitly use
   // 'meteor' and 'blaze'.
   api.use([
-    'blaze@2.6.0',
+    'blaze@2.6.1-rc.1',
     'spacebars@1.2.1',
     'ecmascript@0.15.1'
   ]);
   api.imply([
     'meteor@1.10.0',
-    'blaze@2.6.0',
+    'blaze@2.6.1-rc.1',
     'spacebars@1.2.1'
   ], 'client');
 
