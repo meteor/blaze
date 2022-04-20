@@ -1,4 +1,6 @@
-## v2.6.1, 2022-April-xx
+## v2.6.1, 2022-April-XX
+
+* [#370](https://github.com/meteor/blaze/pull/370) `templating-runtime@1.6.1`, returned the `Template.__define__` with warning message
 * [#366](https://github.com/meteor/blaze/pull/366) Prevent firing callbacks until members are destroyed
   * fix destroying child templates when parent is destroyed; prevents memory leak and DOMRange "not attached" error
 
