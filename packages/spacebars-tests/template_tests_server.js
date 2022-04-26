@@ -17,18 +17,18 @@ Meteor.publish("templateSub", function (futureId) {
       // `makeTemplateSubReady` without introducing an async/wait cascade
       // Thus we link it to a member of the promise and store it in the dict.
       // This is the same effect as the prior Future.wait() approach.
-      let resolver
+      let resolver;
       const promise = new Promise((resolve) => {
-        resolver = resolve
-      })
-      promise.return = () => resolver()
+        resolver = resolve;
+      });
+      promise.return = () => resolver();
 
-      templateSubFutures[futureId] = promise
-      await templateSubFutures[futureId]
-      delete templateSubFutures[futureId]
+      templateSubFutures[futureId] = promise;
+      await templateSubFutures[futureId];
+      delete templateSubFutures[futureId];
     }
 
-    self.ready()
+    self.ready();
   });
 });
 Meteor.methods({
