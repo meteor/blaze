@@ -692,9 +692,11 @@ Blaze.remove = function (view) {
   while (view) {
     if (! view.isDestroyed) {
       var range = view._domrange;
-      if (range.attached && ! range.parentRange)
-        range.detach();
       range.destroy();
+
+      if (range.attached && ! range.parentRange) {
+        range.detach();
+      }
     }
 
     view = view._hasGeneratedParent && view.parentView;
