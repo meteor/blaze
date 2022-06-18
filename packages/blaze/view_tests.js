@@ -56,4 +56,9 @@ if (Meteor.isClient) {
     test.equal(buf, "");
   });
 
+  Tinytest.add("blaze - view - attached", function (test) {
+    test.throws(() => Blaze._DOMRange.prototype.containsElement.call({attached: false, view: {name: 'Template.foo'}}, undefined, '.class', 'click'), 
+    `click event triggerd with .class on foo but associated view is not be found.
+    Make sure the event doesn't destroy the view.`)    
+  });
 }
