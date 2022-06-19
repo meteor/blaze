@@ -62,7 +62,7 @@ if (Meteor.isClient) {
       _domrange: Blaze._DOMRange([])
     };
     v._domrange.view = Blaze.View();
-    v.isDestroyed = false;
+    test.equal(v._domrange.view.isDestroyed, false);
     Blaze.remove(v);
     test.equal(v._domrange.view.isDestroyed, true);
   });
