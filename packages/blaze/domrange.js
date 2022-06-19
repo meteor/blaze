@@ -333,7 +333,9 @@ DOMRange.prototype.destroy = function (_skipNodes) {
 };
 
 DOMRange.prototype.containsElement = function (elem, selector, event) {
-  const templateName = this.view.name?.split('.')[1];
+  const templateName = this.view?.name
+  ? this.view.name.split('.')[1]
+  : 'unknown template';
   if (! this.attached)
     throw new Error(`${event} event triggerd with ${selector} on ${templateName} but associated view is not be found.
     Make sure the event doesn't destroy the view.`);
