@@ -56,4 +56,14 @@ if (Meteor.isClient) {
     test.equal(buf, "");
   });
 
+  
+  Tinytest.add("blaze - view - destroy", function (test) {
+    var v = {
+      _domrange: Blaze._DOMRange([])
+    };
+    v._domrange.view = Blaze.View();
+    v.isDestroyed = false;
+    Blaze.remove(v);
+    test.equal(v._domrange.view.isDestroyed, true);
+  });
 }
