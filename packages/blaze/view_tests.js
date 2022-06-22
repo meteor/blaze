@@ -56,9 +56,24 @@ if (Meteor.isClient) {
     test.equal(buf, "");
   });
 
+  // this checks, whether a DOMRange is correctly marked as
+  // desroyed after Blaze.remove has destroyed 
+  // the corresponding view
+  Tinytest.add("blaze - view - destroy", function (test) {
+    var v = {
+      _domrange: Blaze._DOMRange([])
+    };
+    v._domrange.view = Blaze.View();
+    test.equal(v._domrange.view.isDestroyed, false);
+    Blaze.remove(v);
+    test.equal(v._domrange.view.isDestroyed, true);
+  });
+  
+  // this checks, whether an unattached DOMRange notifies
+  // correctly about it's root cause, when throwing due to an event
   Tinytest.add("blaze - view - attached", function (test) {
     test.throws(() => Blaze._DOMRange.prototype.containsElement.call({attached: false, view: {name: 'Template.foo'}}, undefined, '.class', 'click'), 
     `click event triggerd with .class on foo but associated view is not be found.
-    Make sure the event doesn't destroy the view.`)    
+    Make sure the event doesn't destroy the view.`);
   });
 }
