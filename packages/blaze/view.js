@@ -895,7 +895,7 @@ Blaze._addEventMap = function (view, eventMap, thisInHandler) {
         handles.push(Blaze._EventSupport.listen(
           element, newEvents, selector,
           function (evt) {
-            if (! range.containsElement(evt.currentTarget))
+            if (! range.containsElement(evt.currentTarget, selector, newEvents))
               return null;
             var handlerThis = thisInHandler || this;
             var handlerArgs = arguments;
