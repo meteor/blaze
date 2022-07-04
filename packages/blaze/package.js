@@ -1,7 +1,7 @@
 Package.describe({
   name: 'blaze',
   summary: "Meteor Reactive Templating library",
-  version: '2.6.1-rc.1',
+  version: '2.6.1-rc.2',
   git: 'https://github.com/meteor/blaze.git'
 });
 
