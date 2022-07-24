@@ -8,6 +8,8 @@
   "scripts": {
     "start": "meteor run",
     "setup": "ln -sfn ../packages ./packages",
+    "lint:check": "npx eslint",
+    "lint:fix": "npm run eslint --fix",
     "test:watch": "meteor test-packages --raw-logs ./packages/*",
     "test:ci": "ci.sh"
   },
@@ -17,5 +19,13 @@
     "jquery": "^3.6.0",
     "meteor-node-stubs": "^1.2.1",
     "puppeteer": "^10.4.0"
+  },
+  "devDependencies": {
+    "@quave/eslint-config-quave": "^1.0.7"
+  },
+  "eslintConfig": {
+    "extends": [
+      "@quave/quave"
+    ]
   }
 }
