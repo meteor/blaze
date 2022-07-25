@@ -35,13 +35,13 @@ Visitor.def = function (options) {
 };
 
 Visitor.extend = function (options) {
-  const curType = this;
+  const CurType = this;
   const subType = function HTMLVisitorSubtype(/* arguments */) {
     Visitor.apply(this, arguments);
   };
-  subType.prototype = new curType();
-  subType.extend = curType.extend;
-  subType.def = curType.def;
+  subType.prototype = new CurType();
+  subType.extend = CurType.extend;
+  subType.def = CurType.def;
   if (options) _assign(subType.prototype, options);
   return subType;
 };
@@ -207,6 +207,16 @@ TransformingVisitor.def({
   },
 });
 
+export function toHTML(content) {
+  return (new ToHTMLVisitor()).visit(content);
+}
+
+// Escaping modes for outputting text when generating HTML.
+export const TEXTMODE = {
+  STRING: 1,
+  RCDATA: 2,
+  ATTRIBUTE: 3,
+};
 
 export const ToTextVisitor = Visitor.extend();
 ToTextVisitor.def({
@@ -339,21 +349,6 @@ ToHTMLVisitor.def({
     return toText(node, textMode);
   },
 });
-
-
-// //////////////////////////// TOHTML
-
-export function toHTML(content) {
-  return (new ToHTMLVisitor()).visit(content);
-}
-
-// Escaping modes for outputting text when generating HTML.
-export const TEXTMODE = {
-  STRING: 1,
-  RCDATA: 2,
-  ATTRIBUTE: 3,
-};
-
 
 export function toText(content, textMode) {
   if (!textMode) throw new Error('textMode required for HTML.toText');

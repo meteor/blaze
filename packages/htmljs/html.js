@@ -6,6 +6,47 @@ Tag.prototype.attrs = null;
 Tag.prototype.children = Object.freeze ? Object.freeze([]) : [];
 Tag.prototype.htmljsType = Tag.htmljsType = ['Tag'];
 
+export function isConstructedObject(x) {
+  // Figure out if `x` is "an instance of some class" or just a plain
+  // object literal.  It correctly treats an object literal like
+  // `{ constructor: ... }` as an object literal.  It won't detect
+  // instances of classes that lack a `constructor` property (e.g.
+  // if you assign to a prototype when setting up the class as in:
+  // `Foo = function () { ... }; Foo.prototype = { ... }`, then
+  // `(new Foo).constructor` is `Object`, not `Foo`).
+  if (!x || (typeof x !== 'object')) return false;
+
+  // Is this a plain object?
+  let plain;
+
+  if (Object.getPrototypeOf(x) === null) {
+    plain = true;
+  } else {
+    let proto = x;
+
+    while (Object.getPrototypeOf(proto) !== null) {
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    plain = Object.getPrototypeOf(x) === proto;
+  }
+
+  return !plain && (typeof x.constructor === 'function') && (x instanceof x.constructor);
+}
+
+// Not an HTMLjs node, but a wrapper to pass multiple attrs dictionaries
+// to a tag (for the purpose of implementing dynamic attributes).
+export function Attrs(...args) {
+  // Work with or without `new`.  If not called with `new`,
+  // perform instantiation by recursively calling this constructor.
+  // We can't pass varargs, so pass no args.
+  const instance = (this instanceof Attrs) ? this : new Attrs();
+
+  instance.value = args;
+
+  return instance;
+}
+
 // Given "p" create the function `HTML.P`.
 const makeTagConstructor = function (tagName) {
   // Tag is the per-tagName constructor of an HTML.Tag subclass
@@ -52,21 +93,13 @@ const makeTagConstructor = function (tagName) {
   return HTMLTag;
 };
 
-// Not an HTMLjs node, but a wrapper to pass multiple attrs dictionaries
-// to a tag (for the purpose of implementing dynamic attributes).
-export function Attrs(...args) {
-  // Work with or without `new`.  If not called with `new`,
-  // perform instantiation by recursively calling this constructor.
-  // We can't pass varargs, so pass no args.
-  const instance = (this instanceof Attrs) ? this : new Attrs();
-
-  instance.value = args;
-
-  return instance;
-}
-
 // KNOWN ELEMENTS
 export const HTMLTags = {};
+
+export function getSymbolName(tagName) {
+  // "foo-bar" -> "FOO_BAR"
+  return tagName.toUpperCase().replace(/-/g, '_');
+}
 
 export function getTag(tagName) {
   const symbolName = getSymbolName(tagName);
@@ -81,15 +114,6 @@ export function getTag(tagName) {
   }
 
   return HTMLTags[symbolName];
-}
-
-export function isTagEnsured(tagName) {
-  return isKnownElement(tagName);
-}
-
-export function getSymbolName(tagName) {
-  // "foo-bar" -> "FOO_BAR"
-  return tagName.toUpperCase().replace(/-/g, '_');
 }
 
 // HTML + SVG element names
@@ -118,12 +142,16 @@ export function isVoidElement(tagName) {
   return voidElementSet.has(tagName);
 }
 
-// Ensure tags for all known elements
-knownElementNames.forEach(ensureTag);
+export function isTagEnsured(tagName) {
+  return isKnownElement(tagName);
+}
 
 export function ensureTag(tagName) {
   getTag(tagName); // don't return it
 }
+
+// Ensure tags for all known elements
+knownElementNames.forEach(ensureTag);
 
 export function CharRef(attrs) {
   if (!(this instanceof CharRef)) {
@@ -177,35 +205,6 @@ Raw.prototype.htmljsType = Raw.htmljsType = ['Raw'];
 export function isArray(x) {
   return x instanceof Array || Array.isArray(x);
 }
-
-export function isConstructedObject(x) {
-  // Figure out if `x` is "an instance of some class" or just a plain
-  // object literal.  It correctly treats an object literal like
-  // `{ constructor: ... }` as an object literal.  It won't detect
-  // instances of classes that lack a `constructor` property (e.g.
-  // if you assign to a prototype when setting up the class as in:
-  // `Foo = function () { ... }; Foo.prototype = { ... }`, then
-  // `(new Foo).constructor` is `Object`, not `Foo`).
-  if (!x || (typeof x !== 'object')) return false;
-
-  // Is this a plain object?
-  let plain;
-
-  if (Object.getPrototypeOf(x) === null) {
-    plain = true;
-  } else {
-    let proto = x;
-
-    while (Object.getPrototypeOf(proto) !== null) {
-      proto = Object.getPrototypeOf(proto);
-    }
-
-    plain = Object.getPrototypeOf(x) === proto;
-  }
-
-  return !plain && (typeof x.constructor === 'function') && (x instanceof x.constructor);
-}
-
 
 export function isNully(node) {
   if (node == null) {

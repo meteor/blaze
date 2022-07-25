@@ -267,8 +267,10 @@ Tinytest.add('html-tools - getTemplateTag', function (test) {
   // The object it returns is opaque to the tokenizer/parser and can
   // be anything we want.
   const getTemplateTag = function (scanner, position) {
-    if (!(scanner.peek() === '{' && // one-char peek is just an optimization
-      scanner.rest().slice(0, 2) === '{{')) return null;
+    // one-char peek is just an optimization
+    if (!(scanner.peek() === '{' && scanner.rest().slice(0, 2) === '{{')) {
+      return null;
+    }
 
     const match = mustache.exec(scanner.rest());
     if (!match) scanner.fatal('Bad mustache');

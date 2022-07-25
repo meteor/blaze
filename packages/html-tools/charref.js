@@ -2274,12 +2274,16 @@ const peekMatcher = function (scanner, matcher) {
 // if something looks like a named entity but isn't.
 const getNamedCharRef = function (scanner, inAttribute) {
   // look for `&` followed by alphanumeric
-  if (!peekMatcher(scanner, getPossibleNamedEntityStart)) return null;
+  if (!peekMatcher(scanner, getPossibleNamedEntityStart)) {
+    return null;
+  }
 
   const matcher = getNamedEntityByFirstChar[scanner.rest().charAt(1)];
   let entity = null;
 
-  if (matcher) entity = peekMatcher(scanner, matcher);
+  if (matcher) {
+    entity = peekMatcher(scanner, matcher);
+  }
 
   if (entity) {
     if (entity.slice(-1) !== ';') {
@@ -2289,21 +2293,29 @@ const getNamedCharRef = function (scanner, inAttribute) {
       //
       // This rule affects href attributes, for example, deeming "/?foo=bar&ltc=abc"
       // to be ok but "/?foo=bar&lt=abc" to not be.
-      if (inAttribute && ALPHANUMERIC.test(scanner.rest().charAt(entity.length))) return null;
+      if (inAttribute && ALPHANUMERIC.test(scanner.rest().charAt(entity.length))) {
+        return null;
+      }
 
       scanner.fatal(`Character reference requires semicolon: ${entity}`);
-    } else {
-      scanner.pos += entity.length;
-      return entity;
     }
-  } else {
-    // we couldn't match any real entity, so see if this is a bad entity
-    // or something we can overlook.
-    const badEntity = peekMatcher(scanner, getApparentNamedEntity);
-    if (badEntity) scanner.fatal(`Invalid character reference: ${badEntity}`);
-    // `&aaaa` is ok with no semicolon
-    return null;
+
+    scanner.pos += entity.length;
+
+    return entity;
   }
+
+  // we couldn't match any real entity, so see if this is a bad entity
+  // or something we can overlook.
+  const badEntity = peekMatcher(scanner, getApparentNamedEntity);
+
+  if (badEntity) {
+    scanner.fatal(`Invalid character reference: ${badEntity}`);
+  }
+
+  // `&aaaa` is ok with no semicolon
+
+  return null;
 };
 
 // Returns the sequence of one or two codepoints making up an entity as an array.
@@ -2325,7 +2337,9 @@ const BIG_BAD_CODEPOINTS = (function (obj) {
     0xDFFFE, 0xDFFFF, 0xEFFFE, 0xEFFFF, 0xFFFFE, 0xFFFFF,
     0x10FFFE, 0x10FFFF];
 
-  for (const item of list) obj[item] = true;
+  for (const item of list) {
+    obj[item] = true;
+  }
 
   return obj;
 }({}));

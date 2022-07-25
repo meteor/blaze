@@ -198,84 +198,20 @@ const assertIsTemplateTag = function (x) {
   return x;
 };
 
-// Returns the next HTML token, or `null` if we reach EOF.
-//
-// Note that if we have a `getTemplateTag` function that sometimes
-// consumes characters and emits nothing (e.g. in the case of template
-// comments), we may go from not-at-EOF to at-EOF and return `null`,
-// while otherwise we always find some token to return.
-export function getHTMLToken(scanner, dataMode) {
-  let result = null;
-  if (scanner.getTemplateTag) {
-    // Try to parse a template tag by calling out to the provided
-    // `getTemplateTag` function.  If the function returns `null` but
-    // consumes characters, it must have parsed a comment or something,
-    // so we loop and try it again.  If it ever returns `null` without
-    // consuming anything, that means it didn't see anything interesting
-    // so we look for a normal token.  If it returns a truthy value,
-    // the value must be instanceof HTMLTools.TemplateTag.  We wrap it
-    // in a Special token.
-    const lastPos = scanner.pos;
-    result = scanner.getTemplateTag(
-      scanner,
-      (dataMode === 'rcdata' ? TEMPLATE_TAG_POSITION.IN_RCDATA :
-        (dataMode === 'rawtext' ? TEMPLATE_TAG_POSITION.IN_RAWTEXT :
-          TEMPLATE_TAG_POSITION.ELEMENT)));
-
-    if (result) return { t: 'TemplateTag', v: assertIsTemplateTag(result) };
-    if (scanner.pos > lastPos) return null;
-  }
-
-  const chars = getChars(scanner);
-  if (chars) {
-    return {
-      t: 'Chars',
-      v: convertCRLF(chars),
-    };
-  }
-
-  const ch = scanner.peek();
-  if (!ch) return null; // EOF
-
-  if (ch === '\u0000') scanner.fatal('Illegal NULL character');
-
-  if (ch === '&') {
-    if (dataMode !== 'rawtext') {
-      const charRef = getCharacterReference(scanner);
-      if (charRef) return charRef;
-    }
-
-    scanner.pos++;
-    return {
-      t: 'Chars',
-      v: '&',
-    };
-  }
-
-  // If we're here, we're looking at `<`.
-
-  if (scanner.peek() === '<' && dataMode) {
-    // don't interpret tags
-    scanner.pos++;
-    return {
-      t: 'Chars',
-      v: '<',
-    };
-  }
-
-  // `getTag` will claim anything starting with `<` not followed by `!`.
-  // `getComment` takes `<!--` and getDoctype takes `<!doctype`.
-  result = (getTagToken(scanner) || getComment(scanner) || getDoctype(scanner));
-
-  if (result) return result;
-
-  scanner.fatal('Unexpected `<!` directive.');
-}
+export const TEMPLATE_TAG_POSITION = {
+  ELEMENT: 1,
+  IN_START_TAG: 2,
+  IN_ATTRIBUTE: 3,
+  IN_RCDATA: 4,
+  IN_RAWTEXT: 5,
+};
 
 const getTagName = makeRegexMatcher(/^[a-zA-Z][^\f\n\r\t />{]*/);
 const getClangle = makeRegexMatcher(/^>/);
 const getSlash = makeRegexMatcher(/^\//);
 const getAttributeName = makeRegexMatcher(/^[^>/\u0000"'<=\f\n\r\t ][^\f\n\r\t /=>"'<\u0000]*/);
+
+const { hasOwnProperty } = Object.prototype;
 
 // Try to parse `>` or `/>`, mutating `tag` to be self-closing in the latter
 // case (and failing fatally if `/` isn't followed by `>`).
@@ -291,6 +227,7 @@ const handleEndOfTag = function (scanner, tag) {
 
   return null;
 };
+
 
 // Scan a quoted or unquoted attribute value (omit `quote` for unquoted).
 const getAttributeValue = function (scanner, quote) {
@@ -345,8 +282,6 @@ const getAttributeValue = function (scanner, quote) {
     }
   }
 };
-
-const { hasOwnProperty } = Object.prototype;
 
 export function getTagToken(scanner) {
   if (!(scanner.peek() === '<' && scanner.rest().charAt(1) !== '!')) return null;
@@ -460,13 +395,79 @@ export function getTagToken(scanner) {
   }
 }
 
-export const TEMPLATE_TAG_POSITION = {
-  ELEMENT: 1,
-  IN_START_TAG: 2,
-  IN_ATTRIBUTE: 3,
-  IN_RCDATA: 4,
-  IN_RAWTEXT: 5,
-};
+// Returns the next HTML token, or `null` if we reach EOF.
+//
+// Note that if we have a `getTemplateTag` function that sometimes
+// consumes characters and emits nothing (e.g. in the case of template
+// comments), we may go from not-at-EOF to at-EOF and return `null`,
+// while otherwise we always find some token to return.
+export function getHTMLToken(scanner, dataMode) {
+  let result = null;
+  if (scanner.getTemplateTag) {
+    // Try to parse a template tag by calling out to the provided
+    // `getTemplateTag` function.  If the function returns `null` but
+    // consumes characters, it must have parsed a comment or something,
+    // so we loop and try it again.  If it ever returns `null` without
+    // consuming anything, that means it didn't see anything interesting
+    // so we look for a normal token.  If it returns a truthy value,
+    // the value must be instanceof HTMLTools.TemplateTag.  We wrap it
+    // in a Special token.
+    const lastPos = scanner.pos;
+    result = scanner.getTemplateTag(
+      scanner,
+      (dataMode === 'rcdata' ? TEMPLATE_TAG_POSITION.IN_RCDATA :
+        (dataMode === 'rawtext' ? TEMPLATE_TAG_POSITION.IN_RAWTEXT :
+          TEMPLATE_TAG_POSITION.ELEMENT)));
+
+    if (result) return { t: 'TemplateTag', v: assertIsTemplateTag(result) };
+    if (scanner.pos > lastPos) return null;
+  }
+
+  const chars = getChars(scanner);
+  if (chars) {
+    return {
+      t: 'Chars',
+      v: convertCRLF(chars),
+    };
+  }
+
+  const ch = scanner.peek();
+  if (!ch) return null; // EOF
+
+  if (ch === '\u0000') scanner.fatal('Illegal NULL character');
+
+  if (ch === '&') {
+    if (dataMode !== 'rawtext') {
+      const charRef = getCharacterReference(scanner);
+      if (charRef) return charRef;
+    }
+
+    scanner.pos++;
+    return {
+      t: 'Chars',
+      v: '&',
+    };
+  }
+
+  // If we're here, we're looking at `<`.
+
+  if (scanner.peek() === '<' && dataMode) {
+    // don't interpret tags
+    scanner.pos++;
+    return {
+      t: 'Chars',
+      v: '<',
+    };
+  }
+
+  // `getTag` will claim anything starting with `<` not followed by `!`.
+  // `getComment` takes `<!--` and getDoctype takes `<!doctype`.
+  result = (getTagToken(scanner) || getComment(scanner) || getDoctype(scanner));
+
+  if (result) return result;
+
+  scanner.fatal('Unexpected `<!` directive.');
+}
 
 // tagName must be proper case
 export function isLookingAtEndTag(scanner, tagName) {

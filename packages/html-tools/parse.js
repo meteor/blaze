@@ -3,46 +3,44 @@ import { Scanner } from './scanner';
 import { properCaseAttributeName } from './utils';
 import { getHTMLToken, isLookingAtEndTag } from './tokenize';
 
-// Parse a "fragment" of HTML, up to the end of the input or a particular
-const getRawText = (scanner, tagName, shouldStopFunc) => {
-  let items = [];
-
-  while (!scanner.isEOF()) {
-    // break at appropriate end tag
-    if (tagName && isLookingAtEndTag(scanner, tagName)) break;
-
-    if (shouldStopFunc && shouldStopFunc(scanner)) break;
-
-    const token = getHTMLToken(scanner, 'rawtext');
-
-    if (!token) {
-      // tokenizer reached EOF on its own, e.g. while scanning
-      // template comments like `{{! foo}}`.
-      continue;
-    }
-
-    if (token.t === 'Chars') {
-      items = pushOrAppendString(items, token.v);
-    } else if (token.t === 'TemplateTag') {
-      items.push(token.v);
-    } else {
-      // (can't happen)
-      scanner.fatal(`Unknown or unexpected token type: ${token.t}`);
-    }
+const pushOrAppendString = (items, string) => {
+  if (items.length && typeof items[items.length - 1] === 'string') {
+    items[items.length - 1] += string;
+  } else {
+    items.push(string);
   }
 
-  if (items.length === 0) return null;
-  if (items.length === 1) return items[0];
-
   return items;
 };
 
-const pushOrAppendString = (items, string) => {
-  if (items.length && typeof items[items.length - 1] === 'string') items[items.length - 1] += string;
-  else items.push(string);
 
-  return items;
-};
+// Take a numeric Unicode code point, which may be larger than 16 bits,
+// and encode it as a JavaScript UTF-16 string.
+//
+// Adapted from
+// http://stackoverflow.com/questions/7126384/expressing-utf-16-unicode-characters-in-javascript/7126661.
+export function codePointToString(codePoint) {
+  if (codePoint >= 0 && codePoint <= 0xD7FF || codePoint >= 0xE000 && codePoint <= 0xFFFF) {
+    return String.fromCharCode(codePoint);
+  }
+  if (codePoint >= 0x10000 && codePoint <= 0x10FFFF) {
+    // we subtract 0x10000 from codePoint to get a 20-bit number
+    // in the range 0..0xFFFF
+    codePoint -= 0x10000;
+
+    // we add 0xD800 to the number formed by the first 10 bits
+    // to give the first byte
+    const first = ((0xffc00 & codePoint) >> 10) + 0xD800;
+
+    // we add 0xDC00 to the number formed by the low 10 bits
+    // to give the second byte
+    const second = (0x3ff & codePoint) + 0xDC00;
+
+    return String.fromCharCode(first) + String.fromCharCode(second);
+  }
+
+  return '';
+}
 
 // Input: A token like `{ t: 'CharRef', v: '&amp;', cp: [38] }`.
 //
@@ -122,104 +120,78 @@ const parseAttrs = attrs => {
   return result;
 };
 
-// template tag (using the "shouldStop" option).
-export function parseFragment(input, options) {
-  let scanner;
+// Parse a "fragment" of HTML, up to the end of the input or a particular
+const getRawText = (scanner, tagName, shouldStopFunc) => {
+  let items = [];
 
-  if (typeof input === 'string') {
-    scanner = new Scanner(input);
-  } else {
-    // input can be a scanner.  We'd better not have a different
-    // value for the "getTemplateTag" option as when the scanner
-    // was created, because we don't do anything special to reset
-    // the value (which is attached to the scanner).
-    scanner = input;
-  }
+  while (!scanner.isEOF()) {
+    // break at appropriate end tag
+    if (tagName && isLookingAtEndTag(scanner, tagName)) break;
 
-  // ```
-  // { getTemplateTag: function (scanner, templateTagPosition) {
-  //     if (templateTagPosition === HTMLTools.TEMPLATE_TAG_POSITION.ELEMENT) {
-  //       ...
-  // ```
-  if (options && options.getTemplateTag) scanner.getTemplateTag = options.getTemplateTag;
+    if (shouldStopFunc && shouldStopFunc(scanner)) break;
 
-  // function (scanner) -> boolean
-  const shouldStop = options && options.shouldStop;
+    const token = getHTMLToken(scanner, 'rawtext');
 
-  let result;
+    if (!token) {
+      // tokenizer reached EOF on its own, e.g. while scanning
+      // template comments like `{{! foo}}`.
+      continue;
+    }
 
-  if (options && options.textMode) {
-    if (options.textMode === HTML.TEXTMODE.STRING) {
-      result = getRawText(scanner, null, shouldStop);
-    } else if (options.textMode === HTML.TEXTMODE.RCDATA) {
-      result = getRCData(scanner, null, shouldStop);
+    if (token.t === 'Chars') {
+      items = pushOrAppendString(items, token.v);
+    } else if (token.t === 'TemplateTag') {
+      items.push(token.v);
     } else {
-      throw new Error(`Unsupported textMode: ${options.textMode}`);
+      // (can't happen)
+      scanner.fatal(`Unknown or unexpected token type: ${token.t}`);
     }
-  } else {
-    result = getContent(scanner, shouldStop);
   }
 
-  if (!scanner.isEOF()) {
-    // If we aren't at the end of the input, we either stopped at an unmatched
-    // HTML end tag or at a template tag (like `{{else}}` or `{{/if}}`).
-    // Detect the former case (stopped at an HTML end tag) and throw a good
-    // error.
+  if (items.length === 0) return null;
+  if (items.length === 1) return items[0];
 
-    const posBefore = scanner.pos;
-    let endTag;
+  return items;
+};
 
-    try {
-      endTag = getHTMLToken(scanner);
-    } catch (e) {
-      // ignore errors from getTemplateTag
+// Get RCDATA to go in the lowercase (or camel case) tagName (e.g. "textarea")
+export function getRCData(scanner, tagName, shouldStopFunc) {
+  let items = [];
+
+  while (!scanner.isEOF()) {
+    // break at appropriate end tag
+    if (tagName && isLookingAtEndTag(scanner, tagName)) break;
+
+    if (shouldStopFunc && shouldStopFunc(scanner)) break;
+
+    const token = getHTMLToken(scanner, 'rcdata');
+
+    if (!token) {
+      // tokenizer reached EOF on its own, e.g. while scanning
+      // template comments like `{{! foo}}`.
+      continue;
     }
 
-    // XXX we make some assumptions about shouldStop here, like that it
-    // won't tell us to stop at an HTML end tag.  Should refactor
-    // `shouldStop` into something more suitable.
-    if (endTag && endTag.t === 'Tag' && endTag.isEnd) {
-      const closeTag = endTag.n;
-      const isVoidElement = HTML.isVoidElement(closeTag);
-      scanner.fatal(`Unexpected HTML close tag${isVoidElement ? `.  <${endTag.n}> should have no close tag.` : ''}`);
+    switch (token.t) {
+      case 'Chars':
+        items = pushOrAppendString(items, token.v);
+        break;
+      case 'CharRef':
+        items.push(convertCharRef(token));
+        break;
+      case 'TemplateTag':
+        items.push(token.v);
+        break;
+      default:
+        // (can't happen)
+        scanner.fatal(`Unknown or unexpected token type: ${token.t}`);
     }
-
-    scanner.pos = posBefore; // rewind, we'll continue parsing as usual
-
-    // If no "shouldStop" option was provided, we should have consumed the whole
-    // input.
-    if (!shouldStop) scanner.fatal('Expected EOF');
   }
 
-  return result;
-}
+  if (items.length === 0) return null;
+  if (items.length === 1) return items[0];
 
-// Take a numeric Unicode code point, which may be larger than 16 bits,
-// and encode it as a JavaScript UTF-16 string.
-//
-// Adapted from
-// http://stackoverflow.com/questions/7126384/expressing-utf-16-unicode-characters-in-javascript/7126661.
-export function codePointToString(codePoint) {
-  if (codePoint >= 0 && codePoint <= 0xD7FF || codePoint >= 0xE000 && codePoint <= 0xFFFF) {
-    return String.fromCharCode(codePoint);
-  }
-  if (codePoint >= 0x10000 && codePoint <= 0x10FFFF) {
-    // we subtract 0x10000 from codePoint to get a 20-bit number
-    // in the range 0..0xFFFF
-    codePoint -= 0x10000;
-
-    // we add 0xD800 to the number formed by the first 10 bits
-    // to give the first byte
-    const first = ((0xffc00 & codePoint) >> 10) + 0xD800;
-
-    // we add 0xDC00 to the number formed by the low 10 bits
-    // to give the second byte
-    const second = (0x3ff & codePoint) + 0xDC00;
-
-    return String.fromCharCode(first) + String.fromCharCode(second);
-  }
-
-  return '';
+  return items;
 }
 
 export function getContent(scanner, shouldStopFunc) {
@@ -327,42 +299,71 @@ export function getContent(scanner, shouldStopFunc) {
   return items;
 }
 
-// get RCDATA to go in the lowercase (or camel case) tagName (e.g. "textarea")
-export function getRCData(scanner, tagName, shouldStopFunc) {
-  let items = [];
+// template tag (using the "shouldStop" option).
+export function parseFragment(input, options) {
+  let scanner;
 
-  while (!scanner.isEOF()) {
-    // break at appropriate end tag
-    if (tagName && isLookingAtEndTag(scanner, tagName)) break;
-
-    if (shouldStopFunc && shouldStopFunc(scanner)) break;
-
-    const token = getHTMLToken(scanner, 'rcdata');
-
-    if (!token) {
-      // tokenizer reached EOF on its own, e.g. while scanning
-      // template comments like `{{! foo}}`.
-      continue;
-    }
-
-    switch (token.t) {
-      case 'Chars':
-        items = pushOrAppendString(items, token.v);
-        break;
-      case 'CharRef':
-        items.push(convertCharRef(token));
-        break;
-      case 'TemplateTag':
-        items.push(token.v);
-        break;
-      default:
-        // (can't happen)
-        scanner.fatal(`Unknown or unexpected token type: ${token.t}`);
-    }
+  if (typeof input === 'string') {
+    scanner = new Scanner(input);
+  } else {
+    // input can be a scanner.  We'd better not have a different
+    // value for the "getTemplateTag" option as when the scanner
+    // was created, because we don't do anything special to reset
+    // the value (which is attached to the scanner).
+    scanner = input;
   }
 
-  if (items.length === 0) return null;
-  if (items.length === 1) return items[0];
+  if (options && options.getTemplateTag) {
+    scanner.getTemplateTag = options.getTemplateTag;
+  }
 
-  return items;
+  // function (scanner) -> boolean
+  const shouldStop = options && options.shouldStop;
+
+  let result;
+
+  if (options && options.textMode) {
+    if (options.textMode === HTML.TEXTMODE.STRING) {
+      result = getRawText(scanner, null, shouldStop);
+    } else if (options.textMode === HTML.TEXTMODE.RCDATA) {
+      result = getRCData(scanner, null, shouldStop);
+    } else {
+      throw new Error(`Unsupported textMode: ${options.textMode}`);
+    }
+  } else {
+    result = getContent(scanner, shouldStop);
+  }
+
+  if (!scanner.isEOF()) {
+    // If we aren't at the end of the input, we either stopped at an unmatched
+    // HTML end tag or at a template tag (like `{{else}}` or `{{/if}}`).
+    // Detect the former case (stopped at an HTML end tag) and throw a good
+    // error.
+
+    const posBefore = scanner.pos;
+    let endTag;
+
+    try {
+      endTag = getHTMLToken(scanner);
+    } catch (e) {
+      // ignore errors from getTemplateTag
+    }
+
+    // XXX we make some assumptions about shouldStop here, like that it
+    // won't tell us to stop at an HTML end tag.  Should refactor
+    // `shouldStop` into something more suitable.
+    if (endTag && endTag.t === 'Tag' && endTag.isEnd) {
+      const closeTag = endTag.n;
+      const isVoidElement = HTML.isVoidElement(closeTag);
+      scanner.fatal(`Unexpected HTML close tag${isVoidElement ? `.  <${endTag.n}> should have no close tag.` : ''}`);
+    }
+
+    scanner.pos = posBefore; // rewind, we'll continue parsing as usual
+
+    // If no "shouldStop" option was provided, we should have consumed the whole
+    // input.
+    if (!shouldStop) scanner.fatal('Expected EOF');
+  }
+
+  return result;
 }
