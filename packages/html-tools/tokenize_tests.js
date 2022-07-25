@@ -1,18 +1,18 @@
 import { HTMLTools } from 'meteor/html-tools';
 
-var Scanner = HTMLTools.Scanner;
-var getComment = HTMLTools.Parse.getComment;
-var getDoctype = HTMLTools.Parse.getDoctype;
-var getHTMLToken = HTMLTools.Parse.getHTMLToken;
+const Scanner = HTMLTools.Scanner;
+const getComment = HTMLTools.Parse.getComment;
+const getDoctype = HTMLTools.Parse.getDoctype;
+const getHTMLToken = HTMLTools.Parse.getHTMLToken;
 
 // "tokenize" is not really a great operation for real use, because
 // it ignores the special content rules for tags like "style" and
 // "script".
-var tokenize = function (input) {
-  var scanner = new Scanner(input);
-  var tokens = [];
-  while (! scanner.isEOF()) {
-    var token = getHTMLToken(scanner);
+const tokenize = function (input) {
+  const scanner = new Scanner(input);
+  const tokens = [];
+  while (!scanner.isEOF()) {
+    const token = getHTMLToken(scanner);
     if (token)
       tokens.push(token);
   }
@@ -22,9 +22,9 @@ var tokenize = function (input) {
 
 
 Tinytest.add("html-tools - comments", function (test) {
-  var succeed = function (input, content) {
-    var scanner = new Scanner(input);
-    var result = getComment(scanner);
+  const succeed = function (input, content) {
+    const scanner = new Scanner(input);
+    const result = getComment(scanner);
     test.isTrue(result);
     test.equal(scanner.pos, content.length + 7);
     test.equal(result, {
@@ -33,16 +33,17 @@ Tinytest.add("html-tools - comments", function (test) {
     });
   };
 
-  var ignore = function (input) {
-    var scanner = new Scanner(input);
-    var result = getComment(scanner);;
+  const ignore = function (input) {
+    const scanner = new Scanner(input);
+    const result = getComment(scanner);
+
     test.isFalse(result);
     test.equal(scanner.pos, 0);
   };
 
-  var fatal = function (input, messageContains) {
-    var scanner = new Scanner(input);
-    var error;
+  const fatal = function (input, messageContains) {
+    const scanner = new Scanner(input);
+    let error;
     try {
       getComment(scanner);
     } catch (e) {
@@ -83,21 +84,21 @@ Tinytest.add("html-tools - comments", function (test) {
 });
 
 Tinytest.add("html-tools - doctype", function (test) {
-  var succeed = function (input, expectedProps) {
-    var scanner = new Scanner(input);
-    var result = getDoctype(scanner);
+  const succeed = function (input, expectedProps) {
+    const scanner = new Scanner(input);
+    const result = getDoctype(scanner);
     test.isTrue(result);
     test.equal(scanner.pos, result.v.length);
     test.equal(input.slice(0, result.v.length), result.v);
-    var actualProps = Object.assign({}, result);
+    const actualProps = Object.assign({}, result);
     delete actualProps.t;
     delete actualProps.v;
     test.equal(actualProps, expectedProps);
   };
 
-  var fatal = function (input, messageContains) {
-    var scanner = new Scanner(input);
-    var error;
+  const fatal = function (input, messageContains) {
+    const scanner = new Scanner(input);
+    let error;
     try {
       getDoctype(scanner);
     } catch (e) {
@@ -203,8 +204,8 @@ Tinytest.add("html-tools - doctype", function (test) {
 
 Tinytest.add("html-tools - tokenize", function (test) {
 
-  var fatal = function (input, messageContains) {
-    var error;
+  const fatal = function (input, messageContains) {
+    let error;
     try {
       tokenize(input);
     } catch (e) {

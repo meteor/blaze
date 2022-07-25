@@ -2,40 +2,40 @@ import { HTML } from 'meteor/htmljs';
 import { HTMLTools } from 'meteor/html-tools';
 import { BlazeTools} from 'meteor/blaze-tools';
 
-var Scanner = HTMLTools.Scanner;
-var getContent = HTMLTools.Parse.getContent;
+const Scanner = HTMLTools.Scanner;
+const getContent = HTMLTools.Parse.getContent;
 
-var CharRef = HTML.CharRef;
-var Comment = HTML.Comment;
-var TemplateTag = HTMLTools.TemplateTag;
-var Attrs = HTML.Attrs;
+const CharRef = HTML.CharRef;
+const Comment = HTML.Comment;
+const TemplateTag = HTMLTools.TemplateTag;
+const Attrs = HTML.Attrs;
 
-var BR = HTML.BR;
-var HR = HTML.HR;
-var INPUT = HTML.INPUT;
-var A = HTML.A;
-var DIV = HTML.DIV;
-var P = HTML.P;
-var TEXTAREA = HTML.TEXTAREA;
-var SCRIPT = HTML.SCRIPT;
-var STYLE = HTML.STYLE;
+const BR = HTML.BR;
+const HR = HTML.HR;
+const INPUT = HTML.INPUT;
+const A = HTML.A;
+const DIV = HTML.DIV;
+const P = HTML.P;
+const TEXTAREA = HTML.TEXTAREA;
+const SCRIPT = HTML.SCRIPT;
+const STYLE = HTML.STYLE;
 
 Tinytest.add("html-tools - parser getContent", function (test) {
 
-  var succeed = function (input, expected) {
-    var endPos = input.indexOf('^^^');
+  const succeed = function (input, expected) {
+    let endPos = input.indexOf('^^^');
     if (endPos < 0)
       endPos = input.length;
 
-    var scanner = new Scanner(input.replace('^^^', ''));
-    var result = getContent(scanner);
+    const scanner = new Scanner(input.replace('^^^', ''));
+    const result = getContent(scanner);
     test.equal(scanner.pos, endPos);
     test.equal(BlazeTools.toJS(result), BlazeTools.toJS(expected));
   };
 
-  var fatal = function (input, messageContains) {
-    var scanner = new Scanner(input);
-    var error;
+  const fatal = function (input, messageContains) {
+    const scanner = new Scanner(input);
+    let error;
     try {
       getContent(scanner);
     } catch (e) {
@@ -72,7 +72,7 @@ Tinytest.add("html-tools - parser getContent", function (test) {
   succeed('<input selected>', INPUT({selected: ''}));
   succeed('<input selected/>', INPUT({selected: ''}));
   succeed('<input selected />', INPUT({selected: ''}));
-  var FOO = HTML.getTag('foo');
+  const FOO = HTML.getTag('foo');
   succeed('<foo bar></foo>', FOO({bar: ''}));
   succeed('<foo bar baz ></foo>', FOO({bar: '', baz: ''}));
   succeed('<foo bar=x baz qux=y blah ></foo>',
@@ -98,10 +98,10 @@ Tinytest.add("html-tools - parser getContent", function (test) {
           A({href: "http://www.apple.com/"}, 'Apple'));
 
   (function () {
-    var A = HTML.getTag('a');
-    var B = HTML.getTag('b');
-    var C = HTML.getTag('c');
-    var D = HTML.getTag('d');
+    const A = HTML.getTag('a');
+    const B = HTML.getTag('b');
+    const C = HTML.getTag('c');
+    const D = HTML.getTag('d');
 
     succeed('<a>1<b>2<c>3<d>4</d>5</c>6</b>7</a>8',
             [A('1', B('2', C('3', D('4'), '5'), '6'), '7'), '8']);
@@ -156,8 +156,8 @@ Tinytest.add("html-tools - parser getContent", function (test) {
   succeed('<br x=y\r>', BR({x:'y'}));
   fatal('<br x=\r>');
 
-  succeed('<script>var x="<div>";</script>',SCRIPT('var x="<div>";'));
-  succeed('<script>var x=1 && 0;</script>',SCRIPT('var x=1 && 0;'));
+  succeed('<script>const x="<div>";</script>',SCRIPT('const x="<div>";'));
+  succeed('<script>const x=1 && 0;</script>',SCRIPT('const x=1 && 0;'));
 
   succeed('<script>asdf</script>', SCRIPT("asdf"));
   succeed('<script x=y>asdf</script>', SCRIPT({x: "y"}, "asdf"));
@@ -202,7 +202,7 @@ Tinytest.add("html-tools - parseFragment", function (test) {
           });
 
   (function () {
-    var p = HTMLTools.parseFragment('<p></p>');
+    const p = HTMLTools.parseFragment('<p></p>');
     test.equal(p.tagName, 'p');
     test.equal(p.attrs, null);
     test.isTrue(p instanceof HTML.Tag);
@@ -210,7 +210,7 @@ Tinytest.add("html-tools - parseFragment", function (test) {
   })();
 
   (function () {
-    var p = HTMLTools.parseFragment('<p>x</p>');
+    const p = HTMLTools.parseFragment('<p>x</p>');
     test.equal(p.tagName, 'p');
     test.equal(p.attrs, null);
     test.isTrue(p instanceof HTML.Tag);
@@ -219,7 +219,7 @@ Tinytest.add("html-tools - parseFragment", function (test) {
   })();
 
   (function () {
-    var p = HTMLTools.parseFragment('<p>x&#65;</p>');
+    const p = HTMLTools.parseFragment('<p>x&#65;</p>');
     test.equal(p.tagName, 'p');
     test.equal(p.attrs, null);
     test.isTrue(p instanceof HTML.Tag);
@@ -232,7 +232,7 @@ Tinytest.add("html-tools - parseFragment", function (test) {
   })();
 
   (function () {
-    var pp = HTMLTools.parseFragment('<p>x</p><p>y</p>');
+    const pp = HTMLTools.parseFragment('<p>x</p><p>y</p>');
     test.isTrue(pp instanceof Array);
     test.equal(pp.length, 2);
 
@@ -249,12 +249,12 @@ Tinytest.add("html-tools - parseFragment", function (test) {
     test.equal(pp[1].children[0], 'y');
   })();
 
-  var scanner = new Scanner('asdf');
+  const scanner = new Scanner('asdf');
   scanner.pos = 1;
   test.equal(HTMLTools.parseFragment(scanner), 'sdf');
 
   test.throws(function () {
-    var scanner = new Scanner('asdf</p>');
+    const scanner = new Scanner('asdf</p>');
     scanner.pos = 1;
     HTMLTools.parseFragment(scanner);
   });
@@ -264,19 +264,19 @@ Tinytest.add("html-tools - getTemplateTag", function (test) {
 
   // match a simple tag consisting of `{{`, an optional `!`, one
   // or more ASCII letters, spaces or html tags, and a closing `}}`.
-  var mustache = /^\{\{(!?[a-zA-Z 0-9</>]+)\}\}/;
+  const mustache = /^\{\{(!?[a-zA-Z 0-9</>]+)\}\}/;
 
   // This implementation of `getTemplateTag` looks for "{{" and if it
   // finds it, it will match the regex above or fail fatally trying.
   // The object it returns is opaque to the tokenizer/parser and can
   // be anything we want.
-  var getTemplateTag = function (scanner, position) {
-    if (! (scanner.peek() === '{' && // one-char peek is just an optimization
-           scanner.rest().slice(0, 2) === '{{'))
+  const getTemplateTag = function (scanner, position) {
+    if (!(scanner.peek() === '{' && // one-char peek is just an optimization
+      scanner.rest().slice(0, 2) === '{{'))
       return null;
 
-    var match = mustache.exec(scanner.rest());
-    if (! match)
+    const match = mustache.exec(scanner.rest());
+    if (!match)
       scanner.fatal("Bad mustache");
 
     scanner.pos += match[0].length;
@@ -284,19 +284,18 @@ Tinytest.add("html-tools - getTemplateTag", function (test) {
     if (match[1].charAt(0) === '!')
       return null; // `{{!foo}}` is like a comment
 
-    return TemplateTag({ stuff: match[1] });
+    return TemplateTag({stuff: match[1]});
   };
 
 
-
-  var succeed = function (input, expected) {
-    var endPos = input.indexOf('^^^');
+  const succeed = function (input, expected) {
+    let endPos = input.indexOf('^^^');
     if (endPos < 0)
       endPos = input.length;
 
-    var scanner = new Scanner(input.replace('^^^', ''));
+    const scanner = new Scanner(input.replace('^^^', ''));
     scanner.getTemplateTag = getTemplateTag;
-    var result;
+    let result;
     try {
       result = getContent(scanner);
     } catch (e) {
@@ -306,10 +305,10 @@ Tinytest.add("html-tools - getTemplateTag", function (test) {
     test.equal(BlazeTools.toJS(result), BlazeTools.toJS(expected));
   };
 
-  var fatal = function (input, messageContains) {
-    var scanner = new Scanner(input);
+  const fatal = function (input, messageContains) {
+    const scanner = new Scanner(input);
     scanner.getTemplateTag = getTemplateTag;
-    var error;
+    let error;
     try {
       getContent(scanner);
     } catch (e) {
