@@ -1,9 +1,9 @@
 import { HTML } from 'meteor/htmljs';
 
 Tinytest.add("htmljs - getTag", function (test) {
-  var FOO = HTML.getTag('foo');
+  const FOO = HTML.getTag('foo');
   test.isTrue(HTML.FOO === FOO);
-  var x = FOO();
+  const x = FOO();
 
   test.equal(x.tagName, 'foo');
   test.isTrue(x instanceof HTML.FOO);
@@ -15,27 +15,28 @@ Tinytest.add("htmljs - getTag", function (test) {
   test.isTrue((new FOO) instanceof HTML.Tag);
   test.isFalse((new HTML.P) instanceof HTML.FOO);
 
-  var result = HTML.ensureTag('Bar');
+  const result = HTML.ensureTag('Bar'); // void function's return checked intentionally
   test.equal(typeof result, 'undefined');
-  var BAR = HTML.BAR;
+
+  const BAR = HTML.BAR;
   test.equal(BAR().tagName, 'Bar');
 });
 
 Tinytest.add("htmljs - construction", function (test) {
-  var A = HTML.getTag('a');
-  var B = HTML.getTag('b');
-  var C = HTML.getTag('c');
+  const A = HTML.getTag('a');
+  const B = HTML.getTag('b');
+  const C = HTML.getTag('c');
 
-  var a = A(0, B({q:0}, C(A(B({})), 'foo')));
+  const a = A(0, B({q: 0}, C(A(B({})), 'foo')));
   test.equal(a.tagName, 'a');
   test.equal(a.attrs, null);
   test.equal(a.children.length, 2);
   test.equal(a.children[0], 0);
-  var b = a.children[1];
+  const b = a.children[1];
   test.equal(b.tagName, 'b');
   test.equal(b.attrs, {q:0});
   test.equal(b.children.length, 1);
-  var c = b.children[0];
+  const c = b.children[0];
   test.equal(c.tagName, 'c');
   test.equal(c.attrs, null);
   test.equal(c.children.length, 2);
@@ -47,7 +48,7 @@ Tinytest.add("htmljs - construction", function (test) {
   test.equal(c.children[0].children[0].attrs, {});
   test.equal(c.children[1], 'foo');
 
-  var a2 = new A({m:1}, {n:2}, B(), {o:3}, 'foo');
+  const a2 = new A({m: 1}, {n: 2}, B(), {o: 3}, 'foo');
   test.equal(a2.tagName, 'a');
   test.equal(a2.attrs, {m:1});
   test.equal(a2.children.length, 4);
@@ -58,7 +59,9 @@ Tinytest.add("htmljs - construction", function (test) {
 
   // tests of HTML.isConstructedObject (indirectly)
   test.equal(A({x:1}).children.length, 0);
-  var f = function () {};
+  const f = function () {
+  };
+
   test.equal(A(new f).children.length, 1);
   test.equal(A(new Date).children.length, 1);
   test.equal(A({constructor: 'blah'}).children.length, 0);
@@ -71,9 +74,9 @@ Tinytest.add("htmljs - construction", function (test) {
 });
 
 // copied from here https://github.com/meteor/blaze/blob/ed9299ea32afdd04f33124957f22ce2b18b7f3ff/packages/html-tools/utils.js#L3
-// to avoid circular dependency between htmljs and html-tools pacakge.
+// to avoid circular dependency between htmljs and html-tools package.
 // this circular dependency was blocking the publish process.
-var asciiLowerCase = function (str) {
+const asciiLowerCase = function (str) {
   return str.replace(/[A-Z]/g, function (c) {
     return String.fromCharCode(c.charCodeAt(0) + 32);
   });
