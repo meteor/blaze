@@ -5,7 +5,7 @@ syntax.  It is used to render content in Blaze and to represent
 templates during compilation.
 
 ```
-var UL = HTML.UL, LI = HTML.LI, B = HTML.B;
+let UL = HTML.UL, LI = HTML.LI, B = HTML.B;
 
 HTML.toHTML(
   UL({id: 'mylist'},
@@ -95,9 +95,9 @@ it must be written as `HTML.Attrs(attrs1, attrs2, ...)`, as in this
 example:
 
 ```
-var extraAttrs = {'class': "container"};
+let extraAttrs = {'class': "container"};
 
-var div = HTML.DIV(HTML.Attrs({id: "main"}, extraAttrs),
+let div = HTML.DIV(HTML.Attrs({id: "main"}, extraAttrs),
                    "This is the content.");
 
 div.attrs // => [{id: "main"}, {'class': "container"}]
