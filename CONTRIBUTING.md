@@ -50,6 +50,29 @@ $ meteor npm run setup # create link to packages
 
 This has to be done only once.
 
+#### Run the linter
+
+We use eslint with the [quave config](https://github.com/quavedev/eslint-config), which is also used
+by the Meteor core project.
+
+Due to the fact, that this repo consists of multiple packages, you should run the linter for single packages
+like so:
+
+```bash
+$ cd test-app
+$ meteor npm run lint:check -- ./packages/templating-compiler 
+```
+
+If you need to lint other packages, use `.packages/<nameOfPackage>` or use `./packages/` to lint all packages.
+Beware, however, that this might take a while to lint all packages.
+
+The same goes for autofixing common lint errors:
+
+```bash
+$ cd test-app
+$ meteor npm run lint:check -- ./packages/templating-compiler
+```
+
 #### Run the tests
 
 Simply execute the test script:
