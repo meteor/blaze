@@ -3,25 +3,24 @@
 // tgt.
 const _hasOwnProperty = Object.prototype.hasOwnProperty;
 const _assign = function (tgt, src) {
-  for (let k in src) {
-    if (_hasOwnProperty.call(src, k))
-      tgt[k] = src[k];
+  for (const k in src) {
+    if (_hasOwnProperty.call(src, k)) tgt[k] = src[k];
   }
   return tgt;
 };
 
-export function TemplateTag (props) {
-  if (! (this instanceof TemplateTag))
+export function TemplateTag(props) {
+  if (!(this instanceof TemplateTag)) {
     // called without `new`
-    return new TemplateTag;
+    return new TemplateTag();
+  }
 
-  if (props)
-    _assign(this, props);
+  if (props) _assign(this, props);
 }
 
 _assign(TemplateTag.prototype, {
   constructorName: 'TemplateTag',
-  toJS (visitor) {
+  toJS(visitor) {
     return visitor.generateCall(this.constructorName, _assign({}, this));
-  }
+  },
 });

@@ -13,7 +13,7 @@ const properAttributeCaseMap = (function (map) {
     map[asciiLowerCase(a)] = a;
   });
   return map;
-})({});
+}({}));
 
 const properTagCaseMap = (function (map) {
   const knownElements = HTML.knownElementNames;
@@ -21,7 +21,7 @@ const properTagCaseMap = (function (map) {
     map[asciiLowerCase(a)] = a;
   });
   return map;
-})({});
+}({}));
 
 // Take a tag name in any case and make it the proper case for HTML.
 //

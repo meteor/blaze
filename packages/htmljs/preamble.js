@@ -30,7 +30,7 @@ import {
   ToTextVisitor,
   toHTML,
   TEXTMODE,
-  toText
+  toText,
 } from './visitors';
 
 

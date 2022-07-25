@@ -22,27 +22,25 @@ Scanner.prototype.isEOF = function () {
   return this.pos >= this.input.length;
 };
 
-Scanner.prototype.fatal = function (msg = "Parse error") {
+Scanner.prototype.fatal = function (msg = 'Parse error') {
   const CONTEXT_AMOUNT = 20;
 
-  const input = this.input;
-  const pos = this.pos;
+  const { input } = this;
+  const { pos } = this;
 
   let pastInput = input.substring(pos - CONTEXT_AMOUNT - 1, pos);
 
-  if (pastInput.length > CONTEXT_AMOUNT)
-    pastInput = '...' + pastInput.substring(-CONTEXT_AMOUNT);
+  if (pastInput.length > CONTEXT_AMOUNT) pastInput = `...${pastInput.substring(-CONTEXT_AMOUNT)}`;
 
   let upcomingInput = input.substring(pos, pos + CONTEXT_AMOUNT + 1);
 
-  if (upcomingInput.length > CONTEXT_AMOUNT)
-    upcomingInput = upcomingInput.substring(0, CONTEXT_AMOUNT) + '...';
+  if (upcomingInput.length > CONTEXT_AMOUNT) upcomingInput = `${upcomingInput.substring(0, CONTEXT_AMOUNT)}...`;
 
-  const positionDisplay = ((pastInput + upcomingInput)
-    .replace(/\n/g, ' ') + '\n' + (new Array(pastInput.length + 1)
-    .join(' ')) + "^");
+  const positionDisplay = (`${(pastInput + upcomingInput)
+    .replace(/\n/g, ' ')}\n${new Array(pastInput.length + 1)
+    .join(' ')}^`);
 
-  const e = new Error(msg + "\n" + positionDisplay);
+  const e = new Error(`${msg}\n${positionDisplay}`);
 
   e.offset = pos;
   const allPastInput = input.substring(0, pos);
@@ -75,8 +73,7 @@ export function makeRegexMatcher(regex) {
   return (scanner) => {
     const match = regex.exec(scanner.rest());
 
-    if (! match)
-      return null;
+    if (!match) return null;
 
     scanner.pos += match[0].length;
     return match[1] || match[0];

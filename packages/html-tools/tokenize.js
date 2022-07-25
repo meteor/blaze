@@ -1,7 +1,7 @@
-import {asciiLowerCase, properCaseTagName, properCaseAttributeName} from './utils';
-import {TemplateTag} from './templatetag';
-import {getCharacterReference} from './charref';
-import {makeRegexMatcher} from './scanner';
+import { asciiLowerCase, properCaseTagName, properCaseAttributeName } from './utils';
+import { TemplateTag } from './templatetag';
+import { getCharacterReference } from './charref';
+import { makeRegexMatcher } from './scanner';
 
 // Token types:
 //
@@ -60,63 +60,54 @@ const convertCRLF = function (str) {
 };
 
 export function getComment(scanner) {
-  if (scanner.rest().slice(0, 4) !== '<!--')
-    return null;
+  if (scanner.rest().slice(0, 4) !== '<!--') return null;
   scanner.pos += 4;
 
   // Valid comments are easy to parse; they end at the first `--`!
   // Our main job is throwing errors.
 
   const rest = scanner.rest();
-  if (rest.charAt(0) === '>' || rest.slice(0, 2) === '->')
-    scanner.fatal("HTML comment can't start with > or ->");
+  if (rest.charAt(0) === '>' || rest.slice(0, 2) === '->') scanner.fatal("HTML comment can't start with > or ->");
 
   const closePos = rest.indexOf('-->');
-  if (closePos < 0)
-    scanner.fatal("Unclosed HTML comment");
+  if (closePos < 0) scanner.fatal('Unclosed HTML comment');
 
   const commentContents = rest.slice(0, closePos);
-  if (commentContents.slice(-1) === '-')
-    scanner.fatal("HTML comment must end at first `--`");
-  if (commentContents.indexOf("--") >= 0)
-    scanner.fatal("HTML comment cannot contain `--` anywhere");
-  if (commentContents.indexOf('\u0000') >= 0)
-    scanner.fatal("HTML comment cannot contain NULL");
+  if (commentContents.slice(-1) === '-') scanner.fatal('HTML comment must end at first `--`');
+  if (commentContents.indexOf('--') >= 0) scanner.fatal('HTML comment cannot contain `--` anywhere');
+  if (commentContents.indexOf('\u0000') >= 0) scanner.fatal('HTML comment cannot contain NULL');
 
   scanner.pos += closePos + 3;
 
   return {
     t: 'Comment',
-    v: convertCRLF(commentContents)
+    v: convertCRLF(commentContents),
   };
 }
 
 const skipSpaces = function (scanner) {
-  while (HTML_SPACE.test(scanner.peek()))
-    scanner.pos++;
+  while (HTML_SPACE.test(scanner.peek())) scanner.pos++;
 };
 
 const requireSpaces = function (scanner) {
-  if (!HTML_SPACE.test(scanner.peek()))
-    scanner.fatal("Expected space");
+  if (!HTML_SPACE.test(scanner.peek())) scanner.fatal('Expected space');
   skipSpaces(scanner);
 };
 
 const getDoctypeQuotedString = function (scanner) {
   const quote = scanner.peek();
-  if (!(quote === '"' || quote === "'"))
-    scanner.fatal("Expected single or double quote in DOCTYPE");
+  if (!(quote === '"' || quote === "'")) scanner.fatal('Expected single or double quote in DOCTYPE');
   scanner.pos++;
 
-  if (scanner.peek() === quote)
+  if (scanner.peek() === quote) {
     // prevent a falsy return value (empty string)
-    scanner.fatal("Malformed DOCTYPE");
+    scanner.fatal('Malformed DOCTYPE');
+  }
 
   let str = '';
   let ch;
   while ((ch = scanner.peek()), ch !== quote) {
-    if ((!ch) || (ch === '\u0000') || (ch === '>'))
-      scanner.fatal("Malformed DOCTYPE");
+    if ((!ch) || (ch === '\u0000') || (ch === '>')) scanner.fatal('Malformed DOCTYPE');
     str += ch;
     scanner.pos++;
   }
@@ -130,22 +121,19 @@ const getDoctypeQuotedString = function (scanner) {
 //
 // If `getDocType` sees "<!DOCTYPE" (case-insensitive), it will match or fail fatally.
 export function getDoctype(scanner) {
-  if (asciiLowerCase(scanner.rest().slice(0, 9)) !== '<!doctype')
-    return null;
+  if (asciiLowerCase(scanner.rest().slice(0, 9)) !== '<!doctype') return null;
   const start = scanner.pos;
   scanner.pos += 9;
 
   requireSpaces(scanner);
 
   let ch = scanner.peek();
-  if ((!ch) || (ch === '>') || (ch === '\u0000'))
-    scanner.fatal('Malformed DOCTYPE');
+  if ((!ch) || (ch === '>') || (ch === '\u0000')) scanner.fatal('Malformed DOCTYPE');
   let name = ch;
   scanner.pos++;
 
   while ((ch = scanner.peek()), !(HTML_SPACE.test(ch) || ch === '>')) {
-    if ((!ch) || (ch === '\u0000'))
-      scanner.fatal('Malformed DOCTYPE');
+    if ((!ch) || (ch === '\u0000')) scanner.fatal('Malformed DOCTYPE');
     name += ch;
     scanner.pos++;
   }
@@ -169,8 +157,7 @@ export function getDoctype(scanner) {
       requireSpaces(scanner);
       systemId = getDoctypeQuotedString(scanner);
       skipSpaces(scanner);
-      if (scanner.peek() !== '>')
-        scanner.fatal("Malformed DOCTYPE");
+      if (scanner.peek() !== '>') scanner.fatal('Malformed DOCTYPE');
     } else if (publicOrSystem === 'public') {
       scanner.pos += 6;
       requireSpaces(scanner);
@@ -180,12 +167,11 @@ export function getDoctype(scanner) {
         if (scanner.peek() !== '>') {
           systemId = getDoctypeQuotedString(scanner);
           skipSpaces(scanner);
-          if (scanner.peek() !== '>')
-            scanner.fatal("Malformed DOCTYPE");
+          if (scanner.peek() !== '>') scanner.fatal('Malformed DOCTYPE');
         }
       }
     } else {
-      scanner.fatal("Expected PUBLIC or SYSTEM in DOCTYPE");
+      scanner.fatal('Expected PUBLIC or SYSTEM in DOCTYPE');
     }
   }
 
@@ -194,13 +180,11 @@ export function getDoctype(scanner) {
   const result = {
     t: 'Doctype',
     v: scanner.input.slice(start, scanner.pos),
-    name: name
+    name,
   };
 
-  if (systemId)
-    result.systemId = systemId;
-  if (publicId)
-    result.publicId = publicId;
+  if (systemId) result.systemId = systemId;
+  if (publicId) result.publicId = publicId;
 
   return result;
 }
@@ -210,8 +194,7 @@ export function getDoctype(scanner) {
 const getChars = makeRegexMatcher(/^[^&<\u0000][^&<\u0000{]*/);
 
 const assertIsTemplateTag = function (x) {
-  if (!(x instanceof TemplateTag))
-    throw new Error("Expected an instance of HTMLTools.TemplateTag");
+  if (!(x instanceof TemplateTag)) throw new Error('Expected an instance of HTMLTools.TemplateTag');
   return x;
 };
 
@@ -239,37 +222,33 @@ export function getHTMLToken(scanner, dataMode) {
         (dataMode === 'rawtext' ? TEMPLATE_TAG_POSITION.IN_RAWTEXT :
           TEMPLATE_TAG_POSITION.ELEMENT)));
 
-    if (result)
-      return {t: 'TemplateTag', v: assertIsTemplateTag(result)};
-    else if (scanner.pos > lastPos)
-      return null;
+    if (result) return { t: 'TemplateTag', v: assertIsTemplateTag(result) };
+    if (scanner.pos > lastPos) return null;
   }
 
   const chars = getChars(scanner);
-  if (chars)
+  if (chars) {
     return {
       t: 'Chars',
-      v: convertCRLF(chars)
+      v: convertCRLF(chars),
     };
+  }
 
   const ch = scanner.peek();
-  if (!ch)
-    return null; // EOF
+  if (!ch) return null; // EOF
 
-  if (ch === '\u0000')
-    scanner.fatal("Illegal NULL character");
+  if (ch === '\u0000') scanner.fatal('Illegal NULL character');
 
   if (ch === '&') {
     if (dataMode !== 'rawtext') {
       const charRef = getCharacterReference(scanner);
-      if (charRef)
-        return charRef;
+      if (charRef) return charRef;
     }
 
     scanner.pos++;
     return {
       t: 'Chars',
-      v: '&'
+      v: '&',
     };
   }
 
@@ -280,7 +259,7 @@ export function getHTMLToken(scanner, dataMode) {
     scanner.pos++;
     return {
       t: 'Chars',
-      v: '<'
+      v: '<',
     };
   }
 
@@ -288,10 +267,9 @@ export function getHTMLToken(scanner, dataMode) {
   // `getComment` takes `<!--` and getDoctype takes `<!doctype`.
   result = (getTagToken(scanner) || getComment(scanner) || getDoctype(scanner));
 
-  if (result)
-    return result;
+  if (result) return result;
 
-  scanner.fatal("Unexpected `<!` directive.");
+  scanner.fatal('Unexpected `<!` directive.');
 }
 
 const getTagName = makeRegexMatcher(/^[a-zA-Z][^\f\n\r\t />{]*/);
@@ -303,12 +281,10 @@ const getAttributeName = makeRegexMatcher(/^[^>/\u0000"'<=\f\n\r\t ][^\f\n\r\t /
 // case (and failing fatally if `/` isn't followed by `>`).
 // Return tag if successful.
 const handleEndOfTag = function (scanner, tag) {
-  if (getClangle(scanner))
-    return tag;
+  if (getClangle(scanner)) return tag;
 
   if (getSlash(scanner)) {
-    if (!getClangle(scanner))
-      scanner.fatal("Expected `>` after `/`");
+    if (!getClangle(scanner)) scanner.fatal('Expected `>` after `/`');
     tag.isSelfClosing = true;
     return tag;
   }
@@ -319,8 +295,7 @@ const handleEndOfTag = function (scanner, tag) {
 // Scan a quoted or unquoted attribute value (omit `quote` for unquoted).
 const getAttributeValue = function (scanner, quote) {
   if (quote) {
-    if (scanner.peek() !== quote)
-      return null;
+    if (scanner.peek() !== quote) return null;
     scanner.pos++;
   }
 
@@ -335,12 +310,14 @@ const getAttributeValue = function (scanner, quote) {
     if (quote && ch === quote) {
       scanner.pos++;
       return tokens;
-    } else if ((!quote) && (HTML_SPACE.test(ch) || ch === '>')) {
+    }
+    if ((!quote) && (HTML_SPACE.test(ch) || ch === '>')) {
       return tokens;
-    } else if (!ch) {
-      scanner.fatal("Unclosed attribute in tag");
+    }
+    if (!ch) {
+      scanner.fatal('Unclosed attribute in tag');
     } else if (quote ? ch === '\u0000' : ('\u0000"\'<=`'.indexOf(ch) >= 0)) {
-      scanner.fatal("Unexpected character in attribute value");
+      scanner.fatal('Unexpected character in attribute value');
     } else if (ch === '&' &&
       (charRef = getCharacterReference(scanner, true,
         quote || '>'))) {
@@ -353,31 +330,29 @@ const getAttributeValue = function (scanner, quote) {
       if (templateTag) {
         tokens.push({
           t: 'TemplateTag',
-          v: assertIsTemplateTag(templateTag)
+          v: assertIsTemplateTag(templateTag),
         });
         charsTokenToExtend = null;
       }
     } else {
       if (!charsTokenToExtend) {
-        charsTokenToExtend = {t: 'Chars', v: ''};
+        charsTokenToExtend = { t: 'Chars', v: '' };
         tokens.push(charsTokenToExtend);
       }
       charsTokenToExtend.v += (ch === '\r' ? '\n' : ch);
       scanner.pos++;
-      if (quote && ch === '\r' && scanner.peek() === '\n')
-        scanner.pos++;
+      if (quote && ch === '\r' && scanner.peek() === '\n') scanner.pos++;
     }
   }
 };
 
-const hasOwnProperty = Object.prototype.hasOwnProperty;
+const { hasOwnProperty } = Object.prototype;
 
 export function getTagToken(scanner) {
-  if (!(scanner.peek() === '<' && scanner.rest().charAt(1) !== '!'))
-    return null;
+  if (!(scanner.peek() === '<' && scanner.rest().charAt(1) !== '!')) return null;
   scanner.pos++;
 
-  const tag = {t: 'Tag'};
+  const tag = { t: 'Tag' };
 
   // now looking at the character after `<`, which is not a `!`
   if (scanner.peek() === '/') {
@@ -386,32 +361,28 @@ export function getTagToken(scanner) {
   }
 
   const tagName = getTagName(scanner);
-  if (!tagName)
-    scanner.fatal("Expected tag name after `<`");
+  if (!tagName) scanner.fatal('Expected tag name after `<`');
   tag.n = properCaseTagName(tagName);
 
-  if (scanner.peek() === '/' && tag.isEnd)
-    scanner.fatal("End tag can't have trailing slash");
-  if (handleEndOfTag(scanner, tag))
-    return tag;
+  if (scanner.peek() === '/' && tag.isEnd) scanner.fatal("End tag can't have trailing slash");
+  if (handleEndOfTag(scanner, tag)) return tag;
 
-  if (scanner.isEOF())
-    scanner.fatal("Unclosed `<`");
+  if (scanner.isEOF()) {
+    scanner.fatal('Unclosed `<`');
+  }
 
-  if (!HTML_SPACE.test(scanner.peek()))
+  if (!HTML_SPACE.test(scanner.peek())) {
     // e.g. `<a{{b}}>`
-    scanner.fatal("Expected space after tag name");
+    scanner.fatal('Expected space after tag name');
+  }
 
   // we're now in "Before attribute name state" of the tokenizer
   skipSpaces(scanner);
 
-  if (scanner.peek() === '/' && tag.isEnd)
-    scanner.fatal("End tag can't have trailing slash");
-  if (handleEndOfTag(scanner, tag))
-    return tag;
+  if (scanner.peek() === '/' && tag.isEnd) scanner.fatal("End tag can't have trailing slash");
+  if (handleEndOfTag(scanner, tag)) return tag;
 
-  if (tag.isEnd)
-    scanner.fatal("End tag can't have attributes");
+  if (tag.isEnd) scanner.fatal("End tag can't have attributes");
 
   tag.attrs = {};
   const nondynamicAttrs = tag.attrs;
@@ -430,43 +401,35 @@ export function getTagToken(scanner) {
         scanner, TEMPLATE_TAG_POSITION.IN_START_TAG));
     if (templateTag || (scanner.pos > curPos)) {
       if (templateTag) {
-        if (tag.attrs === nondynamicAttrs)
-          tag.attrs = [nondynamicAttrs];
+        if (tag.attrs === nondynamicAttrs) tag.attrs = [nondynamicAttrs];
         tag.attrs.push({
           t: 'TemplateTag',
-          v: assertIsTemplateTag(templateTag)
+          v: assertIsTemplateTag(templateTag),
         });
       } // else, must have scanned a `{{! comment}}`
 
       spacesRequiredAfter = true;
     } else {
-
       let attributeName = getAttributeName(scanner);
-      if (!attributeName)
-        scanner.fatal("Expected attribute name in tag");
+      if (!attributeName) scanner.fatal('Expected attribute name in tag');
       // Throw error on `{` in attribute name.  This provides *some* error message
       // if someone writes `<a x{{y}}>` or `<a x{{y}}=z>`.  The HTML tokenization
       // spec doesn't say that `{` is invalid, but the DOM API (setAttribute) won't
       // allow it, so who cares.
-      if (attributeName.indexOf('{') >= 0)
-        scanner.fatal("Unexpected `{` in attribute name.");
+      if (attributeName.indexOf('{') >= 0) scanner.fatal('Unexpected `{` in attribute name.');
       attributeName = properCaseAttributeName(attributeName);
 
-      if (hasOwnProperty.call(nondynamicAttrs, attributeName))
-        scanner.fatal("Duplicate attribute in tag: " + attributeName);
+      if (hasOwnProperty.call(nondynamicAttrs, attributeName)) scanner.fatal(`Duplicate attribute in tag: ${attributeName}`);
 
       nondynamicAttrs[attributeName] = [];
 
       skipSpaces(scanner);
 
-      if (handleEndOfTag(scanner, tag))
-        return tag;
+      if (handleEndOfTag(scanner, tag)) return tag;
 
       let ch = scanner.peek();
-      if (!ch)
-        scanner.fatal("Unclosed <");
-      if ('\u0000"\'<'.indexOf(ch) >= 0)
-        scanner.fatal("Unexpected character after attribute name in tag");
+      if (!ch) scanner.fatal('Unclosed <');
+      if ('\u0000"\'<'.indexOf(ch) >= 0) scanner.fatal('Unexpected character after attribute name in tag');
 
       if (ch === '=') {
         scanner.pos++;
@@ -474,15 +437,11 @@ export function getTagToken(scanner) {
         skipSpaces(scanner);
 
         ch = scanner.peek();
-        if (!ch)
-          scanner.fatal("Unclosed <");
-        if ('\u0000><=`'.indexOf(ch) >= 0)
-          scanner.fatal("Unexpected character after = in tag");
+        if (!ch) scanner.fatal('Unclosed <');
+        if ('\u0000><=`'.indexOf(ch) >= 0) scanner.fatal('Unexpected character after = in tag');
 
-        if ((ch === '"') || (ch === "'"))
-          nondynamicAttrs[attributeName] = getAttributeValue(scanner, ch);
-        else
-          nondynamicAttrs[attributeName] = getAttributeValue(scanner);
+        if ((ch === '"') || (ch === "'")) nondynamicAttrs[attributeName] = getAttributeValue(scanner, ch);
+        else nondynamicAttrs[attributeName] = getAttributeValue(scanner);
 
         spacesRequiredAfter = true;
       }
@@ -490,19 +449,14 @@ export function getTagToken(scanner) {
     // now we are in the "post-attribute" position, whether it was a template tag
     // attribute (like `{{x}}`) or a normal one (like `x` or `x=y`).
 
-    if (handleEndOfTag(scanner, tag))
-      return tag;
+    if (handleEndOfTag(scanner, tag)) return tag;
 
-    if (scanner.isEOF())
-      scanner.fatal("Unclosed `<`");
+    if (scanner.isEOF()) scanner.fatal('Unclosed `<`');
 
-    if (spacesRequiredAfter)
-      requireSpaces(scanner);
-    else
-      skipSpaces(scanner);
+    if (spacesRequiredAfter) requireSpaces(scanner);
+    else skipSpaces(scanner);
 
-    if (handleEndOfTag(scanner, tag))
-      return tag;
+    if (handleEndOfTag(scanner, tag)) return tag;
   }
 }
 
@@ -511,7 +465,7 @@ export const TEMPLATE_TAG_POSITION = {
   IN_START_TAG: 2,
   IN_ATTRIBUTE: 3,
   IN_RCDATA: 4,
-  IN_RAWTEXT: 5
+  IN_RAWTEXT: 5,
 };
 
 // tagName must be proper case
@@ -523,10 +477,8 @@ export function isLookingAtEndTag(scanner, tagName) {
     properCaseTagName(firstPart[1]) === tagName) {
     // we've seen `</foo`, now see if the end tag continues
     pos += firstPart[0].length;
-    while (pos < rest.length && HTML_SPACE.test(rest.charAt(pos)))
-      pos++;
-    if (pos < rest.length && rest.charAt(pos) === '>')
-      return true;
+    while (pos < rest.length && HTML_SPACE.test(rest.charAt(pos))) pos++;
+    if (pos < rest.length && rest.charAt(pos) === '>') return true;
   }
   return false;
 }

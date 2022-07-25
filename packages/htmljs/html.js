@@ -13,7 +13,7 @@ const makeTagConstructor = function (tagName) {
     // Work with or without `new`.  If not called with `new`,
     // perform instantiation by recursively calling this constructor.
     // We can't pass varargs, so pass no args.
-    const instance = (this instanceof Tag) ? this : new HTMLTag;
+    const instance = (this instanceof Tag) ? this : new HTMLTag();
 
     let i = 0;
     const attrs = args.length && args[0];
@@ -45,7 +45,7 @@ const makeTagConstructor = function (tagName) {
     return instance;
   };
 
-  HTMLTag.prototype = new Tag;
+  HTMLTag.prototype = new Tag();
   HTMLTag.prototype.constructor = HTMLTag;
   HTMLTag.prototype.tagName = tagName;
 
@@ -58,7 +58,7 @@ export function Attrs(...args) {
   // Work with or without `new`.  If not called with `new`,
   // perform instantiation by recursively calling this constructor.
   // We can't pass varargs, so pass no args.
-  const instance = (this instanceof Attrs) ? this : new Attrs;
+  const instance = (this instanceof Attrs) ? this : new Attrs();
 
   instance.value = args;
 
@@ -132,7 +132,7 @@ export function CharRef(attrs) {
   }
 
   if (!(attrs && attrs.html && attrs.str)) {
-    throw new Error("HTML.CharRef must be constructed with ({html:..., str:...})");
+    throw new Error('HTML.CharRef must be constructed with ({html:..., str:...})');
   }
 
   this.html = attrs.html;
@@ -207,16 +207,15 @@ export function isConstructedObject(x) {
 }
 
 
-export function isNully (node) {
-  if (node == null)
+export function isNully(node) {
+  if (node == null) {
     // null or undefined
     return true;
+  }
 
   if (isArray(node)) {
     // is it an empty array or an array of all nully items?
-    for (const item of node)
-      if (! isNully(item))
-        return false;
+    for (const item of node) if (!isNully(item)) return false;
 
     return true;
   }
@@ -253,7 +252,7 @@ export function flattenAttributes(attrs) {
       throw new Error(`Expected plain JS object as attrs, found: ${oneAttrs}`);
     }
 
-    for (let name in oneAttrs) {
+    for (const name in oneAttrs) {
       if (!isValidAttributeName(name)) {
         throw new Error(`Illegal HTML attribute name: ${name}`);
       }
