@@ -1,3 +1,4 @@
+/* eslint-env meteor */
 Package.describe({
   name: 'htmljs',
   summary: 'Small library for expressing HTML trees',

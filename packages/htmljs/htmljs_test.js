@@ -1,3 +1,4 @@
+/* eslint-env meteor */
 import { HTML } from 'meteor/htmljs';
 
 Tinytest.add('htmljs - getTag', function (test) {
