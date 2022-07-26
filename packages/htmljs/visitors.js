@@ -76,20 +76,19 @@ Visitor.def({
 
     throw new Error(`Unexpected object in htmljs: ${content}`);
   },
-  visitNull(/* nullOrUndefined , ... */) {
-    throw new Error('Visitor.visitNull is not implemented');
+  visitNull(nullOrUndefined/* , ... */) {
   },
-  visitPrimitive(/* stringBooleanOrNumber , ... */) {
+  visitPrimitive(stringBooleanOrNumber/* , ... */) {
   },
-  visitArray(/* array , ... */) {
+  visitArray(array/* , ... */) {
   },
-  visitComment(/* comment , ... */) {
+  visitComment(comment/* , ... */) {
   },
-  visitCharRef(/* charRef , ... */) {
+  visitCharRef(charRef/* , ... */) {
   },
-  visitRaw(/* raw , ... */) {
+  visitRaw(raw/* , ... */) {
   },
-  visitTag(/* tag , ... */) {
+  visitTag(tag/* , ... */) {
   },
   visitObject(obj/* , ... */) {
     throw new Error(`Unexpected object in htmljs: ${obj}`);
