@@ -1,3 +1,4 @@
+/* eslint-env meteor */
 import { HTMLTools } from 'meteor/html-tools';
 
 const { Scanner } = HTMLTools;
@@ -18,7 +19,6 @@ const tokenize = function (input) {
 
   return tokens;
 };
-
 
 Tinytest.add('html-tools - comments', function (test) {
   const succeed = function (input, content) {

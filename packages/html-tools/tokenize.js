@@ -86,7 +86,9 @@ export function getComment(scanner) {
 }
 
 const skipSpaces = function (scanner) {
-  while (HTML_SPACE.test(scanner.peek())) scanner.pos++;
+  while (HTML_SPACE.test(scanner.peek())) {
+    scanner.pos++;
+  }
 };
 
 const requireSpaces = function (scanner) {
@@ -228,7 +230,6 @@ const handleEndOfTag = function (scanner, tag) {
   return null;
 };
 
-
 // Scan a quoted or unquoted attribute value (omit `quote` for unquoted).
 const getAttributeValue = function (scanner, quote) {
   if (quote) {
@@ -261,8 +262,7 @@ const getAttributeValue = function (scanner, quote) {
       tokens.push(charRef);
       charsTokenToExtend = null;
     } else if (scanner.getTemplateTag &&
-      ((templateTag = scanner.getTemplateTag(
-          scanner, TEMPLATE_TAG_POSITION.IN_ATTRIBUTE)) ||
+      ((templateTag = scanner.getTemplateTag(scanner, TEMPLATE_TAG_POSITION.IN_ATTRIBUTE)) ||
         scanner.pos > curPos /* `{{! comment}}` */)) {
       if (templateTag) {
         tokens.push({
@@ -332,8 +332,8 @@ export function getTagToken(scanner) {
     // first, try for a template tag.
     const curPos = scanner.pos;
     const templateTag = (scanner.getTemplateTag &&
-      scanner.getTemplateTag(
-        scanner, TEMPLATE_TAG_POSITION.IN_START_TAG));
+      scanner.getTemplateTag(scanner, TEMPLATE_TAG_POSITION.IN_START_TAG));
+
     if (templateTag || (scanner.pos > curPos)) {
       if (templateTag) {
         if (tag.attrs === nondynamicAttrs) tag.attrs = [nondynamicAttrs];
@@ -408,16 +408,14 @@ export function getHTMLToken(scanner, dataMode) {
     // `getTemplateTag` function.  If the function returns `null` but
     // consumes characters, it must have parsed a comment or something,
     // so we loop and try it again.  If it ever returns `null` without
-    // consuming anything, that means it didn't see anything interesting
+    // consuming anything, that means it didn't see anything interesting,
     // so we look for a normal token.  If it returns a truthy value,
     // the value must be instanceof HTMLTools.TemplateTag.  We wrap it
     // in a Special token.
     const lastPos = scanner.pos;
-    result = scanner.getTemplateTag(
-      scanner,
-      (dataMode === 'rcdata' ? TEMPLATE_TAG_POSITION.IN_RCDATA :
-        (dataMode === 'rawtext' ? TEMPLATE_TAG_POSITION.IN_RAWTEXT :
-          TEMPLATE_TAG_POSITION.ELEMENT)));
+    const position = (dataMode === 'rcdata' ? TEMPLATE_TAG_POSITION.IN_RCDATA : (dataMode === 'rawtext' ? TEMPLATE_TAG_POSITION.IN_RAWTEXT : TEMPLATE_TAG_POSITION.ELEMENT))
+
+    result = scanner.getTemplateTag(scanner, position);
 
     if (result) return { t: 'TemplateTag', v: assertIsTemplateTag(result) };
     if (scanner.pos > lastPos) return null;
@@ -474,6 +472,7 @@ export function isLookingAtEndTag(scanner, tagName) {
   const rest = scanner.rest();
   let pos = 0; // into rest
   const firstPart = /^<\/([a-zA-Z]+)/.exec(rest);
+
   if (firstPart &&
     properCaseTagName(firstPart[1]) === tagName) {
     // we've seen `</foo`, now see if the end tag continues
@@ -481,5 +480,6 @@ export function isLookingAtEndTag(scanner, tagName) {
     while (pos < rest.length && HTML_SPACE.test(rest.charAt(pos))) pos++;
     if (pos < rest.length && rest.charAt(pos) === '>') return true;
   }
+
   return false;
 }

@@ -1,3 +1,4 @@
+/* eslint-env meteor */
 import { HTML } from 'meteor/htmljs';
 import { HTMLTools } from 'meteor/html-tools';
 import { BlazeTools } from 'meteor/blaze-tools';
@@ -273,7 +274,7 @@ Tinytest.add('html-tools - getTemplateTag', function (test) {
     }
 
     const match = mustache.exec(scanner.rest());
-    if (!match) scanner.fatal('Bad mustache');
+    if (!match) scanner.fatal(`Bad mustache at ${position}`);
 
     scanner.pos += match[0].length;
 

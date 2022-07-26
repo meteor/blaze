@@ -97,7 +97,7 @@ const parseAttrs = attrs => {
     const inValue = attrs[k];
     let outParts = [];
 
-    for (const token of inValue) {
+    inValue.forEach(token => {
       switch (token.t) {
         case 'Chars':
           outParts = pushOrAppendString(outParts, token.v);
@@ -109,7 +109,7 @@ const parseAttrs = attrs => {
           outParts.push(token.v);
           break;
       }
-    }
+    });
 
     const outValue = (inValue.length === 0 ? '' : (outParts.length === 1 ? outParts[0] : outParts));
     const properKey = properCaseAttributeName(k);
@@ -285,8 +285,7 @@ export function getContent(scanner, shouldStopFunc) {
         if (content == null) content = [];
         else if (!HTML.isArray(content)) content = [content];
 
-        items.push(HTML.getTag(tagName).apply(
-          null, (attrs ? [attrs] : []).concat(content)));
+        items.push(HTML.getTag(tagName).apply(null, (attrs ? [attrs] : []).concat(content)));
       }
     } else {
       scanner.fatal(`Unknown token type: ${token.t}`);

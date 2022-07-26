@@ -4,7 +4,8 @@ export const Tag = function () {
 Tag.prototype.tagName = ''; // this will be set per Tag subclass
 Tag.prototype.attrs = null;
 Tag.prototype.children = Object.freeze ? Object.freeze([]) : [];
-Tag.prototype.htmljsType = Tag.htmljsType = ['Tag'];
+Tag.htmljsType = ['Tag'];
+Tag.prototype.htmljsType = Tag.htmljsType;
 
 export function isConstructedObject(x) {
   // Figure out if `x` is "an instance of some class" or just a plain
@@ -66,8 +67,10 @@ const makeTagConstructor = function (tagName) {
         i++;
       } else if (attrs instanceof Attrs) {
         const array = attrs.value;
+
         if (array.length === 1) {
-          instance.attrs = array[0];
+          const [ attrValue ] = array;
+          instance.attrs = attrValue;
         } else if (array.length > 1) {
           instance.attrs = array;
         }
@@ -167,7 +170,8 @@ export function CharRef(attrs) {
   this.str = attrs.str;
 }
 
-CharRef.prototype.htmljsType = CharRef.htmljsType = ['CharRef'];
+CharRef.htmljsType = ['CharRef'];
+CharRef.prototype.htmljsType = CharRef.htmljsType;
 
 export function Comment(value) {
   if (!(this instanceof Comment)) {
@@ -185,7 +189,8 @@ export function Comment(value) {
   this.sanitizedValue = value.replace(/^-|--+|-$/g, '');
 }
 
-Comment.prototype.htmljsType = Comment.htmljsType = ['Comment'];
+Comment.htmljsType = ['Comment'];
+Comment.prototype.htmljsType = Comment.htmljsType;
 
 export function Raw(value) {
   if (!(this instanceof Raw)) {
@@ -200,7 +205,8 @@ export function Raw(value) {
   this.value = value;
 }
 
-Raw.prototype.htmljsType = Raw.htmljsType = ['Raw'];
+Raw.htmljsType = ['Raw'];
+Raw.prototype.htmljsType = Raw.htmljsType;
 
 export function isArray(x) {
   return x instanceof Array || Array.isArray(x);
@@ -212,18 +218,11 @@ export function isNully(node) {
     return true;
   }
 
-  if (isArray(node)) {
-    // is it an empty array or an array of all nully items?
-    for (const item of node) if (!isNully(item)) return false;
-
-    return true;
-  }
-
-  return false;
+  return isArray(node) && node.every(isNully);
 }
 
 export function isValidAttributeName(name) {
-  return /^[:_A-Za-z][:_A-Za-z0-9.\-]*/.test(name);
+  return /^[:_A-Za-z][:_A-Za-z\d.-]*/.test(name);
 }
 
 // If `attrs` is an array of attributes dictionaries, combines them
@@ -240,11 +239,9 @@ export function flattenAttributes(attrs) {
   }
 
   const result = {};
+  const n = (isList ? attrs.length : 1);
 
-  let i = 0;
-  const N = (isList ? attrs.length : 1);
-
-  for (; i < N; i++) {
+  for (let i = 0; i < n; i++) {
     const oneAttrs = (isList ? attrs[i] : attrs);
 
     if ((typeof oneAttrs !== 'object') || isConstructedObject(oneAttrs)) {

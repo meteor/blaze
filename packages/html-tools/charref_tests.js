@@ -1,3 +1,4 @@
+/* eslint-env meteor */
 import { HTMLTools } from 'meteor/html-tools';
 
 const { Scanner } = HTMLTools;

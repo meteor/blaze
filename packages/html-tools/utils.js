@@ -6,23 +6,6 @@ export function asciiLowerCase (str) {
   });
 }
 
-const svgCamelCaseAttributes = 'attributeName attributeType baseFrequency baseProfile calcMode clipPathUnits contentScriptType contentStyleType diffuseConstant edgeMode externalResourcesRequired filterRes filterUnits glyphRef glyphRef gradientTransform gradientTransform gradientUnits gradientUnits kernelMatrix kernelUnitLength kernelUnitLength kernelUnitLength keyPoints keySplines keyTimes lengthAdjust limitingConeAngle markerHeight markerUnits markerWidth maskContentUnits maskUnits numOctaves pathLength patternContentUnits patternTransform patternUnits pointsAtX pointsAtY pointsAtZ preserveAlpha preserveAspectRatio primitiveUnits refX refY repeatCount repeatDur requiredExtensions requiredFeatures specularConstant specularExponent specularExponent spreadMethod spreadMethod startOffset stdDeviation stitchTiles surfaceScale surfaceScale systemLanguage tableValues targetX targetY textLength textLength viewBox viewTarget xChannelSelector yChannelSelector zoomAndPan'.split(' ');
-
-const properAttributeCaseMap = (function (map) {
-  svgCamelCaseAttributes.forEach(a => {
-    map[asciiLowerCase(a)] = a;
-  });
-  return map;
-}({}));
-
-const properTagCaseMap = (function (map) {
-  const knownElements = HTML.knownElementNames;
-  knownElements.forEach(a => {
-    map[asciiLowerCase(a)] = a;
-  });
-  return map;
-}({}));
-
 // Take a tag name in any case and make it the proper case for HTML.
 //
 // Modern browsers let you embed SVG in HTML, but SVG elements are special
@@ -33,14 +16,29 @@ const properTagCaseMap = (function (map) {
 // you actually get a `"viewBox"` attribute.  Any HTML-parsing toolchain
 // must do the same.
 export function properCaseTagName (name) {
+  const _properTagCaseMap = (map => {
+    const knownElements = HTML.knownElementNames;
+    knownElements.forEach(a => {
+      map[asciiLowerCase(a)] = a;
+    });
+    return map;
+  })({});
+
   const lowered = asciiLowerCase(name);
-  return properTagCaseMap.hasOwnProperty(lowered) ?
-    properTagCaseMap[lowered] : lowered;
+  return _properTagCaseMap.hasOwnProperty(lowered) ? _properTagCaseMap[lowered] : lowered;
 }
 
 // See docs for properCaseTagName.
 export function properCaseAttributeName(name) {
+  const svgCamelCaseAttributes = 'attributeName attributeType baseFrequency baseProfile calcMode clipPathUnits contentScriptType contentStyleType diffuseConstant edgeMode externalResourcesRequired filterRes filterUnits glyphRef glyphRef gradientTransform gradientTransform gradientUnits gradientUnits kernelMatrix kernelUnitLength kernelUnitLength kernelUnitLength keyPoints keySplines keyTimes lengthAdjust limitingConeAngle markerHeight markerUnits markerWidth maskContentUnits maskUnits numOctaves pathLength patternContentUnits patternTransform patternUnits pointsAtX pointsAtY pointsAtZ preserveAlpha preserveAspectRatio primitiveUnits refX refY repeatCount repeatDur requiredExtensions requiredFeatures specularConstant specularExponent specularExponent spreadMethod spreadMethod startOffset stdDeviation stitchTiles surfaceScale surfaceScale systemLanguage tableValues targetX targetY textLength textLength viewBox viewTarget xChannelSelector yChannelSelector zoomAndPan'.split(' ');
+
+  const _properAttributeCaseMap = (map => {
+    svgCamelCaseAttributes.forEach(a => {
+      map[asciiLowerCase(a)] = a;
+    });
+    return map;
+  })({});
+
   const lowered = asciiLowerCase(name);
-  return properAttributeCaseMap.hasOwnProperty(lowered) ?
-    properAttributeCaseMap[lowered] : lowered;
+  return _properAttributeCaseMap.hasOwnProperty(lowered) ? _properAttributeCaseMap[lowered] : lowered;
 }

@@ -2246,18 +2246,18 @@ const getNamedEntityByFirstChar = {};
 
 (function () {
   const namedEntitiesByFirstChar = {};
-  let chr;
+  let char;
 
-  for (const ent in ENTITIES) {
-    chr = ent.charAt(1);
-    namedEntitiesByFirstChar[chr] = (namedEntitiesByFirstChar[chr] || []);
-    namedEntitiesByFirstChar[chr].push(ent.slice(2));
-  }
+  Object.getOwnPropertyNames(ENTITIES).forEach(ent => {
+    char = ent.charAt(1);
+    namedEntitiesByFirstChar[char] = (namedEntitiesByFirstChar[char] || []);
+    namedEntitiesByFirstChar[char].push(ent.slice(2));
+  });
 
-  for (chr in namedEntitiesByFirstChar) {
+  Object.keys(namedEntitiesByFirstChar).forEach(chr => {
     const regex = new RegExp(`^&${chr}(?:${namedEntitiesByFirstChar[chr].join('|')})`);
     getNamedEntityByFirstChar[chr] = makeRegexMatcher(regex);
-  }
+  });
 }());
 
 // Run a provided "matcher" function but reset the current position afterwards.
@@ -2337,9 +2337,9 @@ const BIG_BAD_CODEPOINTS = (function (obj) {
     0xDFFFE, 0xDFFFF, 0xEFFFE, 0xEFFFF, 0xFFFFE, 0xFFFFF,
     0x10FFFE, 0x10FFFF];
 
-  for (const item of list) {
+  list.forEach(item => {
     obj[item] = true;
-  }
+  });
 
   return obj;
 }({}));

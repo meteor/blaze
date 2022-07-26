@@ -10,47 +10,39 @@ import {
   isVoidElement,
 } from './html';
 
-
-const IDENTITY = function (x) {
-  return x;
-};
-
-// _assign is like _.extend or the upcoming Object.assign.
-// Copy src's own, enumerable properties onto tgt and return
-// tgt.
-const _hasOwnProperty = Object.prototype.hasOwnProperty;
-const _assign = function (tgt, src) {
-  for (const k in src) {
-    if (_hasOwnProperty.call(src, k)) tgt[k] = src[k];
-  }
-  return tgt;
-};
+const IDENTITY = x => x;
 
 export const Visitor = function (props) {
-  _assign(this, props);
+  Object.assign(this, props);
 };
 
 Visitor.def = function (options) {
-  _assign(this.prototype, options);
+  Object.assign(this.prototype, options);
 };
 
 Visitor.extend = function (options) {
   const CurType = this;
-  const subType = function HTMLVisitorSubtype(/* arguments */) {
-    Visitor.apply(this, arguments);
+  const subType = function HTMLVisitorSubtype(...args) {
+    Visitor.apply(this, args);
   };
   subType.prototype = new CurType();
   subType.extend = CurType.extend;
   subType.def = CurType.def;
-  if (options) _assign(subType.prototype, options);
+
+  if (options) {
+    Object.assign(subType.prototype, options);
+  }
+
   return subType;
 };
 
 Visitor.def({
-  visit(content/* , ... */) {
+  visit(...args) {
+    const [content] = args;
+
     if (content == null) {
       // null or undefined.
-      return this.visitNull.apply(this, arguments);
+      return this.visitNull.apply(this, args);
     }
 
     if (typeof content === 'object') {
@@ -84,19 +76,20 @@ Visitor.def({
 
     throw new Error(`Unexpected object in htmljs: ${content}`);
   },
-  visitNull(nullOrUndefined/* , ... */) {
+  visitNull(/* nullOrUndefined , ... */) {
+    throw new Error('Visitor.visitNull is not implemented');
   },
-  visitPrimitive(stringBooleanOrNumber/* , ... */) {
+  visitPrimitive(/* stringBooleanOrNumber , ... */) {
   },
-  visitArray(array/* , ... */) {
+  visitArray(/* array , ... */) {
   },
-  visitComment(comment/* , ... */) {
+  visitComment(/* comment , ... */) {
   },
-  visitCharRef(charRef/* , ... */) {
+  visitCharRef(/* charRef , ... */) {
   },
-  visitRaw(raw/* , ... */) {
+  visitRaw(/* raw , ... */) {
   },
-  visitTag(tag/* , ... */) {
+  visitTag(/* tag , ... */) {
   },
   visitObject(obj/* , ... */) {
     throw new Error(`Unexpected object in htmljs: ${obj}`);
@@ -185,17 +178,20 @@ TransformingVisitor.def({
     if (oldAttrs) {
       const attrArgs = [null, null];
       attrArgs.push.apply(attrArgs, arguments);
-      for (const k in oldAttrs) {
+      Object.getOwnPropertyNames(oldAttrs).forEach(k => {
         const oldValue = oldAttrs[k];
         attrArgs[0] = k;
         attrArgs[1] = oldValue;
         const newValue = this.visitAttribute.apply(this, attrArgs);
         if (newValue !== oldValue) {
           // copy on write
-          if (newAttrs === oldAttrs) newAttrs = _assign({}, oldAttrs);
+          if (newAttrs === oldAttrs) {
+            newAttrs = Object.assign({}, oldAttrs);
+          }
+
           newAttrs[k] = newValue;
         }
-      }
+      });
     }
 
     return newAttrs;
@@ -207,10 +203,6 @@ TransformingVisitor.def({
   },
 });
 
-export function toHTML(content) {
-  return (new ToHTMLVisitor()).visit(content);
-}
-
 // Escaping modes for outputting text when generating HTML.
 export const TEXTMODE = {
   STRING: 1,
@@ -218,9 +210,13 @@ export const TEXTMODE = {
   ATTRIBUTE: 3,
 };
 
+export function toHTML(content) {
+  return (new ToHTMLVisitor()).visit(content);
+}
+
 export const ToTextVisitor = Visitor.extend();
 ToTextVisitor.def({
-  visitNull(nullOrUndefined) {
+  visitNull() {
     return '';
   },
   visitPrimitive(stringBooleanOrNumber) {
@@ -270,10 +266,19 @@ ToTextVisitor.def({
   },
 });
 
+export function toText(content, textMode) {
+  if (!textMode) throw new Error('textMode required for HTML.toText');
+  if (!(textMode === TEXTMODE.STRING ||
+    textMode === TEXTMODE.RCDATA ||
+    textMode === TEXTMODE.ATTRIBUTE)) throw new Error(`Unknown textMode: ${textMode}`);
+
+  const visitor = new ToTextVisitor({ textMode });
+  return visitor.visit(content);
+}
 
 export const ToHTMLVisitor = Visitor.extend();
 ToHTMLVisitor.def({
-  visitNull(nullOrUndefined) {
+  visitNull() {
     return '';
   },
   visitPrimitive(stringBooleanOrNumber) {
@@ -303,14 +308,14 @@ ToHTMLVisitor.def({
     let { attrs } = tag;
     if (attrs) {
       attrs = flattenAttributes(attrs);
-      for (const k in attrs) {
+      Object.getOwnPropertyNames(attrs).forEach(k => {
         if (k === 'value' && tagName === 'textarea') {
           children = [attrs[k], children];
         } else {
           const v = this.toText(attrs[k], TEXTMODE.ATTRIBUTE);
           attrStrs.push(` ${k}="${v}"`);
         }
-      }
+      });
     }
 
     const startTag = `<${tagName}${attrStrs.join('')}>`;
@@ -349,13 +354,3 @@ ToHTMLVisitor.def({
     return toText(node, textMode);
   },
 });
-
-export function toText(content, textMode) {
-  if (!textMode) throw new Error('textMode required for HTML.toText');
-  if (!(textMode === TEXTMODE.STRING ||
-    textMode === TEXTMODE.RCDATA ||
-    textMode === TEXTMODE.ATTRIBUTE)) throw new Error(`Unknown textMode: ${textMode}`);
-
-  const visitor = new ToTextVisitor({ textMode });
-  return visitor.visit(content);
-}

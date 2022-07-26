@@ -1,3 +1,4 @@
+/* eslint-env meteor */
 Package.describe({
   name: 'html-tools',
   summary: 'Standards-compliant HTML tools',
