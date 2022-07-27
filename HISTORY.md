@@ -1,4 +1,4 @@
-## v2.6.1, 2022-April-XX
+## v2.6.1, 2022-July-25
 
 * [#370](https://github.com/meteor/blaze/pull/370) `templating-runtime@1.6.1`, returned the `Template.__define__` with warning message
 * [#366](https://github.com/meteor/blaze/pull/366) Prevent firing callbacks until members are destroyed
