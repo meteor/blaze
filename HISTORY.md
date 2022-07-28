@@ -3,6 +3,9 @@
 * [#370](https://github.com/meteor/blaze/pull/370) `templating-runtime@1.6.1`, returned the `Template.__define__` with warning message
 * [#366](https://github.com/meteor/blaze/pull/366) Prevent firing callbacks until members are destroyed
   * fix destroying child templates when parent is destroyed; prevents memory leak and DOMRange "not attached" error
+* [#374](https://github.com/meteor/blaze/pull/374) `Blaze.remove` should destroy view before detaching
+* [#376](https://github.com/meteor/blaze/pull/376) Modify 'Must be attached' error to be more descriptive
+* [#377](https://github.com/meteor/blaze/pull/377) Add tests for [Blaze.remove should destroy view before detaching](https://github.com/meteor/blaze/pull/374)
 
 ## v2.6.0, 2022-April-13
 
