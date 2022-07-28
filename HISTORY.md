@@ -1,3 +1,8 @@
+## v3.0.0, 2023-XXXX-XX
+
+### Potentially breaking changes
+* [#373](https://github.com/meteor/blaze/pull/373) Remove fibers from codebase
+
 ## v2.6.1, 2022-July-25
 
 * [#370](https://github.com/meteor/blaze/pull/370) `templating-runtime@1.6.1`, returned the `Template.__define__` with warning message
