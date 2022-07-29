@@ -69,8 +69,7 @@ const makeTagConstructor = function (tagName) {
         const array = attrs.value;
 
         if (array.length === 1) {
-          const [ attrValue ] = array;
-          instance.attrs = attrValue;
+          instance.attrs = array[0]; /* eslint prefer-destructuring: ["error", {VariableDeclarator: {array: true}}] */
         } else if (array.length > 1) {
           instance.attrs = array;
         }
