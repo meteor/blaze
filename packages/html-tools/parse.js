@@ -108,6 +108,8 @@ const parseAttrs = attrs => {
         case 'TemplateTag':
           outParts.push(token.v);
           break;
+        default:
+          break;
       }
     });
 
@@ -132,19 +134,19 @@ const getRawText = (scanner, tagName, shouldStopFunc) => {
 
     const token = getHTMLToken(scanner, 'rawtext');
 
-    if (!token) {
-      // tokenizer reached EOF on its own, e.g. while scanning
-      // template comments like `{{! foo}}`.
-      continue;
-    }
-
-    if (token.t === 'Chars') {
-      items = pushOrAppendString(items, token.v);
-    } else if (token.t === 'TemplateTag') {
-      items.push(token.v);
-    } else {
-      // (can't happen)
-      scanner.fatal(`Unknown or unexpected token type: ${token.t}`);
+    /**
+     * Tokenizer has not reached EOF on its own, @example e.g. while scanning
+     * @example e.g. while scanning template comments like `{{! foo}}`.
+     */
+    if (token) {
+      if (token.t === 'Chars') {
+        items = pushOrAppendString(items, token.v);
+      } else if (token.t === 'TemplateTag') {
+        items.push(token.v);
+      } else {
+        // (can't happen)
+        scanner.fatal(`Unknown or unexpected token type: ${token.t}`);
+      }
     }
   }
 
@@ -166,25 +168,25 @@ export function getRCData(scanner, tagName, shouldStopFunc) {
 
     const token = getHTMLToken(scanner, 'rcdata');
 
-    if (!token) {
-      // tokenizer reached EOF on its own, e.g. while scanning
-      // template comments like `{{! foo}}`.
-      continue;
-    }
-
-    switch (token.t) {
-      case 'Chars':
-        items = pushOrAppendString(items, token.v);
-        break;
-      case 'CharRef':
-        items.push(convertCharRef(token));
-        break;
-      case 'TemplateTag':
-        items.push(token.v);
-        break;
-      default:
-        // (can't happen)
-        scanner.fatal(`Unknown or unexpected token type: ${token.t}`);
+    /**
+     * Tokenizer has not reached EOF on its own, @example e.g. while scanning
+     * @example e.g. while scanning template comments like `{{! foo}}`.
+     */
+    if (token) {
+      switch (token.t) {
+        case 'Chars':
+          items = pushOrAppendString(items, token.v);
+          break;
+        case 'CharRef':
+          items.push(convertCharRef(token));
+          break;
+        case 'TemplateTag':
+          items.push(token.v);
+          break;
+        default:
+          // (can't happen)
+          scanner.fatal(`Unknown or unexpected token type: ${token.t}`);
+      }
     }
   }
 
@@ -203,92 +205,92 @@ export function getContent(scanner, shouldStopFunc) {
     const posBefore = scanner.pos;
     const token = getHTMLToken(scanner);
 
-    if (!token) {
-      // tokenizer reached EOF on its own, e.g. while scanning
-      // template comments like `{{! foo}}`.
-      continue;
-    }
-
-    if (token.t === 'Doctype') {
-      scanner.fatal('Unexpected Doctype');
-    } else if (token.t === 'Chars') {
-      items = pushOrAppendString(items, token.v);
-    } else if (token.t === 'CharRef') {
-      items.push(convertCharRef(token));
-    } else if (token.t === 'Comment') {
-      items.push(HTML.Comment(token.v));
-    } else if (token.t === 'TemplateTag') {
-      items.push(token.v);
-    } else if (token.t === 'Tag') {
-      if (token.isEnd) {
-        // Stop when we encounter an end tag at the top level.
-        // Rewind; we'll re-parse the end tag later.
-        scanner.pos = posBefore;
-        break;
-      }
-
-      const tagName = token.n;
-
-      // is this an element with no close tag (a BR, HR, IMG, etc.) based
-      // on its name?
-      const isVoid = HTML.isVoidElement(tagName);
-
-      if (token.isSelfClosing) {
-        if (!(isVoid || HTML.isKnownSVGElement(tagName) || tagName.indexOf(':') >= 0)) scanner.fatal('Only certain elements like BR, HR, IMG, etc. (and foreign elements like SVG) are allowed to self-close');
-      }
-
-      // result of parseAttrs may be null
-      let attrs = parseAttrs(token.attrs);
-
-      // arrays need to be wrapped in HTML.Attrs(...)
-      // when used to construct tags
-      if (HTML.isArray(attrs)) attrs = HTML.Attrs.apply(null, attrs);
-
-      const tagFunc = HTML.getTag(tagName);
-
-      if (isVoid || token.isSelfClosing) {
-        items.push(attrs ? tagFunc(attrs) : tagFunc());
-      } else {
-        // parse HTML tag contents.
-
-        // HTML treats a final `/` in a tag as part of an attribute, as in `<a href=/foo/>`, but the template author who writes `<circle r={{r}}/>`, say, may not be thinking about that, so generate a good error message in the "looks like self-close" case.
-        const looksLikeSelfClose = (scanner.input.substr(scanner.pos - 2, 2) === '/>');
-
-        let content = null;
-
-        if (token.n === 'textarea') {
-          if (scanner.peek() === '\n') scanner.pos++;
-          const textareaValue = getRCData(scanner, token.n, shouldStopFunc);
-          if (textareaValue) {
-            if (attrs instanceof HTML.Attrs) {
-              attrs = HTML.Attrs.apply(
-                null, attrs.value.concat([{ value: textareaValue }]));
-            } else {
-              attrs = (attrs || {});
-              attrs.value = textareaValue;
-            }
-          }
-        } else if (token.n === 'script' || token.n === 'style') {
-          content = getRawText(scanner, token.n, shouldStopFunc);
-        } else {
-          content = getContent(scanner, shouldStopFunc);
+    /**
+     * Tokenizer has not reached EOF on its own, @example e.g. while scanning
+     * @example e.g. while scanning template comments like `{{! foo}}`.
+     */
+    if (token) {
+      if (token.t === 'Doctype') {
+        scanner.fatal('Unexpected Doctype');
+      } else if (token.t === 'Chars') {
+        items = pushOrAppendString(items, token.v);
+      } else if (token.t === 'CharRef') {
+        items.push(convertCharRef(token));
+      } else if (token.t === 'Comment') {
+        items.push(HTML.Comment(token.v));
+      } else if (token.t === 'TemplateTag') {
+        items.push(token.v);
+      } else if (token.t === 'Tag') {
+        if (token.isEnd) {
+          // Stop when we encounter an end tag at the top level.
+          // Rewind; we'll re-parse the end tag later.
+          scanner.pos = posBefore;
+          break;
         }
 
-        const endTag = getHTMLToken(scanner);
+        const tagName = token.n;
 
-        if (!(endTag && endTag.t === 'Tag' && endTag.isEnd && endTag.n === tagName)) scanner.fatal(`Expected "${tagName}" end tag${looksLikeSelfClose ? ` -- if the "<${token.n} />" tag was supposed to self-close, try adding a space before the "/"` : ''}`);
+        // is this an element with no close tag (a BR, HR, IMG, etc.) based
+        // on its name?
+        const isVoid = HTML.isVoidElement(tagName);
 
-        // XXX support implied end tags in cases allowed by the spec
+        if (token.isSelfClosing) {
+          if (!(isVoid || HTML.isKnownSVGElement(tagName) || tagName.indexOf(':') >= 0)) scanner.fatal('Only certain elements like BR, HR, IMG, etc. (and foreign elements like SVG) are allowed to self-close');
+        }
 
-        // make `content` into an array suitable for applying tag constructor
-        // as in `FOO.apply(null, content)`.
-        if (content == null) content = [];
-        else if (!HTML.isArray(content)) content = [content];
+        // result of parseAttrs may be null
+        let attrs = parseAttrs(token.attrs);
 
-        items.push(HTML.getTag(tagName).apply(null, (attrs ? [attrs] : []).concat(content)));
+        // arrays need to be wrapped in HTML.Attrs(...)
+        // when used to construct tags
+        if (HTML.isArray(attrs)) attrs = HTML.Attrs.apply(null, attrs);
+
+        const tagFunc = HTML.getTag(tagName);
+
+        if (isVoid || token.isSelfClosing) {
+          items.push(attrs ? tagFunc(attrs) : tagFunc());
+        } else {
+          // parse HTML tag contents.
+
+          // HTML treats a final `/` in a tag as part of an attribute, as in `<a href=/foo/>`, but the template author who writes `<circle r={{r}}/>`, say, may not be thinking about that, so generate a good error message in the "looks like self-close" case.
+          const looksLikeSelfClose = (scanner.input.substr(scanner.pos - 2, 2) === '/>');
+
+          let content = null;
+
+          if (token.n === 'textarea') {
+            if (scanner.peek() === '\n') scanner.pos++;
+            const textareaValue = getRCData(scanner, token.n, shouldStopFunc);
+            if (textareaValue) {
+              if (attrs instanceof HTML.Attrs) {
+                attrs = HTML.Attrs.apply(
+                  null, attrs.value.concat([{ value: textareaValue }]));
+              } else {
+                attrs = (attrs || {});
+                attrs.value = textareaValue;
+              }
+            }
+          } else if (token.n === 'script' || token.n === 'style') {
+            content = getRawText(scanner, token.n, shouldStopFunc);
+          } else {
+            content = getContent(scanner, shouldStopFunc);
+          }
+
+          const endTag = getHTMLToken(scanner);
+
+          if (!(endTag && endTag.t === 'Tag' && endTag.isEnd && endTag.n === tagName)) scanner.fatal(`Expected "${tagName}" end tag${looksLikeSelfClose ? ` -- if the "<${token.n} />" tag was supposed to self-close, try adding a space before the "/"` : ''}`);
+
+          // XXX support implied end tags in cases allowed by the spec
+
+          // make `content` into an array suitable for applying tag constructor
+          // as in `FOO.apply(null, content)`.
+          if (content == null) content = [];
+          else if (!HTML.isArray(content)) content = [content];
+
+          items.push(HTML.getTag(tagName).apply(null, (attrs ? [attrs] : []).concat(content)));
+        }
+      } else {
+        scanner.fatal(`Unknown token type: ${token.t}`);
       }
-    } else {
-      scanner.fatal(`Unknown token type: ${token.t}`);
     }
   }
 
