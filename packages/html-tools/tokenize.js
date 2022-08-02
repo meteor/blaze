@@ -109,7 +109,10 @@ const getDoctypeQuotedString = function (scanner) {
   let str = '';
   let ch;
   while ((ch = scanner.peek()), ch !== quote) {
-    if ((!ch) || (ch === '\u0000') || (ch === '>')) scanner.fatal('Malformed DOCTYPE');
+    if ((!ch) || (ch === '\u0000') || (ch === '>')) {
+      scanner.fatal('Malformed DOCTYPE');
+    }
+
     str += ch;
     scanner.pos++;
   }
@@ -413,7 +416,7 @@ export function getHTMLToken(scanner, dataMode) {
     // the value must be instanceof HTMLTools.TemplateTag.  We wrap it
     // in a Special token.
     const lastPos = scanner.pos;
-    const position = (dataMode === 'rcdata' ? TEMPLATE_TAG_POSITION.IN_RCDATA : (dataMode === 'rawtext' ? TEMPLATE_TAG_POSITION.IN_RAWTEXT : TEMPLATE_TAG_POSITION.ELEMENT))
+    const position = (dataMode === 'rcdata' ? TEMPLATE_TAG_POSITION.IN_RCDATA : (dataMode === 'rawtext' ? TEMPLATE_TAG_POSITION.IN_RAWTEXT : TEMPLATE_TAG_POSITION.ELEMENT));
 
     result = scanner.getTemplateTag(scanner, position);
 
