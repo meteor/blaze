@@ -11,6 +11,39 @@ Blaze is a Meteor-only package for now. Soon we will have Blaze on npm so you ca
 
 Each new Meteor project you create has Blaze included (the `blaze-html-templates` package).
 
+## Prerequisite
+
+Earlier, `jQuery` was bundled with Blaze. In later versions Blaze does not have `jQuery` as a direct dependency. With some legacy Blaze packages you might encounter the following error.
+
+```js
+Uncaught Error: jQuery not found
+```
+
+To mitigate this error it is advised to install `jQuery` either as an `npm` or as a `atmospherejs` package.
+
+
+#### install jquery with npm 
+
+Into project root.
+```sh
+meteor npm install jquery@latest --save
+```
+Import `jQuery` in `client/main.js`.
+```js
+import $ from 'jquery';
+```
+
+#### install jquery with atmospherejs  
+
+Into project root.
+```sh
+meteor add jquery@3.0.0
+```
+Import `jQuery` in `client/main.js`.
+```js
+import {$} from 'meteor/jquery';
+```
+
 ## Details
 
 Blaze has two major parts:
