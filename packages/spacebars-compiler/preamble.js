@@ -3,7 +3,7 @@ import { optimize } from './optimizer';
 import { parse, compile, codeGen, TemplateTagReplacer, beautify } from './compiler';
 import { TemplateTag } from './templatetag';
 
-SpacebarsCompiler = {
+export const SpacebarsCompiler = {
   CodeGen,
   _builtInBlockHelpers: builtInBlockHelpers,
   isReservedName,
@@ -15,5 +15,3 @@ SpacebarsCompiler = {
   _beautify: beautify,
   TemplateTag,
 };
-
-export { SpacebarsCompiler };

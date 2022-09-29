@@ -40,7 +40,7 @@ Package.onUse(function (api) {
 
   api.addFiles([
     'dynamic.html',
-    'dynamic.js'
+    //'dynamic.js'
   ], 'client');
 });
 

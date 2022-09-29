@@ -6,7 +6,7 @@ import { Scanner } from './scanner';
 import { parseFragment, codePointToString, getContent, getRCData } from './parse';
 import { getComment, getDoctype, getHTMLToken, getTagToken, TEMPLATE_TAG_POSITION } from './tokenize';
 
-HTMLTools = {
+const HTMLTools = {
   asciiLowerCase,
   properCaseTagName,
   properCaseAttributeName,
