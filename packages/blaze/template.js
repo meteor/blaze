@@ -1,3 +1,6 @@
+/* global Blaze Tracker Match */
+/* eslint-disable import/no-unresolved, no-global-assign, no-param-reassign */
+
 import isObject from 'lodash.isobject';
 import isFunction from 'lodash.isfunction';
 import has from 'lodash.has';
@@ -11,6 +14,18 @@ import isEmpty from 'lodash.isempty';
 // `viewKind` is a string that looks like "Template.foo" for templates
 // defined by the compiler.
 
+const HelperMap = function () {
+};
+HelperMap.prototype.get = function (name) {
+  return this[` ${name}`];
+};
+HelperMap.prototype.set = function (name, helper) {
+  this[` ${name}`] = helper;
+};
+HelperMap.prototype.has = function (name) {
+  return (typeof this[` ${name}`] !== 'undefined');
+};
+
 /**
  * @class
  * @summary Constructor for a Template, which is used to construct Views with particular name and content.
@@ -18,45 +33,34 @@ import isEmpty from 'lodash.isempty';
  * @param {String} [viewName] Optional.  A name for Views constructed by this Template.  See [`view.name`](#view_name).
  * @param {Function} renderFunction A function that returns [*renderable content*](#Renderable-Content).  This function is used as the `renderFunction` for Views constructed by this Template.
  */
+// eslint-disable-next-line consistent-return
 Blaze.Template = function (viewName, renderFunction) {
-  if (! (this instanceof Blaze.Template))
-    // called without `new`
+  // called without `new`
+  if (!(this instanceof Blaze.Template)) {
     return new Blaze.Template(viewName, renderFunction);
+  }
 
   if (typeof viewName === 'function') {
     // omitted "viewName" argument
     renderFunction = viewName;
     viewName = '';
   }
-  if (typeof viewName !== 'string')
-    throw new Error("viewName must be a String (or omitted)");
-  if (typeof renderFunction !== 'function')
-    throw new Error("renderFunction must be a function");
+  if (typeof viewName !== 'string') throw new Error('viewName must be a String (or omitted)');
+  if (typeof renderFunction !== 'function') throw new Error('renderFunction must be a function');
 
   this.viewName = viewName;
   this.renderFunction = renderFunction;
 
-  this.__helpers = new HelperMap;
+  this.__helpers = new HelperMap();
   this.__eventMaps = [];
 
   this._callbacks = {
     created: [],
     rendered: [],
-    destroyed: []
+    destroyed: [],
   };
 };
-var Template = Blaze.Template;
-
-var HelperMap = function () {};
-HelperMap.prototype.get = function (name) {
-  return this[' '+name];
-};
-HelperMap.prototype.set = function (name, helper) {
-  this[' '+name] = helper;
-};
-HelperMap.prototype.has = function (name) {
-  return (typeof this[' '+name] !== 'undefined');
-};
+const { Template } = Blaze;
 
 /**
  * @summary Returns true if `value` is a template object like `Template.myTemplate`.
@@ -107,8 +111,8 @@ Template.prototype.onDestroyed = function (cb) {
 };
 
 Template.prototype._getCallbacks = function (which) {
-  var self = this;
-  var callbacks = self[which] ? [self[which]] : [];
+  const self = this;
+  let callbacks = self[which] ? [self[which]] : [];
   // Fire all callbacks added with the new API (Template.onRendered())
   // as well as the old-style callback (e.g. Template.rendered) for
   // backwards-compatibility.
@@ -116,19 +120,21 @@ Template.prototype._getCallbacks = function (which) {
   return callbacks;
 };
 
-var fireCallbacks = function (callbacks, template) {
+const fireCallbacks = function (callbacks, template) {
   Template._withTemplateInstanceFunc(
-    function () { return template; },
     function () {
-      for (var i = 0, N = callbacks.length; i < N; i++) {
+      return template;
+    },
+    function () {
+      for (let i = 0, N = callbacks.length; i < N; i++) {
         callbacks[i].call(template);
       }
     });
 };
 
 Template.prototype.constructView = function (contentFunc, elseFunc) {
-  var self = this;
-  var view = Blaze.View(self.viewName, self.renderFunction);
+  const self = this;
+  const view = Blaze.View(self.viewName, self.renderFunction);
   view.template = self;
 
   view.templateContentBlock = (
@@ -138,10 +144,9 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
 
   if (self.__eventMaps || typeof self.events === 'object') {
     view._onViewRendered(function () {
-      if (view.renderCount !== 1)
-        return;
+      if (view.renderCount !== 1) return;
 
-      if (! self.__eventMaps.length && typeof self.events === "object") {
+      if (!self.__eventMaps.length && typeof self.events === 'object') {
         // Provide limited back-compat support for `.events = {...}`
         // syntax.  Pass `template.events` to the original `.events(...)`
         // function.  This code must run only once per template, in
@@ -161,7 +166,7 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
   view.templateInstance = function () {
     // Update data, firstNode, and lastNode, and return the TemplateInstance
     // object.
-    var inst = view._templateInstance;
+    const inst = view._templateInstance;
 
     /**
      * @instance
@@ -192,10 +197,10 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
    * @locus Client
    * @deprecated in 1.1
    */
-  // To avoid situations when new callbacks are added in between view
-  // instantiation and event being fired, decide on all callbacks to fire
-  // immediately and then fire them on the event.
-  var createdCallbacks = self._getCallbacks('created');
+    // To avoid situations when new callbacks are added in between view
+    // instantiation and event being fired, decide on all callbacks to fire
+    // immediately and then fire them on the event.
+  const createdCallbacks = self._getCallbacks('created');
   view.onViewCreated(function () {
     fireCallbacks(createdCallbacks, view.templateInstance());
   });
@@ -208,7 +213,7 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
    * @locus Client
    * @deprecated in 1.1
    */
-  var renderedCallbacks = self._getCallbacks('rendered');
+  const renderedCallbacks = self._getCallbacks('rendered');
   view.onViewReady(function () {
     fireCallbacks(renderedCallbacks, view.templateInstance());
   });
@@ -221,7 +226,7 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
    * @locus Client
    * @deprecated in 1.1
    */
-  var destroyedCallbacks = self._getCallbacks('destroyed');
+  const destroyedCallbacks = self._getCallbacks('destroyed');
   view.onViewDestroyed(function () {
     fireCallbacks(destroyedCallbacks, view.templateInstance());
   });
@@ -235,13 +240,14 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
  * @param {Blaze.View} view
  * @instanceName template
  */
+// eslint-disable-next-line consistent-return
 Blaze.TemplateInstance = function (view) {
-  if (! (this instanceof Blaze.TemplateInstance))
-    // called without `new`
+  // called without `new`
+  if (!(this instanceof Blaze.TemplateInstance)) {
     return new Blaze.TemplateInstance(view);
+  }
 
-  if (! (view instanceof Blaze.View))
-    throw new Error("View required");
+  if (!(view instanceof Blaze.View)) throw new Error('View required');
 
   view._templateInstance = this;
 
@@ -294,9 +300,8 @@ Blaze.TemplateInstance = function (view) {
  * @returns {DOMNode[]}
  */
 Blaze.TemplateInstance.prototype.$ = function (selector) {
-  var view = this.view;
-  if (! view._domrange)
-    throw new Error("Can't use $ on template instance with no DOM");
+  const { view } = this;
+  if (!view._domrange) throw new Error("Can't use $ on template instance with no DOM");
   return view._domrange.$(selector);
 };
 
@@ -317,7 +322,7 @@ Blaze.TemplateInstance.prototype.findAll = function (selector) {
  * @returns {DOMElement}
  */
 Blaze.TemplateInstance.prototype.find = function (selector) {
-  var result = this.$(selector);
+  const result = this.$(selector);
   return result[0] || null;
 };
 
@@ -350,34 +355,34 @@ Blaze.TemplateInstance.prototype.autorun = function (f) {
  * subscription.
  */
 Blaze.TemplateInstance.prototype.subscribe = function (...args) {
-  var self = this;
+  const self = this;
 
-  var subHandles = self._subscriptionHandles;
+  const subHandles = self._subscriptionHandles;
 
   // Duplicate logic from Meteor.subscribe
-  var options = {};
+  let options = {};
   if (args.length) {
-    var lastParam = args[args.length - 1];
+    const lastParam = args[args.length - 1];
 
     // Match pattern to check if the last arg is an options argument
-    var lastParamOptionsPattern = {
+    const lastParamOptionsPattern = {
       onReady: Match.Optional(Function),
       // XXX COMPAT WITH 1.0.3.1 onError used to exist, but now we use
       // onStop with an error callback instead.
       onError: Match.Optional(Function),
       onStop: Match.Optional(Function),
-      connection: Match.Optional(Match.Any)
+      connection: Match.Optional(Match.Any),
     };
 
     if (isFunction(lastParam)) {
       options.onReady = args.pop();
-    } else if (lastParam && ! isEmpty(lastParam) && Match.test(lastParam, lastParamOptionsPattern)) {
+    } else if (lastParam && !isEmpty(lastParam) && Match.test(lastParam, lastParamOptionsPattern)) {
       options = args.pop();
     }
   }
 
-  var subHandle;
-  var oldStopped = options.onStop;
+  let subHandle;
+  const oldStopped = options.onStop;
   options.onStop = function (error) {
     // When the subscription is stopped, remove it from the set of tracked
     // subscriptions to avoid this list growing without bound
@@ -386,7 +391,7 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
     // Removing a subscription can only change the result of subscriptionsReady
     // if we are not ready (that subscription could be the one blocking us being
     // ready).
-    if (! self._allSubsReady) {
+    if (!self._allSubsReady) {
       self._allSubsReadyDep.changed();
     }
 
@@ -395,9 +400,9 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
     }
   };
 
-  var connection = options.connection;
+  const { connection } = options;
   const { onReady, onError, onStop } = options;
-  var callbacks = { onReady, onError, onStop };
+  const callbacks = { onReady, onError, onStop };
 
   // The callbacks are passed as the last item in the arguments array passed to
   // View#subscribe
@@ -406,7 +411,7 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
   // View#subscribe takes the connection as one of the options in the last
   // argument
   subHandle = self.view.subscribe.call(self.view, args, {
-    connection: connection
+    connection,
   });
 
   if (!has(subHandles, subHandle.subscriptionId)) {
@@ -431,9 +436,7 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
  */
 Blaze.TemplateInstance.prototype.subscriptionsReady = function () {
   this._allSubsReadyDep.depend();
-  this._allSubsReady = Object.values(this._subscriptionHandles).every((handle) => {  
-    return handle.ready();
-  });
+  this._allSubsReady = Object.values(this._subscriptionHandles).every((handle) => handle.ready());
 
   return this._allSubsReady;
 };
@@ -446,18 +449,23 @@ Blaze.TemplateInstance.prototype.subscriptionsReady = function () {
  */
 Template.prototype.helpers = function (dict) {
   if (!isObject(dict)) {
-    throw new Error("Helpers dictionary has to be an object");
+    throw new Error('Helpers dictionary has to be an object');
   }
 
-  for (var k in dict) this.__helpers.set(k, dict[k]);
+  // eslint-disable-next-line guard-for-in,no-restricted-syntax,no-unused-vars
+  for (const k in dict) {
+    this.__helpers.set(k, dict[k]);
+  }
 };
 
-var canUseGetters = (function () {
+const canUseGetters = (function () {
   if (Object.defineProperty) {
-    var obj = {};
+    const obj = {};
     try {
-      Object.defineProperty(obj, "self", {
-        get: function () { return obj; }
+      Object.defineProperty(obj, 'self', {
+        get() {
+          return obj;
+        },
       });
     } catch (e) {
       return false;
@@ -465,29 +473,29 @@ var canUseGetters = (function () {
     return obj.self === obj;
   }
   return false;
-})();
+}());
 
 if (canUseGetters) {
   // Like Blaze.currentView but for the template instance. A function
   // rather than a value so that not all helpers are implicitly dependent
   // on the current template instance's `data` property, which would make
   // them dependent on the data context of the template inclusion.
-  var currentTemplateInstanceFunc = null;
+  let currentTemplateInstanceFunc = null;
 
   // If getters are supported, define this property with a getter function
   // to make it effectively read-only, and to work around this bizarre JSC
   // bug: https://github.com/meteor/meteor/issues/9926
-  Object.defineProperty(Template, "_currentTemplateInstanceFunc", {
-    get: function () {
+  Object.defineProperty(Template, '_currentTemplateInstanceFunc', {
+    get() {
       return currentTemplateInstanceFunc;
-    }
+    },
   });
 
   Template._withTemplateInstanceFunc = function (templateInstanceFunc, func) {
     if (typeof func !== 'function') {
-      throw new Error("Expected function, got: " + func);
+      throw new Error(`Expected function, got: ${func}`);
     }
-    var oldTmplInstanceFunc = currentTemplateInstanceFunc;
+    const oldTmplInstanceFunc = currentTemplateInstanceFunc;
     try {
       currentTemplateInstanceFunc = templateInstanceFunc;
       return func();
@@ -501,9 +509,9 @@ if (canUseGetters) {
 
   Template._withTemplateInstanceFunc = function (templateInstanceFunc, func) {
     if (typeof func !== 'function') {
-      throw new Error("Expected function, got: " + func);
+      throw new Error(`Expected function, got: ${func}`);
     }
-    var oldTmplInstanceFunc = Template._currentTemplateInstanceFunc;
+    const oldTmplInstanceFunc = Template._currentTemplateInstanceFunc;
     try {
       Template._currentTemplateInstanceFunc = templateInstanceFunc;
       return func();
@@ -521,26 +529,28 @@ if (canUseGetters) {
  */
 Template.prototype.events = function (eventMap) {
   if (!isObject(eventMap)) {
-    throw new Error("Event map has to be an object");
+    throw new Error('Event map has to be an object');
   }
 
-  var template = this;
-  var eventMap2 = {};
-  for (var k in eventMap) {
-    eventMap2[k] = (function (k, v) {
-      return function (event /*, ...*/) {
-        var view = this; // passed by EventAugmenter
-        var data = Blaze.getData(event.currentTarget);
+  const template = this;
+  const eventMap2 = {};
+  // eslint-disable-next-line guard-for-in,no-restricted-syntax,no-unused-vars
+  for (const k in eventMap) {
+    eventMap2[k] = (function (_k, v) {
+      return function (event /* , ... */) {
+        const view = this; // passed by EventAugmenter
+        let data = Blaze.getData(event.currentTarget);
         if (data == null) data = {};
-        var args = Array.prototype.slice.call(arguments);
-        var tmplInstanceFunc = Blaze._bind(view.templateInstance, view);
+        // eslint-disable-next-line prefer-rest-params
+        const args = Array.prototype.slice.call(arguments);
+        const tmplInstanceFunc = Blaze._bind(view.templateInstance, view);
         args.splice(1, 0, tmplInstanceFunc());
 
         return Template._withTemplateInstanceFunc(tmplInstanceFunc, function () {
           return v.apply(data, args);
         });
       };
-    })(k, eventMap[k]);
+    }(k, eventMap[k]));
   }
 
   template.__eventMaps.push(eventMap2);

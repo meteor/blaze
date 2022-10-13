@@ -1,11 +1,13 @@
-var DOMBackend = {};
+/* global Blaze jQuery Package */
+/* eslint-disable import/no-unresolved, no-global-assign, no-param-reassign */
+
+const DOMBackend = {};
 Blaze._DOMBackend = DOMBackend;
 
-var $jq = (typeof jQuery !== 'undefined' ? jQuery :
-           (typeof Package !== 'undefined' ?
-            Package.jquery && Package.jquery.jQuery : null));
-if (! $jq)
-  throw new Error("jQuery not found");
+const $jq = (typeof jQuery !== 'undefined' ? jQuery :
+  (typeof Package !== 'undefined' ?
+    Package.jquery && Package.jquery.jQuery : null));
+if (!$jq) throw new Error('jQuery not found');
 
 DOMBackend._$jq = $jq;
 
@@ -22,18 +24,18 @@ DOMBackend.Events = {
   // `selector` is non-null.  `type` is one type (but
   // may be in backend-specific form, e.g. have namespaces).
   // Order fired must be order bound.
-  delegateEvents: function (elem, type, selector, handler) {
+  delegateEvents(elem, type, selector, handler) {
     $jq(elem).on(type, selector, handler);
   },
 
-  undelegateEvents: function (elem, type, handler) {
+  undelegateEvents(elem, type, handler) {
     $jq(elem).off(type, '**', handler);
   },
 
-  bindEventCapturer: function (elem, type, selector, handler) {
-    var $elem = $jq(elem);
+  bindEventCapturer(elem, type, selector, handler) {
+    const $elem = $jq(elem);
 
-    var wrapper = function (event) {
+    const wrapper = function (event) {
       event = $jq.event.fix(event);
       event.currentTarget = event.target;
 
@@ -43,9 +45,8 @@ DOMBackend.Events = {
       // since jQuery can't bind capturing handlers, it's not clear
       // where we would hook in.  Internal jQuery functions like `dispatch`
       // are too high-level.
-      var $target = $jq(event.currentTarget);
-      if ($target.is($elem.find(selector)))
-        handler.call(elem, event);
+      const $target = $jq(event.currentTarget);
+      if ($target.is($elem.find(selector))) handler.call(elem, event);
     };
 
     handler._meteorui_wrapper = wrapper;
@@ -55,22 +56,21 @@ DOMBackend.Events = {
     elem.addEventListener(type, wrapper, true);
   },
 
-  unbindEventCapturer: function (elem, type, handler) {
+  unbindEventCapturer(elem, type, handler) {
     type = DOMBackend.Events.parseEventType(type);
     elem.removeEventListener(type, handler._meteorui_wrapper, true);
   },
 
-  parseEventType: function (type) {
+  parseEventType(type) {
     // strip off namespaces
-    var dotLoc = type.indexOf('.');
-    if (dotLoc >= 0)
-      return type.slice(0, dotLoc);
+    const dotLoc = type.indexOf('.');
+    if (dotLoc >= 0) return type.slice(0, dotLoc);
     return type;
-  }
+  },
 };
 
 
-///// Removal detection and interoperability.
+// /// Removal detection and interoperability.
 
 // For an explanation of this technique, see:
 // http://bugs.jquery.com/ticket/12213#comment:23 .
@@ -80,17 +80,18 @@ DOMBackend.Events = {
 // which we can detect using a custom event with a teardown
 // hook.
 
-var NOOP = function () {};
+const NOOP = function () {
+};
 
 // Circular doubly-linked list
-var TeardownCallback = function (func) {
+const TeardownCallback = function (func) {
   this.next = this;
   this.prev = this;
   this.func = func;
 };
 
 // Insert newElt before oldElt in the circular list
-TeardownCallback.prototype.linkBefore = function(oldElt) {
+TeardownCallback.prototype.linkBefore = function (oldElt) {
   this.prev = oldElt.prev;
   this.next = oldElt;
   oldElt.prev.next = this;
@@ -103,7 +104,8 @@ TeardownCallback.prototype.unlink = function () {
 };
 
 TeardownCallback.prototype.go = function () {
-  var func = this.func;
+  const { func } = this;
+  // eslint-disable-next-line no-unused-expressions
   func && func();
 };
 
@@ -116,13 +118,13 @@ DOMBackend.Teardown = {
   // one of its ancestors is removed from the DOM via the backend library.
   // The callback function is called at most once, and it receives the element
   // in question as an argument.
-  onElementTeardown: function (elem, func) {
-    var elt = new TeardownCallback(func);
+  onElementTeardown(elem, func) {
+    const elt = new TeardownCallback(func);
 
-    var propName = DOMBackend.Teardown._CB_PROP;
-    if (! elem[propName]) {
+    const propName = DOMBackend.Teardown._CB_PROP;
+    if (!elem[propName]) {
       // create an empty node that is never unlinked
-      elem[propName] = new TeardownCallback;
+      elem[propName] = new TeardownCallback();
 
       // Set up the event, only the first time.
       $jq(elem).on(DOMBackend.Teardown._JQUERY_EVENT_NAME, NOOP);
@@ -134,31 +136,31 @@ DOMBackend.Teardown = {
   },
   // Recursively call all teardown hooks, in the backend and registered
   // through DOMBackend.onElementTeardown.
-  tearDownElement: function (elem) {
-    var elems = [];
+  tearDownElement(elem) {
+    const elems = [];
     // Array.prototype.slice.call doesn't work when given a NodeList in
     // IE8 ("JScript object expected").
-    var nodeList = elem.getElementsByTagName('*');
-    for (var i = 0; i < nodeList.length; i++) {
+    const nodeList = elem.getElementsByTagName('*');
+    for (let i = 0; i < nodeList.length; i++) {
       elems.push(nodeList[i]);
     }
     elems.push(elem);
     $jq.cleanData(elems);
-  }
+  },
 };
 
 $jq.event.special[DOMBackend.Teardown._JQUERY_EVENT_NAME] = {
-  setup: function () {
+  setup() {
     // This "setup" callback is important even though it is empty!
     // Without it, jQuery will call addEventListener, which is a
     // performance hit, especially with Chrome's async stack trace
     // feature enabled.
   },
-  teardown: function() {
-    var elem = this;
-    var callbacks = elem[DOMBackend.Teardown._CB_PROP];
+  teardown() {
+    const elem = this;
+    const callbacks = elem[DOMBackend.Teardown._CB_PROP];
     if (callbacks) {
-      var elt = callbacks.next;
+      let elt = callbacks.next;
       while (elt !== callbacks) {
         elt.go();
         elt = elt.next;
@@ -167,7 +169,7 @@ $jq.event.special[DOMBackend.Teardown._JQUERY_EVENT_NAME] = {
 
       elem[DOMBackend.Teardown._CB_PROP] = null;
     }
-  }
+  },
 };
 
 

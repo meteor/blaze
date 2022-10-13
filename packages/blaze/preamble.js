@@ -1,3 +1,6 @@
+/* global Blaze  */
+/* eslint-disable no-global-assign, no-param-reassign */
+
 /**
  * @namespace Blaze
  * @summary The namespace for all Blaze-related methods and classes.
@@ -7,34 +10,34 @@ Blaze = {};
 // Utility to HTML-escape a string.  Included for legacy reasons.
 // TODO: Should be replaced with _.escape once underscore is upgraded to a newer
 //       version which escapes ` (backtick) as well. Underscore 1.5.2 does not.
-Blaze._escape = (function() {
-  var escape_map = {
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#x27;",
-    "/": "&#x2F;",
-    "`": "&#x60;", /* IE allows backtick-delimited attributes?? */
-    "&": "&amp;"
+Blaze._escape = (function () {
+  const escapeMap = {
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '/': '&#x2F;',
+    '`': '&#x60;', /* IE allows backtick-delimited attributes?? */
+    '&': '&amp;',
   };
-  var escape_one = function(c) {
-    return escape_map[c];
+  const escapeOne = function (c) {
+    return escapeMap[c];
   };
 
   return function (x) {
-    return x.replace(/[&<>"'`]/g, escape_one);
+    return x.replace(/[&<>"'`]/g, escapeOne);
   };
-})();
+}());
 
 Blaze._warn = function (msg) {
-  msg = 'Warning: ' + msg;
+  msg = `Warning: ${msg}`;
 
   if ((typeof console !== 'undefined') && console.warn) {
     console.warn(msg);
   }
 };
 
-var nativeBind = Function.prototype.bind;
+const nativeBind = Function.prototype.bind;
 
 // An implementation of _.bind which allows better optimization.
 // See: https://github.com/petkaantonov/bluebird/wiki/Optimization-killers#3-managing-arguments
@@ -45,17 +48,17 @@ if (nativeBind) {
     }
 
     // Copy the arguments so this function can be optimized.
-    var args = new Array(arguments.length);
-    for (var i = 0; i < args.length; i++) {
+    const args = new Array(arguments.length);
+    for (let i = 0; i < args.length; i++) {
+      // eslint-disable-next-line prefer-rest-params
       args[i] = arguments[i];
     }
 
     return nativeBind.apply(func, args.slice(1));
   };
-}
-else {
+} else {
   // A slower but backwards compatible version.
-  Blaze._bind = function(objA, objB) {
+  Blaze._bind = function (objA, objB) {
     objA.bind(objB);
   };
 }

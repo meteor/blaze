@@ -1,15 +1,17 @@
+/* global Package Npm */
+
 Package.describe({
   name: 'blaze',
-  summary: "Meteor Reactive Templating library",
-  version: '2.6.1',
-  git: 'https://github.com/meteor/blaze.git'
+  summary: 'Meteor Reactive Templating library',
+  version: '2.7.0',
+  git: 'https://github.com/meteor/blaze.git',
 });
 
 Npm.depends({
   'lodash.has': '4.5.2',
   'lodash.isfunction': '3.0.9',
   'lodash.isempty': '4.4.0',
-  'lodash.isobject': '3.0.2'
+  'lodash.isobject': '3.0.2',
 });
 
 Package.onUse(function (api) {
@@ -24,14 +26,14 @@ Package.onUse(function (api) {
   api.export([
     'Blaze',
     'UI',
-    'Handlebars'
+    'Handlebars',
   ]);
 
   api.use('htmljs@1.1.1');
   api.imply('htmljs@1.1.1');
 
   api.addFiles([
-    'preamble.js'
+    'preamble.js',
   ]);
 
   // client-only files
@@ -40,7 +42,7 @@ Package.onUse(function (api) {
     'domrange.js',
     'events.js',
     'attrs.js',
-    'materializer.js'
+    'materializer.js',
   ], 'client');
 
   // client and server
@@ -50,7 +52,7 @@ Package.onUse(function (api) {
     'builtins.js',
     'lookup.js',
     'template.js',
-    'backcompat.js'
+    'backcompat.js',
   ]);
 });
 

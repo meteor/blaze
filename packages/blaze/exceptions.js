@@ -1,4 +1,7 @@
-var debugFunc;
+/* global Blaze Meteor */
+/* eslint-disable import/no-unresolved, no-global-assign, no-param-reassign,no-multi-assign */
+
+let debugFunc;
 
 // We call into user code in many places, and it's nice to catch exceptions
 // propagated from user code immediately so that the whole system doesn't just
@@ -28,13 +31,16 @@ Blaze._reportException = function (e, msg) {
     throw e;
   }
 
-  if (! debugFunc)
+  if (!debugFunc) {
     // adapted from Tracker
     debugFunc = function () {
-      return (typeof Meteor !== "undefined" ? Meteor._debug :
-              ((typeof console !== "undefined") && console.log ? console.log :
-               function () {}));
+      return (typeof Meteor !== 'undefined' ? Meteor._debug :
+        // eslint-disable-next-line no-console
+        ((typeof console !== 'undefined') && console.log ? console.log :
+          function () {
+          }));
     };
+  }
 
   // In Chrome, `e.stack` is a multiline string that starts with the message
   // and contains a stack trace.  Furthermore, `console.log` makes it clickable.
@@ -43,14 +49,15 @@ Blaze._reportException = function (e, msg) {
 };
 
 Blaze._wrapCatchingExceptions = function (f, where) {
-  if (typeof f !== 'function')
-    return f;
+  if (typeof f !== 'function') return f;
 
+  // eslint-disable-next-line consistent-return
   return function () {
     try {
+      // eslint-disable-next-line prefer-rest-params
       return f.apply(this, arguments);
     } catch (e) {
-      Blaze._reportException(e, 'Exception in ' + where + ':');
+      Blaze._reportException(e, `Exception in ${where}:`);
     }
   };
 };
