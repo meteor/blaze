@@ -1,5 +1,7 @@
-/* global Blaze HTML ElementAttributesUpdater Tracker */
-/* eslint-disable import/no-unresolved, no-cond-assign, no-global-assign, no-restricted-syntax, prefer-rest-params, no-param-reassign, no-multi-assign */
+/* global Blaze Tracker */
+/* eslint-disable import/no-unresolved */
+
+import { HTML } from 'meteor/htmljs';
 
 const isSVGAnchor = function (node) {
   // We generally aren't able to detect SVG <a> elements because
@@ -52,13 +54,13 @@ const materializeTag = function (tag, parentView, workStack) {
   }
 
   if (rawAttrs) {
-    const attrUpdater = new ElementAttributesUpdater(elem);
+    const attrUpdater = new Blaze.ElementAttributesUpdater(elem);
     const updateAttributes = function () {
       const expandedAttrs = Blaze._expandAttributes(rawAttrs, parentView);
       const flattenedAttrs = HTML.flattenAttributes(expandedAttrs);
       const stringAttrs = {};
-      // eslint-disable-next-line no-unused-vars
-      for (const attrName in flattenedAttrs) {
+
+      Object.keys(flattenedAttrs).forEach((attrName) => {
         // map `null`, `undefined`, and `false` to null, which is important
         // so that attributes with nully values are considered absent.
         // stringify anything else (e.g. strings, booleans, numbers including 0).
@@ -68,7 +70,7 @@ const materializeTag = function (tag, parentView, workStack) {
             parentView,
             HTML.TEXTMODE.STRING);
         }
-      }
+      });
       attrUpdater.update(stringAttrs);
     };
     let updaterComputation;
@@ -113,50 +115,50 @@ const materializeDOMInner = function (htmljs, intoArray, parentView, workStack) 
     return;
   }
 
-  // eslint-disable-next-line default-case
-  switch (typeof htmljs) {
-    case 'string':
-    case 'boolean':
-    case 'number':
-      intoArray.push(document.createTextNode(String(htmljs)));
-      return;
-    case 'object':
-      if (htmljs.htmljsType) {
-        // eslint-disable-next-line default-case
-        switch (htmljs.htmljsType) {
-          case HTML.Tag.htmljsType:
-            intoArray.push(materializeTag(htmljs, parentView, workStack));
-            return;
-          case HTML.CharRef.htmljsType:
-            intoArray.push(document.createTextNode(htmljs.str));
-            return;
-          case HTML.Comment.htmljsType:
-            intoArray.push(document.createComment(htmljs.sanitizedValue));
-            return;
-          case HTML.Raw.htmljsType: {
-            // Get an array of DOM nodes by using the browser's HTML parser
-            // (like innerHTML).
-            const nodes = Blaze._DOMBackend.parseHTML(htmljs.value);
-            for (let i = 0; i < nodes.length; i++) intoArray.push(nodes[i]);
-            return;
-          }
-        }
-      } else if (HTML.isArray(htmljs)) {
-        for (let i = htmljs.length - 1; i >= 0; i--) {
-          workStack.push(Blaze._bind(Blaze._materializeDOM, null,
-            htmljs[i], intoArray, parentView, workStack));
-        }
-        return;
-      } else {
-        if (htmljs instanceof Blaze.Template) {
-          htmljs = htmljs.constructView();
-          // fall through to Blaze.View case below
-        }
-        if (htmljs instanceof Blaze.View) {
-          Blaze._materializeView(htmljs, parentView, workStack, intoArray);
+  if (['string', 'boolean', 'number'].includes(typeof htmljs)) {
+    intoArray.push(document.createTextNode(String(htmljs)));
+    return;
+  }
+
+  if (typeof htmljs === 'object') {
+    if (htmljs.htmljsType) {
+      switch (htmljs.htmljsType) {
+        case HTML.Tag.htmljsType:
+          intoArray.push(materializeTag(htmljs, parentView, workStack));
+          return;
+        case HTML.CharRef.htmljsType:
+          intoArray.push(document.createTextNode(htmljs.str));
+          return;
+        case HTML.Comment.htmljsType:
+          intoArray.push(document.createComment(htmljs.sanitizedValue));
+          return;
+        case HTML.Raw.htmljsType: {
+          // Get an array of DOM nodes by using the browser's HTML parser
+          // (like innerHTML).
+          const nodes = Blaze._DOMBackend.parseHTML(htmljs.value);
+          for (let i = 0; i < nodes.length; i++) intoArray.push(nodes[i]);
           return;
         }
+        default:
+          break;
       }
+    } else if (HTML.isArray(htmljs)) {
+      for (let i = htmljs.length - 1; i >= 0; i--) {
+        workStack.push(Blaze._bind(Blaze._materializeDOM, null,
+          htmljs[i], intoArray, parentView, workStack));
+      }
+      return;
+    } else {
+      let templateOrView = htmljs;
+      if (templateOrView instanceof Blaze.Template) {
+        templateOrView = htmljs.constructView();
+        // fall through to Blaze.View case below
+      }
+      if (templateOrView instanceof Blaze.View) {
+        Blaze._materializeView(templateOrView, parentView, workStack, intoArray);
+        return;
+      }
+    }
   }
 
   throw new Error(`Unexpected object in htmljs: ${htmljs}`);

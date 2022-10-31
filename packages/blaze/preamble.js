@@ -1,5 +1,5 @@
 /* global Blaze  */
-/* eslint-disable no-global-assign, no-param-reassign */
+/* eslint-disable no-global-assign */
 
 /**
  * @namespace Blaze
@@ -30,10 +30,10 @@ Blaze._escape = (function () {
 }());
 
 Blaze._warn = function (msg) {
-  msg = `Warning: ${msg}`;
+  const msgValue = `Warning: ${msg}`;
 
   if ((typeof console !== 'undefined') && console.warn) {
-    console.warn(msg);
+    console.warn(msgValue);
   }
 };
 
@@ -42,19 +42,15 @@ const nativeBind = Function.prototype.bind;
 // An implementation of _.bind which allows better optimization.
 // See: https://github.com/petkaantonov/bluebird/wiki/Optimization-killers#3-managing-arguments
 if (nativeBind) {
-  Blaze._bind = function (func, obj) {
+  Blaze._bind = function (func, obj, ...rest) {
     if (arguments.length === 2) {
       return nativeBind.call(func, obj);
     }
 
     // Copy the arguments so this function can be optimized.
-    const args = new Array(arguments.length);
-    for (let i = 0; i < args.length; i++) {
-      // eslint-disable-next-line prefer-rest-params
-      args[i] = arguments[i];
-    }
+    const args = [obj, ...rest];
 
-    return nativeBind.apply(func, args.slice(1));
+    return nativeBind.apply(func, args);
   };
 } else {
   // A slower but backwards compatible version.

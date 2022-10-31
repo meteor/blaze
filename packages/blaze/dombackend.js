@@ -1,5 +1,5 @@
 /* global Blaze jQuery Package */
-/* eslint-disable import/no-unresolved, no-global-assign, no-param-reassign */
+/* eslint-disable import/no-unresolved, no-param-reassign */
 
 const DOMBackend = {};
 Blaze._DOMBackend = DOMBackend;
@@ -84,32 +84,34 @@ const NOOP = function () {
 };
 
 // Circular doubly-linked list
-const TeardownCallback = function (func) {
-  this.next = this;
-  this.prev = this;
-  this.func = func;
-};
+class TeardownCallback {
+  constructor (func) {
+    this.next = this;
+    this.prev = this;
+    this.func = func;
 
-// Insert newElt before oldElt in the circular list
-TeardownCallback.prototype.linkBefore = function (oldElt) {
-  this.prev = oldElt.prev;
-  this.next = oldElt;
-  oldElt.prev.next = this;
-  oldElt.prev = this;
-};
+    this.stop = this.unlink;
+  }
 
-TeardownCallback.prototype.unlink = function () {
-  this.prev.next = this.next;
-  this.next.prev = this.prev;
-};
+  // Insert newElt before oldElt in the circular list
+  linkBefore(oldElt) {
+    this.prev = oldElt.prev;
+    this.next = oldElt;
+    oldElt.prev.next = this;
+    oldElt.prev = this;
+  }
 
-TeardownCallback.prototype.go = function () {
-  const { func } = this;
-  // eslint-disable-next-line no-unused-expressions
-  func && func();
-};
+  unlink() {
+    this.prev.next = this.next;
+    this.next.prev = this.prev;
+  }
 
-TeardownCallback.prototype.stop = TeardownCallback.prototype.unlink;
+  go() {
+    const { func } = this;
+    if (func) func();
+  }
+}
+
 
 DOMBackend.Teardown = {
   _JQUERY_EVENT_NAME: 'blaze_teardown_watcher',

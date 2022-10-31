@@ -1,10 +1,11 @@
 /* global Blaze */
-/* eslint-disable import/no-unresolved, no-global-assign, no-param-reassign,no-multi-assign */
+/* eslint-disable import/no-unresolved, no-param-reassign */
 
 import has from 'lodash.has';
 
-// eslint-disable-next-line no-multi-assign
-const EventSupport = Blaze._EventSupport = {};
+const EventSupport = {};
+
+Blaze._EventSupport = EventSupport;
 
 const DOMBackend = Blaze._DOMBackend;
 
@@ -16,7 +17,7 @@ const DOMBackend = Blaze._DOMBackend;
 // We could list all known bubbling
 // events here to avoid creating speculative capturers
 // for them, but it would only be an optimization.
-const eventsToDelegate = EventSupport.eventsToDelegate = {
+const eventsToDelegate = {
   blur: 1,
   change: 1,
   click: 1,
@@ -27,111 +28,118 @@ const eventsToDelegate = EventSupport.eventsToDelegate = {
   submit: 1,
 };
 
-const EVENT_MODE = EventSupport.EVENT_MODE = {
+EventSupport.eventsToDelegate = eventsToDelegate;
+
+const EVENT_MODE = {
   TBD: 0,
   BUBBLING: 1,
   CAPTURING: 2,
 };
 
+EventSupport.EVENT_MODE = EVENT_MODE;
+
 let NEXT_HANDLERREC_ID = 1;
 
-const HandlerRec = function (elem, type, selector, handler, recipient) {
-  this.elem = elem;
-  this.type = type;
-  this.selector = selector;
-  this.handler = handler;
-  this.recipient = recipient;
-  this.id = (NEXT_HANDLERREC_ID++);
+class HandlerRec {
+  constructor(elem, type, selector, handler, recipient) {
+    this.elem = elem;
+    this.type = type;
+    this.selector = selector;
+    this.handler = handler;
+    this.recipient = recipient;
+    this.id = (NEXT_HANDLERREC_ID++);
 
-  this.mode = EVENT_MODE.TBD;
+    this.mode = EVENT_MODE.TBD;
 
-  // It's important that delegatedHandler be a different
-  // instance for each handlerRecord, because its identity
-  // is used to remove it.
-  //
-  // It's also important that the closure have access to
-  // `this` when it is not called with it set.
-  this.delegatedHandler = (function (h) {
-    return function (evt) {
-      if ((!h.selector) && evt.currentTarget !== evt.target) {
-        // no selector means only fire on target
-        return;
-      }
-      // eslint-disable-next-line prefer-rest-params,consistent-return
-      return h.handler.apply(h.recipient, arguments);
-    };
-  }(this));
-
-  // WHY CAPTURE AND DELEGATE: jQuery can't delegate
-  // non-bubbling events, because
-  // event capture doesn't work in IE 8.  However, there
-  // are all sorts of new-fangled non-bubbling events
-  // like "play" and "touchenter".  We delegate these
-  // events using capture in all browsers except IE 8.
-  // IE 8 doesn't support these events anyway.
-
-  const tryCapturing = elem.addEventListener &&
-    (!has(eventsToDelegate,
-      DOMBackend.Events.parseEventType(type)));
-
-  if (tryCapturing) {
-    this.capturingHandler = (function (h) {
-      return function (evt) {
-        if (h.mode === EVENT_MODE.TBD) {
-          // must be first time we're called.
-          if (evt.bubbles) {
-            // this type of event bubbles, so don't
-            // get called again.
-            h.mode = EVENT_MODE.BUBBLING;
-            DOMBackend.Events.unbindEventCapturer(
-              h.elem, h.type, h.capturingHandler);
-            return;
-          }
-          // this type of event doesn't bubble,
-          // so unbind the delegation, preventing
-          // it from ever firing.
-          h.mode = EVENT_MODE.CAPTURING;
-          DOMBackend.Events.undelegateEvents(
-            h.elem, h.type, h.delegatedHandler);
+    // It's important that delegatedHandler be a different
+    // instance for each handlerRecord, because its identity
+    // is used to remove it.
+    //
+    // It's also important that the closure have access to
+    // `this` when it is not called with it set.
+    this.delegatedHandler = (function (h) {
+      return function (evt, ...rest) {
+        if ((!h.selector) && evt.currentTarget !== evt.target) {
+          // no selector means only fire on target
+          return null;
         }
 
-        h.delegatedHandler(evt);
+        return h.handler.apply(h.recipient, [evt, ...rest]);
       };
     }(this));
-  } else {
-    this.mode = EVENT_MODE.BUBBLING;
+
+    // WHY CAPTURE AND DELEGATE: jQuery can't delegate
+    // non-bubbling events, because
+    // event capture doesn't work in IE 8.  However, there
+    // are all sorts of new-fangled non-bubbling events
+    // like "play" and "touchenter".  We delegate these
+    // events using capture in all browsers except IE 8.
+    // IE 8 doesn't support these events anyway.
+
+    const tryCapturing = elem.addEventListener &&
+      (!has(eventsToDelegate,
+        DOMBackend.Events.parseEventType(type)));
+
+    if (tryCapturing) {
+      this.capturingHandler = (function (h) {
+        return function (evt) {
+          if (h.mode === EVENT_MODE.TBD) {
+            // must be first time we're called.
+            if (evt.bubbles) {
+              // this type of event bubbles, so don't
+              // get called again.
+              h.mode = EVENT_MODE.BUBBLING;
+              DOMBackend.Events.unbindEventCapturer(
+                h.elem, h.type, h.capturingHandler);
+              return;
+            }
+            // this type of event doesn't bubble,
+            // so unbind the delegation, preventing
+            // it from ever firing.
+            h.mode = EVENT_MODE.CAPTURING;
+            DOMBackend.Events.undelegateEvents(
+              h.elem, h.type, h.delegatedHandler);
+          }
+
+          h.delegatedHandler(evt);
+        };
+      }(this));
+    } else {
+      this.mode = EVENT_MODE.BUBBLING;
+    }
   }
-};
+
+  bind() {
+    // `this.mode` may be EVENT_MODE_TBD, in which case we bind both. in
+    // this case, 'capturingHandler' is in charge of detecting the
+    // correct mode and turning off one or the other handlers.
+    if (this.mode !== EVENT_MODE.BUBBLING) {
+      DOMBackend.Events.bindEventCapturer(
+        this.elem, this.type, this.selector || '*',
+        this.capturingHandler);
+    }
+
+    if (this.mode !== EVENT_MODE.CAPTURING) {
+      DOMBackend.Events.delegateEvents(
+        this.elem, this.type,
+        this.selector || '*', this.delegatedHandler);
+    }
+  }
+
+  unbind() {
+    if (this.mode !== EVENT_MODE.BUBBLING) {
+      DOMBackend.Events.unbindEventCapturer(this.elem, this.type,
+        this.capturingHandler);
+    }
+
+    if (this.mode !== EVENT_MODE.CAPTURING) {
+      DOMBackend.Events.undelegateEvents(this.elem, this.type,
+        this.delegatedHandler);
+    }
+  }
+}
+
 EventSupport.HandlerRec = HandlerRec;
-
-HandlerRec.prototype.bind = function () {
-  // `this.mode` may be EVENT_MODE_TBD, in which case we bind both. in
-  // this case, 'capturingHandler' is in charge of detecting the
-  // correct mode and turning off one or the other handlers.
-  if (this.mode !== EVENT_MODE.BUBBLING) {
-    DOMBackend.Events.bindEventCapturer(
-      this.elem, this.type, this.selector || '*',
-      this.capturingHandler);
-  }
-
-  if (this.mode !== EVENT_MODE.CAPTURING) {
-    DOMBackend.Events.delegateEvents(
-      this.elem, this.type,
-      this.selector || '*', this.delegatedHandler);
-  }
-};
-
-HandlerRec.prototype.unbind = function () {
-  if (this.mode !== EVENT_MODE.BUBBLING) {
-    DOMBackend.Events.unbindEventCapturer(this.elem, this.type,
-      this.capturingHandler);
-  }
-
-  if (this.mode !== EVENT_MODE.CAPTURING) {
-    DOMBackend.Events.undelegateEvents(this.elem, this.type,
-      this.delegatedHandler);
-  }
-};
 
 EventSupport.listen = function (element, events, selector, handler, recipient, getParentRecipient) {
   // Prevent this method from being JITed by Safari.  Due to a
@@ -156,11 +164,15 @@ EventSupport.listen = function (element, events, selector, handler, recipient, g
     const type = eventTypes[i];
 
     let eventDict = element.$blaze_events;
-    if (!eventDict) eventDict = (element.$blaze_events = {});
+    if (!eventDict) {
+      eventDict = {};
+      element.$blaze_events = eventDict;
+    }
 
     let info = eventDict[type];
     if (!info) {
-      info = eventDict[type] = {};
+      info = {};
+      eventDict[type] = info;
       info.handlers = [];
     }
     const handlerList = info.handlers;
@@ -202,19 +214,19 @@ EventSupport.listen = function (element, events, selector, handler, recipient, g
       // iterate over handlerList here.  Clearing a whole handlerList
       // via stop() methods is O(N^2) in the number of handlers on
       // an element.
-      for (let i = 0; i < newHandlerRecs.length; i++) {
-        const handlerToRemove = newHandlerRecs[i];
+      newHandlerRecs.forEach(function (handlerToRemove) {
         const info = eventDict[handlerToRemove.type];
-        // eslint-disable-next-line no-continue
-        if (!info) continue;
-        const handlerList = info.handlers;
-        for (let j = handlerList.length - 1; j >= 0; j--) {
-          if (handlerList[j] === handlerToRemove) {
-            handlerToRemove.unbind();
-            handlerList.splice(j, 1); // remove handlerList[j]
+        if (info) {
+          const handlerList = info.handlers;
+          for (let j = handlerList.length - 1; j >= 0; j--) {
+            if (handlerList[j] === handlerToRemove) {
+              handlerToRemove.unbind();
+              handlerList.splice(j, 1); // remove handlerList[j]
+            }
           }
         }
-      }
+      });
+
       newHandlerRecs.length = 0;
     },
   };

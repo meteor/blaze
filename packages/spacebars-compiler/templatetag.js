@@ -505,7 +505,7 @@ var validateTag = function (ttag, scanner) {
   var position = ttag.position || TEMPLATE_TAG_POSITION.ELEMENT;
   if (position === TEMPLATE_TAG_POSITION.IN_ATTRIBUTE) {
     if (ttag.type === 'DOUBLE' || ttag.type === 'ESCAPE') {
-      return;
+
     } else if (ttag.type === 'BLOCKOPEN') {
       var path = ttag.path;
       var path0 = path[0];

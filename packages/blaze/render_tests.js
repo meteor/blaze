@@ -1,5 +1,5 @@
 /* global Blaze HTML Tinytest canonicalizeHtml ReactiveVar Tracker $ Template Meteor */
-/* eslint-disable import/no-unresolved, no-global-assign, no-param-reassign */
+/* eslint-disable import/no-unresolved, no-param-reassign */
 
 import { BlazeTools } from 'meteor/blaze-tools';
 
@@ -100,15 +100,15 @@ Tinytest.add('blaze - render - basic', function (test) {
 
   run(BR({
       x() {
-        return Blaze.View(function () {
-          return Blaze.View(function () {
+        return new Blaze.View(function () {
+          return new Blaze.View(function () {
             return [];
           });
         });
       },
       a() {
-        return Blaze.View(function () {
-          return Blaze.View(function () {
+        return new Blaze.View(function () {
+          return new Blaze.View(function () {
             return '';
           });
         });
@@ -199,7 +199,7 @@ Tinytest.add('blaze - render - textarea', function (test) {
     'HTML.TEXTAREA({value: HTML.CharRef({html: "&amp;", str: "&"})})');
 
   run(function () {
-      return ['a', Blaze.View(function () {
+      return ['a', new Blaze.View(function () {
         return 'b';
       }), 'c'];
     },
@@ -212,7 +212,7 @@ Tinytest.add('blaze - render - textarea', function (test) {
     const div = document.createElement('DIV');
     const node = TEXTAREA({
       value() {
-        return Blaze.View(function () {
+        return new Blaze.View(function () {
           return R.get();
         });
       },
@@ -230,7 +230,7 @@ Tinytest.add('blaze - render - textarea', function (test) {
   (function () {
     const R = ReactiveVar('one');
     const div = document.createElement('DIV');
-    const node = TEXTAREA([Blaze.View(function () {
+    const node = TEXTAREA([new Blaze.View(function () {
       return R.get();
     })]);
     materialize(node, div);
@@ -247,7 +247,7 @@ Tinytest.add('blaze - render - view isolation', function (test) {
   (function () {
     const R = ReactiveVar('Hello');
     const test1 = function () {
-      return P(Blaze.View(function () {
+      return P(new Blaze.View(function () {
         return R.get();
       }));
     };
@@ -267,7 +267,7 @@ Tinytest.add('blaze - render - view isolation', function (test) {
   (function () {
     const R = ReactiveVar(['Hello', ' World']);
     const test1 = function () {
-      return P(Blaze.View(function () {
+      return P(new Blaze.View(function () {
         return R.get();
       }));
     };
@@ -297,7 +297,7 @@ Tinytest.add('blaze - render - view GC', function (test) {
   // test that removing parent element removes listeners and stops autoruns.
   (function () {
     const R = ReactiveVar('Hello');
-    const test1 = P(Blaze.View(function () {
+    const test1 = P(new Blaze.View(function () {
       return R.get();
     }));
 
@@ -538,7 +538,7 @@ Tinytest.add('blaze - render - templates and views', function (test) {
     let counter = 1;
     const buf = [];
 
-    const myTemplate = Blaze.Template(
+    const myTemplate = new Blaze.Template(
       'myTemplate',
       function () {
         return [String(this.number),
@@ -788,7 +788,7 @@ if (typeof MutationObserver !== 'undefined') {
   // not Blaze._isContentEqual(lastHtmljs, htmljs), which is what we would in fact want to test.
   Tinytest.addAsync('blaze - render - optimization', function (test, onComplete) {
     const R = ReactiveVar('aa');
-    const view = Blaze.View(function () {
+    const view = new Blaze.View(function () {
       return R.get().substr(0, 1);
     });
 

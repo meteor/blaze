@@ -85,7 +85,7 @@ Object.assign(CodeGen.prototype, {
           // Reactive attributes are already wrapped in a function,
           // and there's no fine-grained reactivity.
           // Anywhere else, we need to create a View.
-          code = 'Blaze.View(' +
+          code = 'new Blaze.View(' +
             BlazeTools.toJSLiteral('lookup:' + tag.path.join('.')) + ', ' +
             'function () { return ' + code + '; })';
         }

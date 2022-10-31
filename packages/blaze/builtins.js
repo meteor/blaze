@@ -16,7 +16,7 @@ Blaze._calculateCondition = function (cond) {
  * @param {Function} contentFunc A Function that returns [*renderable content*](#Renderable-Content).
  */
 Blaze.With = function (data, contentFunc) {
-  const view = Blaze.View('with', contentFunc);
+  const view = new Blaze.View('with', contentFunc);
 
   view.dataVar = new ReactiveVar();
 
@@ -63,7 +63,7 @@ Blaze._attachBindingsToView = function (bindings, view) {
  * @param {Function} contentFunc A Function that returns [*renderable content*](#Renderable-Content).
  */
 Blaze.Let = function (bindings, contentFunc) {
-  const view = Blaze.View('let', contentFunc);
+  const view = new Blaze.View('let', contentFunc);
   Blaze._attachBindingsToView(bindings, view);
 
   return view;
@@ -79,7 +79,7 @@ Blaze.Let = function (bindings, contentFunc) {
 Blaze.If = function (conditionFunc, contentFunc, elseFunc, _not) {
   const conditionVar = new ReactiveVar();
 
-  const view = Blaze.View(_not ? 'unless' : 'if', function () {
+  const view = new Blaze.View(_not ? 'unless' : 'if', function () {
     return conditionVar.get() ? contentFunc() :
       (elseFunc ? elseFunc() : null);
   });
@@ -126,7 +126,7 @@ Blaze.Unless = function (conditionFunc, contentFunc, elseFunc) {
  * in the sequence.
  */
 Blaze.Each = function (argFunc, contentFunc, elseFunc) {
-  const eachView = Blaze.View('each', function () {
+  const eachView = new Blaze.View('each', function () {
     const subviews = this.initialSubviews;
     this.initialSubviews = null;
     if (this._isCreatedForExpansion) {
@@ -177,7 +177,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
           if (eachView.variableName) {
             // new-style #each (as in {{#each item in items}})
             // doesn't create a new data context
-            newItemView = Blaze.View('item', eachView.contentFunc);
+            newItemView = new Blaze.View('item', eachView.contentFunc);
           } else {
             newItemView = Blaze.With(item, eachView.contentFunc);
           }
@@ -219,7 +219,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
               eachView.inElseMode = true;
               eachView._domrange.addMember(
                 Blaze._materializeView(
-                  Blaze.View('each_else', eachView.elseFunc),
+                  new Blaze.View('each_else', eachView.elseFunc),
                   eachView), 0);
             }
           } else {
@@ -267,7 +267,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
     if (eachView.elseFunc && eachView.numItems === 0) {
       eachView.inElseMode = true;
       eachView.initialSubviews[0] =
-        Blaze.View('each_else', eachView.elseFunc);
+        new Blaze.View('each_else', eachView.elseFunc);
     }
   });
 
@@ -332,7 +332,7 @@ Blaze._TemplateWith = function (arg, contentFunc) {
 };
 
 Blaze._InOuterTemplateScope = function (templateView, contentFunc) {
-  const view = Blaze.View('InOuterTemplateScope', contentFunc);
+  const view = new Blaze.View('InOuterTemplateScope', contentFunc);
   let { parentView } = templateView;
 
   // Hack so that if you call `{{> foo bar}}` and it expands into

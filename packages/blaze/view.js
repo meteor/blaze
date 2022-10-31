@@ -1,5 +1,5 @@
-/* global Blaze Tracker Meteor HTML */
-/* eslint-disable import/no-unresolved, consistent-return, no-global-assign, no-param-reassign,no-multi-assign */
+/* global Blaze Tracker Meteor */
+/* eslint-disable import/no-unresolved, no-param-reassign */
 
 // [new] Blaze.View([name], renderMethod)
 //
@@ -36,6 +36,8 @@
 // general it's good for functions that create Views to set the name.
 // Views associated with templates have names of the form "Template.foo".
 
+import { HTML } from 'meteor/htmljs';
+
 /**
  * @class
  * @summary Constructor for a View, which represents a reactive region of DOM.
@@ -43,101 +45,99 @@
  * @param {String} [name] Optional.  A name for this type of View.  See [`view.name`](#view_name).
  * @param {Function} renderFunction A function that returns [*renderable content*](#Renderable-Content).  In this function, `this` is bound to the View.
  */
-Blaze.View = function (name, render) {
-  if (!(this instanceof Blaze.View)) {
-    // called without `new`
-    return new Blaze.View(name, render);
+class View {
+  constructor(name, render) {
+    if (typeof name === 'function') {
+      // omitted "name" argument
+      render = name;
+      name = '';
+    }
+    this.name = name;
+    this._render = render;
+
+    this._callbacks = {
+      created: null,
+      rendered: null,
+      destroyed: null,
+    };
+
+    // Setting all properties here is good for readability,
+    // and also may help Chrome optimize the code by keeping
+    // the View object from changing shape too much.
+    this.isCreated = false;
+    this._isCreatedForExpansion = false;
+    this.isRendered = false;
+    this._isAttached = false;
+    this.isDestroyed = false;
+    this._isInRender = false;
+    this.parentView = null;
+    this._domrange = null;
+    // This flag is normally set to false except for the cases when view's parent
+    // was generated as part of expanding some syntactic sugar expressions or
+    // methods.
+    // Ex.: Blaze.renderWithData is an equivalent to creating a view with regular
+    // Blaze.render and wrapping it into {{#with data}}{{/with}} view. Since the
+    // users don't know anything about these generated parent views, Blaze needs
+    // this information to be available on views to make smarter decisions. For
+    // example: removing the generated parent view with the view on Blaze.remove.
+    this._hasGeneratedParent = false;
+    // Bindings accessible to children views (via view.lookup('name')) within the
+    // closest template view.
+    this._scopeBindings = {};
+
+    this.renderCount = 0;
   }
 
-  if (typeof name === 'function') {
-    // omitted "name" argument
-    render = name;
-    name = '';
+  // eslint-disable-next-line class-methods-use-this
+  _render() {
+    return null;
   }
-  this.name = name;
-  this._render = render;
 
-  this._callbacks = {
-    created: null,
-    rendered: null,
-    destroyed: null,
-  };
+  onViewCreated(cb) {
+    this._callbacks.created = this._callbacks.created || [];
+    this._callbacks.created.push(cb);
+  }
 
-  // Setting all properties here is good for readability,
-  // and also may help Chrome optimize the code by keeping
-  // the View object from changing shape too much.
-  this.isCreated = false;
-  this._isCreatedForExpansion = false;
-  this.isRendered = false;
-  this._isAttached = false;
-  this.isDestroyed = false;
-  this._isInRender = false;
-  this.parentView = null;
-  this._domrange = null;
-  // This flag is normally set to false except for the cases when view's parent
-  // was generated as part of expanding some syntactic sugar expressions or
-  // methods.
-  // Ex.: Blaze.renderWithData is an equivalent to creating a view with regular
-  // Blaze.render and wrapping it into {{#with data}}{{/with}} view. Since the
-  // users don't know anything about these generated parent views, Blaze needs
-  // this information to be available on views to make smarter decisions. For
-  // example: removing the generated parent view with the view on Blaze.remove.
-  this._hasGeneratedParent = false;
-  // Bindings accessible to children views (via view.lookup('name')) within the
-  // closest template view.
-  this._scopeBindings = {};
+  _onViewRendered(cb) {
+    this._callbacks.rendered = this._callbacks.rendered || [];
+    this._callbacks.rendered.push(cb);
+  }
 
-  this.renderCount = 0;
-};
-
-Blaze.View.prototype._render = function () {
-  return null;
-};
-
-Blaze.View.prototype.onViewCreated = function (cb) {
-  this._callbacks.created = this._callbacks.created || [];
-  this._callbacks.created.push(cb);
-};
-
-Blaze.View.prototype._onViewRendered = function (cb) {
-  this._callbacks.rendered = this._callbacks.rendered || [];
-  this._callbacks.rendered.push(cb);
-};
-
-Blaze.View.prototype.onViewReady = function (cb) {
-  const self = this;
-  const fire = function () {
-    Tracker.afterFlush(function () {
-      if (!self.isDestroyed) {
-        Blaze._withCurrentView(self, function () {
-          cb.call(self);
-        });
-      }
+  onViewReady(cb) {
+    const self = this;
+    const fire = function () {
+      Tracker.afterFlush(function () {
+        if (!self.isDestroyed) {
+          Blaze._withCurrentView(self, function () {
+            cb.call(self);
+          });
+        }
+      });
+    };
+    self._onViewRendered(function onViewRendered() {
+      if (self.isDestroyed) return;
+      if (!self._domrange.attached) self._domrange.onAttached(fire);
+      else fire();
     });
-  };
-  self._onViewRendered(function onViewRendered() {
-    if (self.isDestroyed) return;
-    if (!self._domrange.attached) self._domrange.onAttached(fire);
-    else fire();
-  });
-};
-
-Blaze.View.prototype.onViewDestroyed = function (cb) {
-  this._callbacks.destroyed = this._callbacks.destroyed || [];
-  this._callbacks.destroyed.push(cb);
-};
-Blaze.View.prototype.removeViewDestroyedListener = function (cb) {
-  const { destroyed } = this._callbacks;
-  if (!destroyed) return;
-  const index = destroyed.lastIndexOf(cb);
-  if (index !== -1) {
-    // XXX You'd think the right thing to do would be splice, but _fireCallbacks
-    // gets sad if you remove callbacks while iterating over the list.  Should
-    // change this to use callback-hook or EventEmitter or something else that
-    // properly supports removal.
-    destroyed[index] = null;
   }
-};
+
+  onViewDestroyed(cb) {
+    this._callbacks.destroyed = this._callbacks.destroyed || [];
+    this._callbacks.destroyed.push(cb);
+  }
+
+  removeViewDestroyedListener(cb) {
+    const { destroyed } = this._callbacks;
+    if (!destroyed) return;
+    const index = destroyed.lastIndexOf(cb);
+    if (index !== -1) {
+      // XXX You'd think the right thing to do would be splice, but _fireCallbacks
+      // gets sad if you remove callbacks while iterating over the list.  Should
+      // change this to use callback-hook or EventEmitter or something else that
+      // properly supports removal.
+      destroyed[index] = null;
+    }
+  }
 
 // View#autorun(func)
 //
@@ -158,126 +158,131 @@ Blaze.View.prototype.removeViewDestroyedListener = function (cb) {
 // callback.  Autoruns that update the DOM should be started
 // from either onViewCreated (guarded against the absence of
 // view._domrange), or onViewReady.
-Blaze.View.prototype.autorun = function (f, _inViewScope, displayName) {
-  const self = this;
+  autorun(f, _inViewScope, displayName) {
+    const self = this;
 
-  // The restrictions on when View#autorun can be called are in order
-  // to avoid bad patterns, like creating a Blaze.View and immediately
-  // calling autorun on it.  A freshly created View is not ready to
-  // have logic run on it; it doesn't have a parentView, for example.
-  // It's when the View is materialized or expanded that the onViewCreated
-  // handlers are fired and the View starts up.
-  //
-  // Letting the render() method call `this.autorun()` is problematic
-  // because of re-render.  The best we can do is to stop the old
-  // autorun and start a new one for each render, but that's a pattern
-  // we try to avoid internally because it leads to helpers being
-  // called extra times, in the case where the autorun causes the
-  // view to re-render (and thus the autorun to be torn down and a
-  // new one established).
-  //
-  // We could lift these restrictions in various ways.  One interesting
-  // idea is to allow you to call `view.autorun` after instantiating
-  // `view`, and automatically wrap it in `view.onViewCreated`, deferring
-  // the autorun so that it starts at an appropriate time.  However,
-  // then we can't return the Computation object to the caller, because
-  // it doesn't exist yet.
-  if (!self.isCreated) {
-    throw new Error('View#autorun must be called from the created callback at the earliest');
-  }
-  if (this._isInRender) {
-    throw new Error("Can't call View#autorun from inside render(); try calling it from the created or rendered callback");
-  }
+    // The restrictions on when View#autorun can be called are in order
+    // to avoid bad patterns, like creating a Blaze.View and immediately
+    // calling autorun on it.  A freshly created View is not ready to
+    // have logic run on it; it doesn't have a parentView, for example.
+    // It's when the View is materialized or expanded that the onViewCreated
+    // handlers are fired and the View starts up.
+    //
+    // Letting the render() method call `this.autorun()` is problematic
+    // because of re-render.  The best we can do is to stop the old
+    // autorun and start a new one for each render, but that's a pattern
+    // we try to avoid internally because it leads to helpers being
+    // called extra times, in the case where the autorun causes the
+    // view to re-render (and thus the autorun to be torn down and a
+    // new one established).
+    //
+    // We could lift these restrictions in various ways.  One interesting
+    // idea is to allow you to call `view.autorun` after instantiating
+    // `view`, and automatically wrap it in `view.onViewCreated`, deferring
+    // the autorun so that it starts at an appropriate time.  However,
+    // then we can't return the Computation object to the caller, because
+    // it doesn't exist yet.
+    if (!self.isCreated) {
+      throw new Error('View#autorun must be called from the created callback at the earliest');
+    }
+    if (this._isInRender) {
+      throw new Error("Can't call View#autorun from inside render(); try calling it from the created or rendered callback");
+    }
 
-  const templateInstanceFunc = Blaze.Template._currentTemplateInstanceFunc;
+    const templateInstanceFunc = Blaze.Template._currentTemplateInstanceFunc;
 
-  const func = function viewAutorun(c) {
-    return Blaze._withCurrentView(_inViewScope || self, function () {
-      return Blaze.Template._withTemplateInstanceFunc(
-        templateInstanceFunc, function () {
-          return f.call(self, c);
-        });
+    const func = function viewAutorun(c) {
+      return Blaze._withCurrentView(_inViewScope || self, function () {
+        return Blaze.Template._withTemplateInstanceFunc(
+          templateInstanceFunc, function () {
+            return f.call(self, c);
+          });
+      });
+    };
+
+    // Give the autorun function a better name for debugging and profiling.
+    // The `displayName` property is not part of the spec but browsers like Chrome
+    // and Firefox prefer it in debuggers over the name function was declared by.
+    func.displayName =
+      `${self.name || 'anonymous'}:${displayName || 'anonymous'}`;
+    const comp = Tracker.autorun(func);
+
+    const stopComputation = function () {
+      comp.stop();
+    };
+    self.onViewDestroyed(stopComputation);
+    comp.onStop(function () {
+      self.removeViewDestroyedListener(stopComputation);
     });
-  };
 
-  // Give the autorun function a better name for debugging and profiling.
-  // The `displayName` property is not part of the spec but browsers like Chrome
-  // and Firefox prefer it in debuggers over the name function was declared by.
-  func.displayName =
-    `${self.name || 'anonymous'}:${displayName || 'anonymous'}`;
-  const comp = Tracker.autorun(func);
-
-  const stopComputation = function () {
-    comp.stop();
-  };
-  self.onViewDestroyed(stopComputation);
-  comp.onStop(function () {
-    self.removeViewDestroyedListener(stopComputation);
-  });
-
-  return comp;
-};
-
-Blaze.View.prototype._errorIfShouldntCallSubscribe = function () {
-  const self = this;
-
-  if (!self.isCreated) {
-    throw new Error('View#subscribe must be called from the created callback at the earliest');
-  }
-  if (self._isInRender) {
-    throw new Error("Can't call View#subscribe from inside render(); try calling it from the created or rendered callback");
-  }
-  if (self.isDestroyed) {
-    throw new Error("Can't call View#subscribe from inside the destroyed callback, try calling it inside created or rendered.");
-  }
-};
-
-/**
- * Just like Blaze.View#autorun, but with Meteor.subscribe instead of
- * Tracker.autorun. Stop the subscription when the view is destroyed.
- * @return {SubscriptionHandle} A handle to the subscription so that you can
- * see if it is ready, or stop it manually
- */
-Blaze.View.prototype.subscribe = function (args, options) {
-  const self = this;
-  options = options || {};
-
-  self._errorIfShouldntCallSubscribe();
-
-  let subHandle;
-  if (options.connection) {
-    // eslint-disable-next-line prefer-spread
-    subHandle = options.connection.subscribe.apply(options.connection, args);
-  } else {
-    // eslint-disable-next-line prefer-spread
-    subHandle = Meteor.subscribe.apply(Meteor, args);
+    return comp;
   }
 
-  self.onViewDestroyed(function () {
-    subHandle.stop();
-  });
+  _errorIfShouldntCallSubscribe() {
+    const self = this;
 
-  return subHandle;
-};
+    if (!self.isCreated) {
+      throw new Error('View#subscribe must be called from the created callback at the earliest');
+    }
+    if (self._isInRender) {
+      throw new Error("Can't call View#subscribe from inside render(); try calling it from the created or rendered callback");
+    }
+    if (self.isDestroyed) {
+      throw new Error("Can't call View#subscribe from inside the destroyed callback, try calling it inside created or rendered.");
+    }
+  }
 
-Blaze.View.prototype.firstNode = function () {
-  if (!this._isAttached) throw new Error('View must be attached before accessing its DOM');
+  /**
+   * Just like Blaze.View#autorun, but with Meteor.subscribe instead of
+   * Tracker.autorun. Stop the subscription when the view is destroyed.
+   * @return {SubscriptionHandle} A handle to the subscription so that you can
+   * see if it is ready, or stop it manually
+   */
+  subscribe(args, options) {
+    const self = this;
+    options = options || {};
 
-  return this._domrange.firstNode();
-};
+    self._errorIfShouldntCallSubscribe();
 
-Blaze.View.prototype.lastNode = function () {
-  if (!this._isAttached) throw new Error('View must be attached before accessing its DOM');
+    let subHandle;
+    if (options.connection) {
+      const { subscribe } = options.connection;
+      subHandle = subscribe.apply(options.connection, args);
+    } else {
+      const { subscribe } = Meteor;
+      subHandle = subscribe.apply(Meteor, args);
+    }
 
-  return this._domrange.lastNode();
-};
+    self.onViewDestroyed(function () {
+      subHandle.stop();
+    });
+
+    return subHandle;
+  }
+
+  firstNode() {
+    if (!this._isAttached) throw new Error('View must be attached before accessing its DOM');
+
+    return this._domrange.firstNode();
+  }
+
+  lastNode() {
+    if (!this._isAttached) throw new Error('View must be attached before accessing its DOM');
+
+    return this._domrange.lastNode();
+  }
+}
+
+Blaze.View = View;
 
 Blaze._fireCallbacks = function (view, which) {
   Blaze._withCurrentView(view, function () {
     Tracker.nonreactive(function fireCallbacks() {
       const cbs = view._callbacks[which];
-      // eslint-disable-next-line no-unused-expressions
-      for (let i = 0, N = (cbs && cbs.length); i < N; i++) cbs[i] && cbs[i].call(view);
+
+      for (let i = 0, N = (cbs && cbs.length); i < N; i++) {
+        if (cbs[i]) cbs[i].call(view);
+      }
     });
   });
 };
@@ -312,8 +317,7 @@ const doFirstRender = function (view, initialContent) {
 
   // tear down the teardown hook
   view.onViewDestroyed(function () {
-    // eslint-disable-next-line no-unused-expressions
-    teardownHook && teardownHook.stop();
+    if (teardownHook) teardownHook.stop();
     teardownHook = null;
   });
 
@@ -578,7 +582,7 @@ const contentAsView = function (content) {
       return content;
     };
   }
-  return Blaze.View('render', func);
+  return new Blaze.View('render', func);
 };
 
 // For Blaze.renderWithData and Blaze.toHTMLWithData, wrap content
@@ -857,8 +861,7 @@ Blaze._addEventMap = function (view, eventMap, thisInHandler) {
 
   if (!view._domrange) throw new Error('View must have a DOMRange');
 
-  // eslint-disable-next-line camelcase
-  view._domrange.onAttached(function attached_eventMaps(range, element) {
+  view._domrange.onAttached(function attachedEventMaps(range, element) {
     Object.keys(eventMap).forEach(function (spec) {
       const handler = eventMap[spec];
       const clauses = spec.split(/,\s+/);
@@ -871,11 +874,11 @@ Blaze._addEventMap = function (view, eventMap, thisInHandler) {
         const selector = parts.join(' ');
         handles.push(Blaze._EventSupport.listen(
           element, newEvents, selector,
-          function (evt) {
+          function (evt, ...rest) {
             if (!range.containsElement(evt.currentTarget, selector, newEvents)) return null;
             const handlerThis = thisInHandler || this;
-            // eslint-disable-next-line prefer-rest-params
-            const handlerArgs = arguments;
+
+            const handlerArgs = [evt, ...rest];
             return Blaze._withCurrentView(view, function () {
               return handler.apply(handlerThis, handlerArgs);
             });

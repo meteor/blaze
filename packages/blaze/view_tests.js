@@ -1,5 +1,5 @@
 /* global Tinytest Meteor Blaze ReactiveVar Tracker canonicalizeHtml */
-/* eslint-disable import/no-unresolved, no-global-assign, no-param-reassign,no-multi-assign */
+/* eslint-disable import/no-unresolved, no-global-assign */
 
 if (Meteor.isClient) {
   Tinytest.add('blaze - view - callbacks', function (test) {
@@ -7,7 +7,7 @@ if (Meteor.isClient) {
 
     let buf = '';
 
-    const v = Blaze.View(function () {
+    const v = new Blaze.View(function () {
       return R.get();
     });
 
@@ -67,9 +67,9 @@ if (Meteor.isClient) {
   // the corresponding view
   Tinytest.add('blaze - view - destroy', function (test) {
     const v = {
-      _domrange: Blaze._DOMRange([]),
+      _domrange: new Blaze._DOMRange([]),
     };
-    v._domrange.view = Blaze.View();
+    v._domrange.view = new Blaze.View();
     test.equal(v._domrange.view.isDestroyed, false);
     Blaze.remove(v);
     test.equal(v._domrange.view.isDestroyed, true);

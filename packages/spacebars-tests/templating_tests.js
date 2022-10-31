@@ -252,7 +252,7 @@ Tinytest.add("spacebars-tests - templating_tests - helpers and dots", function(t
     tree: function() { return 'leaf'; },
     thisTest: function() { return this.tree(); },
     getNull: function() { return null; },
-    getUndefined: function () { return; },
+    getUndefined: function () {  },
     fancy: getFancyObject(),
     methodListFour: listFour
   };

@@ -1,5 +1,5 @@
 /* global Blaze Meteor */
-/* eslint-disable import/no-unresolved, no-global-assign, no-param-reassign,no-multi-assign */
+/* eslint-disable import/no-unresolved */
 
 let debugFunc;
 
@@ -51,13 +51,12 @@ Blaze._reportException = function (e, msg) {
 Blaze._wrapCatchingExceptions = function (f, where) {
   if (typeof f !== 'function') return f;
 
-  // eslint-disable-next-line consistent-return
-  return function () {
+  return function (...args) {
     try {
-      // eslint-disable-next-line prefer-rest-params
-      return f.apply(this, arguments);
+      return f.apply(this, args);
     } catch (e) {
       Blaze._reportException(e, `Exception in ${where}:`);
     }
+    return null;
   };
 };

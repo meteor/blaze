@@ -16,7 +16,7 @@ Spacebars.include = function (templateOrFunction, contentFunc, elseFunc) {
   }
 
   var templateVar = Blaze.ReactiveVar(null, tripleEquals);
-  var view = Blaze.View('Spacebars.include', function () {
+  var view = new Blaze.View('Spacebars.include', function () {
     var template = templateVar.get();
     if (template === null)
       return null;
@@ -217,7 +217,7 @@ Spacebars.dot = function (value, id1/*, id2, ...*/) {
 // a new data context).
 Spacebars.With = function (argFunc, contentFunc, elseFunc) {
   var argVar = new Blaze.ReactiveVar;
-  var view = Blaze.View('Spacebars_with', function () {
+  var view = new Blaze.View('Spacebars_with', function () {
     return Blaze.If(function () { return argVar.get(); },
                     function () { return Blaze.With(function () {
                       return argVar.get(); }, contentFunc); },

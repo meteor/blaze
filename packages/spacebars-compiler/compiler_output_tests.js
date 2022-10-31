@@ -5,20 +5,20 @@ export function runCompilerOutputTests(run) {
 }`);
   run("{{foo}}", `function() {
   var view = this;
-  return Blaze.View("lookup:foo", function() {
+  return new Blaze.View("lookup:foo", function() {
     return Spacebars.mustache(view.lookup("foo"));
   });
 }`);
   run("{{foo bar}}", `function() {
   var view = this;
-  return Blaze.View("lookup:foo", function() {
+  return new Blaze.View("lookup:foo", function() {
     return Spacebars.mustache(view.lookup("foo"),
                               view.lookup("bar"));
   });
 }`);
   run("{{foo x=bar}}", `function() {
   var view = this;
-  return Blaze.View("lookup:foo", function() {
+  return new Blaze.View("lookup:foo", function() {
     return Spacebars.mustache(view.lookup("foo"), Spacebars.kw({
       x: view.lookup("bar")
     }));
@@ -26,7 +26,7 @@ export function runCompilerOutputTests(run) {
 }`);
   run("{{foo.bar baz}}", `function() {
   var view = this;
-  return Blaze.View("lookup:foo.bar", function() {
+  return new Blaze.View("lookup:foo.bar", function() {
     return Spacebars.mustache(Spacebars.dot(
              view.lookup("foo"), "bar"),
              view.lookup("baz"));
@@ -34,7 +34,7 @@ export function runCompilerOutputTests(run) {
 }`);
   run("{{foo.bar (baz qux)}}", `function() {
   var view = this;
-  return Blaze.View("lookup:foo.bar", function() {
+  return new Blaze.View("lookup:foo.bar", function() {
     return Spacebars.mustache(Spacebars.dot(
              view.lookup("foo"), "bar"),
              Spacebars.dataMustache(view.lookup("baz"), view.lookup("qux")));
@@ -42,14 +42,14 @@ export function runCompilerOutputTests(run) {
 }`);
   run("{{foo bar.baz}}", `function() {
   var view = this;
-  return Blaze.View("lookup:foo", function() {
+  return new Blaze.View("lookup:foo", function() {
     return Spacebars.mustache(view.lookup("foo"),
            Spacebars.dot(view.lookup("bar"), "baz"));
   });
 }`);
   run("{{foo x=bar.baz}}", `function() {
   var view = this;
-  return Blaze.View("lookup:foo", function() {
+  return new Blaze.View("lookup:foo", function() {
     return Spacebars.mustache(view.lookup("foo"), Spacebars.kw({
       x: Spacebars.dot(view.lookup("bar"), "baz")
     }));
@@ -88,7 +88,7 @@ export function runCompilerOutputTests(run) {
   }, (function() {
     return HTML.Raw("<p>aaa</p><p>ppp</p>");
   }), (function() {
-    return HTML.P(Blaze.View("lookup:bbb", function() {
+    return HTML.P(new Blaze.View("lookup:bbb", function() {
       return Spacebars.mustache(view.lookup("bbb"));
     }));
   }));
@@ -178,7 +178,7 @@ export function runCompilerOutputTests(run) {
 }`);
   run("<asdf>{{foo}}</asdf>", `function() {
   var view = this;
-  return HTML.getTag("asdf")(Blaze.View("lookup:foo", function() {
+  return HTML.getTag("asdf")(new Blaze.View("lookup:foo", function() {
     return Spacebars.mustache(view.lookup("foo"));
   }));
 }`);
@@ -208,7 +208,7 @@ export function runCompilerOutputTests(run) {
 }`);
   run("<div><div>{{helper}}<div>a</div><div>b</div></div></div>", `function() {
   var view = this;
-  return HTML.DIV(HTML.DIV(Blaze.View("lookup:helper",function(){
+  return HTML.DIV(HTML.DIV(new Blaze.View("lookup:helper",function(){
       return Spacebars.mustache(view.lookup("helper"));
   }), HTML.Raw("<div>a</div><div>b</div>")));
 }`);
@@ -225,7 +225,7 @@ export function runCompilerOutputTests(run) {
   var view = this;
   return HTML.DIV(
     "\\n    ",
-    Blaze.View("lookup:helper",function(){
+    new Blaze.View("lookup:helper",function(){
       return Spacebars.mustache(view.lookup("helper"));
     }),
     "\\n"
@@ -236,7 +236,7 @@ export function runCompilerOutputTests(run) {
 </div>`, `function() {
   var view = this;
   return HTML.DIV(
-    Blaze.View("lookup:helper",function(){
+    new Blaze.View("lookup:helper",function(){
       return Spacebars.mustache(view.lookup("helper"));
     })
   );
@@ -247,7 +247,7 @@ export function runCompilerOutputTests(run) {
 </div>`, `function() {
   var view = this;
   return HTML.DIV(
-    Blaze.View("lookup:helper",function(){
+    new Blaze.View("lookup:helper",function(){
       return Spacebars.mustache(view.lookup("helper"));
     }),
     HTML.Raw("<span>Test</span> <span>Spaces</span>")

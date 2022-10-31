@@ -1,5 +1,5 @@
 /* global Blaze */
-/* eslint-disable import/no-unresolved, no-cond-assign, no-global-assign, prefer-rest-params, no-param-reassign, no-multi-assign */
+/* eslint-disable import/no-unresolved */
 
 import has from 'lodash.has';
 
@@ -27,9 +27,8 @@ const wrapHelper = function (f, templateFunc) {
     return f;
   }
 
-  return function () {
+  return function (...args) {
     const self = this;
-    const args = arguments;
 
     return Blaze.Template._withTemplateInstanceFunc(templateFunc, function () {
       return Blaze._wrapCatchingExceptions(f, 'template helper').apply(self, args);
@@ -40,11 +39,11 @@ const wrapHelper = function (f, templateFunc) {
 // to the current data context.
 const bindDataContext = function (x) {
   if (typeof x === 'function') {
-    return function () {
+    return function (...args) {
       let data = Blaze.getData();
       if (data == null) data = {};
-      // eslint-disable-next-line prefer-rest-params
-      return x.apply(data, arguments);
+
+      return x.apply(data, args);
     };
   }
   return x;
@@ -119,16 +118,16 @@ Blaze._lexicalBindingLookup = function (view, name) {
         return bindingReactiveVar.get();
       };
     }
-    // eslint-disable-next-line no-cond-assign
-  } while (currentView = _lexicalKeepGoing(currentView));
+
+    currentView = _lexicalKeepGoing(currentView);
+  } while (currentView);
 
   return null;
 };
 
 // templateInstance argument is provided to be available for possible
 // alternative implementations of this function by 3rd party packages.
-// eslint-disable-next-line no-unused-vars
-Blaze._getTemplate = function (name, templateInstance) {
+Blaze._getTemplate = function (name) {
   if ((name in Blaze.Template) && (Blaze.Template[name] instanceof Blaze.Template)) {
     return Blaze.Template[name];
   }
@@ -159,10 +158,7 @@ Blaze._getGlobalHelper = function (name, templateInstance) {
 Blaze.View.prototype.lookup = function (name, _options) {
   const { template } = this;
   const lookupTemplate = _options && _options.template;
-  let helper;
-  let binding;
   let boundTmplInstance;
-  let foundTemplate;
 
   if (this.templateInstance) {
     boundTmplInstance = Blaze._bind(this.templateInstance, this);
@@ -178,29 +174,33 @@ Blaze.View.prototype.lookup = function (name, _options) {
   }
 
   // 1. look up a helper on the current template
-  if (template && ((helper = Blaze._getTemplateHelper(template, name, boundTmplInstance)) != null)) {
+  let helper = Blaze._getTemplateHelper(template, name, boundTmplInstance);
+  if (template && helper != null) {
     return helper;
   }
 
   // 2. look up a binding by traversing the lexical view hierarchy inside the
   // current template
-  if (template && (binding = Blaze._lexicalBindingLookup(Blaze.currentView, name)) != null) {
+  const binding = Blaze._lexicalBindingLookup(Blaze.currentView, name);
+  if (template && binding != null) {
     return binding;
   }
 
   // 3. look up a template by name
-  if (lookupTemplate && ((foundTemplate = Blaze._getTemplate(name, boundTmplInstance)) != null)) {
+  const foundTemplate = Blaze._getTemplate(name, boundTmplInstance);
+  if (lookupTemplate && foundTemplate) {
     return foundTemplate;
   }
 
   // 4. look up a global helper
-  if ((helper = Blaze._getGlobalHelper(name, boundTmplInstance)) != null) {
+  helper = Blaze._getGlobalHelper(name, boundTmplInstance);
+  if (helper != null) {
     return helper;
   }
 
   // 5. look up in a data context
-  return function () {
-    const isCalledAsFunction = (arguments.length > 0);
+  return function (...args) {
+    const isCalledAsFunction = (args.length > 0);
     const data = Blaze.getData();
     const x = data && data[name];
     if (!x) {
@@ -228,7 +228,7 @@ Blaze.View.prototype.lookup = function (name, _options) {
       }
       return x;
     }
-    return x.apply(data, arguments);
+    return x.apply(data, args);
   };
 };
 
@@ -237,6 +237,7 @@ Blaze.View.prototype.lookup = function (name, _options) {
 Blaze._parentData = function (height, _functionWrapped) {
   // If height is null or undefined, we default to 1, the first parent.
   if (height == null) {
+    // eslint-disable-next-line no-param-reassign
     height = 1;
   }
   let theWith = Blaze.getView('with');

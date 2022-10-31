@@ -1,7 +1,8 @@
-/* global Blaze AttributeHandler  ElementAttributesUpdater OrderedDict Meteor */
-/* eslint-disable import/no-unresolved, no-undef, no-global-assign */
+/* global Blaze Meteor */
+/* eslint-disable import/no-unresolved, class-methods-use-this, no-param-reassign */
 
 import has from 'lodash.has';
+import { OrderedDict } from 'meteor/ordered-dict';
 
 let jsUrlsAllowed = false;
 Blaze._allowJavascriptUrls = function () {
@@ -33,35 +34,23 @@ Blaze._javascriptUrlsAllowed = function () {
 //
 // AttributeHandlers can't influence how attributes appear in rendered HTML,
 // only how they are updated after materialization as DOM.
+class AttributeHandler {
+  constructor(name, value) {
+    this.name = name;
+    this.value = value;
+  }
 
-AttributeHandler = function (name, value) {
-  this.name = name;
-  this.value = value;
-};
+  update(element, oldValue, value) {
+    if (value === null) {
+      if (oldValue !== null) element.removeAttribute(this.name);
+    } else {
+      element.setAttribute(this.name, value);
+    }
+  }
+}
+
+
 Blaze._AttributeHandler = AttributeHandler;
-
-AttributeHandler.prototype.update = function (element, oldValue, value) {
-  if (value === null) {
-    if (oldValue !== null) element.removeAttribute(this.name);
-  } else {
-    element.setAttribute(this.name, value);
-  }
-};
-
-AttributeHandler.extend = function (options) {
-  const curType = this;
-  const subType = function AttributeHandlerSubtype(/* arguments */) {
-    // eslint-disable-next-line prefer-rest-params
-    AttributeHandler.apply(this, arguments);
-  };
-  // eslint-disable-next-line new-cap
-  subType.prototype = new curType();
-  subType.extend = curType.extend;
-  if (options) {
-    Object.assign(subType.prototype, options);
-  }
-  return subType;
-};
 
 // Apply the diff between the attributes of "oldValue" and "value" to "element."
 //
@@ -71,8 +60,7 @@ AttributeHandler.extend = function (options) {
 // values are the entire attribute which will be injected into the element.
 //
 // Extended below to support classes, SVG elements and styles.
-
-Blaze._DiffingAttributeHandler = AttributeHandler.extend({
+class _DiffingAttributeHandler extends AttributeHandler {
   update(element, oldValue, value) {
     if (!this.getCurrentValue || !this.setValue || !this.parseValue || !this.joinValues) throw new Error("Missing methods in subclass of 'DiffingAttributeHandler'");
 
@@ -85,8 +73,7 @@ Blaze._DiffingAttributeHandler = AttributeHandler.extend({
     const currentAttrsMap = currentAttrString ? this.parseValue(currentAttrString) : new OrderedDict();
 
     // Any outside changes to attributes we add at the end.
-    // eslint-disable-next-line no-shadow
-    currentAttrsMap.forEach(function (value, key) {
+    currentAttrsMap.forEach(function (attr, key) {
       // If the key already exists, we do not use the current value, but the new value.
       if (attrsMap.has(key)) {
         return;
@@ -98,28 +85,30 @@ Blaze._DiffingAttributeHandler = AttributeHandler.extend({
         return;
       }
 
-      attrsMap.append(key, value);
+      attrsMap.append(key, attr);
     });
 
     const values = [];
-    // eslint-disable-next-line no-shadow
-    attrsMap.forEach(function (value) {
-      values.push(value);
+
+    attrsMap.forEach(function (attr) {
+      values.push(attr);
     });
 
     this.setValue(element, this.joinValues(values));
-  },
-});
+  }
+}
 
-const ClassHandler = Blaze._DiffingAttributeHandler.extend({
-  // @param rawValue {String}
+Blaze._DiffingAttributeHandler = _DiffingAttributeHandler;
+
+class ClassHandler extends _DiffingAttributeHandler {
   getCurrentValue(element) {
     return element.className;
-  },
+  }
+
   setValue(element, className) {
-    // eslint-disable-next-line no-param-reassign
     element.className = className;
-  },
+  }
+
   parseValue(attrString) {
     const tokens = new OrderedDict();
 
@@ -132,32 +121,35 @@ const ClassHandler = Blaze._DiffingAttributeHandler.extend({
       }
     });
     return tokens;
-  },
+  }
+
   joinValues(values) {
     return values.join(' ');
-  },
-});
+  }
+}
 
-const SVGClassHandler = ClassHandler.extend({
+class SVGClassHandler extends ClassHandler {
   getCurrentValue(element) {
     return element.className.baseVal;
-  },
+  }
+
   setValue(element, className) {
     element.setAttribute('class', className);
-  },
-});
+  }
+}
 
-const StyleHandler = Blaze._DiffingAttributeHandler.extend({
+class StyleHandler extends _DiffingAttributeHandler {
   getCurrentValue(element) {
     return element.getAttribute('style');
-  },
+  }
+
   setValue(element, style) {
     if (style === '') {
       element.removeAttribute('style');
     } else {
       element.setAttribute('style', style);
     }
-  },
+  }
 
   // Parse a string to produce a map from property to attribute string.
   //
@@ -186,38 +178,35 @@ const StyleHandler = Blaze._DiffingAttributeHandler.extend({
     }
 
     return tokens;
-  },
+  }
 
   joinValues(values) {
     // TODO: Assure that there is always ; between values. But what is an example where it breaks?
     return values.join(' ');
-  },
-});
+  }
+}
 
-const BooleanHandler = AttributeHandler.extend({
+class BooleanHandler extends AttributeHandler {
   update(element, oldValue, value) {
     const { name } = this;
     if (value == null) {
-      // eslint-disable-next-line no-param-reassign
       if (oldValue != null) element[name] = false;
     } else {
-      // eslint-disable-next-line no-param-reassign
       element[name] = true;
     }
-  },
-});
+  }
+}
 
-const DOMPropertyHandler = AttributeHandler.extend({
+class DOMPropertyHandler extends AttributeHandler {
   update(element, oldValue, value) {
     const { name } = this;
-    // eslint-disable-next-line no-param-reassign
     if (value !== element[name]) element[name] = value;
-  },
-});
+  }
+}
 
 // attributes of the type 'xlink:something' should be set using
 // the correct namespace in order to work
-const XlinkHandler = AttributeHandler.extend({
+class XlinkHandler extends AttributeHandler {
   update(element, oldValue, value) {
     const NS = 'http://www.w3.org/1999/xlink';
     if (value === null) {
@@ -225,8 +214,8 @@ const XlinkHandler = AttributeHandler.extend({
     } else {
       element.setAttributeNS(NS, this.name, this.value);
     }
-  },
-});
+  }
+}
 
 // cross-browser version of `instanceof SVGElement`
 const isSVGElement = function (elem) {
@@ -292,11 +281,12 @@ const getUrlProtocol = function (url) {
 // urls, we set the attribute on a dummy anchor element and then read
 // out the 'protocol' property of the attribute.
 const origUpdate = AttributeHandler.prototype.update;
-const UrlHandler = AttributeHandler.extend({
+
+class UrlHandler extends AttributeHandler {
   update(element, oldValue, value) {
     const self = this;
-    // eslint-disable-next-line prefer-rest-params
-    const args = arguments;
+
+    const args = [element, oldValue, value];
 
     if (Blaze._javascriptUrlsAllowed()) {
       origUpdate.apply(self, args);
@@ -314,8 +304,8 @@ const UrlHandler = AttributeHandler.extend({
         origUpdate.apply(self, args);
       }
     }
-  },
-});
+  }
+}
 
 // XXX make it possible for users to register attribute handlers!
 Blaze._makeAttributeHandler = function (elem, name, value) {
@@ -354,52 +344,54 @@ Blaze._makeAttributeHandler = function (elem, name, value) {
   // seem to handle setAttribute ok.
 };
 
-ElementAttributesUpdater = function (elem) {
-  this.elem = elem;
-  this.handlers = {};
-};
+class ElementAttributesUpdater {
+  constructor(elem) {
+    this.elem = elem;
+    this.handlers = {};
+  }
 
 // Update attributes on `elem` to the dictionary `attrs`, whose
 // values are strings.
-ElementAttributesUpdater.prototype.update = function (newAttrs) {
-  const { elem } = this;
-  const { handlers } = this;
+  update = function (newAttrs) {
+    const { elem } = this;
+    const { handlers } = this;
 
-  // eslint-disable-next-line no-restricted-syntax,no-unused-vars
-  for (const k in handlers) {
-    if (!has(newAttrs, k)) {
-      // remove attributes (and handlers) for attribute names
-      // that don't exist as keys of `newAttrs` and so won't
-      // be visited when traversing it.  (Attributes that
-      // exist in the `newAttrs` object but are `null`
-      // are handled later.)
-      const handler = handlers[k];
-      const oldValue = handler.value;
-      handler.value = null;
-      handler.update(elem, oldValue, null);
-      delete handlers[k];
-    }
-  }
-
-  // eslint-disable-next-line no-restricted-syntax,guard-for-in,no-unused-vars
-  for (const k in newAttrs) {
-    let handler = null;
-    let oldValue = null;
-    const value = newAttrs[k];
-    if (!has(handlers, k)) {
-      if (value !== null) {
-        // make new handler
-        handler = Blaze._makeAttributeHandler(elem, k, value);
-        handlers[k] = handler;
+    Object.getOwnPropertyNames(handlers).forEach((k) => {
+      if (!has(newAttrs, k)) {
+        // remove attributes (and handlers) for attribute names
+        // that don't exist as keys of `newAttrs` and so won't
+        // be visited when traversing it.  (Attributes that
+        // exist in the `newAttrs` object but are `null`
+        // are handled later.)
+        const handler = handlers[k];
+        const oldValue = handler.value;
+        handler.value = null;
+        handler.update(elem, oldValue, null);
+        delete handlers[k];
       }
-    } else {
-      handler = handlers[k];
-      oldValue = handler.value;
-    }
-    if (oldValue !== value) {
-      handler.value = value;
-      handler.update(elem, oldValue, value);
-      if (value === null) delete handlers[k];
-    }
+    });
+
+    Object.getOwnPropertyNames(newAttrs).forEach((k) => {
+      let handler = null;
+      let oldValue = null;
+      const value = newAttrs[k];
+      if (!has(handlers, k)) {
+        if (value !== null) {
+          // make new handler
+          handler = Blaze._makeAttributeHandler(elem, k, value);
+          handlers[k] = handler;
+        }
+      } else {
+        handler = handlers[k];
+        oldValue = handler.value;
+      }
+      if (oldValue !== value) {
+        handler.value = value;
+        handler.update(elem, oldValue, value);
+        if (value === null) delete handlers[k];
+      }
+    });
   }
-};
+}
+
+Blaze.ElementAttributesUpdater = ElementAttributesUpdater;

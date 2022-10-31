@@ -35,7 +35,7 @@ Tinytest.add("html-tools - comments", function (test) {
 
   var ignore = function (input) {
     var scanner = new Scanner(input);
-    var result = getComment(scanner);;
+    var result = getComment(scanner);
     test.isFalse(result);
     test.equal(scanner.pos, 0);
   };

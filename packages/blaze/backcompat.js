@@ -1,9 +1,10 @@
-/* global Blaze UI Handlebars ReactiveVar */
+/* global Blaze Handlebars UI ReactiveVar */
 /* eslint-disable no-global-assign */
 
 UI = Blaze;
 
 Blaze.ReactiveVar = ReactiveVar;
+
 UI._templateInstance = Blaze.Template.instance;
 
 Handlebars = {};
@@ -13,9 +14,14 @@ Handlebars._escape = Blaze._escape;
 
 // Return these from {{...}} helpers to achieve the same as returning
 // strings from {{{...}}} helpers
-Handlebars.SafeString = function (string) {
-  this.string = string;
-};
-Handlebars.SafeString.prototype.toString = function () {
-  return this.string.toString();
-};
+class SafeString {
+  constructor(string) {
+    this.string = string;
+  }
+
+  toString = function () {
+    return this.string.toString();
+  };
+}
+
+Handlebars.SafeString = SafeString;

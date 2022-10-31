@@ -264,8 +264,9 @@ var extendTemplateWithInit = function (template, initFunc) {
     template.viewName + '-extended',
     template.renderFunction
   );
+  const constructView = tmpl.constructView;
   tmpl.constructView = function (/*args*/) {
-    var view = Template.prototype.constructView.apply(this, arguments);
+    var view = constructView.apply(this, arguments);
     initFunc(view);
     return view;
   };
@@ -2406,7 +2407,7 @@ Tinytest.add(
       test.equal(canonicalizeHtml(items[0].innerHTML), 'foo1');
       test.equal(canonicalizeHtml(items[1].innerHTML), 'foo2');
     };
-    
+
     var newVal = [...origVal];
     newVal.push({ _id: 'foo3' });
     rv.set(newVal);
