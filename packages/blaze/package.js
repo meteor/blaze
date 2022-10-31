@@ -25,7 +25,6 @@ Package.onUse(function (api) {
 
   api.export([
     'Blaze',
-    'UI',
     'Handlebars',
   ]);
 

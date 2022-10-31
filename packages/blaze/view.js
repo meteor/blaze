@@ -1,5 +1,5 @@
 /* global Blaze Tracker Meteor */
-/* eslint-disable import/no-unresolved, no-param-reassign */
+/* eslint-disable import/no-unresolved */
 
 // [new] Blaze.View([name], renderMethod)
 //
