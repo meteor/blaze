@@ -1,5 +1,5 @@
 /* global Blaze Tracker Match */
-/* eslint-disable import/no-unresolved, no-param-reassign */
+/* eslint-disable import/no-unresolved */
 
 import isObject from 'lodash.isobject';
 import isFunction from 'lodash.isfunction';
@@ -43,16 +43,19 @@ class Template {
       return new Blaze.Template(viewName, renderFunction);
     }
 
-    if (typeof viewName === 'function') {
-      // omitted "viewName" argument
-      renderFunction = viewName;
-      viewName = '';
-    }
-    if (typeof viewName !== 'string') throw new Error('viewName must be a String (or omitted)');
-    if (typeof renderFunction !== 'function') throw new Error('renderFunction must be a function');
+    let _viewName = viewName;
+    let _renderFunction = renderFunction;
 
-    this.viewName = viewName;
-    this.renderFunction = renderFunction;
+    if (typeof _viewName === 'function') {
+      // omitted "viewName" argument
+      _renderFunction = _viewName;
+      _viewName = '';
+    }
+    if (typeof _viewName !== 'string') throw new Error('viewName must be a String (or omitted)');
+    if (typeof _renderFunction !== 'function') throw new Error('renderFunction must be a function');
+
+    this.viewName = _viewName;
+    this.renderFunction = _renderFunction;
 
     this.__helpers = new HelperMap();
     this.__eventMaps = [];
@@ -299,24 +302,21 @@ Blaze.isTemplate = function (t) {
 
 class TemplateInstance {
   constructor(view) {
-    // called without `new`
-    if (!(this instanceof Blaze.TemplateInstance)) {
-      return new Blaze.TemplateInstance(view);
-    }
-
     if (!(view instanceof Blaze.View)) throw new Error('View required');
 
-    view._templateInstance = this;
+    const _view = view;
+
+    _view._templateInstance = this;
 
     /**
-     * @name view
+     * @name _view
      * @memberOf Blaze.TemplateInstance
      * @instance
      * @summary The [View](../api/blaze.html#Blaze-View) object for this invocation of the template.
      * @locus Client
      * @type {Blaze.View}
      */
-    this.view = view;
+    this.view = _view;
     this.data = null;
 
     /**
@@ -358,7 +358,7 @@ class TemplateInstance {
    */
   $(selector) {
     const { view } = this;
-    if (!view._domrange) throw new Error("Can't use $ on template instance with no DOM");
+    if (!view._domrange) throw new Error('Can\'t use $ on template instance with no DOM');
     return view._domrange.$(selector);
   }
 

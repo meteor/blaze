@@ -1,5 +1,5 @@
 /* global Template Blaze Spacebars HTML */
-/* eslint-disable import/no-unresolved, no-global-assign, no-param-reassign */
+/* eslint-disable import/no-unresolved, no-global-assign */
 
 // This file contains templates compiled with a pre-0.9.0 version of
 // spacebars-compiler. We run the entire suite of tests as we had on

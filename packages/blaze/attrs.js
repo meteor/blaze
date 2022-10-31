@@ -1,5 +1,5 @@
 /* global Blaze Meteor */
-/* eslint-disable import/no-unresolved, class-methods-use-this, no-param-reassign */
+/* eslint-disable import/no-unresolved, class-methods-use-this */
 
 import has from 'lodash.has';
 import { OrderedDict } from 'meteor/ordered-dict';
@@ -106,7 +106,8 @@ class ClassHandler extends _DiffingAttributeHandler {
   }
 
   setValue(element, className) {
-    element.className = className;
+    const theElement = element;
+    theElement.className = className;
   }
 
   parseValue(attrString) {
@@ -189,18 +190,22 @@ class StyleHandler extends _DiffingAttributeHandler {
 class BooleanHandler extends AttributeHandler {
   update(element, oldValue, value) {
     const { name } = this;
+    const theElement = element;
+
     if (value == null) {
-      if (oldValue != null) element[name] = false;
+      if (oldValue != null) theElement[name] = false;
     } else {
-      element[name] = true;
+      theElement[name] = true;
     }
   }
 }
 
 class DOMPropertyHandler extends AttributeHandler {
   update(element, oldValue, value) {
+    const theElement = element;
+
     const { name } = this;
-    if (value !== element[name]) element[name] = value;
+    if (value !== theElement[name]) theElement[name] = value;
   }
 }
 

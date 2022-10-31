@@ -1,5 +1,5 @@
 /* global Blaze jQuery Package */
-/* eslint-disable import/no-unresolved, no-param-reassign */
+/* eslint-disable import/no-unresolved */
 
 const DOMBackend = {};
 Blaze._DOMBackend = DOMBackend;
@@ -34,10 +34,11 @@ DOMBackend.Events = {
 
   bindEventCapturer(elem, type, selector, handler) {
     const $elem = $jq(elem);
+    const theHandler = handler;
 
     const wrapper = function (event) {
-      event = $jq.event.fix(event);
-      event.currentTarget = event.target;
+      const theEvent = $jq.event.fix(event);
+      theEvent.currentTarget = theEvent.target;
 
       // Note: It might improve jQuery interop if we called into jQuery
       // here somehow.  Since we don't use jQuery to dispatch the event,
@@ -45,20 +46,20 @@ DOMBackend.Events = {
       // since jQuery can't bind capturing handlers, it's not clear
       // where we would hook in.  Internal jQuery functions like `dispatch`
       // are too high-level.
-      const $target = $jq(event.currentTarget);
-      if ($target.is($elem.find(selector))) handler.call(elem, event);
+      const $target = $jq(theEvent.currentTarget);
+      if ($target.is($elem.find(selector))) theHandler.call(elem, theEvent);
     };
 
-    handler._meteorui_wrapper = wrapper;
+    theHandler._meteorui_wrapper = wrapper;
 
-    type = DOMBackend.Events.parseEventType(type);
+    const theType = DOMBackend.Events.parseEventType(type);
     // add *capturing* event listener
-    elem.addEventListener(type, wrapper, true);
+    elem.addEventListener(theType, wrapper, true);
   },
 
   unbindEventCapturer(elem, type, handler) {
-    type = DOMBackend.Events.parseEventType(type);
-    elem.removeEventListener(type, handler._meteorui_wrapper, true);
+    const theType = DOMBackend.Events.parseEventType(type);
+    elem.removeEventListener(theType, handler._meteorui_wrapper, true);
   },
 
   parseEventType(type) {
@@ -93,12 +94,16 @@ class TeardownCallback {
     this.stop = this.unlink;
   }
 
+  setAfterLink(prevElt) {
+    this.prev.next = prevElt;
+    this.prev = prevElt;
+  }
+
   // Insert newElt before oldElt in the circular list
   linkBefore(oldElt) {
     this.prev = oldElt.prev;
     this.next = oldElt;
-    oldElt.prev.next = this;
-    oldElt.prev = this;
+    oldElt.setAfterLink(this);
   }
 
   unlink() {
@@ -123,16 +128,17 @@ DOMBackend.Teardown = {
   onElementTeardown(elem, func) {
     const elt = new TeardownCallback(func);
 
+    const theElement = elem;
     const propName = DOMBackend.Teardown._CB_PROP;
-    if (!elem[propName]) {
+    if (!theElement[propName]) {
       // create an empty node that is never unlinked
-      elem[propName] = new TeardownCallback();
+      theElement[propName] = new TeardownCallback();
 
       // Set up the event, only the first time.
-      $jq(elem).on(DOMBackend.Teardown._JQUERY_EVENT_NAME, NOOP);
+      $jq(theElement).on(DOMBackend.Teardown._JQUERY_EVENT_NAME, NOOP);
     }
 
-    elt.linkBefore(elem[propName]);
+    elt.linkBefore(theElement[propName]);
 
     return elt; // so caller can call stop()
   },

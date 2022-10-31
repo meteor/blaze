@@ -1,5 +1,5 @@
 /* global Blaze HTML Tinytest canonicalizeHtml ReactiveVar Tracker $ Template Meteor */
-/* eslint-disable import/no-unresolved, no-param-reassign */
+/* eslint-disable import/no-unresolved */
 
 import { BlazeTools } from 'meteor/blaze-tools';
 
@@ -164,9 +164,13 @@ Tinytest.add('blaze - render - textarea', function (test) {
   const run = function (optNode, text, html, code) {
     if (typeof optNode === 'string') {
       // called with args (text, html, code)
+      // eslint-disable-next-line no-param-reassign
       code = html;
+      // eslint-disable-next-line no-param-reassign
       html = text;
+      // eslint-disable-next-line no-param-reassign
       text = optNode;
+      // eslint-disable-next-line no-param-reassign
       optNode = null;
     }
     const div = document.createElement('DIV');

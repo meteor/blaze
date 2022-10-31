@@ -1,5 +1,5 @@
 /* global Blaze */
-/* eslint-disable import/no-unresolved, no-param-reassign */
+/* eslint-disable import/no-unresolved */
 
 import has from 'lodash.has';
 
@@ -82,26 +82,28 @@ class HandlerRec {
 
     if (tryCapturing) {
       this.capturingHandler = (function (h) {
+        const _h = h;
+
         return function (evt) {
-          if (h.mode === EVENT_MODE.TBD) {
+          if (_h.mode === EVENT_MODE.TBD) {
             // must be first time we're called.
             if (evt.bubbles) {
               // this type of event bubbles, so don't
               // get called again.
-              h.mode = EVENT_MODE.BUBBLING;
+              _h.mode = EVENT_MODE.BUBBLING;
               DOMBackend.Events.unbindEventCapturer(
-                h.elem, h.type, h.capturingHandler);
+                _h.elem, _h.type, _h.capturingHandler);
               return;
             }
             // this type of event doesn't bubble,
             // so unbind the delegation, preventing
             // it from ever firing.
-            h.mode = EVENT_MODE.CAPTURING;
+            _h.mode = EVENT_MODE.CAPTURING;
             DOMBackend.Events.undelegateEvents(
-              h.elem, h.type, h.delegatedHandler);
+              _h.elem, _h.type, _h.delegatedHandler);
           }
 
-          h.delegatedHandler(evt);
+          _h.delegatedHandler(evt);
         };
       }(this));
     } else {
@@ -142,6 +144,8 @@ class HandlerRec {
 EventSupport.HandlerRec = HandlerRec;
 
 EventSupport.listen = function (element, events, selector, handler, recipient, getParentRecipient) {
+  let _element = element;
+
   // Prevent this method from being JITed by Safari.  Due to a
   // presumed JIT bug in Safari -- observed in Version 7.0.6
   // (9537.78.2) -- this method may crash the Safari render process if
@@ -149,7 +153,7 @@ EventSupport.listen = function (element, events, selector, handler, recipient, g
   // Repro: https://github.com/dgreensp/public/tree/master/safari-crash
   try {
     // eslint-disable-next-line no-self-assign
-    element = element;
+    _element = _element;
     // eslint-disable-next-line no-empty
   } finally {
   }
@@ -163,10 +167,10 @@ EventSupport.listen = function (element, events, selector, handler, recipient, g
   for (let i = 0, N = eventTypes.length; i < N; i++) {
     const type = eventTypes[i];
 
-    let eventDict = element.$blaze_events;
+    let eventDict = _element.$blaze_events;
     if (!eventDict) {
       eventDict = {};
-      element.$blaze_events = eventDict;
+      _element.$blaze_events = eventDict;
     }
 
     let info = eventDict[type];
@@ -177,7 +181,7 @@ EventSupport.listen = function (element, events, selector, handler, recipient, g
     }
     const handlerList = info.handlers;
     const handlerRec = new HandlerRec(
-      element, type, selector, handler, recipient);
+      _element, type, selector, handler, recipient);
     newHandlerRecs.push(handlerRec);
     handlerRec.bind();
     handlerList.push(handlerRec);
@@ -207,7 +211,7 @@ EventSupport.listen = function (element, events, selector, handler, recipient, g
   return {
     // closes over just `element` and `newHandlerRecs`
     stop() {
-      const eventDict = element.$blaze_events;
+      const eventDict = _element.$blaze_events;
       if (!eventDict) return;
       // newHandlerRecs has only one item unless you specify multiple
       // event types.  If this code is slow, it's because we have to

@@ -235,13 +235,13 @@ Blaze.View.prototype.lookup = function (name, _options) {
 // Implement Spacebars' {{../..}}.
 // @param height {Number} The number of '..'s
 Blaze._parentData = function (height, _functionWrapped) {
+  let _height = height;
   // If height is null or undefined, we default to 1, the first parent.
-  if (height == null) {
-    // eslint-disable-next-line no-param-reassign
-    height = 1;
+  if (_height == null) {
+    _height = 1;
   }
   let theWith = Blaze.getView('with');
-  for (let i = 0; (i < height) && theWith; i++) {
+  for (let i = 0; (i < _height) && theWith; i++) {
     theWith = Blaze.getView(theWith, 'with');
   }
 

@@ -1,5 +1,5 @@
 /* global Blaze */
-/* eslint-disable import/no-unresolved, no-param-reassign */
+/* eslint-disable import/no-unresolved */
 
 // A constant empty array (frozen if the JS engine supports it).
 const _emptyArray = Object.freeze ? Object.freeze([]) : [];
@@ -55,45 +55,49 @@ class DOMRange {
 
   static _insertNodeWithHooks(n, parent, next) {
     // `|| null` because IE throws an error if 'next' is undefined
-    next = next || null;
+    const theNext = next || null;
     if (n.nodeType === 1 &&
       parent._uihooks && parent._uihooks.insertElement) {
-      parent._uihooks.insertElement(n, next);
+      parent._uihooks.insertElement(n, theNext);
     } else {
-      parent.insertBefore(n, next);
+      parent.insertBefore(n, theNext);
     }
   }
 
   static _moveNodeWithHooks(n, parent, next) {
     if (n.parentNode !== parent) return;
     // `|| null` because IE throws an error if 'next' is undefined
-    next = next || null;
+    const theNext = next || null;
     if (n.nodeType === 1 &&
       parent._uihooks && parent._uihooks.moveElement) {
-      parent._uihooks.moveElement(n, next);
+      parent._uihooks.moveElement(n, theNext);
     } else {
-      parent.insertBefore(n, next);
+      parent.insertBefore(n, theNext);
     }
   }
 
   static forElement(elem) {
-    if (elem.nodeType !== 1) throw new Error(`Expected element, found: ${elem}`);
+    let theElem = elem;
+
+    if (theElem.nodeType !== 1) throw new Error(`Expected element, found: ${theElem}`);
     let range = null;
-    while (elem && !range) {
-      range = (elem.$blaze_range || null);
-      if (!range) elem = elem.parentNode;
+    while (theElem && !range) {
+      range = (theElem.$blaze_range || null);
+      if (!range) theElem = theElem.parentNode;
     }
     return range;
   }
 
   static _destroy(m, _skipNodes) {
-    if (m instanceof DOMRange) {
-      if (m.view) Blaze._destroyView(m.view, _skipNodes);
-    } else if ((!_skipNodes) && m.nodeType === 1) {
+    const _m = m;
+
+    if (_m instanceof DOMRange) {
+      if (_m.view) Blaze._destroyView(_m.view, _skipNodes);
+    } else if ((!_skipNodes) && _m.nodeType === 1) {
       // DOM Element
-      if (m.$blaze_range) {
-        Blaze._destroyNode(m);
-        m.$blaze_range = null;
+      if (_m.$blaze_range) {
+        Blaze._destroyNode(_m);
+        _m.$blaze_range = null;
       }
     }
   }
@@ -260,10 +264,12 @@ class DOMRange {
   }
 
   _memberIn(m) {
-    if (m instanceof DOMRange) m.parentRange = this;
-    else if (m.nodeType === 1) {
+    const _m = m;
+
+    if (_m instanceof DOMRange) _m.parentRange = this;
+    else if (_m.nodeType === 1) {
       // DOM Element
-      m.$blaze_range = this;
+      _m.$blaze_range = this;
     }
   }
 
@@ -279,6 +285,8 @@ class DOMRange {
   }
 
   containsElement(elem, selector, event) {
+    let _elem = elem;
+
     const templateName = this.view?.name
       ? this.view.name.split('.')[1]
       : 'unknown template';
@@ -296,13 +304,13 @@ class DOMRange {
 
     // First check that elem is a descendant of this.parentElement,
     // according to the DOM.
-    if (!Blaze._elementContains(this.parentElement, elem)) return false;
+    if (!Blaze._elementContains(this.parentElement, _elem)) return false;
 
     // If elem is not an immediate child of this.parentElement,
     // walk up to its ancestor that is.
-    while (elem.parentNode !== this.parentElement) elem = elem.parentNode;
+    while (_elem.parentNode !== this.parentElement) _elem = _elem.parentNode;
 
-    let range = elem.$blaze_range;
+    let range = _elem.$blaze_range;
     while (range && range !== this) range = range.parentRange;
 
     return range === this;
@@ -313,19 +321,21 @@ class DOMRange {
 
     if (!range.attached) return false;
 
+    let _range = range;
+
     // A DOMRange is contained in this DOMRange if it's possible
     // to reach this range by following parent pointers.  If the
     // DOMRange has the same parentElement, then it should be
     // a member, or a member of a member etc.  Otherwise, we must
     // contain its parentElement.
 
-    if (range.parentElement !== this.parentElement) return this.containsElement(range.parentElement);
+    if (_range.parentElement !== this.parentElement) return this.containsElement(_range.parentElement);
 
-    if (range === this) return false; // don't contain self
+    if (_range === this) return false; // don't contain self
 
-    while (range && range !== this) range = range.parentRange;
+    while (_range && _range !== this) _range = _range.parentRange;
 
-    return range === this;
+    return _range === this;
   }
 
   onAttached(attached) {
@@ -371,11 +381,13 @@ class DOMRange {
     // in this DomRange, rather than simply descending from
     // `parentNode`.
     const filterFunc = function (elem) {
+      let _elem = elem;
+
       // handle jQuery's arguments to filter, where the node
       // is in `this` and the index is the first argument.
-      if (typeof elem === 'number') elem = this;
+      if (typeof _elem === 'number') _elem = this;
 
-      return self.containsElement(elem);
+      return self.containsElement(_elem);
     };
 
     if (!results.filter) {
@@ -439,12 +451,12 @@ Blaze._elementContains = function (a, b) {
   // Modern Safari has both functions but seems to get contains() wrong.
   // IE can't handle b being a text node.  We work around this
   // by doing a direct parent test now.
-  b = b.parentNode;
-  if (!(b && b.nodeType === 1)) {
+  const _b = b.parentNode;
+  if (!(_b && _b.nodeType === 1)) {
     // ELEMENT
     return false;
   }
-  if (a === b) return true;
+  if (a === _b) return true;
 
-  return a.contains(b);
+  return a.contains(_b);
 };

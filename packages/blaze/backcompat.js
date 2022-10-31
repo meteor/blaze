@@ -1,4 +1,4 @@
-/* global Blaze Handlebars UI ReactiveVar */
+/* global Blaze Handlebars ReactiveVar */
 /* eslint-disable no-global-assign */
 
 Blaze.ReactiveVar = ReactiveVar;
