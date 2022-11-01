@@ -1,28 +1,30 @@
+/* global Spacebars Blaze Handlebars Tracker HTML */
+/* eslint-disable no-global-assign */
+
 Spacebars = {};
 
-var tripleEquals = function (a, b) { return a === b; };
+const tripleEquals = function (a, b) {
+  return a === b;
+};
 
 Spacebars.include = function (templateOrFunction, contentFunc, elseFunc) {
-  if (! templateOrFunction)
-    return null;
+  let view;
+  if (!templateOrFunction) return null;
 
   if (typeof templateOrFunction !== 'function') {
-    var template = templateOrFunction;
-    if (! Blaze.isTemplate(template))
-      throw new Error("Expected template or null, found: " + template);
-    var view = templateOrFunction.constructView(contentFunc, elseFunc);
+    const template = templateOrFunction;
+    if (!Blaze.isTemplate(template)) throw new Error(`Expected template or null, found: ${template}`);
+    view = templateOrFunction.constructView(contentFunc, elseFunc);
     view.__startsNewLexicalScope = true;
     return view;
   }
 
-  var templateVar = Blaze.ReactiveVar(null, tripleEquals);
-  var view = new Blaze.View('Spacebars.include', function () {
-    var template = templateVar.get();
-    if (template === null)
-      return null;
+  const templateVar = Blaze.ReactiveVar(null, tripleEquals);
+  view = new Blaze.View('Spacebars.include', function () {
+    const template = templateVar.get();
+    if (template === null) return null;
 
-    if (! Blaze.isTemplate(template))
-      throw new Error("Expected template or null, found: " + template);
+    if (!Blaze.isTemplate(template)) throw new Error(`Expected template or null, found: ${template}`);
 
     return template.constructView(contentFunc, elseFunc);
   });
@@ -44,64 +46,57 @@ Spacebars.include = function (templateOrFunction, contentFunc, elseFunc) {
 // This is the shared part of Spacebars.mustache and
 // Spacebars.attrMustache, which differ in how they post-process the
 // result.
-Spacebars.mustacheImpl = function (value/*, args*/) {
-  var args = arguments;
+Spacebars.mustacheImpl = function (...args) {
+  const _args = args;
   // if we have any arguments (pos or kw), add an options argument
   // if there isn't one.
-  if (args.length > 1) {
-    var kw = args[args.length - 1];
-    if (! (kw instanceof Spacebars.kw)) {
+  if (_args.length > 1) {
+    let kw = _args[_args.length - 1];
+    if (!(kw instanceof Spacebars.kw)) {
       kw = Spacebars.kw();
       // clone arguments into an actual array, then push
       // the empty kw object.
-      args = Array.prototype.slice.call(arguments);
-      args.push(kw);
+      _args.push(kw);
     } else {
       // For each keyword arg, call it if it's a function
-      var newHash = {};
-      for (var k in kw.hash) {
-        var v = kw.hash[k];
+      const newHash = {};
+      Object.getOwnPropertyNames(kw.hash || {}).forEach((k) => {
+        const v = kw.hash[k];
         newHash[k] = (typeof v === 'function' ? v() : v);
-      }
-      args[args.length - 1] = Spacebars.kw(newHash);
+      });
+      _args[_args.length - 1] = Spacebars.kw(newHash);
     }
   }
 
-  return Spacebars.call.apply(null, args);
+  return Spacebars.call.apply(null, _args);
 };
 
-Spacebars.mustache = function (value/*, args*/) {
-  var result = Spacebars.mustacheImpl.apply(null, arguments);
+Spacebars.mustache = function (...args) {
+  const result = Spacebars.mustacheImpl.apply(null, args);
 
-  if (result instanceof Spacebars.SafeString)
-    return HTML.Raw(result.toString());
-  else
-    // map `null`, `undefined`, and `false` to null, which is important
-    // so that attributes with nully values are considered absent.
-    // stringify anything else (e.g. strings, booleans, numbers including 0).
-    return (result == null || result === false) ? null : String(result);
+  if (result instanceof Spacebars.SafeString) return HTML.Raw(result.toString());
+  return (result == null || result === false) ? null : String(result);
 };
 
-Spacebars.attrMustache = function (value/*, args*/) {
-  var result = Spacebars.mustacheImpl.apply(null, arguments);
+Spacebars.attrMustache = function (...args) {
+  const result = Spacebars.mustacheImpl.apply(null, args);
 
   if (result == null || result === '') {
     return null;
-  } else if (typeof result === 'object') {
+  }
+  if (typeof result === 'object') {
     return result;
-  } else if (typeof result === 'string' && HTML.isValidAttributeName(result)) {
-    var obj = {};
+  }
+  if (typeof result === 'string' && HTML.isValidAttributeName(result)) {
+    const obj = {};
     obj[result] = '';
     return obj;
-  } else {
-    throw new Error("Expected valid attribute name, '', null, or object");
   }
+  throw new Error('Expected valid attribute name, \'\', null, or object');
 };
 
-Spacebars.dataMustache = function (value/*, args*/) {
-  var result = Spacebars.mustacheImpl.apply(null, arguments);
-
-  return result;
+Spacebars.dataMustache = function (...args) {
+  return Spacebars.mustacheImpl.apply(null, args);
 };
 
 // Idempotently wrap in `HTML.Raw`.
@@ -109,12 +104,12 @@ Spacebars.dataMustache = function (value/*, args*/) {
 // Called on the return value from `Spacebars.mustache` in case the
 // template uses triple-stache (`{{{foo bar baz}}}`).
 Spacebars.makeRaw = function (value) {
-  if (value == null) // null or undefined
+  // null or undefined
+  if (value == null) {
     return null;
-  else if (value instanceof HTML.Raw)
-    return value;
-  else
-    return HTML.Raw(value);
+  }
+  if (value instanceof HTML.Raw) return value;
+  return HTML.Raw(value);
 };
 
 // If `value` is a function, evaluate its `args` (by calling them, if they
@@ -124,40 +119,47 @@ Spacebars.makeRaw = function (value) {
 // that there are no args. We check for null before asserting because a user
 // may write a template like {{user.fullNameWithPrefix 'Mr.'}}, where the
 // function will be null until data is ready.
-Spacebars.call = function (value/*, args*/) {
+Spacebars.call = function (value, ...rest) {
+  const args = [value, ...rest];
+
   if (typeof value === 'function') {
     // Evaluate arguments by calling them if they are functions.
-    var newArgs = [];
-    for (var i = 1; i < arguments.length; i++) {
-      var arg = arguments[i];
-      newArgs[i-1] = (typeof arg === 'function' ? arg() : arg);
+    const newArgs = [];
+    for (let i = 1; i < args.length; i++) {
+      const arg = args[i];
+      newArgs[i - 1] = (typeof arg === 'function' ? arg() : arg);
     }
 
+    // eslint-disable-next-line prefer-spread
     return value.apply(null, newArgs);
-  } else {
-    if (value != null && arguments.length > 1) {
-      throw new Error("Can't call non-function: " + value);
-    }
-    return value;
   }
+  if (value != null && arguments.length > 1) {
+    throw new Error(`Can't call non-function: ${value}`);
+  }
+  return value;
 };
 
 // Call this as `Spacebars.kw({ ... })`.  The return value
 // is `instanceof Spacebars.kw`.
 Spacebars.kw = function (hash) {
-  if (! (this instanceof Spacebars.kw))
-    // called without new; call with new
+  // called without new; call with new
+  if (!(this instanceof Spacebars.kw)) {
+    // eslint-disable-next-line new-cap
     return new Spacebars.kw(hash);
+  }
 
   this.hash = hash || {};
+
+  return undefined;
 };
 
 // Call this as `Spacebars.SafeString("some HTML")`.  The return value
 // is `instanceof Spacebars.SafeString` (and `instanceof Handlebars.SafeString).
 Spacebars.SafeString = function (html) {
-  if (! (this instanceof Spacebars.SafeString))
-    // called without new; call with new
+  // called without new; call with new
+  if (!(this instanceof Spacebars.SafeString)) {
     return new Spacebars.SafeString(html);
+  }
 
   return new Handlebars.SafeString(html);
 };
@@ -183,30 +185,29 @@ Spacebars.SafeString.prototype = Handlebars.SafeString.prototype;
 // * If `foo` is falsy now, return `foo`.
 //
 // * Return `foo.bar`, binding it to `foo` if it's a function.
-Spacebars.dot = function (value, id1/*, id2, ...*/) {
+Spacebars.dot = function (value, id1, ...rest) {
+  let _value = value;
+
   if (arguments.length > 2) {
     // Note: doing this recursively is probably less efficient than
     // doing it in an iterative loop.
-    var argsForRecurse = [];
-    argsForRecurse.push(Spacebars.dot(value, id1));
-    argsForRecurse.push.apply(argsForRecurse,
-                              Array.prototype.slice.call(arguments, 2));
+    const argsForRecurse = [];
+    argsForRecurse.push(Spacebars.dot(_value, id1));
+    // eslint-disable-next-line prefer-spread
+    argsForRecurse.push.apply(argsForRecurse, rest);
     return Spacebars.dot.apply(null, argsForRecurse);
   }
 
-  if (typeof value === 'function')
-    value = value();
+  if (typeof _value === 'function') _value = _value();
 
-  if (! value)
-    return value; // falsy, don't index, pass through
+  if (!_value) return _value; // falsy, don't index, pass through
 
-  var result = value[id1];
-  if (typeof result !== 'function')
-    return result;
+  const result = _value[id1];
+  if (typeof result !== 'function') return result;
   // `value[id1]` (or `value()[id1]`) is a function.
   // Bind it so that when called, `value` will be placed in `this`.
-  return function (/*arguments*/) {
-    return result.apply(value, arguments);
+  return function (...args) {
+    return result.apply(_value, args);
   };
 };
 
@@ -216,12 +217,17 @@ Spacebars.dot = function (value, id1/*, id2, ...*/) {
 // case, since the else block is evaluated without entering
 // a new data context).
 Spacebars.With = function (argFunc, contentFunc, elseFunc) {
-  var argVar = new Blaze.ReactiveVar;
-  var view = new Blaze.View('Spacebars_with', function () {
-    return Blaze.If(function () { return argVar.get(); },
-                    function () { return Blaze.With(function () {
-                      return argVar.get(); }, contentFunc); },
-                    elseFunc);
+  const argVar = new Blaze.ReactiveVar();
+  const view = new Blaze.View('Spacebars_with', function () {
+    return Blaze.If(function () {
+        return argVar.get();
+      },
+      function () {
+        return Blaze.With(function () {
+          return argVar.get();
+        }, contentFunc);
+      },
+      elseFunc);
   });
   view.onViewCreated(function () {
     this.autorun(function () {

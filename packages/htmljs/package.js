@@ -1,8 +1,10 @@
+/* global Package */
+
 Package.describe({
   name: 'htmljs',
-  summary: "Small library for expressing HTML trees",
+  summary: 'Small library for expressing HTML trees',
   version: '1.1.1',
-  git: 'https://github.com/meteor/blaze.git'
+  git: 'https://github.com/meteor/blaze.git',
 });
 
 Package.onUse(function (api) {
@@ -19,6 +21,6 @@ Package.onTest(function (api) {
   api.use('htmljs');
 
   api.addFiles([
-    'htmljs_test.js'
+    'htmljs_test.js',
   ]);
 });

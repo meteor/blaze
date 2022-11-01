@@ -1,6 +1,9 @@
+/* global Blaze */
+/* eslint-disable import/no-unresolved */
+
 import has from 'lodash.has';
 
-var Template = Blaze.Template;
+const { Template } = Blaze;
 
 /**
  * @isTemplate true
@@ -14,7 +17,7 @@ var Template = Blaze.Template;
  */
 
 Template.__dynamicWithDataContext.helpers({
-  chooseTemplate: function (name) {
+  chooseTemplate (name) {
     return Blaze._getTemplate(name, function () {
       return Template.instance();
     });
@@ -22,10 +25,10 @@ Template.__dynamicWithDataContext.helpers({
 });
 
 Template.__dynamic.helpers({
-  dataContextPresent: function () {
+  dataContextPresent () {
     return has(this, 'data');
   },
-  checkContext: function () {
+  checkContext () {
     if (!has(this, 'template')) {
       throw new Error(
         "Must specify name in the 'template' argument " +
@@ -35,7 +38,7 @@ Template.__dynamic.helpers({
 
     Object.keys(this).forEach(function (k) {
       if (k !== 'template' && k !== 'data') {
-        throw new Error('Invalid argument to {{> Template.dynamic}}: ' + k);
+        throw new Error(`Invalid argument to {{> Template.dynamic}}: ${k}`);
       }
     });
   },

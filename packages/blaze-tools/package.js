@@ -1,8 +1,10 @@
+/* global Package */
+
 Package.describe({
   name: 'blaze-tools',
-  summary: "Compile-time tools for Blaze",
-  version: '1.1.3',
-  git: 'https://github.com/meteor/blaze.git'
+  summary: 'Compile-time tools for Blaze',
+  version: '1.2.0',
+  git: 'https://github.com/meteor/blaze.git',
 });
 
 Package.onUse(function (api) {
@@ -21,6 +23,6 @@ Package.onTest(function (api) {
   api.use('html-tools@1.1.3');
 
   api.addFiles([
-    'token_tests.js'
+    'token_tests.js',
   ]);
 });

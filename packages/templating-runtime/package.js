@@ -1,17 +1,18 @@
+/* global Package Npm */
+
 Package.describe({
   name: 'templating-runtime',
-  summary: "Runtime for compiled .html files",
-  version: '1.6.1',
+  summary: 'Runtime for compiled .html files',
+  version: '1.7.0',
   git: 'https://github.com/meteor/blaze.git',
-  documentation: null
+  documentation: null,
 });
 
 Npm.depends({
-  'lodash.has': '4.5.2'
+  'lodash.has': '4.5.2',
 });
 
 Package.onUse(function (api) {
-
   // XXX would like to do the following only when the first html file
   // is encountered
 
@@ -25,12 +26,12 @@ Package.onUse(function (api) {
   api.use([
     'blaze@2.6.1',
     'spacebars@1.2.1',
-    'ecmascript@0.15.1'
+    'ecmascript@0.15.1',
   ]);
   api.imply([
     'meteor@1.10.0',
     'blaze@2.6.1',
-    'spacebars@1.2.1'
+    'spacebars@1.2.1',
   ], 'client');
 
   // to be able to compile dynamic.html. this compiler is used
@@ -40,7 +41,7 @@ Package.onUse(function (api) {
 
   api.addFiles([
     'dynamic.html',
-    'dynamic.js'
+    'dynamic.js',
   ], 'client');
 });
 
@@ -49,16 +50,16 @@ Package.onTest(function (api) {
     'tinytest@1.1.0',
     'test-helpers@1.2.0',
     'reactive-var@1.0.11',
-    'tracker@1.2.0'
+    'tracker@1.2.0',
   ]);
 
   api.use([
     'templating-runtime',
-    'templating-compiler@1.4.1'
+    'templating-compiler@1.4.1',
   ]);
 
   api.addFiles([
     'dynamic_tests.html',
-    'dynamic_tests.js'
+    'dynamic_tests.js',
   ], 'client');
 });

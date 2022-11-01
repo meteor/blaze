@@ -5,7 +5,7 @@ export function throwCompileError(tag, message, overrideIndex) {
     overrideIndex : tag.tagStartIndex);
 
   const err = new CompileError();
-  err.message = message || "bad formatting in template file";
+  err.message = message || 'bad formatting in template file';
   err.file = tag.sourceName;
   err.line = tag.fileContents.substring(0, finalIndex).split('\n').length;
   throw err;

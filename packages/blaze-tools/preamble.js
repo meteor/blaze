@@ -1,17 +1,19 @@
+/* eslint-disable no-undef */
+
 
 import {
   EmitCode,
   toJSLiteral,
   toObjectLiteralKey,
   ToJSVisitor,
-  toJS
+  toJS,
 } from './tojs';
 
 import {
   parseNumber,
   parseIdentifierName,
   parseExtendedIdentifierName,
-  parseStringLiteral
+  parseStringLiteral,
 } from './tokens';
 
 BlazeTools = {
@@ -23,7 +25,7 @@ BlazeTools = {
   parseNumber,
   parseIdentifierName,
   parseExtendedIdentifierName,
-  parseStringLiteral
+  parseStringLiteral,
 };
 
 export { BlazeTools };

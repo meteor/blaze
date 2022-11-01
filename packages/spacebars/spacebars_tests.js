@@ -1,46 +1,49 @@
-Tinytest.add("spacebars - Spacebars.dot", function (test) {
+/* global Tinytest Spacebars */
+
+Tinytest.add('spacebars - Spacebars.dot', function (test) {
   test.equal(Spacebars.dot(null, 'foo'), null);
   test.equal(Spacebars.dot('foo', 'foo'), undefined);
-  test.equal(Spacebars.dot({x:1}, 'x'), 1);
+  test.equal(Spacebars.dot({ x: 1 }, 'x'), 1);
   test.equal(Spacebars.dot(
-    {x:1, y: function () { return this.x+1; }}, 'y')(), 2);
+    { x: 1, y () { return this.x + 1; } }, 'y')(), 2);
   test.equal(Spacebars.dot(
     function () {
-      return {x:1, y: function () { return this.x+1; }};
+      return { x: 1, y () { return this.x + 1; } };
     }, 'y')(), 2);
 
-  var m = 1;
-  var mget = function () {
+  let m = 1;
+  const mget = function () {
     return {
       answer: m,
-      getAnswer: function () {
+      getAnswer () {
         return this.answer;
-      }
+      },
     };
   };
-  var mgetDotAnswer = Spacebars.dot(mget, 'answer');
+  const mgetDotAnswer = Spacebars.dot(mget, 'answer');
   test.equal(mgetDotAnswer, 1);
 
   m = 3;
-  var mgetDotGetAnswer = Spacebars.dot(mget, 'getAnswer');
+  const mgetDotGetAnswer = Spacebars.dot(mget, 'getAnswer');
   test.equal(mgetDotGetAnswer(), 3);
   m = 4;
   test.equal(mgetDotGetAnswer(), 3);
 
-  var closet = {
-    mget: mget,
-    mget2: function () {
+  const closet = {
+    mget,
+    mget2 () {
       return this.mget();
-    }
+    },
   };
 
   m = 5;
-  var f1 = Spacebars.dot(closet, 'mget', 'answer');
+  // eslint-disable-next-line
+  const f1 = Spacebars.dot(closet, 'mget', 'answer');
   m = 6;
-  var f2 = Spacebars.dot(closet, 'mget2', 'answer');
+  const f2 = Spacebars.dot(closet, 'mget2', 'answer');
   test.equal(f2, 6);
   m = 8;
-  var f3 = Spacebars.dot(closet, 'mget2', 'getAnswer');
+  const f3 = Spacebars.dot(closet, 'mget2', 'getAnswer');
   m = 9;
   test.equal(f3(), 8);
 
@@ -50,10 +53,9 @@ Tinytest.add("spacebars - Spacebars.dot", function (test) {
 
   // test that in `foo.bar`, `bar` may be a function that takes arguments.
   test.equal(Spacebars.dot(
-    { one: 1, inc: function (x) { return this.one + x; } }, 'inc')(6), 7);
+    { one: 1, inc (x) { return this.one + x; } }, 'inc')(6), 7);
   test.equal(Spacebars.dot(
     function () {
-      return { one: 1, inc: function (x) { return this.one + x; } };
+      return { one: 1, inc (x) { return this.one + x; } };
     }, 'inc')(8), 9);
-
 });
