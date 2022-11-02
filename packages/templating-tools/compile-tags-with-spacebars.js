@@ -1,18 +1,9 @@
+/* eslint-disable import/no-unresolved */
+
 import isEmpty from 'lodash.isempty';
 import { SpacebarsCompiler } from 'meteor/spacebars-compiler';
 import { generateBodyJS, generateTemplateJS } from './code-generation';
 import { throwCompileError } from './throw-compile-error';
-
-export function compileTagsWithSpacebars(tags, hmrAvailable) {
-  var handler = new SpacebarsTagCompiler();
-
-  tags.forEach((tag) => {
-    handler.addTagToResults(tag, hmrAvailable);
-  });
-
-  return handler.getResults();
-}
-
 
 class SpacebarsTagCompiler {
   constructor() {
@@ -20,7 +11,7 @@ class SpacebarsTagCompiler {
       head: '',
       body: '',
       js: '',
-      bodyAttrs: {}
+      bodyAttrs: {},
     };
   }
 
@@ -34,9 +25,9 @@ class SpacebarsTagCompiler {
     // do we have 1 or more attributes?
     const hasAttribs = !isEmpty(this.tag.attribs);
 
-    if (this.tag.tagName === "head") {
+    if (this.tag.tagName === 'head') {
       if (hasAttribs) {
-        this.throwCompileError("Attributes on <head> not supported");
+        this.throwCompileError('Attributes on <head> not supported');
       }
 
       this.results.head += this.tag.contents;
@@ -47,11 +38,11 @@ class SpacebarsTagCompiler {
     // <body> or <template>
 
     try {
-      if (this.tag.tagName === "template") {
-        const name = this.tag.attribs.name;
+      if (this.tag.tagName === 'template') {
+        const { name } = this.tag.attribs;
 
-        if (! name) {
-          this.throwCompileError("Template has no 'name' attribute");
+        if (!name) {
+          this.throwCompileError('Template has no \'name\' attribute');
         }
 
         if (SpacebarsCompiler.isReservedName(name)) {
@@ -63,25 +54,25 @@ class SpacebarsTagCompiler {
         const renderFuncCode = SpacebarsCompiler.compile(this.tag.contents, {
           whitespace,
           isTemplate: true,
-          sourceName: `Template "${name}"`
+          sourceName: `Template "${name}"`,
         });
 
         this.results.js += generateTemplateJS(
           name, renderFuncCode, hmrAvailable);
-      } else if (this.tag.tagName === "body") {
+      } else if (this.tag.tagName === 'body') {
         const { whitespace = '', ...attribs } = this.tag.attribs;
         this.addBodyAttrs(attribs);
 
         const renderFuncCode = SpacebarsCompiler.compile(this.tag.contents, {
           whitespace,
           isBody: true,
-          sourceName: "<body>"
+          sourceName: '<body>',
         });
 
         // We may be one of many `<body>` tags.
         this.results.js += generateBodyJS(renderFuncCode, hmrAvailable);
       } else {
-        this.throwCompileError("Expected <template>, <head>, or <body> tag in template file", tagStartIndex);
+        this.throwCompileError('Expected <template>, <head>, or <body> tag in template file');
       }
     } catch (e) {
       if (e.scanner) {
@@ -100,7 +91,7 @@ class SpacebarsTagCompiler {
       // This check is for conflicting body attributes in the same file;
       // we check across multiple files in caching-html-compiler using the
       // attributes on results.bodyAttrs
-      if (this.results.bodyAttrs.hasOwnProperty(attr) && this.results.bodyAttrs[attr] !== val) {
+      if (Object.hasOwnProperty.call(this.results.bodyAttrs, attr) && this.results.bodyAttrs[attr] !== val) {
         this.throwCompileError(
           `<body> declarations have conflicting values for the '${attr}' attribute.`);
       }
@@ -112,4 +103,14 @@ class SpacebarsTagCompiler {
   throwCompileError(message, overrideIndex) {
     throwCompileError(this.tag, message, overrideIndex);
   }
+}
+
+export function compileTagsWithSpacebars(tags, hmrAvailable) {
+  const handler = new SpacebarsTagCompiler();
+
+  tags.forEach((tag) => {
+    handler.addTagToResults(tag, hmrAvailable);
+  });
+
+  return handler.getResults();
 }

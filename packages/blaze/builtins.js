@@ -1,10 +1,12 @@
+/* global Blaze HTML ReactiveVar Tracker ObserveSequence */
+/* eslint-disable import/no-unresolved, no-global-assign */
+
 import has from 'lodash.has';
 import isObject from 'lodash.isobject';
 
 Blaze._calculateCondition = function (cond) {
-  if (HTML.isArray(cond) && cond.length === 0)
-    cond = false;
-  return !! cond;
+  if (HTML.isArray(cond) && cond.length === 0) return false;
+  return !!cond;
 };
 
 /**
@@ -14,9 +16,9 @@ Blaze._calculateCondition = function (cond) {
  * @param {Function} contentFunc A Function that returns [*renderable content*](#Renderable-Content).
  */
 Blaze.With = function (data, contentFunc) {
-  var view = Blaze.View('with', contentFunc);
+  const view = new Blaze.View('with', contentFunc);
 
-  view.dataVar = new ReactiveVar;
+  view.dataVar = new ReactiveVar();
 
   view.onViewCreated(function () {
     if (typeof data === 'function') {
@@ -39,15 +41,16 @@ Blaze.With = function (data, contentFunc) {
  * @param {View} view The target.
  */
 Blaze._attachBindingsToView = function (bindings, view) {
-  view.onViewCreated(function () {
+  const _view = view;
+  _view.onViewCreated(function () {
     Object.entries(bindings).forEach(function ([name, binding]) {
-      view._scopeBindings[name] = new ReactiveVar();
+      _view._scopeBindings[name] = new ReactiveVar();
       if (typeof binding === 'function') {
-        view.autorun(function () {
-          view._scopeBindings[name].set(binding());
-        }, view.parentView);
+        _view.autorun(function () {
+          _view._scopeBindings[name].set(binding());
+        }, _view.parentView);
       } else {
-        view._scopeBindings[name].set(binding);
+        _view._scopeBindings[name].set(binding);
       }
     });
   });
@@ -60,7 +63,7 @@ Blaze._attachBindingsToView = function (bindings, view) {
  * @param {Function} contentFunc A Function that returns [*renderable content*](#Renderable-Content).
  */
 Blaze.Let = function (bindings, contentFunc) {
-  var view = Blaze.View('let', contentFunc);
+  const view = new Blaze.View('let', contentFunc);
   Blaze._attachBindingsToView(bindings, view);
 
   return view;
@@ -74,17 +77,17 @@ Blaze.Let = function (bindings, contentFunc) {
  * @param {Function} [elseFunc] Optional.  A Function that returns [*renderable content*](#Renderable-Content).  If no `elseFunc` is supplied, no content is shown in the "else" case.
  */
 Blaze.If = function (conditionFunc, contentFunc, elseFunc, _not) {
-  var conditionVar = new ReactiveVar;
+  const conditionVar = new ReactiveVar();
 
-  var view = Blaze.View(_not ? 'unless' : 'if', function () {
+  const view = new Blaze.View(_not ? 'unless' : 'if', function () {
     return conditionVar.get() ? contentFunc() :
       (elseFunc ? elseFunc() : null);
   });
   view.__conditionVar = conditionVar;
   view.onViewCreated(function () {
     this.autorun(function () {
-      var cond = Blaze._calculateCondition(conditionFunc());
-      conditionVar.set(_not ? (! cond) : cond);
+      const cond = Blaze._calculateCondition(conditionFunc());
+      conditionVar.set(_not ? (!cond) : cond);
     }, this.parentView, 'condition');
   });
 
@@ -99,7 +102,7 @@ Blaze.If = function (conditionFunc, contentFunc, elseFunc, _not) {
  * @param {Function} [elseFunc] Optional.  A Function that returns [*renderable content*](#Renderable-Content).  If no `elseFunc` is supplied, no content is shown in the "else" case.
  */
 Blaze.Unless = function (conditionFunc, contentFunc, elseFunc) {
-  return Blaze.If(conditionFunc, contentFunc, elseFunc, true /*_not*/);
+  return Blaze.If(conditionFunc, contentFunc, elseFunc, true /* _not */);
 };
 
 /**
@@ -123,11 +126,11 @@ Blaze.Unless = function (conditionFunc, contentFunc, elseFunc) {
  * in the sequence.
  */
 Blaze.Each = function (argFunc, contentFunc, elseFunc) {
-  var eachView = Blaze.View('each', function () {
-    var subviews = this.initialSubviews;
+  const eachView = new Blaze.View('each', function () {
+    const subviews = this.initialSubviews;
     this.initialSubviews = null;
     if (this._isCreatedForExpansion) {
-      this.expandedValueDep = new Tracker.Dependency;
+      this.expandedValueDep = new Tracker.Dependency();
       this.expandedValueDep.depend();
     }
     return subviews;
@@ -138,17 +141,13 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
   eachView.stopHandle = null;
   eachView.contentFunc = contentFunc;
   eachView.elseFunc = elseFunc;
-  eachView.argVar = new ReactiveVar;
+  eachView.argVar = new ReactiveVar();
   eachView.variableName = null;
 
   // update the @index value in the scope of all subviews in the range
-  var updateIndices = function (from, to) {
-    if (to === undefined) {
-      to = eachView.numItems - 1;
-    }
-
-    for (var i = from; i <= to; i++) {
-      var view = eachView._domrange.members[i].view;
+  const updateIndices = function (from, to = eachView.numItems - 1) {
+    for (let i = from; i <= to; i++) {
+      const { view } = eachView._domrange.members[i];
       view._scopeBindings['@index'].set(i);
     }
   };
@@ -160,7 +159,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
     eachView.autorun(function () {
       // argFunc can return either a sequence as is or a wrapper object with a
       // _sequence and _variable fields set.
-      var arg = argFunc();
+      let arg = argFunc();
       if (isObject(arg) && has(arg, '_sequence')) {
         eachView.variableName = arg._variable || null;
         arg = arg._sequence;
@@ -172,20 +171,20 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
     eachView.stopHandle = ObserveSequence.observe(function () {
       return eachView.argVar.get();
     }, {
-      addedAt: function (id, item, index) {
+      addedAt(id, item, index) {
         Tracker.nonreactive(function () {
-          var newItemView;
+          let newItemView;
           if (eachView.variableName) {
             // new-style #each (as in {{#each item in items}})
             // doesn't create a new data context
-            newItemView = Blaze.View('item', eachView.contentFunc);
+            newItemView = new Blaze.View('item', eachView.contentFunc);
           } else {
             newItemView = Blaze.With(item, eachView.contentFunc);
           }
 
           eachView.numItems++;
 
-          var bindings = {};
+          const bindings = {};
           bindings['@index'] = index;
           if (eachView.variableName) {
             bindings[eachView.variableName] = item;
@@ -200,7 +199,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
               eachView.inElseMode = false;
             }
 
-            var range = Blaze._materializeView(newItemView, eachView);
+            const range = Blaze._materializeView(newItemView, eachView);
             eachView._domrange.addMember(range, index);
             updateIndices(index);
           } else {
@@ -208,7 +207,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
           }
         });
       },
-      removedAt: function (id, item, index) {
+      removedAt(id, item, index) {
         Tracker.nonreactive(function () {
           eachView.numItems--;
           if (eachView.expandedValueDep) {
@@ -220,7 +219,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
               eachView.inElseMode = true;
               eachView._domrange.addMember(
                 Blaze._materializeView(
-                  Blaze.View('each_else',eachView.elseFunc),
+                  new Blaze.View('each_else', eachView.elseFunc),
                   eachView), 0);
             }
           } else {
@@ -228,12 +227,12 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
           }
         });
       },
-      changedAt: function (id, newItem, oldItem, index) {
+      changedAt(id, newItem, oldItem, index) {
         Tracker.nonreactive(function () {
           if (eachView.expandedValueDep) {
             eachView.expandedValueDep.changed();
           } else {
-            var itemView;
+            let itemView;
             if (eachView._domrange) {
               itemView = eachView._domrange.getMember(index).view;
             } else {
@@ -247,7 +246,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
           }
         });
       },
-      movedTo: function (id, item, fromIndex, toIndex) {
+      movedTo(id, item, fromIndex, toIndex) {
         Tracker.nonreactive(function () {
           if (eachView.expandedValueDep) {
             eachView.expandedValueDep.changed();
@@ -256,34 +255,33 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
             updateIndices(
               Math.min(fromIndex, toIndex), Math.max(fromIndex, toIndex));
           } else {
-            var subviews = eachView.initialSubviews;
-            var itemView = subviews[fromIndex];
+            const subviews = eachView.initialSubviews;
+            const itemView = subviews[fromIndex];
             subviews.splice(fromIndex, 1);
             subviews.splice(toIndex, 0, itemView);
           }
         });
-      }
+      },
     });
 
     if (eachView.elseFunc && eachView.numItems === 0) {
       eachView.inElseMode = true;
       eachView.initialSubviews[0] =
-        Blaze.View('each_else', eachView.elseFunc);
+        new Blaze.View('each_else', eachView.elseFunc);
     }
   });
 
   eachView.onViewDestroyed(function () {
-    if (eachView.stopHandle)
-      eachView.stopHandle.stop();
+    if (eachView.stopHandle) eachView.stopHandle.stop();
   });
 
   return eachView;
 };
 
 Blaze._TemplateWith = function (arg, contentFunc) {
-  var w;
+  let w;
 
-  var argFunc = arg;
+  let argFunc = arg;
   if (typeof arg !== 'function') {
     argFunc = function () {
       return arg;
@@ -301,20 +299,19 @@ Blaze._TemplateWith = function (arg, contentFunc) {
   //
   // To make this better, reconsider _InOuterTemplateScope as a primitive.
   // Longer term, evaluate expressions in the proper lexical scope.
-  var wrappedArgFunc = function () {
-    var viewToEvaluateArg = null;
+  const wrappedArgFunc = function () {
+    let viewToEvaluateArg = null;
     if (w.parentView && w.parentView.name === 'InOuterTemplateScope') {
       viewToEvaluateArg = w.parentView.originalParentView;
     }
     if (viewToEvaluateArg) {
       return Blaze._withCurrentView(viewToEvaluateArg, argFunc);
-    } else {
-      return argFunc();
     }
+    return argFunc();
   };
 
-  var wrappedContentFunc = function () {
-    var content = contentFunc.call(this);
+  const wrappedContentFunc = function () {
+    let content = contentFunc.call(this);
 
     // Since we are generating the Blaze._TemplateWith view for the
     // user, set the flag on the child view.  If `content` is a template,
@@ -335,15 +332,17 @@ Blaze._TemplateWith = function (arg, contentFunc) {
 };
 
 Blaze._InOuterTemplateScope = function (templateView, contentFunc) {
-  var view = Blaze.View('InOuterTemplateScope', contentFunc);
-  var parentView = templateView.parentView;
+  const view = new Blaze.View('InOuterTemplateScope', contentFunc);
+  let { parentView } = templateView;
 
   // Hack so that if you call `{{> foo bar}}` and it expands into
   // `{{#with bar}}{{> foo}}{{/with}}`, and then `foo` is a template
   // that inserts `{{> Template.contentBlock}}`, the data context for
   // `Template.contentBlock` is not `bar` but the one enclosing that.
-  if (parentView.__isTemplateWith)
+  if (parentView.__isTemplateWith) {
+    // eslint-disable-next-line prefer-destructuring
     parentView = parentView.parentView;
+  }
 
   view.onViewCreated(function () {
     this.originalParentView = this.parentView;
@@ -352,4 +351,3 @@ Blaze._InOuterTemplateScope = function (templateView, contentFunc) {
   });
   return view;
 };
-

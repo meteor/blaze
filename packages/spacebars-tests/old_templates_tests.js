@@ -264,8 +264,9 @@ var extendTemplateWithInit = function (template, initFunc) {
     template.viewName + '-extended',
     template.renderFunction
   );
+  const constructView = tmpl.constructView;
   tmpl.constructView = function (/*args*/) {
-    var view = Template.prototype.constructView.apply(this, arguments);
+    var view = constructView.apply(this, arguments);
     initFunc(view);
     return view;
   };
@@ -2406,7 +2407,7 @@ Tinytest.add(
       test.equal(canonicalizeHtml(items[0].innerHTML), 'foo1');
       test.equal(canonicalizeHtml(items[1].innerHTML), 'foo2');
     };
-    
+
     var newVal = [...origVal];
     newVal.push({ _id: 'foo3' });
     rv.set(newVal);
@@ -2554,8 +2555,6 @@ Tinytest.add(
 
     childTmpl.foo = function () {
       var a = Template.parentData(height.get());
-      var b = UI._parentData(height.get()); // back-compat
-      test.equal(a, b);
       return a;
     };
 
@@ -2565,8 +2564,6 @@ Tinytest.add(
     height.set(1);
     Tracker.flush();
     test.equal(canonicalizeHtml(div.innerHTML), 'bar');
-
-    // Test UI.parentData() reactivity
 
     bar.set('baz');
     Tracker.flush();
@@ -2638,6 +2635,7 @@ Tinytest.add(
   }
 );
 
+/*
 Tinytest.add(
   'spacebars-tests - old - template_tests - UI.render/UI.remove',
   function (test) {
@@ -2703,7 +2701,9 @@ Tinytest.add(
     test.equal(canonicalizeHtml(div.innerHTML), '');
   }
 );
+*/
 
+/*
 Tinytest.add(
   'spacebars-tests - old - template_tests - UI.render fails on jQuery objects',
   function (test) {
@@ -2716,7 +2716,9 @@ Tinytest.add(
     }, /'nextNode' must be a DOM node/);
   }
 );
+*/
 
+/*
 Tinytest.add(
   'spacebars-tests - old - template_tests - UI.getElementData',
   function (test) {
@@ -2726,10 +2728,10 @@ Tinytest.add(
 
     var span = div.querySelector('SPAN');
     test.isTrue(span);
-    test.equal(UI.getElementData(span), { foo: 'bar' });
     test.equal(Blaze.getData(span), { foo: 'bar' });
   }
 );
+*/
 
 Tinytest.add(
   'spacebars-tests - old - template_tests - autorun cleanup',

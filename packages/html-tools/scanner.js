@@ -9,56 +9,59 @@
 // * `scanner.isEOF()` - true if `pos` is at or beyond the end of `input`
 // * `scanner.fatal(msg)` - throw an error indicating a problem at `pos`
 
-export function Scanner (input) {
-  this.input = input; // public, read-only
-  this.pos = 0; // public, read-write
-}
 
-Scanner.prototype.rest = function () {
-  // Slicing a string is O(1) in modern JavaScript VMs (including old IE).
-  return this.input.slice(this.pos);
-};
+export class Scanner {
+  constructor(input) {
+    this.input = input;
+    this.pos = 0;
+  }
 
-Scanner.prototype.isEOF = function () {
-  return this.pos >= this.input.length;
-};
+  rest() {
+    // Slicing a string is O(1) in modern JavaScript VMs (including old IE).
+    return this.input.slice(this.pos);
+  }
 
-Scanner.prototype.fatal = function (msg) {
-  // despite this default, you should always provide a message!
-  msg = (msg || "Parse error");
+  isEOF() {
+    return this.pos >= this.input.length;
+  }
 
-  var CONTEXT_AMOUNT = 20;
+  fatal(msg) {
+    let _msg = msg;
 
-  var input = this.input;
-  var pos = this.pos;
-  var pastInput = input.substring(pos - CONTEXT_AMOUNT - 1, pos);
-  if (pastInput.length > CONTEXT_AMOUNT)
-    pastInput = '...' + pastInput.substring(-CONTEXT_AMOUNT);
+    // despite this default, you should always provide a message!
+    _msg = (_msg || 'Parse error');
 
-  var upcomingInput = input.substring(pos, pos + CONTEXT_AMOUNT + 1);
-  if (upcomingInput.length > CONTEXT_AMOUNT)
-    upcomingInput = upcomingInput.substring(0, CONTEXT_AMOUNT) + '...';
+    const CONTEXT_AMOUNT = 20;
 
-  var positionDisplay = ((pastInput + upcomingInput).replace(/\n/g, ' ') + '\n' +
-                         (new Array(pastInput.length + 1).join(' ')) + "^");
+    const { input } = this;
+    const { pos } = this;
+    let pastInput = input.substring(pos - CONTEXT_AMOUNT - 1, pos);
+    if (pastInput.length > CONTEXT_AMOUNT) pastInput = `...${pastInput.substring(-CONTEXT_AMOUNT)}`;
 
-  var e = new Error(msg + "\n" + positionDisplay);
+    let upcomingInput = input.substring(pos, pos + CONTEXT_AMOUNT + 1);
+    if (upcomingInput.length > CONTEXT_AMOUNT) upcomingInput = `${upcomingInput.substring(0, CONTEXT_AMOUNT)}...`;
 
-  e.offset = pos;
-  var allPastInput = input.substring(0, pos);
-  e.line = (1 + (allPastInput.match(/\n/g) || []).length);
-  e.col = (1 + pos - allPastInput.lastIndexOf('\n'));
-  e.scanner = this;
+    const positionDisplay = (`${(pastInput + upcomingInput).replace(/\n/g, ' ')}\n${
+      new Array(pastInput.length + 1).join(' ')}^`);
 
-  throw e;
-};
+    const e = new Error(`${_msg}\n${positionDisplay}`);
+
+    e.offset = pos;
+    const allPastInput = input.substring(0, pos);
+    e.line = (1 + (allPastInput.match(/\n/g) || []).length);
+    e.col = (1 + pos - allPastInput.lastIndexOf('\n'));
+    e.scanner = this;
+
+    throw e;
+  }
 
 // Peek at the next character.
 //
 // If `isEOF`, returns an empty string.
-Scanner.prototype.peek = function () {
-  return this.input.charAt(this.pos);
-};
+  peek() {
+    return this.input.charAt(this.pos);
+  }
+}
 
 // Constructs a `getFoo` function where `foo` is specified with a regex.
 // The regex should start with `^`.  The constructed function will return
@@ -71,12 +74,13 @@ Scanner.prototype.peek = function () {
 // is returned.
 export function makeRegexMatcher(regex) {
   return function (scanner) {
-    var match = regex.exec(scanner.rest());
+    const _scanner = scanner;
 
-    if (! match)
-      return null;
+    const match = regex.exec(_scanner.rest());
 
-    scanner.pos += match[0].length;
+    if (!match) return null;
+
+    _scanner.pos += match[0].length;
     return match[1] || match[0];
   };
 }

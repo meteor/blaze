@@ -1,67 +1,67 @@
 export function runCompilerOutputTests(run) {
-  run("abc", `function () {
+  run('abc', `function () {
   var view = this;
   return "abc";
 }`);
-  run("{{foo}}", `function() {
+  run('{{foo}}', `function() {
   var view = this;
-  return Blaze.View("lookup:foo", function() {
+  return new Blaze.View("lookup:foo", function() {
     return Spacebars.mustache(view.lookup("foo"));
   });
 }`);
-  run("{{foo bar}}", `function() {
+  run('{{foo bar}}', `function() {
   var view = this;
-  return Blaze.View("lookup:foo", function() {
+  return new Blaze.View("lookup:foo", function() {
     return Spacebars.mustache(view.lookup("foo"),
                               view.lookup("bar"));
   });
 }`);
-  run("{{foo x=bar}}", `function() {
+  run('{{foo x=bar}}', `function() {
   var view = this;
-  return Blaze.View("lookup:foo", function() {
+  return new Blaze.View("lookup:foo", function() {
     return Spacebars.mustache(view.lookup("foo"), Spacebars.kw({
       x: view.lookup("bar")
     }));
   });
 }`);
-  run("{{foo.bar baz}}", `function() {
+  run('{{foo.bar baz}}', `function() {
   var view = this;
-  return Blaze.View("lookup:foo.bar", function() {
+  return new Blaze.View("lookup:foo.bar", function() {
     return Spacebars.mustache(Spacebars.dot(
              view.lookup("foo"), "bar"),
              view.lookup("baz"));
   });
 }`);
-  run("{{foo.bar (baz qux)}}", `function() {
+  run('{{foo.bar (baz qux)}}', `function() {
   var view = this;
-  return Blaze.View("lookup:foo.bar", function() {
+  return new Blaze.View("lookup:foo.bar", function() {
     return Spacebars.mustache(Spacebars.dot(
              view.lookup("foo"), "bar"),
              Spacebars.dataMustache(view.lookup("baz"), view.lookup("qux")));
   });
 }`);
-  run("{{foo bar.baz}}", `function() {
+  run('{{foo bar.baz}}', `function() {
   var view = this;
-  return Blaze.View("lookup:foo", function() {
+  return new Blaze.View("lookup:foo", function() {
     return Spacebars.mustache(view.lookup("foo"),
            Spacebars.dot(view.lookup("bar"), "baz"));
   });
 }`);
-  run("{{foo x=bar.baz}}", `function() {
+  run('{{foo x=bar.baz}}', `function() {
   var view = this;
-  return Blaze.View("lookup:foo", function() {
+  return new Blaze.View("lookup:foo", function() {
     return Spacebars.mustache(view.lookup("foo"), Spacebars.kw({
       x: Spacebars.dot(view.lookup("bar"), "baz")
     }));
   });
 }`);
-  run("{{#foo}}abc{{/foo}}", `function() {
+  run('{{#foo}}abc{{/foo}}', `function() {
   var view = this;
   return Spacebars.include(view.lookupTemplate("foo"), (function() {
     return "abc";
   }));
 }`);
-  run("{{#if cond}}aaa{{else}}bbb{{/if}}", `function() {
+  run('{{#if cond}}aaa{{else}}bbb{{/if}}', `function() {
   var view = this;
   return Blaze.If(function () {
     return Spacebars.call(view.lookup("cond"));
@@ -71,7 +71,7 @@ export function runCompilerOutputTests(run) {
     return "bbb";
   }));
 }`);
-  run("{{!-- --}}{{#if cond}}aaa{{!\n}}{{else}}{{!}}bbb{{!-- --}}{{/if}}{{!}}", `function() {
+  run('{{!-- --}}{{#if cond}}aaa{{!\n}}{{else}}{{!}}bbb{{!-- --}}{{/if}}{{!}}', `function() {
   var view = this;
   return Blaze.If(function () {
     return Spacebars.call(view.lookup("cond"));
@@ -81,19 +81,19 @@ export function runCompilerOutputTests(run) {
     return "bbb";
   }));
 }`);
-  run("{{!-- --}}{{#if cond}}<p>aaa</p><p>ppp</p>{{!\n}}{{else}}{{!}}<p>{{bbb}}</p>{{!-- --}}{{/if}}{{!}}", `function() {
+  run('{{!-- --}}{{#if cond}}<p>aaa</p><p>ppp</p>{{!\n}}{{else}}{{!}}<p>{{bbb}}</p>{{!-- --}}{{/if}}{{!}}', `function() {
   var view = this;
   return Blaze.If(function () {
     return Spacebars.call(view.lookup("cond"));
   }, (function() {
     return HTML.Raw("<p>aaa</p><p>ppp</p>");
   }), (function() {
-    return HTML.P(Blaze.View("lookup:bbb", function() {
+    return HTML.P(new Blaze.View("lookup:bbb", function() {
       return Spacebars.mustache(view.lookup("bbb"));
     }));
   }));
 }`);
-  run("{{> foo bar}}", `function() {
+  run('{{> foo bar}}', `function() {
   var view = this;
   return Blaze._TemplateWith(function() {
     return Spacebars.call(view.lookup("bar"));
@@ -101,7 +101,7 @@ export function runCompilerOutputTests(run) {
     return Spacebars.include(view.lookupTemplate("foo"));
   });
 }`);
-  run("{{> foo x=bar}}", `function() {
+  run('{{> foo x=bar}}', `function() {
   var view = this;
   return Blaze._TemplateWith(function() {
     return {
@@ -112,7 +112,7 @@ export function runCompilerOutputTests(run) {
   });
 }
 `);
-  run("{{> foo bar.baz}}", `function() {
+  run('{{> foo bar.baz}}', `function() {
   var view = this;
   return Blaze._TemplateWith(function() {
     return Spacebars.call(Spacebars.dot(view.lookup("bar"), "baz"));
@@ -120,7 +120,7 @@ export function runCompilerOutputTests(run) {
     return Spacebars.include(view.lookupTemplate("foo"));
   });
 }`);
-  run("{{> foo x=bar.baz}}", `function() {
+  run('{{> foo x=bar.baz}}', `function() {
   var view = this;
   return Blaze._TemplateWith(function() {
     return {
@@ -130,7 +130,7 @@ export function runCompilerOutputTests(run) {
     return Spacebars.include(view.lookupTemplate("foo"));
   });
 }`);
-  run("{{> foo bar baz}}", `function() {
+  run('{{> foo bar baz}}', `function() {
   var view = this;
   return Blaze._TemplateWith(function() {
     return Spacebars.dataMustache(view.lookup("bar"), view.lookup("baz"));
@@ -139,7 +139,7 @@ export function runCompilerOutputTests(run) {
   });
 }
 `);
-  run("{{#foo bar baz}}aaa{{/foo}}", `function() {
+  run('{{#foo bar baz}}aaa{{/foo}}', `function() {
   var view = this;
   return Blaze._TemplateWith(function() {
     return Spacebars.dataMustache(view.lookup("bar"), view.lookup("baz"));
@@ -149,7 +149,7 @@ export function runCompilerOutputTests(run) {
     }));
   });
 }`);
-  run("{{#foo p.q r.s}}aaa{{/foo}}", `function() {
+  run('{{#foo p.q r.s}}aaa{{/foo}}', `function() {
   var view = this;
   return Blaze._TemplateWith(function() {
     return Spacebars.dataMustache(Spacebars.dot(view.lookup("p"), "q"), Spacebars.dot(view.lookup("r"), "s"));
@@ -159,13 +159,13 @@ export function runCompilerOutputTests(run) {
     }));
   });
 }`);
-  run("<a {{b}}></a>", `function() {
+  run('<a {{b}}></a>', `function() {
   var view = this;
   return HTML.A(HTML.Attrs(function() {
     return Spacebars.attrMustache(view.lookup("b"));
   }));
 }`);
-  run("<a {{b}} c=d{{e}}f></a>", `function() {
+  run('<a {{b}} c=d{{e}}f></a>', `function() {
   var view = this;
   return HTML.A(HTML.Attrs({
     c: (function() { return [
@@ -176,29 +176,29 @@ export function runCompilerOutputTests(run) {
     return Spacebars.attrMustache(view.lookup("b"));
   }));
 }`);
-  run("<asdf>{{foo}}</asdf>", `function() {
+  run('<asdf>{{foo}}</asdf>', `function() {
   var view = this;
-  return HTML.getTag("asdf")(Blaze.View("lookup:foo", function() {
+  return HTML.getTag("asdf")(new Blaze.View("lookup:foo", function() {
     return Spacebars.mustache(view.lookup("foo"));
   }));
 }`);
-  run("<textarea>{{foo}}</textarea>", `function() {
+  run('<textarea>{{foo}}</textarea>', `function() {
   var view = this;
   return HTML.TEXTAREA({value: (function () {
     return Spacebars.mustache(view.lookup("foo"));
   }) });
 }`);
-  run("<textarea>{{{{|{{|foo}}</textarea>", `function() {
+  run('<textarea>{{{{|{{|foo}}</textarea>', `function() {
   var view = this;
   return HTML.TEXTAREA({value: (function () {
     return [ "{{{{", "{{", "foo}}" ];
   }) });
 }`);
-  run("{{|foo}}", `function() {
+  run('{{|foo}}', `function() {
   var view = this;
   return [ "{{", "foo}}" ];
 }`);
-  run("<a b={{{|></a>", `function() {
+  run('<a b={{{|></a>', `function() {
   var view = this;
   return HTML.A({
     b: (function () {
@@ -206,13 +206,13 @@ export function runCompilerOutputTests(run) {
     })
   });
 }`);
-  run("<div><div>{{helper}}<div>a</div><div>b</div></div></div>", `function() {
+  run('<div><div>{{helper}}<div>a</div><div>b</div></div></div>', `function() {
   var view = this;
-  return HTML.DIV(HTML.DIV(Blaze.View("lookup:helper",function(){
+  return HTML.DIV(HTML.DIV(new Blaze.View("lookup:helper",function(){
       return Spacebars.mustache(view.lookup("helper"));
   }), HTML.Raw("<div>a</div><div>b</div>")));
 }`);
-  run("<table><colgroup><col></colgroup><tr><td>aaa</td><td>bbb</td></tr></table>", `function() {
+  run('<table><colgroup><col></colgroup><tr><td>aaa</td><td>bbb</td></tr></table>', `function() {
   var view = this;
   return HTML.TABLE(
     HTML.Raw("<colgroup><col></colgroup>"),
@@ -225,7 +225,7 @@ export function runCompilerOutputTests(run) {
   var view = this;
   return HTML.DIV(
     "\\n    ",
-    Blaze.View("lookup:helper",function(){
+    new Blaze.View("lookup:helper",function(){
       return Spacebars.mustache(view.lookup("helper"));
     }),
     "\\n"
@@ -236,7 +236,7 @@ export function runCompilerOutputTests(run) {
 </div>`, `function() {
   var view = this;
   return HTML.DIV(
-    Blaze.View("lookup:helper",function(){
+    new Blaze.View("lookup:helper",function(){
       return Spacebars.mustache(view.lookup("helper"));
     })
   );
@@ -247,7 +247,7 @@ export function runCompilerOutputTests(run) {
 </div>`, `function() {
   var view = this;
   return HTML.DIV(
-    Blaze.View("lookup:helper",function(){
+    new Blaze.View("lookup:helper",function(){
       return Spacebars.mustache(view.lookup("helper"));
     }),
     HTML.Raw("<span>Test</span> <span>Spaces</span>")

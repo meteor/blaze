@@ -1,8 +1,10 @@
+/* global Package */
+
 Package.describe({
   name: 'spacebars',
-  summary: "Handlebars-like template language for Meteor",
+  summary: 'Handlebars-like template language for Meteor',
   version: '1.3.0',
-  git: 'https://github.com/meteor/blaze.git'
+  git: 'https://github.com/meteor/blaze.git',
 });
 
 // For more, see package `spacebars-compiler`, which is used by
@@ -23,20 +25,20 @@ Package.onUse(function (api) {
   api.use('blaze@2.5.0');
 
   api.addFiles([
-    'spacebars-runtime.js'
+    'spacebars-runtime.js',
   ]);
 });
 
 Package.onTest(function (api) {
   api.use([
-    'tinytest@1.1.0'
+    'tinytest@1.1.0',
   ]);
 
   api.use([
-    'spacebars'
+    'spacebars',
   ]);
 
   api.addFiles([
-    'spacebars_tests.js'
+    'spacebars_tests.js',
   ]);
 });

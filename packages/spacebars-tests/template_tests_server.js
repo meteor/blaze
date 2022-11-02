@@ -1,16 +1,18 @@
-const path = Npm.require("path");
+/* global Npm Meteor Assets */
+
+const path = Npm.require('path');
 
 Meteor.methods({
-  getAsset: function (filename) {
-    return Assets.getText(path.join("assets", filename));
-  }
+  getAsset (filename) {
+    return Assets.getText(path.join('assets', filename));
+  },
 });
 
 const templateSubFutures = {};
 
-Meteor.publish("templateSub", function (futureId) {
+Meteor.publish('templateSub', function (futureId) {
   const self = this;
-  Meteor.defer(async function () {  // because subs are blocking
+  Meteor.defer(async function () { // because subs are blocking
     if (futureId) {
       // XXX: this looks a little bit weird but we need to make
       // the internal `resolve` of the promise accessible for the Meteor.method
@@ -32,7 +34,7 @@ Meteor.publish("templateSub", function (futureId) {
   });
 });
 Meteor.methods({
-  makeTemplateSubReady: function (futureId) {
+  makeTemplateSubReady (futureId) {
     templateSubFutures[futureId].return();
-  }
+  },
 });

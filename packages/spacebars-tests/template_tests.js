@@ -3016,8 +3016,6 @@ Tinytest.add(
       c: ['c'],
       foo: function () {
         var a = Template.parentData(height.get());
-        var b = UI._parentData(height.get()); // back-compat
-        test.equal(a, b);
         return a;
       },
     });
@@ -3199,7 +3197,6 @@ Tinytest.add(
 
     var span = div.querySelector('SPAN');
     test.isTrue(span);
-    test.equal(UI.getElementData(span), { foo: 'bar' });
     test.equal(Blaze.getData(span), { foo: 'bar' });
   }
 );

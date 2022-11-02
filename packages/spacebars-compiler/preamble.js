@@ -1,3 +1,6 @@
+/* global SpacebarsCompiler */
+/* eslint-disable no-global-assign */
+
 import { CodeGen, builtInBlockHelpers, isReservedName } from './codegen';
 import { optimize } from './optimizer';
 import { parse, compile, codeGen, TemplateTagReplacer, beautify } from './compiler';

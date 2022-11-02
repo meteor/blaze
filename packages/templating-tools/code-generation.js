@@ -17,7 +17,7 @@ if (typeof module === "object" && module.hot) {
     Template._applyHmrChanges(${nameLiteral});
   });
 }
-`
+`;
   }
 
   return `
@@ -42,7 +42,7 @@ export function generateBodyJS(renderFuncCode, useHMR) {
     });
   }
 })();
-`
+`;
   }
 
   return `

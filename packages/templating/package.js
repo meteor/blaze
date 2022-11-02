@@ -1,8 +1,10 @@
+/* global Package */
+
 Package.describe({
   name: 'templating',
-  summary: "Allows templates to be defined in .html files",
-  version: '1.4.2',
-  git: 'https://github.com/meteor/blaze.git'
+  summary: 'Allows templates to be defined in .html files',
+  version: '1.5.0',
+  git: 'https://github.com/meteor/blaze.git',
 });
 
 // Today, this package is closely intertwined with Handlebars, meaning

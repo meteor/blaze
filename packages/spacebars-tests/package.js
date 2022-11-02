@@ -1,8 +1,10 @@
+/* global Package */
+
 Package.describe({
   name: 'spacebars-tests',
-  summary: "Additional tests for Spacebars",
-  version: '1.3.1',
-  git: 'https://github.com/meteor/blaze.git'
+  summary: 'Additional tests for Spacebars',
+  version: '1.4.0',
+  git: 'https://github.com/meteor/blaze.git',
 });
 
 // These tests are in a separate package to avoid a circular dependency
@@ -19,12 +21,12 @@ Package.onTest(function (api) {
     'tracker@1.2.0',
     'mongo@1.11.1',
     'random@1.2.0',
-    'session@1.2.0'
+    'session@1.2.0',
   ]);
 
   api.use([
     'spacebars@1.2.0',
-    'blaze@2.5.0'
+    'blaze@2.5.0',
   ]);
   api.use('templating@1.4.1', 'client');
 
@@ -35,7 +37,7 @@ Package.onTest(function (api) {
     'templating_tests.js',
 
     'old_templates.js', // backcompat for packages built with old Blaze APIs.
-    'old_templates_tests.js'
+    'old_templates_tests.js',
   ], 'client');
 
   api.addFiles('template_tests_server.js', 'server');
@@ -45,6 +47,6 @@ Package.onTest(function (api) {
     'assets/markdown_if1.html',
     'assets/markdown_if2.html',
     'assets/markdown_each1.html',
-    'assets/markdown_each2.html'
+    'assets/markdown_each2.html',
   ], 'server');
 });

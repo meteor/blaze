@@ -1,29 +1,24 @@
 // _assign is like _.extend or the upcoming Object.assign.
 // Copy src's own, enumerable properties onto tgt and return
 // tgt.
-var _hasOwnProperty = Object.prototype.hasOwnProperty;
-var _assign = function (tgt, src) {
-  for (var k in src) {
-    if (_hasOwnProperty.call(src, k))
-      tgt[k] = src[k];
-  }
-  return tgt;
+const _assign = function (tgt, src) {
+  const _tgt = tgt;
+  Object.getOwnPropertyNames(src).forEach((k) => {
+    _tgt[k] = src[k];
+  });
+  return _tgt;
 };
 
 
-export function TemplateTag (props) {
-  if (! (this instanceof TemplateTag))
-    // called without `new`
-    return new TemplateTag;
+export class TemplateTag {
+  constructor(props) {
+    if (props) _assign(this, props);
 
-  if (props)
-    _assign(this, props);
-}
-
-_assign(TemplateTag.prototype, {
-  constructorName: 'TemplateTag',
-  toJS: function (visitor) {
-    return visitor.generateCall(this.constructorName,
-                                _assign({}, this));
+    this.constructorName = 'TemplateTag';
   }
-});
+
+  toJS (visitor) {
+    return visitor.generateCall(this.constructorName,
+      _assign({}, this));
+  }
+}

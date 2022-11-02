@@ -1,8 +1,9 @@
 /* eslint-env meteor */
+
 Package.describe({
   name: 'templating-compiler',
   summary: 'Compile templates in .html files',
-  version: '1.4.1',
+  version: '1.5.0',
   git: 'https://github.com/meteor/blaze.git',
   documentation: null,
 });
