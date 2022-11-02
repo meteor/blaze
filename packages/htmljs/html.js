@@ -13,7 +13,7 @@ export function isConstructedObject (x) {
   // `(new Foo).constructor` is `Object`, not `Foo`).
   if (!x || (typeof x !== 'object')) return false;
   // Is this a plain object?
-  let plain = false;
+  let plain;
   if (Object.getPrototypeOf(x) === null) {
     plain = true;
   } else {
@@ -47,7 +47,7 @@ export function isValidAttributeName (name) {
 }
 
 // If `attrs` is an array of attributes dictionaries, combines them
-// into one.  Removes attributes that are "nully."
+// into one. Remove attributes that are "nully."
 export function flattenAttributes (attrs) {
   if (!attrs) return attrs;
 
@@ -94,7 +94,7 @@ Tag.prototype.htmljsType = Tag.htmljsType;
 
 // Given "p" create the function `HTML.P`.
 const makeTagConstructor = function (tagName) {
-  // Tag is the per-tagName constructor of a HTML.Tag subclass
+  // Tag is the per-tagName constructor of an HTML.Tag subclass
   const HTMLTag = function (...args) {
     // Work with or without `new`.  If not called with `new`,
     // perform instantiation by recursively calling this constructor.
@@ -104,15 +104,15 @@ const makeTagConstructor = function (tagName) {
     let i = 0;
     const attrs = args.length && args[0];
     if (attrs && (typeof attrs === 'object')) {
-      // Treat vanilla JS object as an attributes dictionary.
+      // Treat vanilla JS object as an attributes' dictionary.
       if (!isConstructedObject(attrs)) {
         instance.attrs = attrs;
         i++;
       } else if (attrs instanceof Attrs) {
         const array = attrs.value;
         if (array.length === 1) {
-          // eslint-disable-next-line prefer-destructuring
-          instance.attrs = array[0];
+          const [first] = array;
+          instance.attrs = first;
         } else if (array.length > 1) {
           instance.attrs = array;
         }

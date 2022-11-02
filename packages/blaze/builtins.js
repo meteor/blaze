@@ -41,16 +41,16 @@ Blaze.With = function (data, contentFunc) {
  * @param {View} view The target.
  */
 Blaze._attachBindingsToView = function (bindings, view) {
-  view.onViewCreated(function () {
+  const _view = view;
+  _view.onViewCreated(function () {
     Object.entries(bindings).forEach(function ([name, binding]) {
-      // eslint-disable-next-line no-param-reassign
-      view._scopeBindings[name] = new ReactiveVar();
+      _view._scopeBindings[name] = new ReactiveVar();
       if (typeof binding === 'function') {
-        view.autorun(function () {
-          view._scopeBindings[name].set(binding());
-        }, view.parentView);
+        _view.autorun(function () {
+          _view._scopeBindings[name].set(binding());
+        }, _view.parentView);
       } else {
-        view._scopeBindings[name].set(binding);
+        _view._scopeBindings[name].set(binding);
       }
     });
   });

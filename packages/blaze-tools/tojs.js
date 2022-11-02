@@ -1,3 +1,5 @@
+/* eslint-disable import/no-unresolved */
+
 import { HTML } from 'meteor/htmljs';
 
 
@@ -113,8 +115,8 @@ ToJSVisitor.def({
     let attrsStr = null;
     if (attrsArray && attrsArray.length) {
       if (attrsArray.length === 1 && !needsHTMLAttrs) {
-        // eslint-disable-next-line prefer-destructuring
-        attrsStr = attrsArray[0];
+        const [first] = attrsArray;
+        attrsStr = first;
       } else {
         attrsStr = `HTML.Attrs(${attrsArray.join(', ')})`;
       }
