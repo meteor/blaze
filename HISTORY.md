@@ -1,3 +1,23 @@
+## v3.0.0, 2023-XXXX-XX
+
+### Potentially breaking changes
+* [#373](https://github.com/meteor/blaze/pull/373) Remove fibers from codebase
+* [#378](https://github.com/meteor/blaze/pull/378) [spacebars-compiler] Update uglify-js to 3.16.1
+* [#351](https://github.com/meteor/blaze/pull/351) Eliminate whitespace in Template.dynamic
+
+## v2.6.1, 2022-July-25
+
+* [#370](https://github.com/meteor/blaze/pull/370) `templating-runtime@1.6.1`, returned the `Template.__define__` with warning message
+* [#366](https://github.com/meteor/blaze/pull/366) Prevent firing callbacks until members are destroyed
+  * fix destroying child templates when parent is destroyed; prevents memory leak and DOMRange "not attached" error
+* [#374](https://github.com/meteor/blaze/pull/374) `Blaze.remove` should destroy view before detaching
+* [#376](https://github.com/meteor/blaze/pull/376) Modify 'Must be attached' error to be more descriptive
+* [#377](https://github.com/meteor/blaze/pull/377) Add tests for [Blaze.remove should destroy view before detaching](https://github.com/meteor/blaze/pull/374)
+* [#382](https://github.com/meteor/blaze/pull/382) Linters were added
+* [#348](https://github.com/meteor/blaze/pull/348) For-in loop does not work in IE fix
+* [#349](https://github.com/meteor/blaze/pull/349) fix regression: non array iterables were always treated as empty
+* [#341](https://github.com/meteor/blaze/pull/341) add support for arbitrary iterables in #each templates
+
 ## v2.6.0, 2022-April-13
 
 * [#330](https://github.com/meteor/blaze/pull/330) Removed deprecated APIs from before Meteor 1.0

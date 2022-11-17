@@ -38,7 +38,7 @@ Template.__define__("old_spacebars_template_test_span_this", (function() {
 
 Template.__define__("old_spacebars_template_test_content", (function() {
   var view = this;
-  return Blaze.InOuterTemplateScope(view, function() {
+  return Blaze._InOuterTemplateScope(view, function() {
     return Spacebars.include(function() {
       return Spacebars.call(view.templateContentBlock);
     });
@@ -47,7 +47,7 @@ Template.__define__("old_spacebars_template_test_content", (function() {
 
 Template.__define__("old_spacebars_template_test_elsecontent", (function() {
   var view = this;
-  return Blaze.InOuterTemplateScope(view, function() {
+  return Blaze._InOuterTemplateScope(view, function() {
     return Spacebars.include(function() {
       return Spacebars.call(view.templateElseBlock);
     });
@@ -59,13 +59,13 @@ Template.__define__("old_spacebars_template_test_iftemplate", (function() {
   return Blaze.If(function() {
     return Spacebars.call(view.lookup("condition"));
   }, function() {
-    return [ "\n    ", Blaze.InOuterTemplateScope(view, function() {
+    return [ "\n    ", Blaze._InOuterTemplateScope(view, function() {
       return Spacebars.include(function() {
         return Spacebars.call(view.templateContentBlock);
       });
     }), "\n  " ];
   }, function() {
-    return [ "\n    ", Blaze.InOuterTemplateScope(view, function() {
+    return [ "\n    ", Blaze._InOuterTemplateScope(view, function() {
       return Spacebars.include(function() {
         return Spacebars.call(view.templateElseBlock);
       });
@@ -125,7 +125,7 @@ Template.__define__("old_spacebars_template_test_triple2", (function() {
 
 Template.__define__("old_spacebars_template_test_inclusion_args", (function() {
   var view = this;
-  return Spacebars.TemplateWith(function() {
+  return Blaze._TemplateWith(function() {
     return Spacebars.call(view.lookup("bar"));
   }, function() {
     return Spacebars.include(view.lookupTemplate("foo"));
@@ -134,7 +134,7 @@ Template.__define__("old_spacebars_template_test_inclusion_args", (function() {
 
 Template.__define__("old_spacebars_template_test_inclusion_args2", (function() {
   var view = this;
-  return Spacebars.TemplateWith(function() {
+  return Blaze._TemplateWith(function() {
     return Spacebars.dataMustache(view.lookup("bar"), Spacebars.kw({
       q: view.lookup("baz")
     }));
@@ -145,7 +145,7 @@ Template.__define__("old_spacebars_template_test_inclusion_args2", (function() {
 
 Template.__define__("old_spacebars_template_test_inclusion_dotted_args", (function() {
   var view = this;
-  return Spacebars.TemplateWith(function() {
+  return Blaze._TemplateWith(function() {
     return Spacebars.call(Spacebars.dot(view.lookup("bar"), "baz"));
   }, function() {
     return Spacebars.include(view.lookupTemplate("foo"));
@@ -154,7 +154,7 @@ Template.__define__("old_spacebars_template_test_inclusion_dotted_args", (functi
 
 Template.__define__("old_spacebars_template_test_inclusion_slashed_args", (function() {
   var view = this;
-  return Spacebars.TemplateWith(function() {
+  return Blaze._TemplateWith(function() {
     return Spacebars.call(Spacebars.dot(view.lookup("bar"), "baz"));
   }, function() {
     return Spacebars.include(view.lookupTemplate("foo"));
@@ -172,7 +172,7 @@ Template.__define__("old_spacebars_template_test_block_helper", (function() {
 
 Template.__define__("old_spacebars_template_test_block_helper_function_one_string_arg", (function() {
   var view = this;
-  return Spacebars.TemplateWith(function() {
+  return Blaze._TemplateWith(function() {
     return "bar";
   }, function() {
     return Spacebars.include(view.lookupTemplate("foo"), function() {
@@ -183,7 +183,7 @@ Template.__define__("old_spacebars_template_test_block_helper_function_one_strin
 
 Template.__define__("old_spacebars_template_test_block_helper_function_one_helper_arg", (function() {
   var view = this;
-  return Spacebars.TemplateWith(function() {
+  return Blaze._TemplateWith(function() {
     return Spacebars.call(view.lookup("bar"));
   }, function() {
     return Spacebars.include(view.lookupTemplate("foo"), function() {
@@ -212,7 +212,7 @@ Template.__define__("old_spacebars_template_test_block_helper_component_three_he
 
 Template.__define__("old_spacebars_template_test_block_helper_dotted_arg", (function() {
   var view = this;
-  return Spacebars.TemplateWith(function() {
+  return Blaze._TemplateWith(function() {
     return Spacebars.dataMustache(Spacebars.dot(view.lookup("bar"), "baz"), view.lookup("qux"));
   }, function() {
     return Spacebars.include(view.lookupTemplate("foo"), function() {
@@ -223,7 +223,7 @@ Template.__define__("old_spacebars_template_test_block_helper_dotted_arg", (func
 
 Template.__define__("old_spacebars_template_test_nested_content", (function() {
   var view = this;
-  return Spacebars.TemplateWith(function() {
+  return Blaze._TemplateWith(function() {
     return {
       condition: Spacebars.call(view.lookup("flag"))
     };
@@ -238,19 +238,19 @@ Template.__define__("old_spacebars_template_test_nested_content", (function() {
 
 Template.__define__("old_spacebars_template_test_iftemplate2", (function() {
   var view = this;
-  return Spacebars.TemplateWith(function() {
+  return Blaze._TemplateWith(function() {
     return {
       condition: Spacebars.call(view.lookup("flag"))
     };
   }, function() {
     return Spacebars.include(view.lookupTemplate("old_spacebars_template_test_iftemplate"), function() {
-      return [ "\n    ", Blaze.InOuterTemplateScope(view, function() {
+      return [ "\n    ", Blaze._InOuterTemplateScope(view, function() {
         return Spacebars.include(function() {
           return Spacebars.call(view.templateContentBlock);
         });
       }), "\n  " ];
     }, function() {
-      return [ "\n    ", Blaze.InOuterTemplateScope(view, function() {
+      return [ "\n    ", Blaze._InOuterTemplateScope(view, function() {
         return Spacebars.include(function() {
           return Spacebars.call(view.templateElseBlock);
         });
@@ -261,7 +261,7 @@ Template.__define__("old_spacebars_template_test_iftemplate2", (function() {
 
 Template.__define__("old_spacebars_template_test_nested_content2", (function() {
   var view = this;
-  return Spacebars.TemplateWith(function() {
+  return Blaze._TemplateWith(function() {
     return {
       flag: Spacebars.call(view.lookup("x"))
     };
@@ -333,7 +333,7 @@ Template.__define__("old_spacebars_template_test_dots", (function() {
         return [ "\n        C\n        ", Blaze.Each(function() {
           return Spacebars.call(view.lookup("items"));
         }, function() {
-          return [ "\n          D\n          \n          ", Spacebars.include(view.lookupTemplate("old_spacebars_template_test_dots_subtemplate")), "\n          ", Spacebars.TemplateWith(function() {
+          return [ "\n          D\n          \n          ", Spacebars.include(view.lookupTemplate("old_spacebars_template_test_dots_subtemplate")), "\n          ", Blaze._TemplateWith(function() {
             return Spacebars.call(view.lookup(".."));
           }, function() {
             return Spacebars.include(view.lookupTemplate("old_spacebars_template_test_dots_subtemplate"));
@@ -755,7 +755,7 @@ Template.__define__("old_spacebars_template_test_markdown_block_helpers", (funct
 
 Template.__define__("old_spacebars_template_test_just_content", (function() {
   var view = this;
-  return Blaze.InOuterTemplateScope(view, function() {
+  return Blaze._InOuterTemplateScope(view, function() {
     return Spacebars.include(function() {
       return Spacebars.call(view.templateContentBlock);
     });
@@ -882,7 +882,7 @@ Template.__define__("old_spacebars_template_test_content_context", (function() {
     return [ "\n    ", Spacebars.With(function() {
       return Spacebars.call(view.lookup("bar"));
     }, function() {
-      return [ "\n      ", Spacebars.TemplateWith(function() {
+      return [ "\n      ", Blaze._TemplateWith(function() {
         return {
           condition: Spacebars.call(view.lookup("cond"))
         };
@@ -1184,7 +1184,7 @@ Template.__define__("old_spacebars_test_falsy_with", (function() {
 
 Template.__define__("old_spacebars_test_helpers_dont_leak", (function() {
   var view = this;
-  return Spacebars.TemplateWith(function() {
+  return Blaze._TemplateWith(function() {
     return {
       foo: Spacebars.call("correct")
     };
@@ -1480,7 +1480,7 @@ Template.__define__("old_spacebars_test_template_created_rendered_destroyed_each
   return Blaze.Each(function() {
     return Spacebars.call(view.lookup("items"));
   }, function() {
-    return [ "\n    ", HTML.DIV(Spacebars.TemplateWith(function() {
+    return [ "\n    ", HTML.DIV(Blaze._TemplateWith(function() {
       return Spacebars.call(view.lookup("_id"));
     }, function() {
       return Spacebars.include(view.lookupTemplate("old_spacebars_test_template_created_rendered_destroyed_each_sub"));
@@ -1687,8 +1687,8 @@ Template.__define__("old_spacebars_test_contentBlock_arg_inner", (function() {
   }, function() {
     return [ "\n    ", Blaze.View(function() {
       return Spacebars.mustache(Spacebars.dot(view.lookup("."), "foo"));
-    }), " ", Blaze.InOuterTemplateScope(view, function() {
-      return Spacebars.TemplateWith(function() {
+    }), " ", Blaze._InOuterTemplateScope(view, function() {
+      return Blaze._TemplateWith(function() {
         return Spacebars.call(view.lookup("."));
       }, function() {
         return Spacebars.include(function() {

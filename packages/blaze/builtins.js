@@ -295,7 +295,7 @@ Blaze._TemplateWith = function (arg, contentFunc) {
   // parent Views in the current template.  However, when there's an argument
   // (`{{> Template.contentBlock arg}}`), the argument needs to be evaluated
   // in the original scope.  There's no good order to nest
-  // Blaze._InOuterTemplateScope and Spacebars.TemplateWith to achieve this,
+  // Blaze._InOuterTemplateScope and Blaze._TemplateWith to achieve this,
   // so we wrap argFunc to run it in the "original parentView" of the
   // Blaze._InOuterTemplateScope.
   //

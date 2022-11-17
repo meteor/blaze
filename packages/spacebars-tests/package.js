@@ -1,7 +1,7 @@
 Package.describe({
   name: 'spacebars-tests',
   summary: "Additional tests for Spacebars",
-  version: '1.3.0',
+  version: '1.3.1',
   git: 'https://github.com/meteor/blaze.git'
 });
 

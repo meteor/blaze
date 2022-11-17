@@ -26,6 +26,27 @@ Template.__checkName = function (name) {
   }
 };
 
+var shownWarning = false;
+
+// XXX COMPAT WITH 0.8.3
+Template.__define__ = function (name, renderFunc) {
+  Template.__checkName(name);
+  Template[name] = new Template("Template." + name, renderFunc);
+  // Exempt packages built pre-0.9.0 from warnings about using old
+  // helper syntax, because we can.  It's not very useful to get a
+  // warning about someone else's code (like a package on Atmosphere),
+  // and this should at least put a bit of a dent in number of warnings
+  // that come from packages that haven't been updated lately.
+  Template[name]._NOWARN_OLDSTYLE_HELPERS = true;
+
+  // Now we want to show at least one warning so that people get serious about
+  // updating away from this method.
+  if (!shownWarning) {
+    shownWarning = true;
+    console.warn("You app is using old Template definition that is scheduled to be removed with Blaze 3.0, please check your app and packages for use of: Template.__define__");
+  }
+};
+
 // Define a template `Template.body` that renders its
 // `contentRenderFuncs`.  `<body>` tags (of which there may be
 // multiple) will have their contents added to it.
