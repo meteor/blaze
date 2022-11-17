@@ -1,24 +1,24 @@
+/* eslint-env meteor */
 Package.describe({
   name: 'caching-html-compiler',
-  summary: "Pluggable class for compiling HTML into templates",
-  version: '1.2.0',
-  git: 'https://github.com/meteor/blaze.git'
+  summary: 'Pluggable class for compiling HTML into templates',
+  version: '1.2.1',
+  git: 'https://github.com/meteor/blaze.git',
+});
+
+Npm.depends({
+  'lodash.isempty': '4.4.0',
 });
 
 Package.onUse(function(api) {
   api.use([
-    'underscore@1.0.9',
-    'caching-compiler@1.1.7',
-    'ecmascript@0.14.4'
+    'caching-compiler@1.2.2',
+    'ecmascript@0.15.1',
   ]);
 
   api.export('CachingHtmlCompiler', 'server');
 
-  api.use([
-    'templating-tools@1.2.0'
-  ]);
+  api.use(['templating-tools@1.2.1']);
 
-  api.addFiles([
-    'caching-html-compiler.js'
-  ], 'server');
+  api.addFiles(['caching-html-compiler.js'], 'server');
 });

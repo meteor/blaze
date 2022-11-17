@@ -8,14 +8,24 @@
   "scripts": {
     "start": "meteor run",
     "setup": "ln -sfn ../packages ./packages",
+    "lint:check": "npx eslint",
+    "lint:fix": "npm run eslint --fix",
     "test:watch": "meteor test-packages --raw-logs ./packages/*",
     "test:ci": "ci.sh"
   },
   "license": "MIT",
   "dependencies": {
-    "jquery": "^3.4.1",
-    "@babel/runtime": "^7.13.10",
-    "meteor-node-stubs": "^1.0.2",
-    "puppeteer": "^8.0.0"
+    "@babel/runtime": "^7.17.9",
+    "jquery": "^3.6.0",
+    "meteor-node-stubs": "^1.2.1",
+    "puppeteer": "^10.4.0"
+  },
+  "devDependencies": {
+    "@quave/eslint-config-quave": "^1.0.7"
+  },
+  "eslintConfig": {
+    "extends": [
+      "@quave/quave"
+    ]
   }
 }

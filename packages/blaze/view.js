@@ -127,7 +127,7 @@ Blaze.View.prototype.removeViewDestroyedListener = function (cb) {
   var destroyed = this._callbacks.destroyed;
   if (! destroyed)
     return;
-  var index = _.lastIndexOf(destroyed, cb);
+  var index = destroyed.lastIndexOf(cb);
   if (index !== -1) {
     // XXX You'd think the right thing to do would be splice, but _fireCallbacks
     // gets sad if you remove callbacks while iterating over the list.  Should
@@ -489,14 +489,19 @@ Blaze._destroyView = function (view, _skipNodes) {
     return;
   view.isDestroyed = true;
 
-  Blaze._fireCallbacks(view, 'destroyed');
 
   // Destroy views and elements recursively.  If _skipNodes,
   // only recurse up to views, not elements, for the case where
   // the backend (jQuery) is recursing over the elements already.
 
-  if (view._domrange)
-    view._domrange.destroyMembers(_skipNodes);
+  if (view._domrange) view._domrange.destroyMembers(_skipNodes);
+
+  // XXX: fire callbacks after potential members are destroyed
+  // otherwise it's tracker.flush will cause the above line will
+  // not be called and their views won't be destroyed
+  // Involved issues: DOMRange "Must be attached" error, mem leak
+  
+  Blaze._fireCallbacks(view, 'destroyed');
 };
 
 Blaze._destroyNode = function (node) {
@@ -692,9 +697,11 @@ Blaze.remove = function (view) {
   while (view) {
     if (! view.isDestroyed) {
       var range = view._domrange;
-      if (range.attached && ! range.parentRange)
-        range.detach();
       range.destroy();
+
+      if (range.attached && ! range.parentRange) {
+        range.detach();
+      }
     }
 
     view = view._hasGeneratedParent && view.parentView;
@@ -874,10 +881,11 @@ Blaze._addEventMap = function (view, eventMap, thisInHandler) {
     throw new Error("View must have a DOMRange");
 
   view._domrange.onAttached(function attached_eventMaps(range, element) {
-    _.each(eventMap, function (handler, spec) {
+    Object.keys(eventMap).forEach(function (spec) {
+      let handler = eventMap[spec];
       var clauses = spec.split(/,\s+/);
       // iterate over clauses of spec, e.g. ['click .foo', 'click .bar']
-      _.each(clauses, function (clause) {
+      clauses.forEach(function (clause) {
         var parts = clause.split(/\s+/);
         if (parts.length === 0)
           return;
@@ -887,7 +895,7 @@ Blaze._addEventMap = function (view, eventMap, thisInHandler) {
         handles.push(Blaze._EventSupport.listen(
           element, newEvents, selector,
           function (evt) {
-            if (! range.containsElement(evt.currentTarget))
+            if (! range.containsElement(evt.currentTarget, selector, newEvents))
               return null;
             var handlerThis = thisInHandler || this;
             var handlerArgs = arguments;
@@ -903,7 +911,7 @@ Blaze._addEventMap = function (view, eventMap, thisInHandler) {
   });
 
   view.onViewDestroyed(function () {
-    _.each(handles, function (h) {
+    handles.forEach(function (h) {
       h.stop();
     });
     handles.length = 0;

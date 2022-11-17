@@ -1,7 +1,7 @@
 Package.describe({
   name: 'spacebars',
   summary: "Handlebars-like template language for Meteor",
-  version: '1.1.0',
+  version: '1.3.0',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -14,14 +14,13 @@ Package.describe({
 // Additional tests are in `spacebars-tests`.
 
 Package.onUse(function (api) {
-  api.use('observe-sequence@1.0.12');
-  api.use('underscore@1.0.9');
-  api.use('tracker@1.1.0');
+  api.use('observe-sequence@1.0.16');
+  api.use('tracker@1.2.0');
 
   api.export('Spacebars');
 
-  api.use('htmljs@1.1.0');
-  api.use('blaze@2.4.0');
+  api.use('htmljs@1.1.1');
+  api.use('blaze@2.5.0');
 
   api.addFiles([
     'spacebars-runtime.js'
@@ -30,7 +29,7 @@ Package.onUse(function (api) {
 
 Package.onTest(function (api) {
   api.use([
-    'tinytest@1.0.11'
+    'tinytest@1.1.0'
   ]);
 
   api.use([

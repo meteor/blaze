@@ -1,4 +1,3 @@
-
 // Packages and apps add templates on to this object.
 
 /**
@@ -16,12 +15,18 @@ Template.__checkName = function (name) {
   //  - Properties Blaze sets on the Template object.
   //  - Properties that some browsers don't let the code to set.
   //    These are specified in RESERVED_TEMPLATE_NAMES.
-  if (name in Template || _.contains(RESERVED_TEMPLATE_NAMES, name)) {
-    if ((Template[name] instanceof Template) && name !== "body")
-      throw new Error("There are multiple templates named '" + name + "'. Each template needs a unique name.");
-    throw new Error("This template name is reserved: " + name);
+  if (name in Template || RESERVED_TEMPLATE_NAMES.includes(name)) {
+    if (Template[name] instanceof Template && name !== 'body')
+      throw new Error(
+        "There are multiple templates named '" +
+          name +
+          "'. Each template needs a unique name."
+      );
+    throw new Error('This template name is reserved: ' + name);
   }
 };
+
+var shownWarning = false;
 
 // XXX COMPAT WITH 0.8.3
 Template.__define__ = function (name, renderFunc) {
@@ -33,6 +38,13 @@ Template.__define__ = function (name, renderFunc) {
   // and this should at least put a bit of a dent in number of warnings
   // that come from packages that haven't been updated lately.
   Template[name]._NOWARN_OLDSTYLE_HELPERS = true;
+
+  // Now we want to show at least one warning so that people get serious about
+  // updating away from this method.
+  if (!shownWarning) {
+    shownWarning = true;
+    console.warn("You app is using old Template definition that is scheduled to be removed with Blaze 3.0, please check your app and packages for use of: Template.__define__");
+  }
 };
 
 // Define a template `Template.body` that renders its
@@ -46,7 +58,7 @@ Template.__define__ = function (name, renderFunc) {
  */
 Template.body = new Template('body', function () {
   var view = this;
-  return _.map(Template.body.contentRenderFuncs, function (func) {
+  return Template.body.contentRenderFuncs.map(function (func) {
     return func.apply(view);
   });
 });
@@ -85,13 +97,13 @@ Template._applyHmrChanges = function (templateName) {
     updateTimeout = null;
 
     for (var i = 0; i < Template.__pendingReplacement.length; i++) {
-      delete Template[Template.__pendingReplacement[i]]
+      delete Template[Template.__pendingReplacement[i]];
     }
 
     Template.__pendingReplacement = [];
 
     var views = Blaze.__rootViews.slice();
-    for(var i = 0; i < views.length; i++) {
+    for (var i = 0; i < views.length; i++) {
       var view = views[i];
       if (view.destroyed) {
         continue;
@@ -146,7 +158,7 @@ Template._applyHmrChanges = function (templateName) {
       }
     }
   });
-}
+};
 
 Template._migrateTemplate = function (templateName, newTemplate, migrate) {
   var oldTemplate = Template[templateName];
@@ -162,7 +174,6 @@ Template._migrateTemplate = function (templateName, newTemplate, migrate) {
     Template._applyHmrChanges(templateName);
   }
 
-
   if (migrate) {
     Template.__pendingReplacement.splice(
       Template.__pendingReplacement.indexOf(templateName),
@@ -173,12 +184,3 @@ Template._migrateTemplate = function (templateName, newTemplate, migrate) {
   Template.__checkName(templateName);
   Template[templateName] = newTemplate;
 };
-
-// XXX COMPAT WITH 0.9.0
-UI.body = Template.body;
-
-// XXX COMPAT WITH 0.9.0
-// (<body> tags in packages built with 0.9.0)
-Template.__body__ = Template.body;
-Template.__body__.__contentParts = Template.body.contentViews;
-Template.__body__.__instantiate = Template.body.renderToDocument;

@@ -1,7 +1,52 @@
-## v.2.4.1, 2021-May-12
+## v3.0.0, 2023-XXXX-XX
+
+### Potentially breaking changes
+* [#373](https://github.com/meteor/blaze/pull/373) Remove fibers from codebase
+* [#378](https://github.com/meteor/blaze/pull/378) [spacebars-compiler] Update uglify-js to 3.16.1
+* [#351](https://github.com/meteor/blaze/pull/351) Eliminate whitespace in Template.dynamic
 * [#334](https://github.com/meteor/blaze/pull/334) Faster fragnent parsing by retaining a reference to the current document context
 
-## v.2.4.0, 2021-April-12
+## v2.6.1, 2022-July-25
+
+* [#370](https://github.com/meteor/blaze/pull/370) `templating-runtime@1.6.1`, returned the `Template.__define__` with warning message
+* [#366](https://github.com/meteor/blaze/pull/366) Prevent firing callbacks until members are destroyed
+  * fix destroying child templates when parent is destroyed; prevents memory leak and DOMRange "not attached" error
+* [#374](https://github.com/meteor/blaze/pull/374) `Blaze.remove` should destroy view before detaching
+* [#376](https://github.com/meteor/blaze/pull/376) Modify 'Must be attached' error to be more descriptive
+* [#377](https://github.com/meteor/blaze/pull/377) Add tests for [Blaze.remove should destroy view before detaching](https://github.com/meteor/blaze/pull/374)
+* [#382](https://github.com/meteor/blaze/pull/382) Linters were added
+* [#348](https://github.com/meteor/blaze/pull/348) For-in loop does not work in IE fix
+* [#349](https://github.com/meteor/blaze/pull/349) fix regression: non array iterables were always treated as empty
+* [#341](https://github.com/meteor/blaze/pull/341) add support for arbitrary iterables in #each templates
+
+## v2.6.0, 2022-April-13
+
+* [#330](https://github.com/meteor/blaze/pull/330) Removed deprecated APIs from before Meteor 1.0
+  * This is potentially breaking, especially for old packages and apps.
+  * `blaze-html-templates@2.0.0`
+    * Dependency on `ui` and `spacebars` package has been removed
+  * `spacebars@1.3.0`
+    * `Spacebars.TemplateWith` has been removed, please use `Blaze._TemplateWith` if you need it.
+  * `blaze@2.6.0`
+    * `Blaze.InOuterTemplateScope` has been removed, if you need it, you can use `Blaze._InOuterTemplateScope`
+  * `templating-runtime@1.6.0`
+    * `Template.__define__` has been removed
+    * `UI.body` has been removed, you should be using `Template.body`
+    * `Template.__body__` has been removed, you should be using `Template.body`
+    * `Template.__body__.__contentParts` has been removed, you should be using `Template.body.contentViews`
+    * `Template.__body__.__instantiate` has been removed, you should be using `Template.body.renderToDocument`
+* [#341](https://github.com/meteor/blaze/pull/341) Add support for arbitrary iterables in #each templates
+* [#358](https://github.com/meteor/blaze/pull/358) Make Template.contentBlock consistent with/out data provided
+* [#359](https://github.com/meteor/blaze/pull/359) Underscore has been removed from observe sequence
+* Updated testing dependencies
+
+## v2.5.0, 2021-June-5
+
+* [#331](https://github.com/meteor/blaze/pull/331) Remove underscore and all of its methods in the code
+
+* Updated dependencies
+
+## v2.4.0, 2021-April-12
 
 * [#313](https://github.com/meteor/blaze/pull/313) Implemented HMR for Blaze
 
