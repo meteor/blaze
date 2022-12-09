@@ -16,7 +16,7 @@
     "hexo-generator-tag": "^0.2.0",
     "hexo-renderer-ejs": "^0.2.0",
     "hexo-renderer-less": "^0.2.0",
-    "hexo-renderer-marked": "^2.0.0",
+    "hexo-renderer-marked": "^6.0.0",
     "hexo-renderer-stylus": "^0.3.3",
     "hexo-server": "^1.0.0",
     "jsdoc": "3.6.10",
