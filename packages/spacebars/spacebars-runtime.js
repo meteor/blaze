@@ -163,6 +163,77 @@ Spacebars.SafeString = function (html) {
 };
 Spacebars.SafeString.prototype = Handlebars.SafeString.prototype;
 
+/**
+ * This is the new "async reporting" variant of Spacebars.dot, which is basically now called immediately from the
+ * Spacebars.dot function in order to keep the old interface as it was while now adding a new parameter to the front to
+ * a) being able to move forward the info that an async wait had to happen until the end result was found and
+ * b) to be able to rewrite the existing function with a new implementation from scratch so I can understand what's
+ *    going on & add waits for promises while we're at it.
+ *
+ * @param hadToWaitForPromiseYet      - whether we had a promise wait in the call chain so far.
+ * @param object                      - the current object we're probing for the next property
+ * @param ...steps                    - the dotted path elements like in cupboard4.drawer1a.subsection4.secretPentagonPapers,
+ *                                      but split into separate strings as sequential parameters, eg.
+ *                                      "cupboard4", "drawer1a", "subsection4", "secretPentagonPapers"
+ */
+Spacebars._asyncDot = function (currentView = undefined, hadToWaitForPromiseYet = false, object, ...steps) {
+  // We want to store this in case of our async functions having to access the view going forward.
+  if (!currentView) {
+    currentView = Blaze.currentView
+  }
+
+  /**
+   * We'll follow a new strategy because my mind was broken by doing it in any other way...
+   * Maybe I shouldn't work so late anymore trying to beat this thing into submission :D
+   *
+   * The new strategy:
+   * - Whenever we reach a new stage of information for "object", we immediately recursively call us again for the next step.
+   *   Because I am sick of checking for a function which returns another function maybe which returns a promise which returns
+   *   another function... how many *&)@% times should I check whether we're taking care of a function here? :D
+   *
+   *   So let's do it like this & let the computer do the work.
+   */
+
+  // ~smash~ I mean call functions
+  if ('function' === typeof object) {
+    object = object()
+    return Spacebars._asyncDot(currentView, hadToWaitForPromiseYet, object, ...steps)
+  }
+
+  // We'll have to put a break in the cool results flow to wait for the promise to return because unfortunately fibers are fxxxed now
+  // and promises are gonna leech into everything now.
+  if (object instanceof Promise) {
+      object.then((result) => {
+        let object = result
+
+        // let's set hadToWaitForPromiseYet to true & continue with processing the paths with this cool recursive function of ours.
+        Spacebars._asyncDot(currentView, true, object, ...steps)
+      })
+
+      // We have to return something now, so we will return nothing until we have something.
+      // The last call with no steps left will then have to trigger a rerun of the current views' render function.
+      return null
+  }
+
+  if (steps.length) {
+    object = object && object[steps[0]]
+    // loose first part of steps array, it's handled now
+    steps.shift()
+    return Spacebars._asyncDot(currentView, hadToWaitForPromiseYet, object, ...steps)
+  }
+  if (hadToWaitForPromiseYet) {
+    // We found the last unicorn, we can / need to set it up for the next render & trigger a re-render of the view now.
+    const originalRenderFunc = currentView._render
+    currentView._render = () => {
+      currentView._render = originalRenderFunc
+      console.log({object})
+      return object
+    }
+    currentView.computation.invalidate()
+  }
+  return object
+}
+
 // `Spacebars.dot(foo, "bar", "baz")` performs a special kind
 // of `foo.bar.baz` that allows safe indexing of `null` and
 // indexing of functions (which calls the function).  If the
@@ -183,7 +254,112 @@ Spacebars.SafeString.prototype = Handlebars.SafeString.prototype;
 // * If `foo` is falsy now, return `foo`.
 //
 // * Return `foo.bar`, binding it to `foo` if it's a function.
-Spacebars.dot = function (value, id1/*, id2, ...*/) {
+Spacebars.dot = function (object, ...steps) {
+  return Spacebars._asyncDot(undefined, false, object, ...steps)
+
+  /**
+   * We start from the first object provided.
+   *
+   * For each additional "step" (String which is interpreted as a property name) we'll try to check the property of the
+   * previous part of the chain & to find its value.
+   *
+   * - If the property is a function, we call it
+   * - if the result is a value we'll continue with it
+   * - if it is the last part of the chain we'll return it
+   * - if it is null / undefined / falsey we'll return it
+   *
+   * Now it gets tricky:
+   * - If it's a function and it _returns a promise_ then we'll want to wait for it to resolve before we continue with the
+   *   result of the promises' execution.
+   * - in order for things not to get too janky, we'll return null until we have resolved all the promises.
+   *
+   * IF there has been one or more promises down the chain, THEN we'll have to retrigger the view after all promises have completed - ONCE.
+   * And we DON'T want all helpers / reactive functions to retrigger again & create new promises etc... because that could actually change the result.
+   * So IF there are promises down the chain somewhere, we'll retrigger a rerender ONCE and just return the final result of our evaluation.
+   *
+   * FUUUUU!!! :D
+   */
+  console.log('Spacebars.dot', {object, steps})
+
+  const view = Blaze.currentView
+
+  let currentObject = object
+
+  for (let z0 = 0; z0 < steps.length; z0++) {
+    const currentStep = steps[z0]
+
+    console.log('Spacebars.dot in loop, before func call', {z0, currentObject, currentStep})
+
+    // if it's a function, we execute it
+    if (typeof currentObject === 'function') {
+      currentObject = currentObject()
+    }
+    console.log('Spacebars.dot in loop, after func call', {z0, currentObject, currentStep})
+    // The problem with a promise is, of course... that we have to wait for the promise to be resolved until we can
+    // progress with our evaluation of the dot path. So we do... ??
+    if (currentObject instanceof Promise) {
+      currentObject.then((result) => {
+        let currentObject = result
+
+        console.log('Spacebars.dot in promise result, before func call', {z0, currentObject, currentStep})
+
+        if (typeof currentObject === 'function') {
+          currentObject = currentObject()
+        }
+
+        console.log('Spacebars.dot in promise result, after func call', {z0, currentObject, currentStep})
+
+        if (z0 < steps.length) {
+          // We'll have to evaluate further path parts now before we can trigger the re-rendering
+          currentObject = Spacebars.dot(currentObject, steps.splice(z0))
+        } else {
+          // We found the last unicorn, we can / need to set it up for the next render & trigger a re-render of the view now.
+          const originalRenderFunc = view._render
+          view._render = () => {
+            view._render = originalRenderFunc
+            console.log({currentObject})
+            return currentObject
+          }
+          view.computation.invalidate()
+        }
+      })
+      // we /have/ to return something now, so we return nothing.
+      return null
+    }
+
+    // Let's load the next step.
+    // If we can't find the property, we can return now, we don't need to check any further steps.
+    currentObject = currentObject && currentObject[currentStep]
+  }
+
+  console.log('returning', {currentObject})
+
+  return currentObject
+
+  _.find(parts, (part, idx) => {
+    if (_.isNil(currentObject)) {
+      result = undefined
+      // if the last part of the chain is actually a null,
+      // let the user actually have it
+      if (idx === (parts.length - 1)) {
+        result = currentObject
+      }
+      return true
+    }
+
+    let value = currentObject[part]
+    if (_.isFunction(value)) {
+      value = value.call(currentObject)
+    }
+
+    currentObject = value
+    result = value
+  })
+  return result
+
+
+  return
+
   if (arguments.length > 2) {
     // Note: doing this recursively is probably less efficient than
     // doing it in an iterative loop.
@@ -200,7 +376,7 @@ Spacebars.dot = function (value, id1/*, id2, ...*/) {
   if (! value)
     return value; // falsy, don't index, pass through
 
-  var result = value[id1];
+  result = value[id1];
   if (typeof result !== 'function')
     return result;
   // `value[id1]` (or `value()[id1]`) is a function.

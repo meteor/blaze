@@ -1,6 +1,6 @@
 /// [new] Blaze.View([name], renderMethod)
 ///
-/// Blaze.View is the building block of reactive DOM.  Views have
+/// Blaze.View is the building block of reactive DOM. Views have
 /// the following features:
 ///
 /// * lifecycle callbacks - Views are created, rendered, and destroyed,
@@ -24,7 +24,7 @@
 /// callbacks are fired, which happens when the View is "used" in
 /// some way that requires it to be rendered.
 ///
-/// ...more lifecycle stuff
+/// ...more lifecycle stuff (<- O_O - Daniel :D )
 ///
 /// `name` is an optional string tag identifying the View.  The only
 /// time it's used is when looking in the View tree for a View of a
@@ -41,18 +41,22 @@
  * @param {Function} renderFunction A function that returns [*renderable content*](#Renderable-Content).  In this function, `this` is bound to the View.
  */
 Blaze.View = function (name, render) {
-  if (! (this instanceof Blaze.View))
-    // called without `new`
+  if (! (this instanceof Blaze.View)) {
+    // Called without `new`.
+    // We basically just call `new` for them then & return the new instance.
     return new Blaze.View(name, render);
+  }
 
   if (typeof name === 'function') {
     // omitted "name" argument
     render = name;
     name = '';
   }
+  // Store name and render function for view instance.
   this.name = name;
   this._render = render;
 
+  // prep the callbacks
   this._callbacks = {
     created: null,
     rendered: null,
@@ -341,6 +345,13 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
   Tracker.nonreactive(function () {
     view.autorun(function doRender(c) {
       // `view.autorun` sets the current view.
+
+      // Store the computation object so we can invalidate it from async events inside, when we're waiting
+      // for promises to resolve in a blaze helper/variable lookup.
+      view.computation = c
+
+      // view._spacebarsDotRecursionDepth = undefined
+
       view.renderCount++;
       view._isInRender = true;
       // Any dependencies that should invalidate this Computation come
