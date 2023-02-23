@@ -221,17 +221,25 @@ Spacebars.SafeString.prototype = Handlebars.SafeString.prototype;
  * b) to be able to rewrite the existing function with a new implementation from scratch so I can understand what's
  *    going on & add waits for promises while we're at it.
  *
+ * @returns {null|string|Raw|Promise}   - can return either stuff / string-ish things or a promise for that stuff.
+ *
  * @param hadToWaitForPromiseYet      - whether we had a promise wait in the call chain so far.
- * @param object                      - the current object we're probing for the next property
+ * @param currentObject                      - the current object we're probing for the next property
  * @param ...steps                    - the dotted path elements like in cupboard4.drawer1a.subsection4.secretPentagonPapers,
  *                                      but split into separate strings as sequential parameters, eg.
  *                                      "cupboard4", "drawer1a", "subsection4", "secretPentagonPapers"
+ *
+ * @returns {null|string|Raw|Promise}   - can return either stuff / string-ish things by themselves or a promise for the same stuff.
  */
-Spacebars._asyncDot = function (currentView = undefined, hadToWaitForPromiseYet = false, object, ...steps) {
+Spacebars._asyncDot = function (currentView = undefined, hadToWaitForPromiseYet = false, currentObject, ...steps) {
   // We want to store this in case of our async functions having to access the view going forward.
   if (!currentView) {
     currentView = Blaze.currentView
   }
+
+  let masterPromise = new Promise((resolve, reject) => {
+
+  })
 
   /**
    * We'll follow a new strategy because my mind was broken by doing it in any other way...
@@ -246,15 +254,15 @@ Spacebars._asyncDot = function (currentView = undefined, hadToWaitForPromiseYet 
    */
 
   // ~smash~ I mean call functions
-  if ('function' === typeof object) {
-    object = object()
-    return Spacebars._asyncDot(currentView, hadToWaitForPromiseYet, object, ...steps)
+  if ('function' === typeof currentObject) {
+    currentObject = currentObject()
+    return Spacebars._asyncDot(currentView, hadToWaitForPromiseYet, currentObject, ...steps)
   }
 
   // We'll have to put a break in the cool results flow to wait for the promise to return because unfortunately fibers are fxxxed now
   // and promises are gonna leech into everything now.
-  if (object instanceof Promise) {
-      object.then((result) => {
+  if (currentObject instanceof Promise) {
+      currentObject.then((result) => {
         let object = result
 
         // let's set hadToWaitForPromiseYet to true & continue with processing the paths with this cool recursive function of ours.
@@ -267,22 +275,27 @@ Spacebars._asyncDot = function (currentView = undefined, hadToWaitForPromiseYet 
   }
 
   if (steps.length) {
-    object = object && object[steps[0]]
+    currentObject = currentObject && currentObject[steps[0]]
     // loose first part of steps array, it's handled now
     steps.shift()
-    return Spacebars._asyncDot(currentView, hadToWaitForPromiseYet, object, ...steps)
+    return Spacebars._asyncDot(currentView, hadToWaitForPromiseYet, currentObject, ...steps)
   }
+
+  /**
+   * Here we know we're actually at the last step of our journey & we have determined the final piece of the
+   * chain we can access.
+   */
   if (hadToWaitForPromiseYet) {
     // We found the last unicorn, we can / need to set it up for the next render & trigger a re-render of the view now.
     const originalRenderFunc = currentView._render
     currentView._render = () => {
       currentView._render = originalRenderFunc
-      console.log({object})
-      return object
+      console.log({object: currentObject})
+      return currentObject
     }
     currentView.computation.invalidate()
   }
-  return object
+  return currentObject
 }
 
 // `Spacebars.dot(foo, "bar", "baz")` performs a special kind
