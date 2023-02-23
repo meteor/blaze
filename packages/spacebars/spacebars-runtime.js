@@ -37,14 +37,25 @@ Spacebars.include = function (templateOrFunction, contentFunc, elseFunc) {
   return view;
 };
 
-// Executes `{{foo bar baz}}` when called on `(foo, bar, baz)`.
-// If `bar` and `baz` are functions, they are called before
-// `foo` is called on them.
-//
-// This is the shared part of Spacebars.mustache and
-// Spacebars.attrMustache, which differ in how they post-process the
-// result.
+/**
+ * Executes `{{foo bar baz}}` when called on `(foo, bar, baz)`.
+ * If `bar` and `baz` are functions, they are called before
+ * `foo` is called on them.
+ *
+ * This is the shared part of Spacebars.mustache and
+ * Spacebars.attrMustache, which differ in how they post-process the
+ * result.
+ *
+ * AYSYNC-ACTION: We also might have to take into account that either of the functions might return a promise, so in that
+ * case we'd have to await the results, return nothing / an intermediate value until we got the final results, then invalidate the
+ * current view once we are sure that we have collected and awaited all the data.
+ *
+ * @param value         - a thing which should be or provide some content
+ * @param ...args       - additional arguments to be used as params for the call to value() if there are any. *
+ *
+ * @returns {null|string|Raw|Promise}   - can return either stuff / string-ish things or a promise for that stuff. */
 Spacebars.mustacheImpl = function (value/*, args*/) {
+
   var args = arguments;
   // if we have any arguments (pos or kw), add an options argument
   // if there isn't one.
@@ -70,16 +81,43 @@ Spacebars.mustacheImpl = function (value/*, args*/) {
   return Spacebars.call.apply(null, args);
 };
 
+/**
+ * Executes `{{foo bar baz}}` when called on `(foo, bar, baz)`.
+ * If `bar` and `baz` are functions, they are called before
+ * `foo` is called on them.
+ *
+ * Most of the lookup work is done in the Spacebars.mustacheImpl function above.
+ *
+ * @param value         - a thing which should be or provide some content
+ * @param ...args       - additional arguments to be used as params for the call to value() if there are any.
+ *
+ * @returns {null|string|Raw|Promise}   - can return either stuff / string-ish things or a promise for that stuff.
+ */
 Spacebars.mustache = function (value/*, args*/) {
   var result = Spacebars.mustacheImpl.apply(null, arguments);
 
-  if (result instanceof Spacebars.SafeString)
+  /**
+   * We can just pass promises through (I think?)
+   *
+   * NO: Actually we have to treat them similarly to what this funky func did before!
+   *
+   * But yeah, basically... :D
+   */
+
+
+
+  if (result instanceof Promise) {
+    return result
+  }
+
+  if (result instanceof Spacebars.SafeString) {
     return HTML.Raw(result.toString());
-  else
-    // map `null`, `undefined`, and `false` to null, which is important
-    // so that attributes with nully values are considered absent.
-    // stringify anything else (e.g. strings, booleans, numbers including 0).
-    return (result == null || result === false) ? null : String(result);
+  }
+
+  // map `null`, `undefined`, and `false` to null, which is important
+  // so that attributes with nully values are considered absent.
+  // stringify anything else (e.g. strings, booleans, numbers including 0).
+  return (result == null || result === false) ? null : String(result);
 };
 
 Spacebars.attrMustache = function (value/*, args*/) {
@@ -117,15 +155,28 @@ Spacebars.makeRaw = function (value) {
     return HTML.Raw(value);
 };
 
-// If `value` is a function, evaluate its `args` (by calling them, if they
-// are functions), and then call it on them. Otherwise, return `value`.
-//
-// If `value` is not a function and is not null, then this method will assert
-// that there are no args. We check for null before asserting because a user
-// may write a template like {{user.fullNameWithPrefix 'Mr.'}}, where the
-// function will be null until data is ready.
+/**
+ * If `value` is a function, evaluate its `args` (by calling them, if they
+ * are functions), and then call it on them. Otherwise, return `value`.
+ *
+ * If the functions return promises, we'll return a promise for the result.
+ *
+ * If `value` is not a function and is not null, then this method will assert
+ * that there are no args. We check for null before asserting because a user
+ * may write a template like {{user.fullNameWithPrefix 'Mr.'}}, where the
+ * function will be null until data is ready.
+ *
+ * @param value         - a thing which should be or provide some content
+ * @param ...args       - additional arguments to be used as params for the call to value() if there are any.
+ *
+ * @returns {null|string|Raw|Promise}   - can return either stuff / string-ish things or a promise for that stuff.
+ */
 Spacebars.call = function (value/*, args*/) {
+  const promises = []
+
   if (typeof value === 'function') {
+    // We gotta wait for the promises of the params first if there are any async funcs in there.
+
     // Evaluate arguments by calling them if they are functions.
     var newArgs = [];
     for (var i = 1; i < arguments.length; i++) {

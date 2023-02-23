@@ -340,23 +340,47 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
 
   var domrange;
   var lastHtmljs;
+
+  let gotPromiseBefore = false
+  let previousPromiseResult
+
   // We don't expect to be called in a Computation, but just in case,
   // wrap in Tracker.nonreactive.
   Tracker.nonreactive(function () {
+
     view.autorun(function doRender(c) {
       // `view.autorun` sets the current view.
 
-      // Store the computation object so we can invalidate it from async events inside, when we're waiting
+      // Store the computation object, so we can invalidate it from async events inside when we're waiting
       // for promises to resolve in a blaze helper/variable lookup.
       view.computation = c
 
-      // view._spacebarsDotRecursionDepth = undefined
-
       view.renderCount++;
       view._isInRender = true;
+
       // Any dependencies that should invalidate this Computation come
       // from this line:
-      var htmljs = view._render();
+      var htmljs
+
+      if (gotPromiseBefore) {
+        htmljs = previousPromiseResult
+        gotPromiseBefore = false
+        previousPromiseResult = undefined
+      } else {
+        htmljs = view._render()
+
+        // FUNKY: If we received a Promise here, let's re-render once we got the results.
+        if (htmljs instanceof Promise) {
+          htmljs.then((htmljs) => {
+            previousPromiseResult = htmljs
+            gotPromiseBefore = true
+            c.invalidate()
+          })
+          // hehe
+          htmljs = '🐌'
+        }
+      }
+
       view._isInRender = false;
 
       if (! c.firstRun && ! Blaze._isContentEqual(lastHtmljs, htmljs)) {
