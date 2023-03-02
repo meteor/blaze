@@ -149,14 +149,28 @@ export function Comment(value) {
 Comment.prototype.htmljsType = Comment.htmljsType = ['Comment'];
 
 export function Raw(value) {
-  if (! (this instanceof Raw))
-    // called without `new`
-    return new Raw(value);
+  const handleValue = (value) => {
+    if (! (this instanceof Raw)) {
+      // called without `new`
+      return new Raw(value);
+    }
 
-  if (typeof value !== 'string')
-    throw new Error('HTML.Raw must be constructed with a string');
+    if (typeof value !== 'string') {
+      throw new Error('HTML.Raw must be constructed with a string');
+    }
 
-  this.value = value;
+    this.value = value;
+  }
+  if (value instanceof Promise) {
+    return new Promise((resolve, reject) => {
+      value.then((value) => {
+        handleValue(value)
+      })
+      resolve(this)
+    })
+  } else {
+    return handleValue(value)
+  }
 }
 Raw.prototype.htmljsType = Raw.htmljsType = ['Raw'];
 

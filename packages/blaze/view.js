@@ -341,14 +341,11 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
   var domrange;
   var lastHtmljs;
 
-  let gotPromiseBefore = false
-  let previousPromiseResult
-
   // We don't expect to be called in a Computation, but just in case,
   // wrap in Tracker.nonreactive.
   Tracker.nonreactive(function () {
 
-    view.autorun(function doRender(c) {
+    view.autorun(async function doRender(c) {
       // `view.autorun` sets the current view.
 
       // Store the computation object, so we can invalidate it from async events inside when we're waiting
@@ -358,50 +355,52 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
       view.renderCount++;
       view._isInRender = true;
 
+      const afterRender = (htmljs) => {
+        view._isInRender = false;
+
+        if (!c.firstRun && !Blaze._isContentEqual(lastHtmljs, htmljs)) {
+          Tracker.nonreactive(function doMaterialize() {
+            // re-render
+            var rangesAndNodes = Blaze._materializeDOM(htmljs, [], view);
+            domrange.setMembers(rangesAndNodes);
+            Blaze._fireCallbacks(view, 'rendered');
+          });
+        }
+        lastHtmljs = htmljs;
+
+        // TODO: WHY do I have to use Tracker.active here?
+        if (Tracker.active) {
+          // Causes any nested views to stop immediately, not when we call
+          // `setMembers` the next time around the autorun.  Otherwise,
+          // helpers in the DOM tree to be replaced might be scheduled
+          // to re-run before we have a chance to stop them.
+          Tracker.onInvalidate(function() {
+            if (domrange) {
+              domrange.destroyMembers();
+            }
+          });
+        }
+      }
+
       // Any dependencies that should invalidate this Computation come
       // from this line:
       var htmljs
 
-      if (gotPromiseBefore) {
-        htmljs = previousPromiseResult
-        gotPromiseBefore = false
-        previousPromiseResult = undefined
-      } else {
-        htmljs = view._render()
+      Tracker.withComputation(c, () => {
 
-        // FUNKY: If we received a Promise here, let's re-render once we got the results.
-        if (htmljs instanceof Promise) {
-          htmljs.then((htmljs) => {
-            previousPromiseResult = htmljs
-            gotPromiseBefore = true
-            c.invalidate()
+        var renderResult = view._render()
+
+        if (renderResult instanceof Promise) {
+          renderResult.then((result) => {
+            htmljs = result
+            afterRender(htmljs)
           })
-          // hehe
-          htmljs = '🐌'
+        } else {
+          afterRender(renderResult)
         }
-      }
+      })
 
-      view._isInRender = false;
 
-      if (! c.firstRun && ! Blaze._isContentEqual(lastHtmljs, htmljs)) {
-        Tracker.nonreactive(function doMaterialize() {
-          // re-render
-          var rangesAndNodes = Blaze._materializeDOM(htmljs, [], view);
-          domrange.setMembers(rangesAndNodes);
-          Blaze._fireCallbacks(view, 'rendered');
-        });
-      }
-      lastHtmljs = htmljs;
-
-      // Causes any nested views to stop immediately, not when we call
-      // `setMembers` the next time around the autorun.  Otherwise,
-      // helpers in the DOM tree to be replaced might be scheduled
-      // to re-run before we have a chance to stop them.
-      Tracker.onInvalidate(function () {
-        if (domrange) {
-          domrange.destroyMembers();
-        }
-      });
     }, undefined, 'materialize');
 
     // first render.  lastHtmljs is the first htmljs.
