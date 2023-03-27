@@ -789,6 +789,20 @@ Blaze.toHTMLWithData = function (content, data, parentView) {
 };
 
 Blaze._toText = function (htmljs, parentView, textMode) {
+  /**
+   * Example of how to pseudo - async-ify blaze:
+   *
+   * For all runtime / rendering funcs, replace their implementation from
+   *
+   * return (doSomething(input)) to
+   *
+   * return (input instanceOf Promise) ?
+   *    new Promise.await.then(resolve(doSomething(result))) :
+   *    doSomething(input)
+   *
+   * -> Eg keeping it SYNC if no ASYNC functions return promises anywhere, but switching it to ASYNC
+   * the moment a wild promise appears.
+   */
   if (htmljs instanceof Promise) {
     return new Promise((resolve, reject) => {
       htmljs.then((htmljs) => {
