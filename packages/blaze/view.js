@@ -355,6 +355,12 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
       view.renderCount++;
       view._isInRender = true;
 
+      /**
+       * We wrapped the previous code which would be called on the returned render results in a function
+       * so we can also apply this in case we received a promise from the render function & wait for its results first.
+       *
+       * @param htmljs
+       */
       const afterRender = (htmljs) => {
         view._isInRender = false;
 
@@ -382,20 +388,36 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
         }
       }
 
+      /**
+       * We call our render function (rendering all our children, basically).
+       *
+       * But if a promise is being returned (Meteor ASYNC migration -> we want to anticipate  promises possibly being
+       * returned from helper & other functions):
+       *
+       * We will check the result, and if it's a promise, we'll `await` it before we finalize
+       * the render process.
+       *
+       * This of course now means that the _materializeView - function will not always render the result immediately but sometimes
+       * asynchronously.
+       */
+
       // Any dependencies that should invalidate this Computation come
       // from this line:
       var htmljs
 
       Tracker.withComputation(c, () => {
 
+        // Fetch the render result...
         var renderResult = view._render()
 
+        // If we get a promise we'll await the result before finalizing our render process (WIP)...
         if (renderResult instanceof Promise) {
           renderResult.then((result) => {
             htmljs = result
             afterRender(htmljs)
           })
         } else {
+          // Otherwise we can just return our result, like in pre-ASYNC Blaze.
           afterRender(renderResult)
         }
       })
