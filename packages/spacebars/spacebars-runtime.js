@@ -237,10 +237,6 @@ Spacebars._asyncDot = function (currentView = undefined, hadToWaitForPromiseYet 
     currentView = Blaze.currentView
   }
 
-  let masterPromise = new Promise((resolve, reject) => {
-
-  })
-
   /**
    * We'll follow a new strategy because my mind was broken by doing it in any other way...
    * Maybe I shouldn't work so late anymore trying to beat this thing into submission :D
@@ -259,42 +255,31 @@ Spacebars._asyncDot = function (currentView = undefined, hadToWaitForPromiseYet 
     return Spacebars._asyncDot(currentView, hadToWaitForPromiseYet, currentObject, ...steps)
   }
 
-  // We'll have to put a break in the cool results flow to wait for the promise to return because unfortunately fibers are fxxxed now
-  // and promises are gonna leech into everything now.
+  /**
+   * If we receive a promise from one of the sub-evaluation-calls, we'll return a new promise ourselves which will complete once the sub-call has been completed (?)
+   * -> Or could we just pass these promises through? No, I think we'll have to wait for them in turn in order to wait until we're finished with all promises...?
+   */
   if (currentObject instanceof Promise) {
-      currentObject.then((result) => {
-        let object = result
-
+    // return promise & BAIL.
+    return new Promise((resolve, reject) => {
+      currentObject.then((newCurrentObject) => {
         // let's set hadToWaitForPromiseYet to true & continue with processing the paths with this cool recursive function of ours.
-        Spacebars._asyncDot(currentView, true, object, ...steps)
+        resolve (Spacebars._asyncDot(currentView, true, newCurrentObject, ...steps))
       })
-
-      // We have to return something now, so we will return nothing until we have something.
-      // The last call with no steps left will then have to trigger a rerun of the current views' render function.
-      return null
+    })
   }
 
+  // now we're at the steps resolution page...
   if (steps.length) {
     currentObject = currentObject && currentObject[steps[0]]
-    // loose first part of steps array, it's handled now
+
+    // lose first step of the steps array, it has been handled now
     steps.shift()
+    // continue drilling.down.the.path
     return Spacebars._asyncDot(currentView, hadToWaitForPromiseYet, currentObject, ...steps)
   }
 
-  /**
-   * Here we know we're actually at the last step of our journey & we have determined the final piece of the
-   * chain we can access.
-   */
-  if (hadToWaitForPromiseYet) {
-    // We found the last unicorn, we can / need to set it up for the next render & trigger a re-render of the view now.
-    const originalRenderFunc = currentView._render
-    currentView._render = () => {
-      currentView._render = originalRenderFunc
-      console.log({object: currentObject})
-      return currentObject
-    }
-    currentView.computation.invalidate()
-  }
+  // If we only got a value thing at the end, we'll can return that finally! :D
   return currentObject
 }
 
@@ -317,137 +302,12 @@ Spacebars._asyncDot = function (currentView = undefined, hadToWaitForPromiseYet 
 //
 // * If `foo` is falsy now, return `foo`.
 //
+// NEW/WIP: If any stage of the lookup returns a promise, we'll return a promise for the entire
+//  call & /resolve it once _all promises_ occurring through the entire chain will have resolved.
+//
 // * Return `foo.bar`, binding it to `foo` if it's a function.
 Spacebars.dot = function (object, ...steps) {
   return Spacebars._asyncDot(undefined, false, object, ...steps)
-
-  /**
-   * We start from the first object provided.
-   *
-   * For each additional "step" (String which is interpreted as a property name) we'll try to check the property of the
-   * previous part of the chain & to find its value.
-   *
-   * - If the property is a function, we call it
-   * - if the result is a value we'll continue with it
-   * - if it is the last part of the chain we'll return it
-   * - if it is null / undefined / falsey we'll return it
-   *
-   * Now it gets tricky:
-   * - If it's a function and it _returns a promise_ then we'll want to wait for it to resolve before we continue with the
-   *   result of the promises' execution.
-   * - in order for things not to get too janky, we'll return null until we have resolved all the promises.
-   *
-   * IF there has been one or more promises down the chain, THEN we'll have to retrigger the view after all promises have completed - ONCE.
-   * And we DON'T want all helpers / reactive functions to retrigger again & create new promises etc... because that could actually change the result.
-   * So IF there are promises down the chain somewhere, we'll retrigger a rerender ONCE and just return the final result of our evaluation.
-   *
-   * FUUUUU!!! :D
-   */
-  console.log('Spacebars.dot', {object, steps})
-
-  const view = Blaze.currentView
-
-  let currentObject = object
-
-  for (let z0 = 0; z0 < steps.length; z0++) {
-    const currentStep = steps[z0]
-
-    console.log('Spacebars.dot in loop, before func call', {z0, currentObject, currentStep})
-
-    // if it's a function, we execute it
-    if (typeof currentObject === 'function') {
-      currentObject = currentObject()
-    }
-    console.log('Spacebars.dot in loop, after func call', {z0, currentObject, currentStep})
-    // The problem with a promise is, of course... that we have to wait for the promise to be resolved until we can
-    // progress with our evaluation of the dot path. So we do... ??
-    if (currentObject instanceof Promise) {
-      currentObject.then((result) => {
-        let currentObject = result
-
-        console.log('Spacebars.dot in promise result, before func call', {z0, currentObject, currentStep})
-
-        if (typeof currentObject === 'function') {
-          currentObject = currentObject()
-        }
-
-        console.log('Spacebars.dot in promise result, after func call', {z0, currentObject, currentStep})
-
-        if (z0 < steps.length) {
-          // We'll have to evaluate further path parts now before we can trigger the re-rendering
-          currentObject = Spacebars.dot(currentObject, steps.splice(z0))
-        } else {
-          // We found the last unicorn, we can / need to set it up for the next render & trigger a re-render of the view now.
-          const originalRenderFunc = view._render
-          view._render = () => {
-            view._render = originalRenderFunc
-            console.log({currentObject})
-            return currentObject
-          }
-          view.computation.invalidate()
-        }
-      })
-      // we /have/ to return something now, so we return nothing.
-      return null
-    }
-
-    // Let's load the next step.
-    // If we can't find the property, we can return now, we don't need to check any further steps.
-    currentObject = currentObject && currentObject[currentStep]
-  }
-
-  console.log('returning', {currentObject})
-
-  return currentObject
-
-  _.find(parts, (part, idx) => {
-    if (_.isNil(currentObject)) {
-      result = undefined
-      // if the last part of the chain is actually a null,
-      // let the user actually have it
-      if (idx === (parts.length - 1)) {
-        result = currentObject
-      }
-      return true
-    }
-
-    let value = currentObject[part]
-    if (_.isFunction(value)) {
-      value = value.call(currentObject)
-    }
-
-    currentObject = value
-    result = value
-  })
-  return result
-
-
-  return
-
-  if (arguments.length > 2) {
-    // Note: doing this recursively is probably less efficient than
-    // doing it in an iterative loop.
-    var argsForRecurse = [];
-    argsForRecurse.push(Spacebars.dot(value, id1));
-    argsForRecurse.push.apply(argsForRecurse,
-                              Array.prototype.slice.call(arguments, 2));
-    return Spacebars.dot.apply(null, argsForRecurse);
-  }
-
-  if (typeof value === 'function')
-    value = value();
-
-  if (! value)
-    return value; // falsy, don't index, pass through
-
-  result = value[id1];
-  if (typeof result !== 'function')
-    return result;
-  // `value[id1]` (or `value()[id1]`) is a function.
-  // Bind it so that when called, `value` will be placed in `this`.
-  return function (/*arguments*/) {
-    return result.apply(value, arguments);
-  };
 };
 
 // Spacebars.With implements the conditional logic of rendering
