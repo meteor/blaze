@@ -767,24 +767,38 @@ Blaze.toHTMLWithData = function (content, data, parentView) {
 };
 
 Blaze._toText = function (htmljs, parentView, textMode) {
-  if (typeof htmljs === 'function')
-    throw new Error("Blaze._toText doesn't take a function, just HTMLjs");
-
-  if ((parentView != null) && ! (parentView instanceof Blaze.View)) {
-    // omitted parentView argument
-    textMode = parentView;
-    parentView = null;
+  if (htmljs instanceof Promise) {
+    return new Promise((resolve, reject) => {
+      htmljs.then((htmljs) => {
+        resolve(handleAttrs(htmljs))
+      })
+    })
+  } else {
+    return handleHtmljs(htmljs)
   }
-  parentView = parentView || currentViewIfRendering();
 
-  if (! textMode)
-    throw new Error("textMode required");
-  if (! (textMode === HTML.TEXTMODE.STRING ||
-         textMode === HTML.TEXTMODE.RCDATA ||
-         textMode === HTML.TEXTMODE.ATTRIBUTE))
-    throw new Error("Unknown textMode: " + textMode);
+  function handleHtmljs(htmljs) {
+    if (typeof htmljs === 'function') {
+      throw new Error("Blaze._toText doesn't take a function, just HTMLjs");
+    }
 
-  return HTML.toText(Blaze._expand(htmljs, parentView), textMode);
+    if ((parentView != null) && ! (parentView instanceof Blaze.View)) {
+      // omitted parentView argument
+      textMode = parentView;
+      parentView = null;
+    }
+    parentView = parentView || currentViewIfRendering();
+
+    if (! textMode)
+      throw new Error("textMode required");
+    if (! (textMode === HTML.TEXTMODE.STRING ||
+        textMode === HTML.TEXTMODE.RCDATA ||
+        textMode === HTML.TEXTMODE.ATTRIBUTE))
+      throw new Error("Unknown textMode: " + textMode);
+
+    return HTML.toText(Blaze._expand(htmljs, parentView), textMode);
+
+  }
 };
 
 /**
