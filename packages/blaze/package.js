@@ -52,6 +52,8 @@ Package.onUse(function (api) {
     'template.js',
     'backcompat.js'
   ]);
+  // Maybe in order to work properly user will need to have Jquery typedefs
+  api.addAssets('blaze.d.ts', 'server');
 });
 
 Package.onTest(function (api) {
