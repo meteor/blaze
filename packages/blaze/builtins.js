@@ -67,6 +67,20 @@ Blaze.Let = function (bindings, contentFunc) {
 };
 
 /**
+ * @summary Constructs a View setting the local lexical scope in the block.
+ * @param {Function} bindings Dictionary mapping names of bindings to
+ * values or computations to reactively re-run.
+ * @param {Function} contentFunc A Function that returns [*renderable content*](#Renderable-Content).
+ */
+Blaze.LetAwait = function (bindings, contentFunc) {
+  var view = Blaze.View('letAwait', contentFunc);
+  Blaze._attachBindingsToView(bindings, view);
+
+  return view;
+};
+
+
+/**
  * @summary Constructs a View that renders content conditionally.
  * @locus Client
  * @param {Function} conditionFunc A function to reactively re-run.  Whether the result is truthy or falsy determines whether `contentFunc` or `elseFunc` is shown.  An empty array is considered falsy.

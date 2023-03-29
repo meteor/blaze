@@ -17,7 +17,8 @@ export const builtInBlockHelpers = {
   'unless': 'Blaze.Unless',
   'with': 'Spacebars.With',
   'each': 'Blaze.Each',
-  'let': 'Blaze.Let'
+  'let': 'Blaze.Let',
+  'letAwait': 'Blaze.LetAwait'
 };
 
 
@@ -145,6 +146,20 @@ Object.assign(CodeGen.prototype, {
               dataProps[argKey] =
                 'function () { return Spacebars.call(' +
                 self.codeGenArgValue(arg) + '); }';
+            });
+            dataCode = makeObjectLiteral(dataProps);
+          } else if (path[0] === 'letAwait') {
+            var dataProps = {};
+            args.forEach(function (arg) {
+              if (arg.length !== 3) {
+                // not a keyword arg (x=y)
+                throw new Error("Incorrect form of #letAwait");
+              }
+              var argKey = arg[2];
+              dataProps[argKey] =
+                "function () { return Spacebars.call(" +
+                self.codeGenArgValue(arg) +
+                "); }";
             });
             dataCode = makeObjectLiteral(dataProps);
           }

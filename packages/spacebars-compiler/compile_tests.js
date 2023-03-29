@@ -105,6 +105,7 @@ Tinytest.add("spacebars-compiler - compiler errors", function (test) {
   });
 
   isError("{{#let myHelper}}{{/let}}", "Incorrect form of #let");
+  isError("{{#letAwait myHelper}}{{/letAwait}}", "Incorrect form of #let");
   isError("{{#each foo in.in bar}}{{/each}}", "Malformed #each");
   isError("{{#each foo.bar in baz}}{{/each}}", "Bad variable name in #each");
   isError("{{#each ../foo in baz}}{{/each}}", "Bad variable name in #each");
