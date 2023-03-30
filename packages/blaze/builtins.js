@@ -33,25 +33,67 @@ Blaze.With = function (data, contentFunc) {
 };
 
 /**
- * Attaches bindings to the instantiated view.
+ * Attaches bindings to the instantiated view. without awaiting the bindings.
  * @param {Object} bindings A dictionary of bindings, each binding name
  * corresponds to a value or a function that will be reactively re-run.
  * @param {View} view The target.
  */
-Blaze._attachBindingsToView = function (bindings, view) {
+Blaze._attachBindingsToViewSync = function (bindings, view) {// TODO: just for async
   view.onViewCreated(function () {
     Object.entries(bindings).forEach(function ([name, binding]) {
-      view._scopeBindings[name] = new ReactiveVar();
-      if (typeof binding === 'function') {
+      view._scopeBindings[name] = new ReactiveVar(null);
+      if (typeof binding === "function") {
         view.autorun(function () {
-          view._scopeBindings[name].set(binding());
+          view._scopeBindings[name].set(null)
+          try {
+            view._scopeBindings[name].set({
+              value: binding(),
+            });
+          } catch (error) {
+            view._scopeBindings[name].set({ error });
+          }
         }, view.parentView);
       } else {
-        view._scopeBindings[name].set(binding);
+        view._scopeBindings[name].set({
+          value: binding,
+        });
       }
     });
   });
 };
+
+/**
+ * Attaches bindings to the instantiated view. Awaiting the bindings.
+ * @param {Object} bindings A dictionary of bindings, each binding name
+ * corresponds to a value or a function that will be reactively re-run.
+ * @param {View} view The target.
+ */
+Blaze._attachBindingsToViewAsync = function (bindings, view) {
+  view.onViewCreated(function () {
+    Object.entries(bindings).forEach(function ([name, binding]) {
+      view._scopeBindings[name] = new ReactiveVar(null);
+      if (typeof binding === "function") {
+        view.autorun(async function () {
+          view._scopeBindings[name].set(null)
+          try {
+            view._scopeBindings[name].set({
+              value: await binding(),
+            });
+          } catch (error) {
+            view._scopeBindings[name].set({ error });
+          }
+        }, view.parentView);
+      } else {
+        view._scopeBindings[name].set({
+          value: binding,
+        });
+      }
+    });
+  });
+};
+
+
+
 
 /**
  * @summary Constructs a View setting the local lexical scope in the block.
@@ -61,7 +103,7 @@ Blaze._attachBindingsToView = function (bindings, view) {
  */
 Blaze.Let = function (bindings, contentFunc) {
   var view = Blaze.View('let', contentFunc);
-  Blaze._attachBindingsToView(bindings, view);
+  Blaze._attachBindingsToViewSync(bindings, view);
 
   return view;
 };
@@ -74,7 +116,7 @@ Blaze.Let = function (bindings, contentFunc) {
  */
 Blaze.LetAwait = function (bindings, contentFunc) {
   var view = Blaze.View('letAwait', contentFunc);
-  Blaze._attachBindingsToView(bindings, view);
+  Blaze._attachBindingsToViewAsync(bindings, view);
 
   return view;
 };
@@ -204,7 +246,8 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
           if (eachView.variableName) {
             bindings[eachView.variableName] = item;
           }
-          Blaze._attachBindingsToView(bindings, newItemView);
+          // TODO: Be sure if I need to unwrap or no
+          Blaze._attachBindingsToViewAsync(bindings, newItemView); 
 
           if (eachView.expandedValueDep) {
             eachView.expandedValueDep.changed();
