@@ -115,7 +115,7 @@ Blaze._lexicalBindingLookup = function (view, name) {
     if (has(currentView._scopeBindings, name)) {
       var bindingReactiveVar = currentView._scopeBindings[name];
       return function () {
-        return bindingReactiveVar.get();
+        return bindingReactiveVar.get()?.value;
       };
     }
   } while (currentView = _lexicalKeepGoing(currentView));
