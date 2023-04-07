@@ -110,6 +110,47 @@ Tinytest.add("spacebars-tests - templating_tests - event handler this", function
   Tracker.flush();
 });
 
+Tinytest.add("spacebars-tests - templating_tests - event handler dependencies loop", function(test) {
+
+  Template.test_event_reactive_loop_parent.onCreated(function() {
+    this.count = new ReactiveVar(0);
+  });
+
+  Template.test_event_reactive_loop_parent.helpers({
+    childData: function() {
+      var count = Template.instance().count.get();
+      return { count };
+    },
+  });
+  
+  Template.test_event_reactive_loop_parent.events({
+    'customEvent': function customEventHandler(e, tmpl) {
+      // Update child Template data
+      // And try to establish a reactive dependency
+      tmpl.count.set(tmpl.count.get() + 1);
+    }
+  });
+
+  Template.test_event_reactive_loop_child.onRendered(function() {
+    const tmpl = this;
+    this.autorun(function(comp) {
+      var event = new Event('customEvent');
+      tmpl.firstNode.dispatchEvent(event);
+      // Since there are no explicit reactive dependencies defined, we don't expect this to be executed more than once
+      if (!comp.firstRun) {
+        test.fail('Ended up in a reactive dependencies loop');
+        comp.stop();
+      }
+    });
+  });
+
+  var containerDiv = renderToDiv(Template.test_event_reactive_loop_parent, {});
+  var cleanupDiv = addToBody(containerDiv);
+  Tracker.flush();
+  
+  cleanupDiv();
+  Tracker.flush();
+});
 
 if (document.addEventListener) {
   // Only run this test on browsers with support for event
