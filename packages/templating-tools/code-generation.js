@@ -8,7 +8,7 @@ export function generateTemplateJS(name, renderFuncCode, useHMR) {
     return `
 Template._migrateTemplate(
   ${nameLiteral},
-  new Template(${templateDotNameLiteral}, ${renderFuncCode}),
+  new Template(${templateDotNameLiteral}, ${renderFuncCode})
 );
 if (typeof module === "object" && module.hot) {
   module.hot.accept();
