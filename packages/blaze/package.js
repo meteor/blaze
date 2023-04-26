@@ -1,7 +1,7 @@
 Package.describe({
   name: 'blaze',
   summary: "Meteor Reactive Templating library",
-  version: '2.6.1',
+  version: '2.6.2',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -52,6 +52,8 @@ Package.onUse(function (api) {
     'template.js',
     'backcompat.js'
   ]);
+  // Maybe in order to work properly user will need to have Jquery typedefs
+  api.addAssets('blaze.d.ts', 'server');
 });
 
 Package.onTest(function (api) {

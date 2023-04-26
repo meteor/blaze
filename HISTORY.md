@@ -1,3 +1,9 @@
+## v2.6.2, 2023-April-21
+
+* [#403](https://github.com/meteor/blaze/pull/403) Add TS types to core
+* [#405](https://github.com/meteor/blaze/pull/406) Stop establishing unnecessary reactive dependencies
+* [#410](https://github.com/meteor/blaze/pull/410) Fixes for legacy clients
+
 ## v2.6.1, 2022-July-25
 
 * [#370](https://github.com/meteor/blaze/pull/370) `templating-runtime@1.6.1`, returned the `Template.__define__` with warning message
