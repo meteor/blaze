@@ -10,7 +10,7 @@
 </body>
 
 <template name="hello">
-  {{#letAwait  otherresolved=fooAsync}}
+  {{#letAwait otherresolved=fooAsync}}
   <div> {{otherresolved}}</div>
   {{/letAwait}}
   <button>Click Me</button>
@@ -21,6 +21,21 @@
   {{#letAwait c=counter resolved=fooAsync}}
   <div> counter is : {{c}} and {{resolved}}</div>
   {{/letAwait}}
+
+  {{#each links}}
+  <li>
+    {{_id}}
+  </li>
+  {{/each}}
+  <br />
+  {{#letAwait cursor=linksAsync}}
+  {{#each  cursor}}
+  <li>
+    {{_id}}
+  </li>
+  {{/each}}
+  {{/letAwait}}
+
 </template>
 
 <template name="info">
