@@ -1,4 +1,4 @@
-body {
-  padding: 10px;
-  font-family: sans-serif;
+body,
+pre {
+  margin: 0;
 }

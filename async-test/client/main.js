@@ -1,50 +1,35 @@
-import { Template } from "meteor/templating";
-import { ReactiveVar } from "meteor/reactive-var";
+import { Mongo } from 'meteor/mongo';
+import { Random } from 'meteor/random';
+import { Template } from 'meteor/templating';
 
-import { Mongo } from "meteor/mongo";
-import "./main.html";
-export const LinksCollection = new Mongo.Collection(null);
-  // Insert a document into the collection
-  LinksCollection.insertAsync({
-    title: "Do the Tutorial",
-    url: "https://www.meteor.com/tutorials/react/creating-an-app",
-  });
-  LinksCollection.insertAsync({
-    title: "Do the Tutorial",
-    url: "https://www.meteor.com/tutorials/react/creating-an-app",
-  });
+import './main.html';
 
-Template.hello.onCreated(function helloOnCreated() {
-  // counter starts at 0
-  this.counter = new ReactiveVar(0);
+const Collection = new Mongo.Collection(null);
+Collection.insertAsync({});
+Collection.insertAsync({});
+Collection.insertAsync({});
 
+Template.example.helpers({
+  // Cursors.
+  cursorGetterAsync: () => Promise.resolve(Collection.find()),
+  cursorGetterSync: () => Collection.find(),
+  cursorValueAsync: Promise.resolve(Collection.find()),
+  cursorValueSync: Collection.find(),
 
-});
+  // Primitives.
+  primitiveGetterAsync: () => Promise.resolve(Random.id()),
+  primitiveGetterSync: () => Random.id(),
+  primitiveValueAsync: Promise.resolve(Random.id()),
+  primitiveValueSync: Random.id(),
 
-Template.hello.helpers({
-  counter() {
-    return Template.instance().counter.get();
-  },
-  fooAsync() {
-    const p = new Promise((resolve) => resolve("foo"));
-    return p;
-  },
-  foo() {
-    return {
-      bar: "baz",
-    };
-  },
-  links() {
-    return LinksCollection.find();
-  },
-  async linksAsync() {
-    return LinksCollection.find();
-  },
-});
+  // Objects.
+  asyncObjectAsyncProperty: Promise.resolve({ foo: Promise.resolve(Random.id()) }),
+  asyncObjectSyncProperty: Promise.resolve({ foo: Random.id() }),
+  syncObjectAsyncProperty: { foo: Promise.resolve(Random.id()) },
+  syncObjectSyncProperty: { foo: Random.id() },
 
-Template.hello.events({
-  "click button"(event, instance) {
-    // increment the counter when button is clicked
-    instance.counter.set(instance.counter.get() + 1);
-  },
+  // Non-ideal states of #letAwait.
+  delayed: new Promise(resolve => setTimeout(() => resolve(Random.id()), 1000)),
+  pending: new Promise(() => {}),
+  rejected: Promise.reject(Random.id()),
 });

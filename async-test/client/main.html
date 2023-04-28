@@ -3,47 +3,75 @@
 </head>
 
 <body>
-  <h1>Welcome to Meteor!</h1>
-
-  {{> hello}}
-  {{> info}}
+  {{> example}}
 </body>
 
-<template name="hello">
-  {{#letAwait otherresolved=fooAsync}}
-  <div> {{otherresolved}}</div>
-  {{/letAwait}}
-  <button>Click Me</button>
+<template name="example">
+  <pre>
+    Cursors.
+    1. #each,      cursorGetterSync:  {{#each      cursorGetterSync }}{{#if @index}} - {{/if}}{{_id}}{{/each}}
+    2. #each,      cursorValueSync:   {{#each      cursorValueSync  }}{{#if @index}} - {{/if}}{{_id}}{{/each}}
+    {{!-- #each expects an array or cursor. --}}
+    3. {{!-- #each,      cursorGetterAsync: {{#each      cursorGetterAsync}}{{#if @index}} - {{/if}}{{_id}}{{/each}} --}}
+    4. {{!-- #each,      cursorValueAsync:  {{#each      cursorValueAsync }}{{#if @index}} - {{/if}}{{_id}}{{/each}} --}}
+    {{!-- #eachAwait does not exist yet. --}}
+    5. {{!-- #eachAwait, cursorGetterAsync: {{#eachAwait cursorGetterAsync}}{{#if @index}} - {{/if}}{{_id}}{{/eachAwait}} --}}
+    6. {{!-- #eachAwait, cursorGetterSync:  {{#eachAwait cursorGetterSync }}{{#if @index}} - {{/if}}{{_id}}{{/eachAwait}} --}}
+    7. {{!-- #eachAwait, cursorValueAsync:  {{#eachAwait cursorValueAsync }}{{#if @index}} - {{/if}}{{_id}}{{/eachAwait}} --}}
+    8. {{!-- #eachAwait, cursorValueSync:   {{#eachAwait cursorValueSync  }}{{#if @index}} - {{/if}}{{_id}}{{/eachAwait}} --}}
 
+    Primitives.
+    1. #let,      primitiveGetterAsync: {{#let      x=primitiveGetterAsync}}{{x}}{{/let}}
+    2. #let,      primitiveGetterSync:  {{#let      x=primitiveGetterSync }}{{x}}{{/let}}
+    3. #let,      primitiveValueAsync:  {{#let      x=primitiveValueAsync }}{{x}}{{/let}}
+    4. #let,      primitiveValueSync:   {{#let      x=primitiveValueSync  }}{{x}}{{/let}}
+    5. #letAwait, primitiveGetterAsync: {{#letAwait x=primitiveGetterAsync}}{{x}}{{/letAwait}}
+    6. #letAwait, primitiveGetterSync:  {{#letAwait x=primitiveGetterSync }}{{x}}{{/letAwait}}
+    7. #letAwait, primitiveValueAsync:  {{#letAwait x=primitiveValueAsync }}{{x}}{{/letAwait}}
+    8. #letAwait, primitiveValueSync:   {{#letAwait x=primitiveValueSync  }}{{x}}{{/letAwait}}
 
-  <p>You've pressed the button {{counter}} times.</p>
+    Objects (inner accessors).
+    1. #let,      asyncObjectAsyncProperty: {{#let      x=asyncObjectAsyncProperty}}{{x.foo}}{{/let}}
+    2. #let,      asyncObjectSyncProperty:  {{#let      x=asyncObjectSyncProperty }}{{x.foo}}{{/let}}
+    3. #let,      syncObjectAsyncProperty:  {{#let      x=syncObjectAsyncProperty }}{{x.foo}}{{/let}}
+    4. #let,      syncObjectSyncProperty:   {{#let      x=syncObjectSyncProperty  }}{{x.foo}}{{/let}}
+    5. #letAwait, asyncObjectAsyncProperty: {{#letAwait x=asyncObjectAsyncProperty}}{{x.foo}}{{/letAwait}}
+    6. #letAwait, asyncObjectSyncProperty:  {{#letAwait x=asyncObjectSyncProperty }}{{x.foo}}{{/letAwait}}
+    7. #letAwait, syncObjectAsyncProperty:  {{#letAwait x=syncObjectAsyncProperty }}{{x.foo}}{{/letAwait}}
+    8. #letAwait, syncObjectSyncProperty:   {{#letAwait x=syncObjectSyncProperty  }}{{x.foo}}{{/letAwait}}
 
-  {{#letAwait c=counter resolved=fooAsync}}
-  <div> counter is : {{c}} and {{resolved}}</div>
-  {{/letAwait}}
+    Objects (outer accessors).
+    1. #let,      asyncObjectAsyncProperty: {{#let      x=asyncObjectAsyncProperty.foo}}{{x}}{{/let}}
+    2. #let,      asyncObjectSyncProperty:  {{#let      x=asyncObjectSyncProperty.foo }}{{x}}{{/let}}
+    3. #let,      syncObjectAsyncProperty:  {{#let      x=syncObjectAsyncProperty.foo }}{{x}}{{/let}}
+    4. #let,      syncObjectSyncProperty:   {{#let      x=syncObjectSyncProperty.foo  }}{{x}}{{/let}}
+    5. #letAwait, asyncObjectAsyncProperty: {{#letAwait x=asyncObjectAsyncProperty.foo}}{{x}}{{/letAwait}}
+    6. #letAwait, asyncObjectSyncProperty:  {{#letAwait x=asyncObjectSyncProperty.foo }}{{x}}{{/letAwait}}
+    7. #letAwait, syncObjectAsyncProperty:  {{#letAwait x=syncObjectAsyncProperty.foo }}{{x}}{{/letAwait}}
+    8. #letAwait, syncObjectSyncProperty:   {{#letAwait x=syncObjectSyncProperty.foo  }}{{x}}{{/letAwait}}
 
-  {{#each links}}
-  <li>
-    {{_id}}
-  </li>
-  {{/each}}
-  <br />
-  {{#letAwait cursor=linksAsync}}
-  {{#each  cursor}}
-  <li>
-    {{_id}}
-  </li>
-  {{/each}}
-  {{/letAwait}}
+    Non-ideal states of #letAwait (single).
+    1. (D) {{#letAwait x=delayed }}{{#if __async_state__.error}}Rejected: {{__async_state__.error}}{{else}}{{#if __async_state__.pending}}Pending{{else}}Resolved: {{x}}{{/if}}{{/if}}{{/letAwait}}
+    2. (P) {{#letAwait x=pending }}{{#if __async_state__.error}}Rejected: {{__async_state__.error}}{{else}}{{#if __async_state__.pending}}Pending{{else}}Resolved: {{x}}{{/if}}{{/if}}{{/letAwait}}
+    3. (R) {{#letAwait x=rejected}}{{#if __async_state__.error}}Rejected: {{__async_state__.error}}{{else}}{{#if __async_state__.pending}}Pending{{else}}Resolved: {{x}}{{/if}}{{/if}}{{/letAwait}}
 
-</template>
+    Non-ideal states of #letAwait (multiple).
+    1. (DD) {{#letAwait x=delayed  y=delayed }}{{#if __async_state__.error}}Rejected: {{__async_state__.error}}{{else}}{{#if __async_state__.pending}}Pending{{else}}Resolved: {{x}} - {{y}}{{/if}}{{/if}}{{/letAwait}}
+    2. (DP) {{#letAwait x=delayed  y=pending }}{{#if __async_state__.error}}Rejected: {{__async_state__.error}}{{else}}{{#if __async_state__.pending}}Pending{{else}}Resolved: {{x}} - {{y}}{{/if}}{{/if}}{{/letAwait}}
+    3. (DR) {{#letAwait x=delayed  y=rejected}}{{#if __async_state__.error}}Rejected: {{__async_state__.error}}{{else}}{{#if __async_state__.pending}}Pending{{else}}Resolved: {{x}} - {{y}}{{/if}}{{/if}}{{/letAwait}}
+    4. (PD) {{#letAwait x=pending  y=delayed }}{{#if __async_state__.error}}Rejected: {{__async_state__.error}}{{else}}{{#if __async_state__.pending}}Pending{{else}}Resolved: {{x}} - {{y}}{{/if}}{{/if}}{{/letAwait}}
+    5. (PP) {{#letAwait x=pending  y=pending }}{{#if __async_state__.error}}Rejected: {{__async_state__.error}}{{else}}{{#if __async_state__.pending}}Pending{{else}}Resolved: {{x}} - {{y}}{{/if}}{{/if}}{{/letAwait}}
+    6. (PR) {{#letAwait x=pending  y=rejected}}{{#if __async_state__.error}}Rejected: {{__async_state__.error}}{{else}}{{#if __async_state__.pending}}Pending{{else}}Resolved: {{x}} - {{y}}{{/if}}{{/if}}{{/letAwait}}
+    7. (RD) {{#letAwait x=rejected y=delayed }}{{#if __async_state__.error}}Rejected: {{__async_state__.error}}{{else}}{{#if __async_state__.pending}}Pending{{else}}Resolved: {{x}} - {{y}}{{/if}}{{/if}}{{/letAwait}}
+    8. (RP) {{#letAwait x=rejected y=pending }}{{#if __async_state__.error}}Rejected: {{__async_state__.error}}{{else}}{{#if __async_state__.pending}}Pending{{else}}Resolved: {{x}} - {{y}}{{/if}}{{/if}}{{/letAwait}}
+    9. (RR) {{#letAwait x=rejected y=rejected}}{{#if __async_state__.error}}Rejected: {{__async_state__.error}}{{else}}{{#if __async_state__.pending}}Pending{{else}}Resolved: {{x}} - {{y}}{{/if}}{{/if}}{{/letAwait}}
 
-<template name="info">
-  <h2>Learn Meteor!</h2>
-  <ul>
-    <li><a href="https://www.meteor.com/try" target="_blank">Do the Tutorial</a></li>
-    <li><a href="http://guide.meteor.com" target="_blank">Follow the Guide</a></li>
-    <li><a href="https://docs.meteor.com" target="_blank">Read the Docs</a></li>
-    <li><a href="https://forums.meteor.com" target="_blank">Discussions</a></li>
-  </ul>
+    {{!-- This would require adjusting the parser and the AST. This is doable, though touches a lot of parts.
+    {{#letAwait x=async}}
+    {{SOME_KEYWORD_THAT_INDICATES_PENDING_BLOCK}}Pending
+    {{SOME_KEYWORD_THAT_INDICATES_REJECTED_BLOCK}}Rejected: {{SOME_KEYWORD_THAT_INDICATES_REJECTION}}
+    {{SOME_KEYWORD_THAT_INDICATES_RESOLVED_BLOCK}}Resolved: {{x}}
+    {{/letAwait}}
+    --}}
+  </pre>
 </template>

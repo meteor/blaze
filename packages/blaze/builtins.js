@@ -33,67 +33,78 @@ Blaze.With = function (data, contentFunc) {
 };
 
 /**
- * Attaches bindings to the instantiated view. without awaiting the bindings.
+ * Attaches bindings to the instantiated view.
  * @param {Object} bindings A dictionary of bindings, each binding name
  * corresponds to a value or a function that will be reactively re-run.
  * @param {View} view The target.
  */
-Blaze._attachBindingsToViewSync = function (bindings, view) {// TODO: just for async
+Blaze._attachBindingsToView = function (bindings, view) {
   view.onViewCreated(function () {
     Object.entries(bindings).forEach(function ([name, binding]) {
-      view._scopeBindings[name] = new ReactiveVar(null);
-      if (typeof binding === "function") {
+      view._scopeBindings[name] = new ReactiveVar();
+      if (typeof binding === 'function') {
         view.autorun(function () {
-          view._scopeBindings[name].set(null)
-          try {
-            view._scopeBindings[name].set({
-              value: binding(),
-            });
-          } catch (error) {
-            view._scopeBindings[name].set({ error });
-          }
+          view._scopeBindings[name].set({ value: binding() });
         }, view.parentView);
       } else {
-        view._scopeBindings[name].set({
-          value: binding,
-        });
+        view._scopeBindings[name].set({ value: binding });
       }
     });
   });
 };
 
 /**
- * Attaches bindings to the instantiated view. Awaiting the bindings.
+ * Attaches bindings to the instantiated view while unwrapping the top-level
+ * promises.
  * @param {Object} bindings A dictionary of bindings, each binding name
  * corresponds to a value or a function that will be reactively re-run.
  * @param {View} view The target.
  */
 Blaze._attachBindingsToViewAsync = function (bindings, view) {
+  function setBindingValue(name, value) {
+    if (value instanceof Promise) {
+      value.then(
+        value => view._scopeBindings[name].set({ value }),
+        error => view._scopeBindings[name].set({ error }),
+      );
+    } else {
+      view._scopeBindings[name].set({ value });
+    }
+  }
+
   view.onViewCreated(function () {
     Object.entries(bindings).forEach(function ([name, binding]) {
-      view._scopeBindings[name] = new ReactiveVar(null);
-      if (typeof binding === "function") {
-        view.autorun(async function () {
-          view._scopeBindings[name].set(null)
-          try {
-            view._scopeBindings[name].set({
-              value: await binding(),
-            });
-          } catch (error) {
-            view._scopeBindings[name].set({ error });
-          }
-        }, view.parentView);
+      view._scopeBindings[name] = new ReactiveVar();
+      if (typeof binding === 'function') {
+        view.autorun(() => setBindingValue(name, binding()), view.parentView);
       } else {
-        view._scopeBindings[name].set({
-          value: binding,
-        });
+        setBindingValue(name, value);
       }
+    });
+
+    // Proof of concept for calculating async state. It consists of two fields:
+    //   * `error`, which is the first rejection or `undefined` when none was found.
+    //   * `pending`, which indicates whether any of the promises is still pending.
+    //
+    // To test this mechanism, it's exposed via `__async_state__` to the view.
+    const bindingNames = Object.keys(bindings);
+    view._scopeBindings['__async_state__'] = new ReactiveVar({ value: { error: undefined, pending: false } });
+    view.autorun(() => {
+      const asyncState = bindingNames.reduce((asyncState, name) => {
+        const bindingValue = view._scopeBindings[name].get();
+        if (bindingValue) {
+          asyncState.error ||= bindingValue.error;
+        } else {
+          asyncState.pending = true;
+        }
+
+        return asyncState;
+      }, { error: undefined, pending: false });
+
+      view._scopeBindings['__async_state__'].set({ value: asyncState });
     });
   });
 };
-
-
-
 
 /**
  * @summary Constructs a View setting the local lexical scope in the block.
@@ -103,13 +114,14 @@ Blaze._attachBindingsToViewAsync = function (bindings, view) {
  */
 Blaze.Let = function (bindings, contentFunc) {
   var view = Blaze.View('let', contentFunc);
-  Blaze._attachBindingsToViewSync(bindings, view);
+  Blaze._attachBindingsToView(bindings, view);
 
   return view;
 };
 
 /**
- * @summary Constructs a View setting the local lexical scope in the block.
+ * @summary Constructs a View setting the local lexical scope in the block while
+ * unwrapping the top-level promises.
  * @param {Function} bindings Dictionary mapping names of bindings to
  * values or computations to reactively re-run.
  * @param {Function} contentFunc A Function that returns [*renderable content*](#Renderable-Content).
@@ -246,8 +258,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
           if (eachView.variableName) {
             bindings[eachView.variableName] = item;
           }
-          // TODO: Be sure if I need to unwrap or no
-          Blaze._attachBindingsToViewAsync(bindings, newItemView); 
+          Blaze._attachBindingsToView(bindings, newItemView);
 
           if (eachView.expandedValueDep) {
             eachView.expandedValueDep.changed();

@@ -135,31 +135,17 @@ Object.assign(CodeGen.prototype, {
             dataCode = 'function () { return { _sequence: ' +
               self.codeGenInclusionData(args.slice(2)) +
               ', _variable: ' + BlazeTools.toJSLiteral(variable) + ' }; }';
-          } else if (path[0] === 'let') {
+          } else if (path[0] === 'let' || path[0] === 'letAwait') {
             var dataProps = {};
             args.forEach(function (arg) {
               if (arg.length !== 3) {
                 // not a keyword arg (x=y)
-                throw new Error("Incorrect form of #let");
+                throw new Error("Incorrect form of " + path[0]);
               }
               var argKey = arg[2];
               dataProps[argKey] =
                 'function () { return Spacebars.call(' +
                 self.codeGenArgValue(arg) + '); }';
-            });
-            dataCode = makeObjectLiteral(dataProps);
-          } else if (path[0] === 'letAwait') {
-            var dataProps = {};
-            args.forEach(function (arg) {
-              if (arg.length !== 3) {
-                // not a keyword arg (x=y)
-                throw new Error("Incorrect form of #letAwait");
-              }
-              var argKey = arg[2];
-              dataProps[argKey] =
-                "function () { return Spacebars.call(" +
-                self.codeGenArgValue(arg) +
-                "); }";
             });
             dataCode = makeObjectLiteral(dataProps);
           }
