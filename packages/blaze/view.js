@@ -34,6 +34,14 @@
 /// Views associated with templates have names of the form "Template.foo".
 
 /**
+ * A binding is either `undefined` (pending), `{ error }` (rejected), or
+ * `{ value }` (resolved). Synchronous values are immediately resolved (i.e.,
+ * `{ value }` is used). The other states are reserved for asynchronous bindings
+ * (i.e., values wrapped with `Promise`s).
+ * @typedef {{ error: unknown } | { value: unknown } | undefined} Binding
+ */
+
+/**
  * @class
  * @summary Constructor for a View, which represents a reactive region of DOM.
  * @locus Client
@@ -81,6 +89,7 @@ Blaze.View = function (name, render) {
   this._hasGeneratedParent = false;
   // Bindings accessible to children views (via view.lookup('name')) within the
   // closest template view.
+  /** @type {Record<string, ReactiveVar<Binding>>} */
   this._scopeBindings = {};
 
   this.renderCount = 0;
