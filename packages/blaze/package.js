@@ -15,7 +15,7 @@ Npm.depends({
 Package.onUse(function (api) {
   api.use('jquery@1.11.9 || 3.0.0', { weak: true }); // should be a weak dep, by having multiple "DOM backends"
   api.use('tracker@1.2.0');
-  api.use('check@1.3.1');
+  api.use('check');
   api.use('observe-sequence@1.0.16');
   api.use('reactive-var@1.0.11');
   api.use('ordered-dict@1.1.0');
