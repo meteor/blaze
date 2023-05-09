@@ -25,7 +25,7 @@ Package.onUse(function(api) {
 
 Package.onTest(function(api) {
   api.use([
-    'tinytest@1.1.0',
+    'tinytest',
     'ecmascript@0.15.1'
   ]);
 

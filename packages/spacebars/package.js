@@ -29,7 +29,7 @@ Package.onUse(function (api) {
 
 Package.onTest(function (api) {
   api.use([
-    'tinytest@1.1.0'
+    'tinytest'
   ]);
 
   api.use([

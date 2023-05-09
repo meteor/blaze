@@ -58,7 +58,7 @@ Package.onUse(function (api) {
 
 Package.onTest(function (api) {
   api.use('ecmascript@0.15.1');
-  api.use('tinytest@1.1.0');
+  api.use('tinytest');
   api.use('test-helpers@1.2.0');
   api.use('jquery@1.11.9 || 3.0.0'); // strong dependency, for testing jQuery backend
   api.use('reactive-var@1.0.11');

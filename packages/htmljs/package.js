@@ -14,7 +14,7 @@ Package.onUse(function (api) {
 
 Package.onTest(function (api) {
   api.use('ecmascript');
-  api.use('tinytest@1.1.0');
+  api.use('tinytest');
 
   api.use('htmljs');
 
