@@ -12,8 +12,8 @@ Npm.depends({
 
 Package.onUse(function(api) {
   api.use([
-    'caching-compiler@1.2.2',
-    'ecmascript@0.15.1',
+    'caching-compiler',
+    'ecmascript',
   ]);
 
   api.export('CachingHtmlCompiler', 'server');
