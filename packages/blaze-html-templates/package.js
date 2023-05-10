@@ -8,9 +8,9 @@ Package.describe({
 Package.onUse(function(api) {
   api.imply([
     // A library for reactive user interfaces
-    'blaze@2.5.0',
+    'blaze@3.0.0-alpha300.3',
 
     // Compile .html files into Blaze reactive views
-    'templating@1.4.1'
+    'templating@2.0.0-alpha300.3'
   ]);
 });

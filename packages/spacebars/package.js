@@ -14,13 +14,14 @@ Package.describe({
 // Additional tests are in `spacebars-tests`.
 
 Package.onUse(function (api) {
-  api.use('observe-sequence@1.0.16');
-  api.use('tracker@1.2.0');
+  api.versionsFrom('2.12');
+  api.use('observe-sequence@2.0.0-alpha300.3');
+  api.use('tracker');
 
   api.export('Spacebars');
 
-  api.use('htmljs@1.1.1');
-  api.use('blaze@2.5.0');
+  api.use('htmljs@2.0.0-alpha300.3');
+  api.use('blaze@3.0.0-alpha300.3');
 
   api.addFiles([
     'spacebars-runtime.js'

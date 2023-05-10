@@ -13,8 +13,8 @@ Package.describe({
 Package.onUse(function (api) {
   api.export('Template', 'client');
 
-  api.use('templating-runtime');
+  api.use('templating-runtime@2.0.0-alpha300.3');
   api.imply('templating-runtime');
 
-  api.imply('templating-compiler@1.4.1');
+  api.imply('templating-compiler@2.0.0-alpha300.3');
 });

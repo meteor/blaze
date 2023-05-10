@@ -17,7 +17,7 @@ Package.onUse(function(api) {
   api.export('TemplatingTools');
 
   api.use([
-    'spacebars-compiler@1.3.1'
+    'spacebars-compiler@2.0.0-alpha300.3'
   ]);
 
   api.mainModule('templating-tools.js');

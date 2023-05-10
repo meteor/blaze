@@ -11,8 +11,8 @@ Package.registerBuildPlugin({
   name: 'compileTemplatesBatch',
   use: [
     'ecmascript@0.15.1',
-    'caching-html-compiler@1.2.0',
-    'templating-tools@1.2.0',
+    'caching-html-compiler@2.0.0-alpha300.3',
+    'templating-tools@2.0.0-alpha300.3',
   ],
   sources: [
     'compile-templates.js',

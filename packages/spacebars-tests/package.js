@@ -12,11 +12,11 @@ Package.onTest(function (api) {
     'es5-shim@4.8.0',
     'tinytest',
     'jquery@1.11.9 || 3.0.0',
-    'test-helpers@1.2.0',
-    'reactive-var@1.0.11',
+    'test-helpers',
+    'reactive-var',
     'markdown@1.0.14 || 2.0.0',
     'minimongo',
-    'tracker@1.2.0',
+    'tracker',
     'mongo',
     'random@1.2.0',
     'session@1.2.0'
@@ -24,7 +24,7 @@ Package.onTest(function (api) {
 
   api.use([
     'spacebars@1.2.0',
-    'blaze@2.5.0'
+    'blaze'
   ]);
   api.use('templating@1.4.1', 'client');
 

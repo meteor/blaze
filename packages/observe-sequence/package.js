@@ -4,11 +4,12 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.use('tracker@1.2.0');
-  api.use('mongo-id@1.0.8');  // for idStringify
-  api.use('diff-sequence@1.1.1');
-  api.use('random@1.2.0');
-  api.use('ecmascript@0.13.2');
+  api.versionsFrom('2.12');
+  api.use('tracker');
+  api.use('mongo-id');  // for idStringify
+  api.use('diff-sequence');
+  api.use('random');
+  api.use('ecmascript');
   api.export('ObserveSequence');
   api.addFiles(['observe_sequence.js']);
 });

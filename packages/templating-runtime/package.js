@@ -23,20 +23,20 @@ Package.onUse(function (api) {
   // Blaze, so anybody using templating (eg apps) need to implicitly use
   // 'meteor' and 'blaze'.
   api.use([
-    'blaze@2.6.1',
-    'spacebars@1.2.1',
+    'blaze@3.0.0-alpha300.3',
+    'spacebars@2.0.0-alpha300.3',
     'ecmascript@0.15.1'
   ]);
   api.imply([
     'meteor',
-    'blaze@2.6.1',
-    'spacebars@1.2.1'
+    'blaze@3.0.0-alpha300.3',
+    'spacebars@2.0.0-alpha300.3'
   ], 'client');
 
   // to be able to compile dynamic.html. this compiler is used
   // only inside this package and it should not be implied to not
   // conflict with other packages providing .html compilers.
-  api.use('templating-compiler@1.4.1');
+  api.use('templating-compiler@2.0.0-alpha300.3');
 
   api.addFiles([
     'dynamic.html',
@@ -47,9 +47,9 @@ Package.onUse(function (api) {
 Package.onTest(function (api) {
   api.use([
     'tinytest',
-    'test-helpers@1.2.0',
-    'reactive-var@1.0.11',
-    'tracker@1.2.0'
+    'test-helpers',
+    'reactive-var',
+    'tracker'
   ]);
 
   api.use([

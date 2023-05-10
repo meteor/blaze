@@ -12,9 +12,9 @@ Npm.depends({
 Package.onUse(function (api) {
   api.use('ecmascript@0.15.1');
 
-  api.use('htmljs@1.1.1');
-  api.use('html-tools@1.1.3');
-  api.use('blaze-tools@1.1.3');
+  api.use('htmljs@2.0.0-alpha300.3');
+  api.use('html-tools@2.0.0-alpha300.3');
+  api.use('blaze-tools@2.0.0-alpha300.3');
 
   api.export('SpacebarsCompiler');
 
