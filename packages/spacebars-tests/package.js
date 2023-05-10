@@ -9,7 +9,7 @@ Package.describe({
 // between the `spacebars` and `templating` packages.
 Package.onTest(function (api) {
   api.use([
-    'es5-shim@4.8.0',
+    'es5-shim@5.0.0-alpha300.4',
     'tinytest',
     'jquery@1.11.9 || 3.0.0',
     // 'test-helpers',
@@ -18,8 +18,8 @@ Package.onTest(function (api) {
     'minimongo',
     'tracker',
     'mongo',
-    'random@1.2.0',
-    'session@1.2.0'
+    'random@2.0.0-alpha300.4',
+    'session@2.0.0-alpha300.4'
   ]);
 
   api.use([

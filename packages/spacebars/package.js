@@ -14,7 +14,6 @@ Package.describe({
 // Additional tests are in `spacebars-tests`.
 
 Package.onUse(function (api) {
-  api.versionsFrom('2.12');
   api.use('observe-sequence@2.0.0-alpha300.4');
   api.use('tracker');
 

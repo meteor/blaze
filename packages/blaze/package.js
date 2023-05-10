@@ -13,7 +13,6 @@ Npm.depends({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom('2.12');
   api.use('jquery@1.11.9 || 3.0.0', { weak: true }); // should be a weak dep, by having multiple "DOM backends"
   api.use('tracker');
   api.use('check');
@@ -58,11 +57,11 @@ Package.onUse(function (api) {
 });
 
 Package.onTest(function (api) {
-  api.use('ecmascript@0.15.1');
+  api.use('ecmascript@1.0.0-alpha300.4');
   api.use('tinytest');
   api.use('jquery@1.11.9 || 3.0.0'); // strong dependency, for testing jQuery backend
-  api.use('reactive-var@1.0.11');
-  api.use('tracker@1.1.0');
+  api.use('reactive-var@2.0.0-alpha300.4');
+  api.use('tracker@2.0.0-alpha300.4');
 
   api.use('blaze');
   api.use('blaze-tools@2.0.0-alpha300.4'); // for BlazeTools.toJS

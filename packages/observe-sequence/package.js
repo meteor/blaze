@@ -4,7 +4,6 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom('2.12');
   api.use('tracker');
   api.use('mongo-id');  // for idStringify
   api.use('diff-sequence');
