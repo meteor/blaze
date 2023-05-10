@@ -1,7 +1,7 @@
 Package.describe({
   name: 'templating-tools',
   summary: "Tools to scan HTML and compile tags when building a templating package",
-  version: '1.2.2',
+  version: '2.0.0-alpha300.3',
   git: 'https://github.com/meteor/blaze.git'
 });
 

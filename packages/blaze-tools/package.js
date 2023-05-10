@@ -1,7 +1,7 @@
 Package.describe({
   name: 'blaze-tools',
   summary: "Compile-time tools for Blaze",
-  version: '1.1.3',
+  version: '2.0.0-alpha300.3',
   git: 'https://github.com/meteor/blaze.git'
 });
 

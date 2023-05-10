@@ -2,7 +2,7 @@
 Package.describe({
   name: 'caching-html-compiler',
   summary: 'Pluggable class for compiling HTML into templates',
-  version: '1.2.1',
+  version: '2.0.0-alpha300.3',
   git: 'https://github.com/meteor/blaze.git',
 });
 
