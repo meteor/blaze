@@ -2,7 +2,7 @@
 Package.describe({
   name: 'templating-compiler',
   summary: 'Compile templates in .html files',
-  version: '2.0.0-alpha300.4',
+  version: '2.0.0-alpha300.5',
   git: 'https://github.com/meteor/blaze.git',
   documentation: null,
 });
@@ -10,9 +10,9 @@ Package.describe({
 Package.registerBuildPlugin({
   name: 'compileTemplatesBatch',
   use: [
-    'ecmascript@1.0.0-alpha300.4',
-    'caching-html-compiler@2.0.0-alpha300.4',
-    'templating-tools@2.0.0-alpha300.4',
+    'ecmascript@1.0.0-alpha300.5',
+    'caching-html-compiler@2.0.0-alpha300.5',
+    'templating-tools@2.0.0-alpha300.5',
   ],
   sources: [
     'compile-templates.js',
