@@ -1,7 +1,7 @@
 Package.describe({
   name: 'htmljs',
   summary: "Small library for expressing HTML trees",
-  version: '2.0.0-alpha300.3',
+  version: '2.0.0-alpha300.4',
   git: 'https://github.com/meteor/blaze.git'
 });
 
