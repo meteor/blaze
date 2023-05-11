@@ -1,7 +1,7 @@
 Package.describe({
   name: 'spacebars-tests',
   summary: "Additional tests for Spacebars",
-  version: '2.0.0-alpha300.5',
+  version: '2.0.0-alpha300.6',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -9,7 +9,7 @@ Package.describe({
 // between the `spacebars` and `templating` packages.
 Package.onTest(function (api) {
   api.use([
-    'es5-shim@5.0.0-alpha300.5',
+    'es5-shim@5.0.0-alpha300.6',
     'tinytest',
     'jquery@1.11.9 || 3.0.0',
     // 'test-helpers',
@@ -18,15 +18,15 @@ Package.onTest(function (api) {
     'minimongo',
     'tracker',
     'mongo',
-    'random@2.0.0-alpha300.5',
-    'session@2.0.0-alpha300.5'
+    'random@2.0.0-alpha300.6',
+    'session@2.0.0-alpha300.6'
   ]);
 
   api.use([
-    'spacebars@2.0.0-alpha300.5',
+    'spacebars@2.0.0-alpha300.6',
     'blaze'
   ]);
-  api.use('templating@2.0.0-alpha300.5', 'client');
+  api.use('templating@2.0.0-alpha300.6', 'client');
 
   api.addFiles([
     'template_tests.html',

@@ -1,7 +1,7 @@
 Package.describe({
   name: 'blaze',
   summary: "Meteor Reactive Templating library",
-  version: '3.0.0-alpha300.5',
+  version: '3.0.0-alpha300.6',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -14,12 +14,12 @@ Npm.depends({
 
 Package.onUse(function (api) {
   api.use('jquery@1.11.9 || 3.0.0', { weak: true }); // should be a weak dep, by having multiple "DOM backends"
-  api.use('tracker');
-  api.use('check');
-  api.use('observe-sequence@2.0.0-alpha300.5');
-  api.use('reactive-var');
-  api.use('ordered-dict');
-  api.use('ecmascript');
+  api.use('tracker@2.0.0-alpha300.6');
+  api.use('check@2.0.0-alpha300.6');
+  api.use('observe-sequence@2.0.0-alpha300.6');
+  api.use('reactive-var@2.0.0-alpha300.6');
+  api.use('ordered-dict@2.0.0-alpha300.6');
+  api.use('ecmascript@1.0.0-alpha300.6');
 
   api.export([
     'Blaze',
@@ -27,8 +27,8 @@ Package.onUse(function (api) {
     'Handlebars'
   ]);
 
-  api.use('htmljs@2.0.0-alpha300.5');
-  api.imply('htmljs@2.0.0-alpha300.5');
+  api.use('htmljs@2.0.0-alpha300.6');
+  api.imply('htmljs@2.0.0-alpha300.6');
 
   api.addFiles([
     'preamble.js'
@@ -57,15 +57,15 @@ Package.onUse(function (api) {
 });
 
 Package.onTest(function (api) {
-  api.use('ecmascript@1.0.0-alpha300.5');
+  api.use('ecmascript@1.0.0-alpha300.6');
   api.use('tinytest');
   api.use('jquery@1.11.9 || 3.0.0'); // strong dependency, for testing jQuery backend
-  api.use('reactive-var@2.0.0-alpha300.5');
-  api.use('tracker@2.0.0-alpha300.5');
+  api.use('reactive-var@2.0.0-alpha300.6');
+  api.use('tracker@2.0.0-alpha300.6');
 
   api.use('blaze');
-  api.use('blaze-tools@2.0.0-alpha300.5'); // for BlazeTools.toJS
-  api.use('html-tools@2.0.0-alpha300.5');
+  api.use('blaze-tools@2.0.0-alpha300.6'); // for BlazeTools.toJS
+  api.use('html-tools@2.0.0-alpha300.6');
   api.use('templating');
 
   api.addFiles('view_tests.js');
