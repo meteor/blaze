@@ -13,8 +13,14 @@ function _createBindingsHelper(fn) {
       ? Object.keys(view._scopeBindings)
       : names.slice(0, -1);
 
-    // TODO: What should happen if there's no such binding?
-    return names.some(name => fn(_lexicalBindingLookup(view, name).get()));
+    return names.some(name => {
+      const binding = _lexicalBindingLookup(view, name);
+      if (!binding) {
+        throw new Error(`Binding for "${name}" was not found.`);
+      }
+
+      return fn(binding.get());
+    });
   };
 }
 
