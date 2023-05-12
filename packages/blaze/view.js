@@ -540,6 +540,12 @@ Blaze._isContentEqual = function (a, b) {
  */
 Blaze.currentView = null;
 
+/**
+ * @template T
+ * @param {Blaze.View} view
+ * @param {() => T} func
+ * @returns {T}
+ */
 Blaze._withCurrentView = function (view, func) {
   var oldView = Blaze.currentView;
   try {
