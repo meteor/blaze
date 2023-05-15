@@ -250,7 +250,7 @@ Spacebars.dot = function (value, id1/*, id2, ...*/) {
   if (! value)
     return value; // falsy, don't index, pass through
 
-  if (value instanceof Promise)
+  if (value && typeof value.then === 'function')
     return _thenWithContext(value, value => Spacebars.dot(value, id1));
 
   var result = value[id1];

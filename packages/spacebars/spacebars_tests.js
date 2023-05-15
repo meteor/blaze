@@ -62,11 +62,13 @@ Tinytest.add("spacebars - async - Spacebars.call", async test => {
   const add = (x, y) => x + y;
   test.equal(await Spacebars.call(add, 1, Promise.resolve(2)), 3);
   test.equal(await Spacebars.call(add, Promise.resolve(1), 2), 3);
+  test.equal(await Spacebars.call(add, { then: resolve => resolve(1) }, 2), 3);
   test.equal(await Spacebars.call(add, Promise.resolve(1), Promise.resolve(2)), 3);
   test.equal(await Spacebars.call(add, 1, async () => 2), 3);
   test.equal(await Spacebars.call(add, async () => 1, 2), 3);
   test.equal(await Spacebars.call(add, async () => 1, async () => 2), 3);
   test.equal(await Spacebars.call(add, Promise.reject(1), 2).catch(x => x), 1);
+  test.equal(await Spacebars.call(add, 1, { then: (_, reject) => reject(2) }).catch(x => x), 2);
   test.equal(await Spacebars.call(add, 1, Promise.reject(2)).catch(x => x), 2);
   test.equal(await Spacebars.call(add, Promise.reject(1), Promise.reject(2)).catch(x => x), 1);
 });
@@ -76,6 +78,7 @@ Tinytest.add("spacebars - async - Spacebars.dot", async test => {
   test.equal(await Spacebars.dot(Promise.resolve({ foo: 1 }), 'foo'), 1);
   test.equal(await Spacebars.dot(Promise.resolve({ foo: () => 1 }), 'foo'), 1);
   test.equal(await Spacebars.dot(Promise.resolve({ foo: async () => 1 }), 'foo'), 1);
+  test.equal(await Spacebars.dot({ foo: { then: resolve => resolve(1) } }, 'foo'), 1);
   test.equal(await Spacebars.dot({ foo: Promise.resolve(1) }, 'foo'), 1);
   test.equal(await Spacebars.dot({ foo: async () => 1 }, 'foo'), 1);
   test.equal(await Spacebars.dot(() => ({ foo: async () => 1 }), 'foo'), 1);

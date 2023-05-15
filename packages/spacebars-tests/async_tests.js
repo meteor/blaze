@@ -23,11 +23,13 @@ function asyncSuite(templateName, cases) {
 
 asyncSuite('access', [
   ['getter', { x: { y: async () => 'foo' } }, '', 'foo'],
+  ['thenable', { x: { y: { then: resolve => resolve('foo') } } }, '', 'foo'],
   ['value', { x: { y: Promise.resolve('foo') } }, '', 'foo'],
 ]);
 
 asyncSuite('direct', [
   ['getter', { x: async () => 'foo' }, '', 'foo'],
+  ['thenable', { x: { then: resolve => resolve('foo') } }, '', 'foo'],
   ['value', { x: Promise.resolve('foo') }, '', 'foo'],
 ]);
 

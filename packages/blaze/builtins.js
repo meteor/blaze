@@ -50,7 +50,7 @@ function _isEqualBinding(x, y) {
  */
 Blaze._attachBindingsToView = function (bindings, view) {
   function setBindingValue(name, value) {
-    if (value instanceof Promise) {
+    if (value && typeof value.then === 'function') {
       value.then(
         value => view._scopeBindings[name].set({ value }),
         error => view._scopeBindings[name].set({ error }),
