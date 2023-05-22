@@ -1,3 +1,8 @@
+## v2.7.0, 2023-May-XX
+
+* [#413](https://github.com/meteor/blaze/pull/413) Added support for Promises in Spacebars.call and Spacebars.dot.
+* [#412](https://github.com/meteor/blaze/pull/412) Implemented async bindings in #let.
+
 ## v2.6.2, 2023-April-21
 
 * [#403](https://github.com/meteor/blaze/pull/403) Add TS types to core
