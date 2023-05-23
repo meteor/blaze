@@ -15,7 +15,7 @@ Package.describe({
 
 Package.onUse(function (api) {
   api.use('observe-sequence@1.0.16');
-  api.use('tracker@1.2.0');
+  api.use('tracker@1.3.0');
 
   api.export('Spacebars');
 

@@ -16,7 +16,7 @@ Package.onTest(function (api) {
     'reactive-var@1.0.11',
     'markdown@1.0.14 || 2.0.0',
     'minimongo@1.6.2',
-    'tracker@1.2.0',
+    'tracker@1.3.0',
     'mongo@1.11.1',
     'random@1.2.0',
     'session@1.2.0'
