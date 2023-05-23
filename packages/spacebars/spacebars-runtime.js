@@ -117,21 +117,6 @@ Spacebars.makeRaw = function (value) {
     return HTML.Raw(value);
 };
 
-// FIXME: Remove once `spacebars` can depend on `tracker@1.3.0` (Meteor 2.10.0).
-const _withComputation = Tracker.withComputation || function (computation, f) {
-  var previousComputation = Tracker.currentComputation;
-
-  Tracker.currentComputation = computation;
-  Tracker.active = !!computation;
-
-  try {
-    return f();
-  } finally {
-    Tracker.currentComputation = previousComputation;
-    Tracker.active = !!previousComputation;
-  }
-};
-
 /***
  * @sumamry Executes `fn` with the resolved value of `promise` while preserving
  * the context, i.e., `Blaze.currentView` and `Tracker.currentComputation`.
@@ -146,7 +131,7 @@ function _thenWithContext(promise, fn) {
   const view = Blaze.currentView;
   return promise.then(value =>
     Blaze._withCurrentView(view, () =>
-      _withComputation(computation, () =>
+      Tracker.withComputation(computation, () =>
         fn(value)
       )
     )
