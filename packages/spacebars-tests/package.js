@@ -22,7 +22,6 @@ Package.onTest(function (api) {
     'session@1.2.0'
   ]);
 
-   // TODO: remember to update this version when updating the version of blaze
   api.use([
     'spacebars@1.4.0',
     'blaze@2.7.0'
