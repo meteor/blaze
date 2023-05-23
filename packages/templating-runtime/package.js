@@ -1,7 +1,7 @@
 Package.describe({
   name: 'templating-runtime',
   summary: "Runtime for compiled .html files",
-  version: '1.6.1',
+  version: '1.6.3',
   git: 'https://github.com/meteor/blaze.git',
   documentation: null
 });
@@ -49,7 +49,7 @@ Package.onTest(function (api) {
     'tinytest@1.1.0',
     'test-helpers@1.2.0',
     'reactive-var@1.0.11',
-    'tracker@1.2.0'
+    'tracker@1.3.0'
   ]);
 
   api.use([

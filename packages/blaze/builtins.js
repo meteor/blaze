@@ -32,22 +32,41 @@ Blaze.With = function (data, contentFunc) {
   return view;
 };
 
+
+/**
+ * @summary Shallow compare of two bindings.
+ * @param {Binding} x
+ * @param {Binding} y
+ */
+function _isEqualBinding(x, y) {
+  return x && y ? x.error === y.error && x.value === y.value : x === y;
+}
+
 /**
  * Attaches bindings to the instantiated view.
  * @param {Object} bindings A dictionary of bindings, each binding name
  * corresponds to a value or a function that will be reactively re-run.
- * @param {View} view The target.
+ * @param {Blaze.View} view The target.
  */
 Blaze._attachBindingsToView = function (bindings, view) {
+  function setBindingValue(name, value) {
+    if (value && typeof value.then === 'function') {
+      value.then(
+        value => view._scopeBindings[name].set({ value }),
+        error => view._scopeBindings[name].set({ error }),
+      );
+    } else {
+      view._scopeBindings[name].set({ value });
+    }
+  }
+
   view.onViewCreated(function () {
     Object.entries(bindings).forEach(function ([name, binding]) {
-      view._scopeBindings[name] = new ReactiveVar();
+      view._scopeBindings[name] = new ReactiveVar(undefined, _isEqualBinding);
       if (typeof binding === 'function') {
-        view.autorun(function () {
-          view._scopeBindings[name].set(binding());
-        }, view.parentView);
+        view.autorun(() => setBindingValue(name, binding()), view.parentView);
       } else {
-        view._scopeBindings[name].set(binding);
+        setBindingValue(name, binding);
       }
     });
   });
@@ -149,7 +168,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
 
     for (var i = from; i <= to; i++) {
       var view = eachView._domrange.members[i].view;
-      view._scopeBindings['@index'].set(i);
+      view._scopeBindings['@index'].set({ value: i });
     }
   };
 
@@ -240,7 +259,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
               itemView = eachView.initialSubviews[index];
             }
             if (eachView.variableName) {
-              itemView._scopeBindings[eachView.variableName].set(newItem);
+              itemView._scopeBindings[eachView.variableName].set({ value: newItem });
             } else {
               itemView.dataVar.set(newItem);
             }
