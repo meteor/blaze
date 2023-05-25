@@ -118,7 +118,7 @@ Spacebars.makeRaw = function (value) {
 };
 
 /***
- * @sumamry Executes `fn` with the resolved value of `promise` while preserving
+ * @summary Executes `fn` with the resolved value of `promise` while preserving
  * the context, i.e., `Blaze.currentView` and `Tracker.currentComputation`.
  * @template T
  * @template U
