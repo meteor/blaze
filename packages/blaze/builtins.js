@@ -39,7 +39,12 @@ Blaze.With = function (data, contentFunc) {
  * @param {Binding} y
  */
 function _isEqualBinding(x, y) {
-  return x && y ? x.error === y.error && x.value === y.value : x === y;
+  if (typeof x === 'object' && typeof y === 'object') {
+    return x.error === y.error && ReactiveVar._isEqual(x.value, y.value);
+  }
+  else {
+    return ReactiveVar._isEqual(x, y);
+  }
 }
 
 /**
