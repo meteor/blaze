@@ -39,12 +39,7 @@ Blaze.With = function (data, contentFunc) {
  * @param {Binding} y
  */
 function _isEqualBinding(x, y) {
-  if (typeof x === 'object' && typeof y === 'object') {
-    return x.error === y.error && ReactiveVar._isEqual(x.value, y.value);
-  }
-  else {
-    return ReactiveVar._isEqual(x, y);
-  }
+  return ReactiveVar._isEqual(x.error, y.error) && ReactiveVar._isEqual(x.value, y.value);
 }
 
 /**
@@ -67,7 +62,7 @@ Blaze._attachBindingsToView = function (bindings, view) {
 
   view.onViewCreated(function () {
     Object.entries(bindings).forEach(function ([name, binding]) {
-      view._scopeBindings[name] = new ReactiveVar(undefined, _isEqualBinding);
+      view._scopeBindings[name] = new ReactiveVar({ value: undefined }, _isEqualBinding);
       if (typeof binding === 'function') {
         view.autorun(() => setBindingValue(name, binding()), view.parentView);
       } else {
