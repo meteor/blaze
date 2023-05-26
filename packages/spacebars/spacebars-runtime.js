@@ -157,7 +157,7 @@ Spacebars.call = function (value/*, args*/) {
     for (var i = 1; i < arguments.length; i++) {
       var arg = arguments[i];
       newArgs[i-1] = (typeof arg === 'function' ? arg() : arg);
-      anyIsPromise = anyIsPromise || newArgs[i-1] instanceof Promise;
+      anyIsPromise = anyIsPromise || isPromiseLike(newArgs[i-1]);
     }
 
     if (anyIsPromise) {
@@ -172,6 +172,8 @@ Spacebars.call = function (value/*, args*/) {
     return value;
   }
 };
+
+const isPromiseLike = x => typeof x?.then === 'function';
 
 // Call this as `Spacebars.kw({ ... })`.  The return value
 // is `instanceof Spacebars.kw`.
@@ -235,7 +237,7 @@ Spacebars.dot = function (value, id1/*, id2, ...*/) {
   if (! value)
     return value; // falsy, don't index, pass through
 
-  if (value && typeof value.then === 'function')
+  if (isPromiseLike(value))
     return _thenWithContext(value, value => Spacebars.dot(value, id1));
 
   var result = value[id1];
