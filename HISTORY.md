@@ -1,4 +1,9 @@
-## v2.7.0, 2023-May-XX
+## v2.7.1, 2023-May-26
+
+* [#413](https://github.com/meteor/blaze/pull/418) Fix reactivity for non-primitives.
+
+
+## v2.7.0, 2023-May-23
 
 * [#413](https://github.com/meteor/blaze/pull/413) Added support for Promises in Spacebars.call and Spacebars.dot.
 * [#412](https://github.com/meteor/blaze/pull/412) Implemented async bindings in #let.
