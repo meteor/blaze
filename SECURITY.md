@@ -4,9 +4,10 @@
 
 | Version | Support Status
 | ------- | --------------
-| 2.x.y   | ✅  all security issues
-| 1.12.x   | 🚧  only critical security issues
-| <= 1.11.x   | ❌  no longer supportted
+| 3.x.y   | ✅  all security issues
+| >=2.5   | ✅  all security issues
+| <2.5    | 🚧  only critical security issues
+| <= 2    | ❌  no longer supportted
 
 ## Reporting a Vulnerability
 
