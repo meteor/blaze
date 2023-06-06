@@ -7,6 +7,17 @@
 * [#334](https://github.com/meteor/blaze/pull/334) Faster fragnent parsing by retaining a reference to the current document context
 * All packages were bumped to be compatible with Meteor 3.0
 
+## v2.7.1, 2023-May-26
+
+* [#413](https://github.com/meteor/blaze/pull/418) Fix reactivity for non-primitives.
+
+
+## v2.7.0, 2023-May-23
+
+* [#413](https://github.com/meteor/blaze/pull/413) Added support for Promises in Spacebars.call and Spacebars.dot.
+* [#412](https://github.com/meteor/blaze/pull/412) Implemented async bindings in #let.
+* 
+
 ## v2.6.2, 2023-April-21
 
 * [#403](https://github.com/meteor/blaze/pull/403) Add TS types to core

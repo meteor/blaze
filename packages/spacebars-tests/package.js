@@ -29,6 +29,8 @@ Package.onTest(function (api) {
   api.use('templating@2.0.0-alpha300.6', 'client');
 
   api.addFiles([
+    'async_tests.html',
+    'async_tests.js',
     'template_tests.html',
     'template_tests.js',
     'templating_tests.html',

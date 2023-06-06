@@ -61,6 +61,7 @@ Package.onTest(function (api) {
   api.use('tinytest');
   api.use('test-helpers');
   api.use('jquery@1.11.9 || 3.0.0'); // strong dependency, for testing jQuery backend
+
   api.use('reactive-var@2.0.0-alpha300.6');
   api.use('tracker@2.0.0-alpha300.6');
 
