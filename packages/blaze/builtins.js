@@ -49,31 +49,48 @@ function _isEqualBinding(x, y) {
 }
 
 /**
+ * Attaches a single binding to the instantiated view.
+ * @param {Blaze.View} view Target view.
+ * @param {string} name Binding name.
+ * @param {unknown} value Bound value.
+ */
+function _setBindingValue(reactiveVar, value) {
+  if (value && typeof value.then === 'function') {
+    value.then(
+      value => reactiveVar.set({ value }),
+      error => reactiveVar.set({ error }),
+    );
+  } else {
+    reactiveVar.set({ value });
+  }
+}
+
+/**
+ * @param {Blaze.View} view Target view.
+ * @param {unknown} binding Binding value or its getter.
+ * @param {string} [displayName] Autorun's display name.
+ */
+function _createBinding(view, binding, displayName) {
+  const reactiveVar = new ReactiveVar(undefined, _isEqualBinding);
+  if (typeof binding === 'function') {
+    view.autorun(() => _setBindingValue(reactiveVar, binding()), view.parentView, displayName);
+  } else {
+    _setBindingValue(reactiveVar, binding);
+  }
+
+  return reactiveVar;
+}
+
+/**
  * Attaches bindings to the instantiated view.
  * @param {Object} bindings A dictionary of bindings, each binding name
  * corresponds to a value or a function that will be reactively re-run.
  * @param {Blaze.View} view The target.
  */
 Blaze._attachBindingsToView = function (bindings, view) {
-  function setBindingValue(name, value) {
-    if (value && typeof value.then === 'function') {
-      value.then(
-        value => view._scopeBindings[name].set({ value }),
-        error => view._scopeBindings[name].set({ error }),
-      );
-    } else {
-      view._scopeBindings[name].set({ value });
-    }
-  }
-
   view.onViewCreated(function () {
     Object.entries(bindings).forEach(function ([name, binding]) {
-      view._scopeBindings[name] = new ReactiveVar(undefined, _isEqualBinding);
-      if (typeof binding === 'function') {
-        view.autorun(() => setBindingValue(name, binding()), view.parentView);
-      } else {
-        setBindingValue(name, binding);
-      }
+      view._scopeBindings[name] = _createBinding(view, binding);
     });
   });
 };
@@ -101,18 +118,20 @@ Blaze.Let = function (bindings, contentFunc) {
  *   `elseFunc` is supplied, no content is shown in the "else" case.
  */
 Blaze.If = function (conditionFunc, contentFunc, elseFunc, _not) {
-  var conditionVar = new ReactiveVar;
+  const view = Blaze.View(_not ? 'unless' : 'if', function () {
+    // Render only if the binding has a value, i.e., it's either synchronous or
+    // has resolved. Rejected `Promise`s are NOT rendered.
+    const condition = view.__conditionVar.get();
+    if (condition && 'value' in condition) {
+      return Blaze._calculateCondition(condition.value) ? contentFunc() : (elseFunc ? elseFunc() : null);
+    }
 
-  var view = Blaze.View(_not ? 'unless' : 'if', function () {
-    return conditionVar.get() ? contentFunc() :
-      (elseFunc ? elseFunc() : null);
+    return null;
   });
-  view.__conditionVar = conditionVar;
-  view.onViewCreated(function () {
-    this.autorun(function () {
-      var cond = Blaze._calculateCondition(conditionFunc());
-      conditionVar.set(_not ? (! cond) : cond);
-    }, this.parentView, 'condition');
+
+  view.__conditionVar = null;
+  view.onViewCreated(() => {
+    view.__conditionVar = _createBinding(view, conditionFunc, 'condition');
   });
 
   return view;
@@ -167,7 +186,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
   eachView.stopHandle = null;
   eachView.contentFunc = contentFunc;
   eachView.elseFunc = elseFunc;
-  eachView.argVar = new ReactiveVar;
+  eachView.argVar = _createBinding(eachView, []);
   eachView.variableName = null;
 
   // update the @index value in the scope of all subviews in the range
@@ -195,11 +214,11 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
         arg = arg._sequence;
       }
 
-      eachView.argVar.set(arg);
+      _setBindingValue(eachView.argVar, arg);
     }, eachView.parentView, 'collection');
 
     eachView.stopHandle = ObserveSequence.observe(function () {
-      return eachView.argVar.get();
+      return eachView.argVar.get()?.value;
     }, {
       addedAt: function (id, item, index) {
         Tracker.nonreactive(function () {
