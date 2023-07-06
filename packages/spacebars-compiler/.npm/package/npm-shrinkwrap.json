@@ -1,7 +1,7 @@
 {
-  "lockfileVersion": 3,
+  "lockfileVersion": 4,
   "dependencies": {
-    "node_modules/uglify-js": {
+    "uglify-js": {
       "version": "3.16.1",
       "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.16.1.tgz",
       "integrity": "sha512-X5BGTIDH8U6IQ1TIRP62YC36k+ULAa1d59BxlWvPUJ1NkW5L3FwcGfEzuVvGmhJFBu0YJ5Ge25tmRISqCmLiRQ=="
