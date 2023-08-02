@@ -123,7 +123,8 @@ Blaze.If = function (conditionFunc, contentFunc, elseFunc, _not) {
     // has resolved. Rejected `Promise`s are NOT rendered.
     const condition = view.__conditionVar.get();
     if (condition && 'value' in condition) {
-      return Blaze._calculateCondition(condition.value) ? contentFunc() : (elseFunc ? elseFunc() : null);
+      const result = !Blaze._calculateCondition(condition.value) !== !_not;
+      return result ? contentFunc() : (elseFunc ? elseFunc() : null);
     }
 
     return null;
