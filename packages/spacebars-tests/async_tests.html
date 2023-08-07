@@ -67,3 +67,21 @@
     {{/let}}
   {{/let}}
 </template>
+
+<template name="spacebars_async_tests_if">
+  {{#if x}}1{{/if}}
+  {{#if x}}1{{else}}2{{/if}}
+</template>
+
+<template name="spacebars_async_tests_unless">
+  {{#unless x}}1{{/unless}}
+  {{#unless x}}1{{else}}2{{/unless}}
+</template>
+
+<template name="spacebars_async_tests_each_old">
+  {{#each x}}{{.}}{{else}}0{{/each}}
+</template>
+
+<template name="spacebars_async_tests_each_new">
+  {{#each y in x}}{{y}}{{else}}0{{/each}}
+</template>

@@ -43,6 +43,30 @@ asyncTest('missing2', 'inner', async (test, template, render) => {
   test.throws(render, 'Binding for "b" was not found.');
 });
 
+asyncSuite('if', [
+  ['false', { x: Promise.resolve(false) }, '', '2'],
+  ['true', { x: Promise.resolve(true) }, '', '1 1'],
+]);
+
+asyncSuite('unless', [
+  ['false', { x: Promise.resolve(false) }, '', '1 1'],
+  ['true', { x: Promise.resolve(true) }, '', '2'],
+]);
+
+asyncSuite('each_old', [
+  ['null', { x: Promise.resolve(null) }, '0', '0'],
+  ['empty', { x: Promise.resolve([]) }, '0', '0'],
+  ['one', { x: Promise.resolve([1]) }, '0', '1'],
+  ['two', { x: Promise.resolve([1, 2]) }, '0', '12'],
+]);
+
+asyncSuite('each_new', [
+  ['null', { x: Promise.resolve(null) }, '0', '0'],
+  ['empty', { x: Promise.resolve([]) }, '0', '0'],
+  ['one', { x: Promise.resolve([1]) }, '0', '1'],
+  ['two', { x: Promise.resolve([1, 2]) }, '0', '12'],
+]);
+
 // In the following tests pending=1, rejected=2, resolved=3.
 const pending = new Promise(() => {});
 const rejected = Promise.reject();
