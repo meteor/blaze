@@ -49,33 +49,50 @@ function _isEqualBinding(x, y) {
 }
 
 /**
- * Attaches a single binding to the instantiated view.
- * @param {Blaze.View} view Target view.
- * @param {string} name Binding name.
- * @param {unknown} value Bound value.
+ * @template T
+ * @param {T} x
+ * @returns {T}
  */
-function _setBindingValue(reactiveVar, value) {
+function _identity(x) {
+  return x;
+}
+
+/**
+ * Attaches a single binding to the instantiated view.
+ * @template T, U
+ * @param {ReactiveVar<U>} reactiveVar Target view.
+ * @param {Promise<T> | T} value Bound value.
+ * @param {(value: T) => U} [mapper] Maps the computed value before store.
+ */
+function _setBindingValue(reactiveVar, value, mapper = _identity) {
   if (value && typeof value.then === 'function') {
     value.then(
-      value => reactiveVar.set({ value }),
+      value => reactiveVar.set({ value: mapper(value) }),
       error => reactiveVar.set({ error }),
     );
   } else {
-    reactiveVar.set({ value });
+    reactiveVar.set({ value: mapper(value) });
   }
 }
 
 /**
+ * @template T, U
  * @param {Blaze.View} view Target view.
- * @param {unknown} binding Binding value or its getter.
+ * @param {Promise<T> | T | (() => Promise<T> | T)} binding Binding value or its getter.
  * @param {string} [displayName] Autorun's display name.
+ * @param {(value: T) => U} [mapper] Maps the computed value before store.
+ * @returns {ReactiveVar<U>}
  */
-function _createBinding(view, binding, displayName) {
+function _createBinding(view, binding, displayName, mapper) {
   const reactiveVar = new ReactiveVar(undefined, _isEqualBinding);
   if (typeof binding === 'function') {
-    view.autorun(() => _setBindingValue(reactiveVar, binding()), view.parentView, displayName);
+    view.autorun(
+      () => _setBindingValue(reactiveVar, binding(), mapper),
+      view.parentView,
+      displayName,
+    );
   } else {
-    _setBindingValue(reactiveVar, binding);
+    _setBindingValue(reactiveVar, binding, mapper);
   }
 
   return reactiveVar;
@@ -123,8 +140,7 @@ Blaze.If = function (conditionFunc, contentFunc, elseFunc, _not) {
     // has resolved. Rejected `Promise`s are NOT rendered.
     const condition = view.__conditionVar.get();
     if (condition && 'value' in condition) {
-      const result = !Blaze._calculateCondition(condition.value) !== !_not;
-      return result ? contentFunc() : (elseFunc ? elseFunc() : null);
+      return condition.value ? contentFunc() : (elseFunc ? elseFunc() : null);
     }
 
     return null;
@@ -132,7 +148,13 @@ Blaze.If = function (conditionFunc, contentFunc, elseFunc, _not) {
 
   view.__conditionVar = null;
   view.onViewCreated(() => {
-    view.__conditionVar = _createBinding(view, conditionFunc, 'condition');
+    view.__conditionVar = _createBinding(
+      view,
+      conditionFunc,
+      'condition',
+      // Store only the actual condition.
+      value => !Blaze._calculateCondition(value) !== !_not,
+    );
   });
 
   return view;
@@ -187,7 +209,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
   eachView.stopHandle = null;
   eachView.contentFunc = contentFunc;
   eachView.elseFunc = elseFunc;
-  eachView.argVar = _createBinding(eachView, []);
+  eachView.argVar = undefined;
   eachView.variableName = null;
 
   // update the @index value in the scope of all subviews in the range
@@ -203,20 +225,21 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
   };
 
   eachView.onViewCreated(function () {
-    // We evaluate argFunc in an autorun to make sure
-    // Blaze.currentView is always set when it runs (rather than
-    // passing argFunc straight to ObserveSequence).
-    eachView.autorun(function () {
-      // argFunc can return either a sequence as is or a wrapper object with a
-      // _sequence and _variable fields set.
-      var arg = argFunc();
-      if (isObject(arg) && has(arg, '_sequence')) {
-        eachView.variableName = arg._variable || null;
-        arg = arg._sequence;
-      }
-
-      _setBindingValue(eachView.argVar, arg);
-    }, eachView.parentView, 'collection');
+    // We evaluate `argFunc` in `Tracker.autorun` to ensure `Blaze.currentView`
+    // is always set when it runs.
+    eachView.argVar = _createBinding(
+      eachView,
+      // Unwrap a sequence reactively (`{{#each x in xs}}`).
+      () => {
+        let maybeSequence = argFunc();
+        if (isObject(maybeSequence) && has(maybeSequence, '_sequence')) {
+          eachView.variableName = maybeSequence._variable || null;
+          maybeSequence = maybeSequence._sequence;
+        }
+        return maybeSequence;
+      },
+      'collection',
+    );
 
     eachView.stopHandle = ObserveSequence.observe(function () {
       return eachView.argVar.get()?.value;
