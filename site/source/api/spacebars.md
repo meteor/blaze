@@ -357,6 +357,16 @@ well as the empty array, while any other value is considered true.
 
 `#unless` is just `#if` with the condition inverted.
 
+### Async conditions
+
+> This functionality is considered experimental and a subject to change. For
+> details please refer to [#424](https://github.com/meteor/blaze/pull/424).
+
+The condition can be wrapped in a `Promise`. When that happens, both `#if` and
+`#unless` will not render anything if it's pending or rejected. Once resolved,
+the resulting value is used. To have more fine-grained handling of non-resolved
+states, use `#let` and the async state helpers (e.g., `@pending`).
+
 ## With
 
 A `#with` template tag establishes a new data context object for its contents.
@@ -422,6 +432,16 @@ context) if there are zero items in the sequence at any time.
 
 You can use a special variable `@index` in the body of `#each` to get the
 0-based index of the currently rendered value in the sequence.
+
+### Async sequences
+
+> This functionality is considered experimental and a subject to change. For
+> details please refer to [#424](https://github.com/meteor/blaze/pull/424).
+
+The sequence argument can be wrapped in a `Promise`. When that happens, `#each`
+will render the "else" if it's pending or rejected. Once resolved, the resulting
+sequence is used. To have more fine-grained handling of non-resolved states, use
+`#let` and the async state helpers (e.g., `@pending`).
 
 ### Reactivity Model for Each
 
