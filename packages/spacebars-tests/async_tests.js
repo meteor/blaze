@@ -1,5 +1,6 @@
 function asyncTest(templateName, testName, fn) {
-  Tinytest.addAsync(`spacebars-tests - async - ${templateName} ${testName}`, test => {
+  const name = [templateName, testName].filter(Boolean).join(' ');
+  Tinytest.addAsync(`spacebars-tests - async - ${name}`, test => {
     const template = Blaze.Template[`spacebars_async_tests_${templateName}`];
     const templateCopy = new Blaze.Template(template.viewName, template.renderFunction);
     return fn(test, templateCopy, () => {
@@ -41,6 +42,30 @@ asyncTest('missing1', 'outer', async (test, template, render) => {
 asyncTest('missing2', 'inner', async (test, template, render) => {
   Blaze._throwNextException = true;
   test.throws(render, 'Binding for "b" was not found.');
+});
+
+asyncTest('attribute', '', async (test, template, render) => {
+  Blaze._throwNextException = true;
+  template.helpers({ x: Promise.resolve() });
+  test.throws(render, 'Asynchronous values are not serializable. Use #let to unwrap them first.');
+});
+
+asyncTest('attributes', '', async (test, template, render) => {
+  Blaze._throwNextException = true;
+  template.helpers({ x: Promise.resolve() });
+  test.throws(render, 'Asynchronous attributes are not supported. Use #let to unwrap them first.');
+});
+
+asyncTest('value_direct', '', async (test, template, render) => {
+  Blaze._throwNextException = true;
+  template.helpers({ x: Promise.resolve() });
+  test.throws(render, 'Asynchronous values are not serializable. Use #let to unwrap them first.');
+});
+
+asyncTest('value_raw', '', async (test, template, render) => {
+  Blaze._throwNextException = true;
+  template.helpers({ x: Promise.resolve() });
+  test.throws(render, 'Asynchronous values are not serializable. Use #let to unwrap them first.');
 });
 
 asyncSuite('if', [
