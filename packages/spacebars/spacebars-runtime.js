@@ -75,6 +75,8 @@ Spacebars.mustache = function (value/*, args*/) {
 
   if (result instanceof Spacebars.SafeString)
     return HTML.Raw(result.toString());
+  else if (isPromiseLike(value))
+    throw new Error('Asynchronous values are not serializable. Use #let to unwrap them first.');
   else
     // map `null`, `undefined`, and `false` to null, which is important
     // so that attributes with nully values are considered absent.

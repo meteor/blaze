@@ -166,9 +166,9 @@ and not all tags are allowed at all locations.
 ### Double-braced Tags
 
 A double-braced tag at element level or in an attribute value typically evalutes
-to a string.  If it evalutes to something else, the value will be cast to a
+to a string. If it evalutes to something else, the value will be cast to a
 string, unless the value is `null`, `undefined`, or `false`, which results in
-nothing being displayed.
+nothing being displayed. `Promise`s are not supported and will throw an error.
 
 Values returned from helpers must be pure text, not HTML.  (That is, strings
 should have `<`, not `&lt;`.)  Spacebars will perform any necessary escaping if
@@ -205,11 +205,11 @@ of attributes:
 ```
 
 The tag must evaluate to an object that serves as a dictionary of attribute name
-and value strings.  For convenience, the value may also be a string or null.  An
-empty string or null expands to `{}`.  A non-empty string must be an attribute
+and value strings. For convenience, the value may also be a string or null. An
+empty string or null expands to `{}`. A non-empty string must be an attribute
 name, and expands to an attribute with an empty value; for example, `"checked"`
 expands to `{checked: ""}` (which, as far as HTML is concerned, means the
-checkbox is checked).
+checkbox is checked). `Promise`s are not supported and will throw an error.
 
 To summarize:
 
@@ -223,6 +223,7 @@ To summarize:
     <tr><td><code>{checked: "", 'class': "foo"}</code></td><td><code>checked  class=foo</code></td></tr>
     <tr><td><code>{checked: false, 'class': "foo"}</code></td><td><code>class=foo</code></td></tr>
     <tr><td><code>"checked class=foo"</code></td><td>ERROR, string is not an attribute name</td></tr>
+    <tr><td><code>Promise.resolve({})</code></td><td>ERROR, asynchronous attributes are not supported</td></tr>
   </tbody>
 </table>
 
