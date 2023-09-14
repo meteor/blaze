@@ -19,7 +19,7 @@ Package.onUse(function (api) {
   api.use('observe-sequence@2.0.0-alpha300.10');
   api.use('reactive-var@2.0.0-alpha300.10');
   api.use('ordered-dict@2.0.0-alpha300.10');
-  api.use('ecmascript@1.0.0-alpha300.10');
+  api.use('ecmascript@0.16.8-alpha300.11');
 
   api.export([
     'Blaze',
@@ -57,7 +57,7 @@ Package.onUse(function (api) {
 });
 
 Package.onTest(function (api) {
-  api.use('ecmascript@1.0.0-alpha300.10');
+  api.use('ecmascript@0.16.8-alpha300.11');
   api.use('tinytest');
   api.use('test-helpers');
   api.use('jquery@1.11.9 || 3.0.0'); // strong dependency, for testing jQuery backend

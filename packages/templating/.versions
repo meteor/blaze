@@ -9,7 +9,7 @@ check@2.0.0-alpha300.10
 core-runtime@2.0.0-alpha300.10
 diff-sequence@2.0.0-alpha300.10
 dynamic-import@1.0.0-alpha300.10
-ecmascript@1.0.0-alpha300.10
+ecmascript@0.16.8-alpha300.11
 ecmascript-runtime@1.0.0-alpha300.10
 ecmascript-runtime-client@1.0.0-alpha300.10
 ecmascript-runtime-server@1.0.0-alpha300.10

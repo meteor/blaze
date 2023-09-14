@@ -25,7 +25,7 @@ Package.onUse(function (api) {
   api.use([
     'blaze@3.0.0-alpha300.10',
     'spacebars@2.0.0-alpha300.10',
-    'ecmascript@1.0.0-alpha300.10'
+    'ecmascript@0.16.8-alpha300.11'
   ]);
   api.imply([
     'meteor',

@@ -8,7 +8,7 @@ Package.onUse(function (api) {
   api.use('mongo-id@2.0.0-alpha300.10');  // for idStringify
   api.use('diff-sequence@2.0.0-alpha300.10');
   api.use('random@2.0.0-alpha300.10');
-  api.use('ecmascript@1.0.0-alpha300.10');
+  api.use('ecmascript@0.16.8-alpha300.11');
   api.export('ObserveSequence');
   api.addFiles(['observe_sequence.js']);
 });

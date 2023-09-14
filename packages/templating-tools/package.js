@@ -11,7 +11,7 @@ Npm.depends({
 
 Package.onUse(function(api) {
   api.use([
-    'ecmascript@1.0.0-alpha300.10'
+    'ecmascript@0.16.8-alpha300.11'
   ]);
 
   api.export('TemplatingTools');
@@ -26,7 +26,7 @@ Package.onUse(function(api) {
 Package.onTest(function(api) {
   api.use([
     'tinytest',
-    'ecmascript@1.0.0-alpha300.10'
+    'ecmascript@0.16.8-alpha300.11'
   ]);
 
   api.use([
