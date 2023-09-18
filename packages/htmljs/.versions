@@ -12,14 +12,14 @@ ddp-client@3.0.0-alpha300.10
 ddp-common@2.0.0-alpha300.10
 ddp-server@3.0.0-alpha300.10
 diff-sequence@2.0.0-alpha300.10
-dynamic-import@1.0.0-alpha300.10
+dynamic-import@0.7.3
 ecmascript@0.16.8-alpha300.11
 ecmascript-runtime@1.0.0-alpha300.10
 ecmascript-runtime-client@1.0.0-alpha300.10
 ecmascript-runtime-server@1.0.0-alpha300.10
 ejson@2.0.0-alpha300.10
 facts-base@2.0.0-alpha300.10
-fetch@1.0.0-alpha300.10
+fetch@0.1.3
 geojson-utils@2.0.0-alpha300.10
 htmljs@2.0.0-alpha300.10
 id-map@2.0.0-alpha300.10
@@ -46,6 +46,6 @@ routepolicy@2.0.0-alpha300.10
 socket-stream-client@1.0.0-alpha300.10
 tinytest@2.0.0-alpha300.10
 tracker@1.3.2
-underscore@2.0.0-alpha300.10
+underscore@1.0.14-alpha300.11
 webapp@2.0.0-alpha300.10
 webapp-hashing@2.0.0-alpha300.10
