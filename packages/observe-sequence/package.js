@@ -5,9 +5,9 @@ Package.describe({
 
 Package.onUse(function (api) {
   api.use('tracker@1.3.2');
-  api.use('mongo-id@2.0.0-alpha300.10');  // for idStringify
-  api.use('diff-sequence@2.0.0-alpha300.10');
-  api.use('random@2.0.0-alpha300.10');
+  api.use('mongo-id@1.0.8');  // for idStringify
+  api.use('diff-sequence@1.1.2');
+  api.use('random@1.2.1');
   api.use('ecmascript@0.16.8-alpha300.11');
   api.export('ObserveSequence');
   api.addFiles(['observe_sequence.js']);

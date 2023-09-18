@@ -11,6 +11,6 @@ Package.onUse(function(api) {
     'blaze@3.0.0-alpha300.10',
 
     // Compile .html files into Blaze reactive views
-    'templating@2.0.0-alpha300.10'
+    'templating@1.4.2'
   ]);
 });
