@@ -4,7 +4,7 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.use('tracker@2.0.0-alpha300.10');
+  api.use('tracker@1.3.2');
   api.use('mongo-id@2.0.0-alpha300.10');  // for idStringify
   api.use('diff-sequence@2.0.0-alpha300.10');
   api.use('random@2.0.0-alpha300.10');

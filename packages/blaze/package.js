@@ -14,7 +14,7 @@ Npm.depends({
 
 Package.onUse(function (api) {
   api.use('jquery@1.11.9 || 3.0.0', { weak: true }); // should be a weak dep, by having multiple "DOM backends"
-  api.use('tracker@2.0.0-alpha300.10');
+  api.use('tracker@1.3.2');
   api.use('check@2.0.0-alpha300.10');
   api.use('observe-sequence@2.0.0-alpha300.10');
   api.use('reactive-var@2.0.0-alpha300.10');
@@ -63,7 +63,7 @@ Package.onTest(function (api) {
   api.use('jquery@1.11.9 || 3.0.0'); // strong dependency, for testing jQuery backend
 
   api.use('reactive-var@2.0.0-alpha300.10');
-  api.use('tracker@2.0.0-alpha300.10');
+  api.use('tracker@1.3.2');
 
   api.use('blaze');
   api.use('blaze-tools@2.0.0-alpha300.10'); // for BlazeTools.toJS
