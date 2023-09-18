@@ -6,7 +6,7 @@ blaze-tools@2.0.0-alpha300.10
 caching-compiler@2.0.0-alpha300.10
 caching-html-compiler@2.0.0-alpha300.10
 check@2.0.0-alpha300.10
-core-runtime@2.0.0-alpha300.10
+core-runtime@1.0.0-alpha300.11
 diff-sequence@2.0.0-alpha300.10
 dynamic-import@0.7.3
 ecmascript@0.16.8-alpha300.11

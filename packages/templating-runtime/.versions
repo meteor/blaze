@@ -10,7 +10,7 @@ caching-compiler@2.0.0-alpha300.10
 caching-html-compiler@2.0.0-alpha300.10
 callback-hook@2.0.0-alpha300.10
 check@2.0.0-alpha300.10
-core-runtime@2.0.0-alpha300.10
+core-runtime@1.0.0-alpha300.11
 ddp@2.0.0-alpha300.10
 ddp-client@3.0.0-alpha300.10
 ddp-common@2.0.0-alpha300.10
