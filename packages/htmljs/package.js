@@ -1,12 +1,12 @@
 Package.describe({
   name: 'htmljs',
   summary: "Small library for expressing HTML trees",
-  version: '2.0.0-alpha300.13',
+  version: '2.0.0-alpha300.14',
   git: 'https://github.com/meteor/blaze.git'
 });
 
 Package.onUse(function (api) {
-  api.use('ecmascript@0.16.8-alpha300.13');
+  api.use('ecmascript@0.16.8-alpha300.14');
 
   api.export('HTML');
   api.mainModule('preamble.js');
