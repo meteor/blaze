@@ -6,7 +6,7 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.use('ecmascript@0.16.8-alpha300.11');
+  api.use('ecmascript@0.16.8-alpha300.12');
 
   api.export('HTML');
   api.mainModule('preamble.js');

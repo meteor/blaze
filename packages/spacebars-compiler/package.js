@@ -10,7 +10,7 @@ Npm.depends({
 });
 
 Package.onUse(function (api) {
-  api.use('ecmascript@0.16.8-alpha300.11');
+  api.use('ecmascript@0.16.8-alpha300.12');
 
   api.use('htmljs@2.0.0-alpha300.10');
   api.use('html-tools@2.0.0-alpha300.10');
