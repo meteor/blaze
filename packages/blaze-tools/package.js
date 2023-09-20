@@ -1,12 +1,12 @@
 Package.describe({
   name: 'blaze-tools',
   summary: "Compile-time tools for Blaze",
-  version: '2.0.0-alpha300.12',
+  version: '2.0.0-alpha300.13',
   git: 'https://github.com/meteor/blaze.git'
 });
 
 Package.onUse(function (api) {
-  api.use('ecmascript@0.16.8-alpha300.12');
+  api.use('ecmascript@0.16.8-alpha300.13');
   api.use('htmljs@2.0.0-alpha300.10');
 
   api.export('BlazeTools');
@@ -18,7 +18,7 @@ Package.onTest(function (api) {
   api.use('ecmascript');
 
   api.use('blaze-tools');
-  api.use('html-tools@2.0.0-alpha300.12');
+  api.use('html-tools@2.0.0-alpha300.13');
 
   api.addFiles([
     'token_tests.js'
