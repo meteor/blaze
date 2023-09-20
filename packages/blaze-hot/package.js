@@ -1,7 +1,7 @@
 Package.describe({
   name: 'blaze-hot',
   summary: "Update files using Blaze's API with HMR",
-  version: '2.0.0-alpha300.10',
+  version: '2.0.0-alpha300.12',
   git: 'https://github.com/meteor/blaze.git',
   documentation: null,
   debugOnly: true
@@ -10,8 +10,8 @@ Package.describe({
 Package.onUse(function (api) {
   api.use('modules@0.19.1-alpha300.12');
   api.use('ecmascript@0.16.8-alpha300.12');
-  api.use('blaze@3.0.0-alpha300.10');
-  api.use('templating-runtime@2.0.0-alpha300.10');
+  api.use('blaze@3.0.0-alpha300.12');
+  api.use('templating-runtime@2.0.0-alpha300.12');
   api.use('hot-module-replacement@0.5.4-alpha300.12', { weak: true });
 
   api.addFiles('hot.js', 'client');
