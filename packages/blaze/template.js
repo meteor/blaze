@@ -331,6 +331,18 @@ Blaze.TemplateInstance.prototype.autorun = function (f) {
 };
 
 /**
+ * @summary An await-able version of [Tracker.autorun](https://docs.meteor.com/api/tracker.html#Tracker-autorun) that is stopped when the template is destroyed.
+ * @locus Client
+ * @param {Function} runFunc The function to run. It receives one argument: a Tracker.Computation object.
+ *
+ * @return {Promise} computation  - a promise for the computation object.
+ */
+Blaze.TemplateInstance.prototype.autorunAsync = function (f) {
+  return this.view.autorunAsync(f);
+};
+
+
+/**
  * @summary A version of [Meteor.subscribe](https://docs.meteor.com/api/pubsub.html#Meteor-subscribe) that is stopped
  * when the template is destroyed.
  * @return {SubscriptionHandle} The subscription handle to the newly made

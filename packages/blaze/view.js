@@ -223,6 +223,28 @@ Blaze.View.prototype.autorun = function (f, _inViewScope, displayName) {
   return comp;
 };
 
+/**
+ * An await-able variant of the regular View.autorun
+ *
+ * @param f
+ * @param _inViewScope
+ * @param displayName
+ * @return {Promise} computation object   - returns a promise for the computation object
+ */
+Blaze.View.prototype.autorunAsync = function(f, _inViewScope, displayName) {
+  let fPromise
+  let self = this
+  const newF = async(...args) => {
+    fPromise = f(...args)
+  }
+
+  const c = Blaze.View.prototype.autorun.call(this, newF, _inViewScope, displayName)
+
+  return fPromise.then(() => {
+    return c
+  })
+}
+
 Blaze.View.prototype._errorIfShouldntCallSubscribe = function () {
   var self = this;
 
