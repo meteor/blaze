@@ -10,7 +10,7 @@ Package.describe({
 Package.onUse(function (api) {
   api.use('modules@0.16.0');
   api.use('ecmascript@0.15.1');
-  api.use('blaze@2.6.0');
+  api.use('blaze@2.7.1');
   api.use('templating-runtime@1.6.0');
   api.use('hot-module-replacement@0.2.0', { weak: true });
 
