@@ -2,7 +2,7 @@
 Package.describe({
   name: 'caching-html-compiler',
   summary: 'Pluggable class for compiling HTML into templates',
-  version: '2.0.0-alpha300.15',
+  version: '2.0.0-alpha300.16',
   git: 'https://github.com/meteor/blaze.git',
 });
 
@@ -12,13 +12,13 @@ Npm.depends({
 
 Package.onUse(function(api) {
   api.use([
-    'caching-compiler@2.0.0-alpha300.15',
-    'ecmascript@0.16.8-alpha300.15',
+    'caching-compiler@2.0.0-alpha300.16',
+    'ecmascript@0.16.8-alpha300.16',
   ]);
 
   api.export('CachingHtmlCompiler', 'server');
 
-  api.use(['templating-tools@2.0.0-alpha300.15']);
+  api.use(['templating-tools@2.0.0-alpha300.16']);
 
   api.addFiles(['caching-html-compiler.js'], 'server');
 });

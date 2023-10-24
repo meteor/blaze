@@ -1,7 +1,7 @@
 Package.describe({
   name: 'templating-tools',
   summary: "Tools to scan HTML and compile tags when building a templating package",
-  version: '2.0.0-alpha300.15',
+  version: '2.0.0-alpha300.16',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -11,13 +11,13 @@ Npm.depends({
 
 Package.onUse(function(api) {
   api.use([
-    'ecmascript@0.16.8-alpha300.15'
+    'ecmascript@0.16.8-alpha300.16'
   ]);
 
   api.export('TemplatingTools');
 
   api.use([
-    'spacebars-compiler@2.0.0-alpha300.15'
+    'spacebars-compiler@2.0.0-alpha300.16'
   ]);
 
   api.mainModule('templating-tools.js');
@@ -26,7 +26,7 @@ Package.onUse(function(api) {
 Package.onTest(function(api) {
   api.use([
     'tinytest',
-    'ecmascript@0.16.8-alpha300.15'
+    'ecmascript@0.16.8-alpha300.16'
   ]);
 
   api.use([
