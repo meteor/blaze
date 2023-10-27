@@ -1,0 +1,69 @@
+<template name="spacebars_async_tests_access">
+  {{#let a=x.y}}{{a}}{{/let}}
+</template>
+
+<template name="spacebars_async_tests_direct">
+  {{#let a=x}}{{a}}{{/let}}
+</template>
+
+<template name="spacebars_async_tests_missing1">
+  {{@pending 'b'}}
+</template>
+
+<template name="spacebars_async_tests_missing2">
+  {{#let a=1}}{{@pending 'b'}}{{/let}}
+</template>
+
+<template name="spacebars_async_tests_state1">
+  {{#let a=x}}
+    {{#if @pending}}1{{/if}}
+    {{#if @rejected}}2{{/if}}
+    {{#if @resolved}}3{{/if}}
+
+    {{#if @pending 'a'}}a1{{/if}}
+    {{#if @rejected 'a'}}a2{{/if}}
+    {{#if @resolved 'a'}}a3{{/if}}
+  {{/let}}
+</template>
+
+<template name="spacebars_async_tests_state2flat">
+  {{#let a=x b=y}}
+    {{#if @pending}}1{{/if}}
+    {{#if @rejected}}2{{/if}}
+    {{#if @resolved}}3{{/if}}
+
+    {{#if @pending 'a'}}a1{{/if}}
+    {{#if @rejected 'a'}}a2{{/if}}
+    {{#if @resolved 'a'}}a3{{/if}}
+
+    {{#if @pending 'b'}}b1{{/if}}
+    {{#if @rejected 'b'}}b2{{/if}}
+    {{#if @resolved 'b'}}b3{{/if}}
+
+    {{#if @pending 'a' 'b'}}ab1{{/if}}
+    {{#if @rejected 'a' 'b'}}ab2{{/if}}
+    {{#if @resolved 'a' 'b'}}ab3{{/if}}
+  {{/let}}
+</template>
+
+<template name="spacebars_async_tests_state2nested">
+  {{#let a=x}}
+    {{#let b=y}}
+      {{#if @pending}}1{{/if}}
+      {{#if @rejected}}2{{/if}}
+      {{#if @resolved}}3{{/if}}
+
+      {{#if @pending 'a'}}a1{{/if}}
+      {{#if @rejected 'a'}}a2{{/if}}
+      {{#if @resolved 'a'}}a3{{/if}}
+
+      {{#if @pending 'b'}}b1{{/if}}
+      {{#if @rejected 'b'}}b2{{/if}}
+      {{#if @resolved 'b'}}b3{{/if}}
+
+      {{#if @pending 'a' 'b'}}ab1{{/if}}
+      {{#if @rejected 'a' 'b'}}ab2{{/if}}
+      {{#if @resolved 'a' 'b'}}ab3{{/if}}
+    {{/let}}
+  {{/let}}
+</template>

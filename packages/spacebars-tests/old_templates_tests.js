@@ -577,7 +577,7 @@ Tinytest.add(
 
 Tinytest.add(
   'spacebars-tests - old - template_tests - each on cursor',
-  function (test) {
+  async function (test) {
     var tmpl = Template.old_spacebars_template_test_each;
     var coll = new Mongo.Collection(null);
     tmpl.items = function () {
@@ -590,15 +590,15 @@ Tinytest.add(
     };
 
     rendersTo('else-clause');
-    coll.insert({ text: 'one', pos: 1 });
+    await coll.insertAsync({ text: 'one', pos: 1 });
     rendersTo('one');
-    coll.insert({ text: 'two', pos: 2 });
+    await coll.insertAsync({ text: 'two', pos: 2 });
     rendersTo('one two');
-    coll.update({ text: 'two' }, { $set: { text: 'three' } });
+    await coll.updateAsync({ text: 'two' }, { $set: { text: 'three' } });
     rendersTo('one three');
-    coll.update({ text: 'three' }, { $set: { pos: 0 } });
+    await coll.updateAsync({ text: 'three' }, { $set: { pos: 0 } });
     rendersTo('three one');
-    coll.remove({});
+    await coll.removeAsync({});
     rendersTo('else-clause');
   }
 );
@@ -682,7 +682,7 @@ Tinytest.add('spacebars-tests - old - template_tests - ..', function (test) {
 
 Tinytest.add(
   'spacebars-tests - old - template_tests - select tags',
-  function (test) {
+  async function (test) {
     var tmpl = Template.old_spacebars_template_test_select_tag;
 
     // {label: (string)}
@@ -717,8 +717,8 @@ Tinytest.add(
 
     test.equal(divContent(), ['<select>', '</select>']);
 
-    var optgroup1 = optgroups.insert({ label: 'one' });
-    var optgroup2 = optgroups.insert({ label: 'two' });
+    var optgroup1 = await optgroups.insertAsync({ label: 'one' });
+    var optgroup2 = await optgroups.insertAsync({ label: 'two' });
     test.equal(divContent(), [
       '<select>',
       '<optgroup label="one">',
@@ -728,13 +728,13 @@ Tinytest.add(
       '</select>',
     ]);
 
-    options.insert({
+    await options.insertAsync({
       optgroup: optgroup1,
       value: 'value1',
       selected: false,
       label: 'label1',
     });
-    options.insert({
+    await options.insertAsync({
       optgroup: optgroup1,
       value: 'value2',
       selected: true,
@@ -755,8 +755,8 @@ Tinytest.add(
     test.equal($(selectEl).find('option')[1].selected, true);
 
     // swap selection
-    options.update({ value: 'value1' }, { $set: { selected: true } });
-    options.update({ value: 'value2' }, { $set: { selected: false } });
+    await options.updateAsync({ value: 'value1' }, { $set: { selected: true } });
+    await options.updateAsync({ value: 'value2' }, { $set: { selected: false } });
     Tracker.flush();
 
     test.equal(divContent(), [
@@ -774,8 +774,8 @@ Tinytest.add(
     test.equal($(selectEl).find('option')[1].selected, false);
 
     // change value and label
-    options.update({ value: 'value1' }, { $set: { value: 'value1.0' } });
-    options.update({ value: 'value2' }, { $set: { label: 'label2.0' } });
+    await options.updateAsync({ value: 'value1' }, { $set: { value: 'value1.0' } });
+    await options.updateAsync({ value: 'value2' }, { $set: { label: 'label2.0' } });
     Tracker.flush();
 
     test.equal(divContent(), [
@@ -795,17 +795,17 @@ Tinytest.add(
     // unselect and then select both options. normally, the second is
     // selected (since it got selected later). then switch to <select
     // multiple="">. both should be selected.
-    options.update({}, { $set: { selected: false } }, { multi: true });
+    await options.updateAsync({}, { $set: { selected: false } }, { multi: true });
     Tracker.flush();
-    options.update({}, { $set: { selected: true } }, { multi: true });
+    await options.updateAsync({}, { $set: { selected: true } }, { multi: true });
     Tracker.flush();
     test.equal($(selectEl).find('option')[0].selected, false);
     test.equal($(selectEl).find('option')[1].selected, true);
 
     selectEl.multiple = true; // allow multiple selection
-    options.update({}, { $set: { selected: false } }, { multi: true });
+    await options.updateAsync({}, { $set: { selected: false } }, { multi: true });
     Tracker.flush();
-    options.update({}, { $set: { selected: true } }, { multi: true });
+    await options.updateAsync({}, { $set: { selected: true } }, { multi: true });
     window.avital = true;
     Tracker.flush();
     test.equal($(selectEl).find('option')[0].selected, true);
@@ -2327,7 +2327,7 @@ Tinytest.add(
 // https://github.com/meteor/meteor/issues/2156
 Tinytest.add(
   'spacebars-tests - old - template_tests - each with inserts inside autorun',
-  function (test) {
+  async function (test) {
     var tmpl = Template.old_spacebars_test_each_with_autorun_insert;
     var coll = new Mongo.Collection(null);
     var rv = new ReactiveVar();
@@ -2353,7 +2353,7 @@ Tinytest.add(
 
     test.equal(canonicalizeHtml(div.innerHTML), 'foo1 foo2');
 
-    coll.update(firstId, { $set: { name: 'foo3' } });
+    await coll.updateAsync(firstId, { $set: { name: 'foo3' } });
     Tracker.flush();
     test.equal(canonicalizeHtml(div.innerHTML), 'foo3 foo2');
   }
@@ -2406,7 +2406,7 @@ Tinytest.add(
       test.equal(canonicalizeHtml(items[0].innerHTML), 'foo1');
       test.equal(canonicalizeHtml(items[1].innerHTML), 'foo2');
     };
-    
+
     var newVal = [...origVal];
     newVal.push({ _id: 'foo3' });
     rv.set(newVal);

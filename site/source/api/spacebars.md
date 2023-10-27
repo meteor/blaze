@@ -101,6 +101,11 @@ trying to index into a non-object or an undefined value.
 In addition, Spacebars will call functions for you, so `{% raw %}{{foo.bar}}{% endraw %}` may be
 taken to mean `foo().bar`, `foo.bar()`, or `foo().bar()` as appropriate.
 
+Similarly, if the accessed object is wrapped in a `Promise`, Spacebars will
+defer the path evaluation in a `Promise` as well. That is,
+`{% raw %}{{foo.bar}}{% endraw %}` will evaluate to `foo().then(x => x.bar)`.
+Both pending and rejected states will result in `undefined`.
+
 ## Helper Arguments
 
 An argument to a helper can be any path or identifier, or a string, boolean, or
@@ -121,6 +126,11 @@ frob(a, b, c, Spacebars.kw({verily: true}))
 `.hash` property is equal to its argument.
 
 The helper's implementation can access the current data context as `this`.
+
+If any of the arguments is a `Promise`, Spacebars will defer the call as long as
+all of the arguments will resolve. That is, `{% raw %}{{foo x y z}}{% endraw %}`
+will evaluate to `Promise.all([x, y, z]).then(args => foo(...args))`. Both
+pending and rejected states will result in `undefined`.
 
 ## Inclusion and Block Arguments
 
@@ -456,6 +466,86 @@ data context, another variable) with a short-hand within the template:
 Variables introduced this way take precedence over names of templates, global
 helpers, fields of the current data context and previously introduced
 variables with the same name.
+
+Additionally, `#let` is capable of unwrapping `Promise` objects. That is, if
+any of the bindings is to one, the bound value won't be a `Promise`, but the
+resolved value instead. Both pending and rejected states will result in
+`undefined`.
+
+### Async states
+
+> This functionality is considered experimental and a subject to change. For
+> details please refer to [#412](https://github.com/meteor/blaze/pull/412).
+
+There are three global helpers used to query the state of the bound `Promise`s:
+* `@pending`, which checks whether any of the given bindings is still pending.
+* `@rejected`, which checks whether any of the given bindings has rejected.
+* `@resolved`, which checks whether any of the given bindings has resolved.
+
+```html
+{{#let name=getNameAsynchronously}}
+  {{#if @pending 'name'}}
+    We are fetching your name...
+  {{/if}}
+  {{#if @rejected 'name'}}
+    Sorry, an error occured!
+  {{/if}}
+  {{#if @resolved 'name'}}
+    Hi, {{name}}!
+  {{/if}}
+{{/let}}
+```
+
+All of them accept a list of names to check. Passing no arguments is the same as
+passing all bindings from the inner-most `#let`.
+
+```html
+{{#let name=getNameAsynchronously}}
+  {{#let color=getColorAsynchronously}}
+    {{#if @pending}}
+      We are fetching your color...
+    {{/if}}
+    {{#if @rejected 'name'}}
+      Sorry, an error occurred while fetching your name!
+    {{/if}}
+    {{#if @resolved 'color' 'name'}}
+      {{name}} gets a {{color}} card!
+    {{/if}}
+  {{/let}}
+{{/let}}
+```
+
+### Async synchronization
+
+> This functionality is considered experimental and a subject to change. For
+> details please refer to [#412](https://github.com/meteor/blaze/pull/412).
+
+The bindings are **not** synchronized. That means, bindings store that _latest
+resolved value_, not _value of the latest `Promise`_. If the resolution time
+varies (e.g., involves network), it may result in desynchronized UI. In the
+below example, the rendered text is **not** guaranteed to be the result of the
+latest `getName` execution.
+
+```html
+<template name="example">
+  {{#let name=getName}}
+    Hi, {{name}}!
+  {{/let}}
+</template>
+```
+
+```js
+Template.example.helpers({
+  async getName() {
+    const userId = Meteor.userId(); // Reactive data source.
+    const profile = await fetch(/* ... */); // Async operation.
+    return profile.name;
+  },
+});
+```
+
+If a well-defined order of resolutions is required, consider using an external
+synchronization mechanism, e.g., a queue of pending async operations.
 
 ## Custom Block Helpers
 
