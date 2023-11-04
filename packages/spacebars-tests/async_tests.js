@@ -22,16 +22,20 @@ function asyncSuite(templateName, cases) {
   }
 }
 
+const getter = async () => 'foo';
+const thenable = { then: resolve => Promise.resolve().then(() => resolve('foo')) };
+const value = Promise.resolve('foo');
+
 asyncSuite('access', [
-  ['getter', { x: { y: async () => 'foo' } }, '', 'foo'],
-  ['thenable', { x: { y: { then: resolve => { Promise.resolve().then(() => resolve('foo')) } } } }, '', 'foo'],
-  ['value', { x: { y: Promise.resolve('foo') } }, '', 'foo'],
+  ['getter', { x: { y: getter } }, '', 'foo'],
+  ['thenable', { x: { y: thenable } }, '', 'foo'],
+  ['value', { x: { y: value } }, '', 'foo'],
 ]);
 
 asyncSuite('direct', [
-  ['getter', { x: async () => 'foo' }, '', 'foo'],
-  ['thenable', { x: { then: resolve => { Promise.resolve().then(() => resolve('foo')) } } }, '', 'foo'],
-  ['value', { x: Promise.resolve('foo') }, '', 'foo'],
+  ['getter', { x: getter }, '', 'foo'],
+  ['thenable', { x: thenable }, '', 'foo'],
+  ['value', { x: value }, '', 'foo'],
 ]);
 
 asyncTest('missing1', 'outer', async (test, template, render) => {
@@ -44,11 +48,11 @@ asyncTest('missing2', 'inner', async (test, template, render) => {
   test.throws(render, 'Binding for "b" was not found.');
 });
 
-asyncTest('attribute', '', async (test, template, render) => {
-  Blaze._throwNextException = true;
-  template.helpers({ x: Promise.resolve() });
-  test.throws(render, 'Asynchronous values are not serializable. Use #let to unwrap them first.');
-});
+asyncSuite('attribute', [
+  ['getter', { x: getter }, '<img>', '<img class="foo">'],
+  ['thenable', { x: thenable }, '<img>', '<img class="foo">'],
+  ['value', { x: value }, '<img>', '<img class="foo">'],
+]);
 
 asyncTest('attributes', '', async (test, template, render) => {
   Blaze._throwNextException = true;
@@ -56,17 +60,17 @@ asyncTest('attributes', '', async (test, template, render) => {
   test.throws(render, 'Asynchronous attributes are not supported. Use #let to unwrap them first.');
 });
 
-asyncTest('value_direct', '', async (test, template, render) => {
-  Blaze._throwNextException = true;
-  template.helpers({ x: Promise.resolve() });
-  test.throws(render, 'Asynchronous values are not serializable. Use #let to unwrap them first.');
-});
+asyncSuite('value_direct', [
+  ['getter', { x: getter }, '', 'foo'],
+  ['thenable', { x: thenable }, '', 'foo'],
+  ['value', { x: value }, '', 'foo'],
+]);
 
-asyncTest('value_raw', '', async (test, template, render) => {
-  Blaze._throwNextException = true;
-  template.helpers({ x: Promise.resolve() });
-  test.throws(render, 'Asynchronous values are not serializable. Use #let to unwrap them first.');
-});
+asyncSuite('value_raw', [
+  ['getter', { x: getter }, '', 'foo'],
+  ['thenable', { x: thenable }, '', 'foo'],
+  ['value', { x: value }, '', 'foo'],
+]);
 
 asyncSuite('if', [
   ['false', { x: Promise.resolve(false) }, '', '2'],

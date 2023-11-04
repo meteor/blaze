@@ -75,10 +75,14 @@ var materializeDOMInner = function (htmljs, intoArray, parentView, workStack) {
       }
       return;
     } else {
-      if (htmljs instanceof Blaze.Template) {
+      // Try to construct a `Blaze.View` out of the object. If it works...
+      if (isPromiseLike(htmljs)) {
+        htmljs = Blaze._Await(htmljs);
+      } else if (htmljs instanceof Blaze.Template) {
         htmljs = htmljs.constructView();
-        // fall through to Blaze.View case below
       }
+
+      // ...materialize it.
       if (htmljs instanceof Blaze.View) {
         Blaze._materializeView(htmljs, parentView, workStack, intoArray);
         return;
@@ -88,6 +92,33 @@ var materializeDOMInner = function (htmljs, intoArray, parentView, workStack) {
 
   throw new Error("Unexpected object in htmljs: " + htmljs);
 };
+
+const isPromiseLike = x => typeof x?.then === 'function';
+
+function waitForAllAttributesAndContinue(attrs, fn) {
+  const promises = [];
+  for (const [key, value] of Object.entries(attrs)) {
+    if (isPromiseLike(value)) {
+      promises.push(value.then(value => {
+        attrs[key] = value;
+      }));
+    } else if (Array.isArray(value)) {
+      value.forEach((element, index) => {
+        if (isPromiseLike(element)) {
+          promises.push(element.then(element => {
+            value[index] = element;
+          }));
+        }
+      });
+    }
+  }
+
+  if (promises.length) {
+    Promise.all(promises).then(fn);
+  } else {
+    fn();
+  }
+}
 
 var materializeTag = function (tag, parentView, workStack) {
   var tagName = tag.tagName;
@@ -125,20 +156,22 @@ var materializeTag = function (tag, parentView, workStack) {
     var attrUpdater = new ElementAttributesUpdater(elem);
     var updateAttributes = function () {
       var expandedAttrs = Blaze._expandAttributes(rawAttrs, parentView);
-      var flattenedAttrs = HTML.flattenAttributes(expandedAttrs);
-      var stringAttrs = {};
-      for (var attrName in flattenedAttrs) {
-        // map `null`, `undefined`, and `false` to null, which is important
-        // so that attributes with nully values are considered absent.
-        // stringify anything else (e.g. strings, booleans, numbers including 0).
-        if (flattenedAttrs[attrName] == null || flattenedAttrs[attrName] === false)
-          stringAttrs[attrName] = null;
-        else
-          stringAttrs[attrName] = Blaze._toText(flattenedAttrs[attrName],
-                                                parentView,
-                                                HTML.TEXTMODE.STRING);
-      }
-      attrUpdater.update(stringAttrs);
+      waitForAllAttributesAndContinue(expandedAttrs, () => {
+        var flattenedAttrs = HTML.flattenAttributes(expandedAttrs);
+        var stringAttrs = {};
+        for (var attrName in flattenedAttrs) {
+          // map `null`, `undefined`, and `false` to null, which is important
+          // so that attributes with nully values are considered absent.
+          // stringify anything else (e.g. strings, booleans, numbers including 0).
+          if (flattenedAttrs[attrName] == null || flattenedAttrs[attrName] === false)
+            stringAttrs[attrName] = null;
+          else
+            stringAttrs[attrName] = Blaze._toText(flattenedAttrs[attrName],
+                                                  parentView,
+                                                  HTML.TEXTMODE.STRING);
+        }
+        attrUpdater.update(stringAttrs);
+      });
     };
     var updaterComputation;
     if (parentView) {

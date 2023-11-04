@@ -75,8 +75,8 @@ Spacebars.mustache = function (value/*, args*/) {
 
   if (result instanceof Spacebars.SafeString)
     return HTML.Raw(result.toString());
-  else if (isPromiseLike(value))
-    throw new Error('Asynchronous values are not serializable. Use #let to unwrap them first.');
+  else if (isPromiseLike(result))
+    return result;
   else
     // map `null`, `undefined`, and `false` to null, which is important
     // so that attributes with nully values are considered absent.
@@ -113,7 +113,7 @@ Spacebars.dataMustache = function (value/*, args*/) {
 Spacebars.makeRaw = function (value) {
   if (value == null) // null or undefined
     return null;
-  else if (value instanceof HTML.Raw)
+  else if (value instanceof HTML.Raw || isPromiseLike(value))
     return value;
   else
     return HTML.Raw(value);
@@ -233,7 +233,7 @@ Spacebars.dot = function (value, id1/*, id2, ...*/) {
     return Spacebars.dot.apply(null, argsForRecurse);
   }
 
-  if (typeof value === 'function')
+  while (typeof value === 'function')
     value = value();
 
   if (! value)

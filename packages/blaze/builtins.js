@@ -352,6 +352,19 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
   return eachView;
 };
 
+/**
+ * Create a new `Blaze.Let` view that unwraps the given value.
+ * @param {unknown} value
+ * @returns {Blaze.View}
+ */
+Blaze._Await = function (value) {
+  return Blaze.Let({ value }, Blaze._AwaitContent);
+};
+
+Blaze._AwaitContent = function () {
+  return Blaze.currentView._scopeBindings.value.get()?.value;
+};
+
 Blaze._TemplateWith = function (arg, contentFunc) {
   var w;
 

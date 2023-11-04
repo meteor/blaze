@@ -81,6 +81,10 @@ Tinytest.addAsync("spacebars - async - Spacebars.dot", async test => {
   test.equal(await Spacebars.dot(Promise.resolve({ x: async () => o }), 'x', 'y'), 1);
   test.equal(await Spacebars.dot({ x: { then: resolve => resolve(o) } }, 'x', 'y'), 1);
   test.equal(await Spacebars.dot({ x: Promise.resolve(o) }, 'x', 'y'), 1);
+  test.equal(await Spacebars.dot({ x: () => () => o }, 'x', 'y'), 1);
+  test.equal(await Spacebars.dot({ x: () => async () => o }, 'x', 'y'), 1);
+  test.equal(await Spacebars.dot({ x: async () => () => o }, 'x', 'y'), 1);
+  test.equal(await Spacebars.dot({ x: async () => async () => o }, 'x', 'y'), 1);
   test.equal(await Spacebars.dot({ x: async () => o }, 'x', 'y'), 1);
   test.equal(await Spacebars.dot(() => ({ x: async () => o }), 'x', 'y'), 1);
   test.equal(await Spacebars.dot(async () => ({ x: async () => o }), 'x', 'y'), 1);
