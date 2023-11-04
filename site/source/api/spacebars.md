@@ -168,11 +168,21 @@ and not all tags are allowed at all locations.
 A double-braced tag at element level or in an attribute value typically evalutes
 to a string. If it evalutes to something else, the value will be cast to a
 string, unless the value is `null`, `undefined`, or `false`, which results in
-nothing being displayed. `Promise`s are not supported and will throw an error.
+nothing being displayed. `Promise`s are also supported -- see below.
 
 Values returned from helpers must be pure text, not HTML.  (That is, strings
 should have `<`, not `&lt;`.)  Spacebars will perform any necessary escaping if
 a template is rendered to HTML.
+
+### Async content
+
+> This functionality is considered experimental and a subject to change. For
+> details please refer to [#424](https://github.com/meteor/blaze/pull/428).
+
+The values can be wrapped in a `Promise`. When that happens, it will be treated
+as `undefined` while it's pending or rejected. Once resolved, the resulting
+value is used. To have more fine-grained handling of non-resolved states, use
+`#let` and the async state helpers (e.g., `@pending`).
 
 ### SafeString
 
@@ -192,6 +202,16 @@ A double-braced tag may be part of, or all of, an HTML attribute value:
 An attribute value that consists entirely of template tags that return `null`,
 `undefined`, or `false` is considered absent; otherwise, the attribute is
 considered present, even if its value is empty.
+
+### Async attributes
+
+> This functionality is considered experimental and a subject to change. For
+> details please refer to [#424](https://github.com/meteor/blaze/pull/428).
+
+The values can be wrapped in a `Promise`. When that happens, it will be treated
+as `undefined` while it's pending or rejected. Once resolved, the resulting
+value is used. To have more fine-grained handling of non-resolved states, use
+`#let` and the async state helpers (e.g., `@pending`).
 
 ### Dynamic Attributes
 
@@ -255,6 +275,16 @@ The inserted HTML must consist of balanced HTML tags.  You can't, for example,
 insert `"</div><div>"` to close an existing div and open a new one.
 
 This template tag cannot be used in attributes or in an HTML start tag.
+
+### Async content
+
+> This functionality is considered experimental and a subject to change. For
+> details please refer to [#424](https://github.com/meteor/blaze/pull/428).
+
+The raw HTML can be wrapped in a `Promise`. When that happens, it will not
+render anything if it's pending or rejected. Once resolved, the resulting value
+is used. To have more fine-grained handling of non-resolved states, use `#let`
+and the async state helpers (e.g., `@pending`).
 
 ## Inclusion Tags
 
