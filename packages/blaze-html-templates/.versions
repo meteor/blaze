@@ -27,7 +27,6 @@ observe-sequence@1.0.16
 ordered-dict@1.1.0
 promise@0.11.2
 random@1.2.0
-react-fast-refresh@0.1.0
 reactive-var@1.0.11
 spacebars@1.2.0
 spacebars-compiler@1.2.0
