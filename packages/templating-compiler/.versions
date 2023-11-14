@@ -3,7 +3,6 @@ babel-runtime@1.5.0
 blaze-tools@1.1.0
 caching-compiler@1.2.2
 caching-html-compiler@1.2.0
-dynamic-import@0.6.0
 ecmascript@0.15.1
 ecmascript-runtime@0.7.0
 ecmascript-runtime-client@0.11.0
