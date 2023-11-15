@@ -196,59 +196,85 @@ Spacebars.SafeString = function (html) {
 };
 Spacebars.SafeString.prototype = Handlebars.SafeString.prototype;
 
-// `Spacebars.dot(foo, "bar", "baz")` performs a special kind
-// of `foo.bar.baz` that allows safe indexing of `null` and
-// indexing of functions (which calls the function).  If the
-// result is a function, it is always a bound function (e.g.
-// a wrapped version of `baz` that always uses `foo.bar` as
-// `this`).
-//
-// If any of the intermediate values is a `Promise`, the result will be one as
-// well, i.e., accessing a field of a `Promise` results in a `Promise` of the
-// accessed field. Rejections are passed-through.
-//
-// In `Spacebars.dot(foo, "bar")`, `foo` is assumed to be either
-// a non-function value or a "fully-bound" function wrapping a value,
-// where fully-bound means it takes no arguments and ignores `this`.
-//
-// `Spacebars.dot(foo, "bar")` performs the following steps:
-//
-// * If `foo` is falsy, return `foo`.
-//
-// * If `foo` is a function, call it (set `foo` to `foo()`).
-//
-// * If `foo` is falsy now, return `foo`.
-//
-// * Return `foo.bar`, binding it to `foo` if it's a function.
-Spacebars.dot = function (value, id1/*, id2, ...*/) {
-  if (arguments.length > 2) {
-    // Note: doing this recursively is probably less efficient than
-    // doing it in an iterative loop.
-    var argsForRecurse = [];
-    argsForRecurse.push(Spacebars.dot(value, id1));
-    argsForRecurse.push.apply(argsForRecurse,
-                              Array.prototype.slice.call(arguments, 2));
-    return Spacebars.dot.apply(null, argsForRecurse);
+
+/**
+ * `Spacebars.dot(foo, "bar", "baz")` performs a special kind
+ * of `foo.bar.baz` that allows safe indexing of `null` and
+ * indexing of functions (which calls the function).  If the
+ * result is a function, it is always a bound function (e.g.
+ * a wrapped version of `baz` that always uses `foo.bar` as
+ * `this`).
+ *
+ * If any of the intermediate values is a `Promise`, the result will be one as
+ * well, i.e., accessing a field of a `Promise` results in a `Promise` of the
+ * accessed field. Rejections are passed-through.
+ *
+ * In `Spacebars.dot(foo, "bar")`, `foo` is assumed to be either
+ * a non-function value or a "fully-bound" function wrapping a value,
+ * where fully-bound means it takes no arguments and ignores `this`.
+ *
+ * `Spacebars.dot(foo, "bar")` performs the following steps:
+ *
+ * * If `foo` is falsy, return `foo`.
+ *
+ * * If `foo` is a function, call it (set `foo` to `foo()`).
+ *
+ * * If `foo` is falsy now, return `foo`.
+ *
+ * * Return `foo.bar`, binding it to `foo` if it's a function.
+ *
+ *
+ * @param currentObject                 - the current object we're probing for the next property
+ * @param ...steps                      - the dotted path elements like in cupboard4.drawer1a.subsection4.secretPentagonPapers,
+ *                                        but split into separate strings as sequential parameters, eg.
+ *                                        "cupboard4", "drawer1a", "subsection4", "secretPentagonPapers"
+ *
+ * @returns {null|string|Raw|Promise}   - can return either stuff / string-ish things by themselves or a promise for the same stuff.
+ */
+Spacebars.dot = function (currentObject, ...steps) {
+  /**
+   * Implementation strategy:
+   *
+   * Whenever we reach a new stage of information for "object" (eg. a value, a function, a promise) which isn't a value,
+   * we immediately recursively call ourselves again to continue working with the result of the computation, as soon as we have it.
+   *
+   * This way all different combinations of functions returning promises returning promises returning functions
+   * will be handled automatically.
+   *
+   * Once we have a value & not a callable, we'll move on to the next step in the steps chain.
+   */
+
+  // Call functions
+  if ('function' === typeof currentObject) {
+    currentObject = currentObject();
+    return Spacebars.dot(currentObject, ...steps);
   }
 
-  if (typeof value === 'function')
-    value = value();
+  /**
+   * If we receive a promise from one of the sub-evaluation-calls, we'll return a new promise ourselves which will complete once the sub-call has been completed (?)
+   * -> Or could we just pass these promises through? No, I think we'll have to wait for them in turn in order to wait until we're finished with all promises...?
+   */
+  if (isPromiseLike(currentObject)) {
+    return _thenWithContext(currentObject, currentObject => Spacebars.dot(currentObject, ...steps));
+  }
 
-  if (! value)
-    return value; // falsy, don't index, pass through
+  /**
+   * As soon as we have a real value, not a promise or function, we can try to
+   * resolve the next step of the path, if there are any left:
+   */
+  if (steps.length) {
+    // Pick next step & remove it from the steps array.
+    const nextStep = steps.shift();
 
-  if (isPromiseLike(value))
-    return _thenWithContext(value, value => Spacebars.dot(value, id1));
+    // continue drilling down.the.path
+    currentObject = currentObject && currentObject[nextStep];
+    return Spacebars.dot(currentObject, ...steps);
+  }
 
-  var result = value[id1];
-  if (typeof result !== 'function')
-    return result;
-  // `value[id1]` (or `value()[id1]`) is a function.
-  // Bind it so that when called, `value` will be placed in `this`.
-  return function (/*arguments*/) {
-    return result.apply(value, arguments);
-  };
-};
+  // If we only got a value thing by now, we can finally just return it! :D
+  return currentObject;
+}
+
 
 // Spacebars.With implements the conditional logic of rendering
 // the `{{else}}` block if the argument is falsy.  It combines
