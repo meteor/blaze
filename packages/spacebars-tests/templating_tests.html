@@ -83,6 +83,14 @@
 </div>
 </template>
 
+<template name="test_event_reactive_loop_parent">
+  <div>{{>test_event_reactive_loop_child childData}}</div>
+</template>
+
+<template name="test_event_reactive_loop_child">
+  <div>I must not cause a dependency loop</div>
+</template>
+
 <template name="test_capture_events">
   <video class='video1'>
     <source id='mp4'
