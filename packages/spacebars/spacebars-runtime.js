@@ -175,7 +175,7 @@ Spacebars.call = function (value/*, args*/) {
   }
 };
 
-const isPromiseLike = x => typeof x?.then === 'function';
+const isPromiseLike = x => !!x && typeof x.then === 'function';
 
 // Call this as `Spacebars.kw({ ... })`.  The return value
 // is `instanceof Spacebars.kw`.
