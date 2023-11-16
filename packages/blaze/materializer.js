@@ -93,7 +93,7 @@ var materializeDOMInner = function (htmljs, intoArray, parentView, workStack) {
   throw new Error("Unexpected object in htmljs: " + htmljs);
 };
 
-const isPromiseLike = x => typeof x?.then === 'function';
+const isPromiseLike = x => !!x && typeof x.then === 'function';
 
 function waitForAllAttributesAndContinue(attrs, fn) {
   const promises = [];
