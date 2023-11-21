@@ -1,5 +1,6 @@
 function asyncTest(templateName, testName, fn) {
-  Tinytest.addAsync(`spacebars-tests - async - ${templateName} ${testName}`, test => {
+  const name = [templateName, testName].filter(Boolean).join(' ');
+  Tinytest.addAsync(`spacebars-tests - async - ${name}`, test => {
     const template = Blaze.Template[`spacebars_async_tests_${templateName}`];
     const templateCopy = new Blaze.Template(template.viewName, template.renderFunction);
     return fn(test, templateCopy, () => {
@@ -21,16 +22,20 @@ function asyncSuite(templateName, cases) {
   }
 }
 
+const getter = async () => 'foo';
+const thenable = { then: resolve => Promise.resolve().then(() => resolve('foo')) };
+const value = Promise.resolve('foo');
+
 asyncSuite('access', [
-  ['getter', { x: { y: async () => 'foo' } }, '', 'foo'],
-  ['thenable', { x: { y: { then: resolve => { Promise.resolve().then(() => resolve('foo')) } } } }, '', 'foo'],
-  ['value', { x: { y: Promise.resolve('foo') } }, '', 'foo'],
+  ['getter', { x: { y: getter } }, '', 'foo'],
+  ['thenable', { x: { y: thenable } }, '', 'foo'],
+  ['value', { x: { y: value } }, '', 'foo'],
 ]);
 
 asyncSuite('direct', [
-  ['getter', { x: async () => 'foo' }, '', 'foo'],
-  ['thenable', { x: { then: resolve => { Promise.resolve().then(() => resolve('foo')) } } }, '', 'foo'],
-  ['value', { x: Promise.resolve('foo') }, '', 'foo'],
+  ['getter', { x: getter }, '', 'foo'],
+  ['thenable', { x: thenable }, '', 'foo'],
+  ['value', { x: value }, '', 'foo'],
 ]);
 
 asyncTest('missing1', 'outer', async (test, template, render) => {
@@ -42,6 +47,54 @@ asyncTest('missing2', 'inner', async (test, template, render) => {
   Blaze._throwNextException = true;
   test.throws(render, 'Binding for "b" was not found.');
 });
+
+asyncSuite('attribute', [
+  ['getter', { x: getter }, '<img>', '<img class="foo">'],
+  ['thenable', { x: thenable }, '<img>', '<img class="foo">'],
+  ['value', { x: value }, '<img>', '<img class="foo">'],
+]);
+
+asyncTest('attributes', '', async (test, template, render) => {
+  Blaze._throwNextException = true;
+  template.helpers({ x: Promise.resolve() });
+  test.throws(render, 'Asynchronous attributes are not supported. Use #let to unwrap them first.');
+});
+
+asyncSuite('value_direct', [
+  ['getter', { x: getter }, '', 'foo'],
+  ['thenable', { x: thenable }, '', 'foo'],
+  ['value', { x: value }, '', 'foo'],
+]);
+
+asyncSuite('value_raw', [
+  ['getter', { x: getter }, '', 'foo'],
+  ['thenable', { x: thenable }, '', 'foo'],
+  ['value', { x: value }, '', 'foo'],
+]);
+
+asyncSuite('if', [
+  ['false', { x: Promise.resolve(false) }, '', '2'],
+  ['true', { x: Promise.resolve(true) }, '', '1 1'],
+]);
+
+asyncSuite('unless', [
+  ['false', { x: Promise.resolve(false) }, '', '1 1'],
+  ['true', { x: Promise.resolve(true) }, '', '2'],
+]);
+
+asyncSuite('each_old', [
+  ['null', { x: Promise.resolve(null) }, '0', '0'],
+  ['empty', { x: Promise.resolve([]) }, '0', '0'],
+  ['one', { x: Promise.resolve([1]) }, '0', '1'],
+  ['two', { x: Promise.resolve([1, 2]) }, '0', '12'],
+]);
+
+asyncSuite('each_new', [
+  ['null', { x: Promise.resolve(null) }, '0', '0'],
+  ['empty', { x: Promise.resolve([]) }, '0', '0'],
+  ['one', { x: Promise.resolve([1]) }, '0', '1'],
+  ['two', { x: Promise.resolve([1, 2]) }, '0', '12'],
+]);
 
 // In the following tests pending=1, rejected=2, resolved=3.
 const pending = new Promise(() => {});

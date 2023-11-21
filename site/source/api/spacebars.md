@@ -166,13 +166,23 @@ and not all tags are allowed at all locations.
 ### Double-braced Tags
 
 A double-braced tag at element level or in an attribute value typically evalutes
-to a string.  If it evalutes to something else, the value will be cast to a
+to a string. If it evalutes to something else, the value will be cast to a
 string, unless the value is `null`, `undefined`, or `false`, which results in
-nothing being displayed.
+nothing being displayed. `Promise`s are also supported -- see below.
 
 Values returned from helpers must be pure text, not HTML.  (That is, strings
 should have `<`, not `&lt;`.)  Spacebars will perform any necessary escaping if
 a template is rendered to HTML.
+
+### Async content
+
+> This functionality is considered experimental and a subject to change. For
+> details please refer to [#424](https://github.com/meteor/blaze/pull/428).
+
+The values can be wrapped in a `Promise`. When that happens, it will be treated
+as `undefined` while it's pending or rejected. Once resolved, the resulting
+value is used. To have more fine-grained handling of non-resolved states, use
+`#let` and the async state helpers (e.g., `@pending`).
 
 ### SafeString
 
@@ -193,6 +203,16 @@ An attribute value that consists entirely of template tags that return `null`,
 `undefined`, or `false` is considered absent; otherwise, the attribute is
 considered present, even if its value is empty.
 
+### Async attributes
+
+> This functionality is considered experimental and a subject to change. For
+> details please refer to [#424](https://github.com/meteor/blaze/pull/428).
+
+The values can be wrapped in a `Promise`. When that happens, it will be treated
+as `undefined` while it's pending or rejected. Once resolved, the resulting
+value is used. To have more fine-grained handling of non-resolved states, use
+`#let` and the async state helpers (e.g., `@pending`).
+
 ### Dynamic Attributes
 
 A double-braced tag can be used in an HTML start tag to specify an arbitrary set
@@ -205,11 +225,11 @@ of attributes:
 ```
 
 The tag must evaluate to an object that serves as a dictionary of attribute name
-and value strings.  For convenience, the value may also be a string or null.  An
-empty string or null expands to `{}`.  A non-empty string must be an attribute
+and value strings. For convenience, the value may also be a string or null. An
+empty string or null expands to `{}`. A non-empty string must be an attribute
 name, and expands to an attribute with an empty value; for example, `"checked"`
 expands to `{checked: ""}` (which, as far as HTML is concerned, means the
-checkbox is checked).
+checkbox is checked). `Promise`s are not supported and will throw an error.
 
 To summarize:
 
@@ -223,6 +243,7 @@ To summarize:
     <tr><td><code>{checked: "", 'class': "foo"}</code></td><td><code>checked  class=foo</code></td></tr>
     <tr><td><code>{checked: false, 'class': "foo"}</code></td><td><code>class=foo</code></td></tr>
     <tr><td><code>"checked class=foo"</code></td><td>ERROR, string is not an attribute name</td></tr>
+    <tr><td><code>Promise.resolve({})</code></td><td>ERROR, asynchronous attributes are not supported</td></tr>
   </tbody>
 </table>
 
@@ -254,6 +275,16 @@ The inserted HTML must consist of balanced HTML tags.  You can't, for example,
 insert `"</div><div>"` to close an existing div and open a new one.
 
 This template tag cannot be used in attributes or in an HTML start tag.
+
+### Async content
+
+> This functionality is considered experimental and a subject to change. For
+> details please refer to [#424](https://github.com/meteor/blaze/pull/428).
+
+The raw HTML can be wrapped in a `Promise`. When that happens, it will not
+render anything if it's pending or rejected. Once resolved, the resulting value
+is used. To have more fine-grained handling of non-resolved states, use `#let`
+and the async state helpers (e.g., `@pending`).
 
 ## Inclusion Tags
 
@@ -357,6 +388,16 @@ well as the empty array, while any other value is considered true.
 
 `#unless` is just `#if` with the condition inverted.
 
+### Async conditions
+
+> This functionality is considered experimental and a subject to change. For
+> details please refer to [#424](https://github.com/meteor/blaze/pull/424).
+
+The condition can be wrapped in a `Promise`. When that happens, both `#if` and
+`#unless` will not render anything if it's pending or rejected. Once resolved,
+the resulting value is used. To have more fine-grained handling of non-resolved
+states, use `#let` and the async state helpers (e.g., `@pending`).
+
 ## With
 
 A `#with` template tag establishes a new data context object for its contents.
@@ -422,6 +463,16 @@ context) if there are zero items in the sequence at any time.
 
 You can use a special variable `@index` in the body of `#each` to get the
 0-based index of the currently rendered value in the sequence.
+
+### Async sequences
+
+> This functionality is considered experimental and a subject to change. For
+> details please refer to [#424](https://github.com/meteor/blaze/pull/424).
+
+The sequence argument can be wrapped in a `Promise`. When that happens, `#each`
+will render the "else" if it's pending or rejected. Once resolved, the resulting
+sequence is used. To have more fine-grained handling of non-resolved states, use
+`#let` and the async state helpers (e.g., `@pending`).
 
 ### Reactivity Model for Each
 

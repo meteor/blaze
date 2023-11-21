@@ -75,6 +75,8 @@ Spacebars.mustache = function (value/*, args*/) {
 
   if (result instanceof Spacebars.SafeString)
     return HTML.Raw(result.toString());
+  else if (isPromiseLike(result))
+    return result;
   else
     // map `null`, `undefined`, and `false` to null, which is important
     // so that attributes with nully values are considered absent.
@@ -111,7 +113,7 @@ Spacebars.dataMustache = function (value/*, args*/) {
 Spacebars.makeRaw = function (value) {
   if (value == null) // null or undefined
     return null;
-  else if (value instanceof HTML.Raw)
+  else if (value instanceof HTML.Raw || isPromiseLike(value))
     return value;
   else
     return HTML.Raw(value);
@@ -173,7 +175,7 @@ Spacebars.call = function (value/*, args*/) {
   }
 };
 
-const isPromiseLike = x => typeof x?.then === 'function';
+const isPromiseLike = x => !!x && typeof x.then === 'function';
 
 // Call this as `Spacebars.kw({ ... })`.  The return value
 // is `instanceof Spacebars.kw`.
@@ -231,7 +233,7 @@ Spacebars.dot = function (value, id1/*, id2, ...*/) {
     return Spacebars.dot.apply(null, argsForRecurse);
   }
 
-  if (typeof value === 'function')
+  while (typeof value === 'function')
     value = value();
 
   if (! value)
