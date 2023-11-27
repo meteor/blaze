@@ -172,6 +172,10 @@ TransformingVisitor.def({
     }
 
     if (attrs && isConstructedObject(attrs)) {
+      if (typeof attrs.then === 'function') {
+        throw new Error('Asynchronous attributes are not supported. Use #let to unwrap them first.');
+      }
+
       throw new Error("The basic TransformingVisitor does not support " +
                       "foreign objects in attributes.  Define a custom " +
                       "visitAttributes for this case.");
