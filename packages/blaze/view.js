@@ -32,6 +32,7 @@
 /// of name "with".  Names are also useful when debugging, so in
 /// general it's good for functions that create Views to set the name.
 /// Views associated with templates have names of the form "Template.foo".
+import { HTML } from 'meteor/htmljs';
 
 /**
  * A binding is either `undefined` (pending), `{ error }` (rejected), or
@@ -108,8 +109,8 @@ Blaze.View.prototype._onViewRendered = function (cb) {
 };
 
 Blaze.View.prototype.onViewReady = function (cb) {
-  var self = this;
-  var fire = function () {
+  const self = this;
+  const fire = function () {
     Tracker.afterFlush(function () {
       if (! self.isDestroyed) {
         Blaze._withCurrentView(self, function () {
@@ -133,10 +134,10 @@ Blaze.View.prototype.onViewDestroyed = function (cb) {
   this._callbacks.destroyed.push(cb);
 };
 Blaze.View.prototype.removeViewDestroyedListener = function (cb) {
-  var destroyed = this._callbacks.destroyed;
+  const destroyed = this._callbacks.destroyed;
   if (! destroyed)
     return;
-  var index = destroyed.lastIndexOf(cb);
+  const index = destroyed.lastIndexOf(cb);
   if (index !== -1) {
     // XXX You'd think the right thing to do would be splice, but _fireCallbacks
     // gets sad if you remove callbacks while iterating over the list.  Should
@@ -166,7 +167,7 @@ Blaze.View.prototype.removeViewDestroyedListener = function (cb) {
 /// from either onViewCreated (guarded against the absence of
 /// view._domrange), or onViewReady.
 Blaze.View.prototype.autorun = function (f, _inViewScope, displayName) {
-  var self = this;
+  const self = this;
 
   // The restrictions on when View#autorun can be called are in order
   // to avoid bad patterns, like creating a Blaze.View and immediately
@@ -196,9 +197,9 @@ Blaze.View.prototype.autorun = function (f, _inViewScope, displayName) {
     throw new Error("Can't call View#autorun from inside render(); try calling it from the created or rendered callback");
   }
 
-  var templateInstanceFunc = Blaze.Template._currentTemplateInstanceFunc;
+  const templateInstanceFunc = Blaze.Template._currentTemplateInstanceFunc;
 
-  var func = function viewAutorun(c) {
+  const func = function viewAutorun(c) {
     return Blaze._withCurrentView(_inViewScope || self, function () {
       return Blaze.Template._withTemplateInstanceFunc(
         templateInstanceFunc, function () {
@@ -212,9 +213,9 @@ Blaze.View.prototype.autorun = function (f, _inViewScope, displayName) {
   // and Firefox prefer it in debuggers over the name function was declared by.
   func.displayName =
     (self.name || 'anonymous') + ':' + (displayName || 'anonymous');
-  var comp = Tracker.autorun(func);
+  const comp = Tracker.autorun(func);
 
-  var stopComputation = function () { comp.stop(); };
+  const stopComputation = function () { comp.stop(); };
   self.onViewDestroyed(stopComputation);
   comp.onStop(function () {
     self.removeViewDestroyedListener(stopComputation);
@@ -224,7 +225,7 @@ Blaze.View.prototype.autorun = function (f, _inViewScope, displayName) {
 };
 
 Blaze.View.prototype._errorIfShouldntCallSubscribe = function () {
-  var self = this;
+  const self = this;
 
   if (! self.isCreated) {
     throw new Error("View#subscribe must be called from the created callback at the earliest");
@@ -244,12 +245,12 @@ Blaze.View.prototype._errorIfShouldntCallSubscribe = function () {
  * see if it is ready, or stop it manually
  */
 Blaze.View.prototype.subscribe = function (args, options) {
-  var self = this;
+  const self = this;
   options = options || {};
 
   self._errorIfShouldntCallSubscribe();
 
-  var subHandle;
+  let subHandle;
   if (options.connection) {
     subHandle = options.connection.subscribe.apply(options.connection, args);
   } else {
@@ -280,8 +281,8 @@ Blaze.View.prototype.lastNode = function () {
 Blaze._fireCallbacks = function (view, which) {
   Blaze._withCurrentView(view, function () {
     Tracker.nonreactive(function fireCallbacks() {
-      var cbs = view._callbacks[which];
-      for (var i = 0, N = (cbs && cbs.length); i < N; i++)
+      const cbs = view._callbacks[which];
+      for (let i = 0, N = (cbs && cbs.length); i < N; i++)
         cbs[i] && cbs[i].call(view);
     });
   });
@@ -299,17 +300,17 @@ Blaze._createView = function (view, parentView, forExpansion) {
   Blaze._fireCallbacks(view, 'created');
 };
 
-var doFirstRender = function (view, initialContent) {
-  var domrange = new Blaze._DOMRange(initialContent);
-  view._domrange = domrange;
+const doFirstRender = function (view, initialContent) {
+  const domrange = new Blaze._DOMRange(initialContent);
+  view.setAttribute('_domrange', domrange)
   domrange.view = view;
-  view.isRendered = true;
+  view.setAttribute('isRendered', true)
   Blaze._fireCallbacks(view, 'rendered');
 
-  var teardownHook = null;
+  let teardownHook = null;
 
   domrange.onAttached(function attached(range, element) {
-    view._isAttached = true;
+    view.setAttribute('_isAttached', true)
 
     teardownHook = Blaze._DOMBackend.Teardown.onElementTeardown(
       element, function teardown() {
@@ -319,7 +320,7 @@ var doFirstRender = function (view, initialContent) {
 
   // tear down the teardown hook
   view.onViewDestroyed(function () {
-    teardownHook && teardownHook.stop();
+    if (teardownHook) teardownHook.stop();
     teardownHook = null;
   });
 
@@ -343,24 +344,24 @@ var doFirstRender = function (view, initialContent) {
 Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
   Blaze._createView(view, parentView);
 
-  var domrange;
-  var lastHtmljs;
+  let domrange;
+  let lastHtmljs;
   // We don't expect to be called in a Computation, but just in case,
   // wrap in Tracker.nonreactive.
   Tracker.nonreactive(function () {
     view.autorun(function doRender(c) {
       // `view.autorun` sets the current view.
-      view.renderCount++;
-      view._isInRender = true;
+      view.setAttribute('renderCount', view.renderCount + 1);
+      view.setAttribute('_isInRender', true);
       // Any dependencies that should invalidate this Computation come
       // from this line:
-      var htmljs = view._render();
-      view._isInRender = false;
+      const htmljs = view._render();
+      view.setAttribute('_isInRender', false);
 
       if (! c.firstRun && ! Blaze._isContentEqual(lastHtmljs, htmljs)) {
         Tracker.nonreactive(function doMaterialize() {
           // re-render
-          var rangesAndNodes = Blaze._materializeDOM(htmljs, [], view);
+          const rangesAndNodes = Blaze._materializeDOM(htmljs, [], view);
           domrange.setMembers(rangesAndNodes);
           Blaze._fireCallbacks(view, 'rendered');
         });
@@ -379,7 +380,7 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
     }, undefined, 'materialize');
 
     // first render.  lastHtmljs is the first htmljs.
-    var initialContents;
+    let initialContents;
     if (! _workStack) {
       initialContents = Blaze._materializeDOM(lastHtmljs, [], view);
       domrange = doFirstRender(view, initialContents);
@@ -424,13 +425,13 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
 Blaze._expandView = function (view, parentView) {
   Blaze._createView(view, parentView, true /*forExpansion*/);
 
-  view._isInRender = true;
-  var htmljs = Blaze._withCurrentView(view, function () {
+  view.setAttribute('_isInRender', true);
+  const htmljs = Blaze._withCurrentView(view, function () {
     return view._render();
   });
-  view._isInRender = false;
+  view.setAttribute('_isInRender', false);
 
-  var result = Blaze._expand(htmljs, view);
+  const result = Blaze._expand(htmljs, view);
 
   if (Tracker.active) {
     Tracker.onInvalidate(function () {
@@ -476,8 +477,8 @@ Blaze._HTMLJSExpander.def({
 
 // Return Blaze.currentView, but only if it is being rendered
 // (i.e. we are in its render() method).
-var currentViewIfRendering = function () {
-  var view = Blaze.currentView;
+const currentViewIfRendering = function () {
+  const view = Blaze.currentView;
   return (view && view._isInRender) ? view : null;
 };
 
@@ -509,7 +510,7 @@ Blaze._destroyView = function (view, _skipNodes) {
   // otherwise it's tracker.flush will cause the above line will
   // not be called and their views won't be destroyed
   // Involved issues: DOMRange "Must be attached" error, mem leak
-  
+
   Blaze._fireCallbacks(view, 'destroyed');
 };
 
@@ -547,7 +548,7 @@ Blaze.currentView = null;
  * @returns {T}
  */
 Blaze._withCurrentView = function (view, func) {
-  var oldView = Blaze.currentView;
+  const oldView = Blaze.currentView;
   try {
     Blaze.currentView = view;
     return func();
@@ -560,7 +561,7 @@ Blaze._withCurrentView = function (view, func) {
 // Privately, it takes any HTMLJS (extended with Views and Templates)
 // except null or undefined, or a function that returns any extended
 // HTMLJS.
-var checkRenderContent = function (content) {
+const checkRenderContent = function (content) {
   if (content === null)
     throw new Error("Can't render null");
   if (typeof content === 'undefined')
@@ -585,7 +586,7 @@ var checkRenderContent = function (content) {
 // For Blaze.render and Blaze.toHTML, take content and
 // wrap it in a View, unless it's a single View or
 // Template already.
-var contentAsView = function (content) {
+const contentAsView = function (content) {
   checkRenderContent(content);
 
   if (content instanceof Blaze.Template) {
@@ -593,7 +594,7 @@ var contentAsView = function (content) {
   } else if (content instanceof Blaze.View) {
     return content;
   } else {
-    var func = content;
+    let func = content;
     if (typeof func !== 'function') {
       func = function () {
         return content;
@@ -606,7 +607,7 @@ var contentAsView = function (content) {
 // For Blaze.renderWithData and Blaze.toHTMLWithData, wrap content
 // in a function, if necessary, so it can be a content arg to
 // a Blaze.With.
-var contentAsFunc = function (content) {
+const contentAsFunc = function (content) {
   checkRenderContent(content);
 
   if (typeof content !== 'function') {
@@ -650,7 +651,7 @@ Blaze.render = function (content, parentElement, nextNode, parentView) {
 
   parentView = parentView || currentViewIfRendering();
 
-  var view = contentAsView(content);
+  const view = contentAsView(content);
 
   // TODO: this is only needed in development
   if (!parentView) {
@@ -659,7 +660,7 @@ Blaze.render = function (content, parentElement, nextNode, parentView) {
     });
 
     view.onViewDestroyed(function () {
-      var index = Blaze.__rootViews.indexOf(view);
+      let index = Blaze.__rootViews.indexOf(view);
       if (index > -1) {
         Blaze.__rootViews.splice(index, 1);
       }
@@ -711,7 +712,7 @@ Blaze.remove = function (view) {
 
   while (view) {
     if (! view.isDestroyed) {
-      var range = view._domrange;
+      const range = view._domrange;
       range.destroy();
 
       if (range.attached && ! range.parentRange) {
@@ -774,12 +775,12 @@ Blaze._toText = function (htmljs, parentView, textMode) {
  * @param {DOMElement|Blaze.View} [elementOrView] Optional.  An element that was rendered by a Meteor, or a View.
  */
 Blaze.getData = function (elementOrView) {
-  var theWith;
+  let theWith;
 
   if (! elementOrView) {
     theWith = Blaze.getView('with');
   } else if (elementOrView instanceof Blaze.View) {
-    var view = elementOrView;
+    const view = elementOrView;
     theWith = (view.name === 'with' ? view :
                Blaze.getView(view, 'with'));
   } else if (typeof elementOrView.nodeType === 'number') {
@@ -812,7 +813,7 @@ Blaze.getElementData = function (element) {
  * @param {DOMElement} [element] Optional.  If specified, the View enclosing `element` is returned.
  */
 Blaze.getView = function (elementOrView, _viewName) {
-  var viewName = _viewName;
+  let viewName = _viewName;
 
   if ((typeof elementOrView) === 'string') {
     // omitted elementOrView; viewName present
@@ -836,7 +837,7 @@ Blaze.getView = function (elementOrView, _viewName) {
 // Gets the current view or its nearest ancestor of name
 // `name`.
 Blaze._getCurrentView = function (name) {
-  var view = Blaze.currentView;
+  let view = Blaze.currentView;
   // Better to fail in cases where it doesn't make sense
   // to use Blaze._getCurrentView().  There will be a current
   // view anywhere it does.  You can check Blaze.currentView
@@ -856,7 +857,7 @@ Blaze._getCurrentView = function (name) {
 };
 
 Blaze._getParentView = function (view, name) {
-  var v = view.parentView;
+  let v = view.parentView;
 
   if (name) {
     while (v && v.name !== name)
@@ -867,8 +868,8 @@ Blaze._getParentView = function (view, name) {
 };
 
 Blaze._getElementView = function (elem, name) {
-  var range = Blaze._DOMRange.forElement(elem);
-  var view = null;
+  let range = Blaze._DOMRange.forElement(elem);
+  let view = null;
   while (range && ! view) {
     view = (range.view || null);
     if (! view) {
@@ -890,7 +891,7 @@ Blaze._getElementView = function (elem, name) {
 
 Blaze._addEventMap = function (view, eventMap, thisInHandler) {
   thisInHandler = (thisInHandler || null);
-  var handles = [];
+  const handles = [];
 
   if (! view._domrange)
     throw new Error("View must have a DOMRange");
@@ -898,22 +899,22 @@ Blaze._addEventMap = function (view, eventMap, thisInHandler) {
   view._domrange.onAttached(function attached_eventMaps(range, element) {
     Object.keys(eventMap).forEach(function (spec) {
       let handler = eventMap[spec];
-      var clauses = spec.split(/,\s+/);
+      const clauses = spec.split(/,\s+/);
       // iterate over clauses of spec, e.g. ['click .foo', 'click .bar']
       clauses.forEach(function (clause) {
-        var parts = clause.split(/\s+/);
+        const parts = clause.split(/\s+/);
         if (parts.length === 0)
           return;
 
-        var newEvents = parts.shift();
-        var selector = parts.join(' ');
+        const newEvents = parts.shift();
+        const selector = parts.join(' ');
         handles.push(Blaze._EventSupport.listen(
           element, newEvents, selector,
           function (evt) {
             if (! range.containsElement(evt.currentTarget, selector, newEvents))
               return null;
-            var handlerThis = thisInHandler || this;
-            var handlerArgs = arguments;
+            const handlerThis = thisInHandler || this;
+            const handlerArgs = arguments;
             return Blaze._withCurrentView(view, function () {
               return handler.apply(handlerThis, handlerArgs);
             });
