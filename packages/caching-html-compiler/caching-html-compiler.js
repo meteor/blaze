@@ -1,4 +1,5 @@
 import isEmpty from 'lodash.isempty';
+import { CachingCompiler } from 'meteor/caching-compiler';
 
 const path = Plugin.path;
 
@@ -116,14 +117,14 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
       // Add JavaScript code to set attributes on body
       allJavaScript +=
 `Meteor.startup(function() {
-  var attrs = ${JSON.stringify(compileResult.bodyAttrs)};
-  for (var prop in attrs) {
+  const attrs = ${JSON.stringify(compileResult.bodyAttrs)};
+  for (let prop in attrs) {
     document.body.setAttribute(prop, attrs[prop]);
   }
 });
 `;
     }
-    
+
 
     if (allJavaScript) {
       const filePath = inputFile.getPathInPackage();
@@ -144,4 +145,4 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
       });
     }
   }
-}
+};
