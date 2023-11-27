@@ -57,3 +57,35 @@ Tinytest.add("spacebars - Spacebars.dot", function (test) {
     }, 'inc')(8), 9);
 
 });
+
+Tinytest.addAsync("spacebars - async - Spacebars.call", async test => {
+  const add = (x, y) => x + y;
+  test.equal(await Spacebars.call(add, 1, Promise.resolve(2)), 3);
+  test.equal(await Spacebars.call(add, Promise.resolve(1), 2), 3);
+  test.equal(await Spacebars.call(add, { then: resolve => resolve(1) }, 2), 3);
+  test.equal(await Spacebars.call(add, Promise.resolve(1), Promise.resolve(2)), 3);
+  test.equal(await Spacebars.call(add, 1, async () => 2), 3);
+  test.equal(await Spacebars.call(add, async () => 1, 2), 3);
+  test.equal(await Spacebars.call(add, async () => 1, async () => 2), 3);
+  test.equal(await Spacebars.call(add, Promise.reject(1), 2).catch(x => x), 1);
+  test.equal(await Spacebars.call(add, 1, { then: (_, reject) => reject(2) }).catch(x => x), 2);
+  test.equal(await Spacebars.call(add, 1, Promise.reject(2)).catch(x => x), 2);
+  test.equal(await Spacebars.call(add, Promise.reject(1), Promise.reject(2)).catch(x => x), 1);
+});
+
+Tinytest.addAsync("spacebars - async - Spacebars.dot", async test => {
+  const o = { y: 1 };
+  test.equal(await Spacebars.dot(Promise.resolve(null), 'x', 'y'), null);
+  test.equal(await Spacebars.dot(Promise.resolve({ x: o }), 'x', 'y'), 1);
+  test.equal(await Spacebars.dot(Promise.resolve({ x: () => o }), 'x', 'y'), 1);
+  test.equal(await Spacebars.dot(Promise.resolve({ x: async () => o }), 'x', 'y'), 1);
+  test.equal(await Spacebars.dot({ x: { then: resolve => resolve(o) } }, 'x', 'y'), 1);
+  test.equal(await Spacebars.dot({ x: Promise.resolve(o) }, 'x', 'y'), 1);
+  test.equal(await Spacebars.dot({ x: () => () => o }, 'x', 'y'), 1);
+  test.equal(await Spacebars.dot({ x: () => async () => o }, 'x', 'y'), 1);
+  test.equal(await Spacebars.dot({ x: async () => () => o }, 'x', 'y'), 1);
+  test.equal(await Spacebars.dot({ x: async () => async () => o }, 'x', 'y'), 1);
+  test.equal(await Spacebars.dot({ x: async () => o }, 'x', 'y'), 1);
+  test.equal(await Spacebars.dot(() => ({ x: async () => o }), 'x', 'y'), 1);
+  test.equal(await Spacebars.dot(async () => ({ x: async () => o }), 'x', 'y'), 1);
+});

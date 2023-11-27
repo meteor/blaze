@@ -10,7 +10,8 @@ Blaze._calculateCondition = function (cond) {
 /**
  * @summary Constructs a View that renders content with a data context.
  * @locus Client
- * @param {Object|Function} data An object to use as the data context, or a function returning such an object.  If a function is provided, it will be reactively re-run.
+ * @param {Object|Function} data An object to use as the data context, or a function returning such an object.  If a
+ *   function is provided, it will be reactively re-run.
  * @param {Function} contentFunc A Function that returns [*renderable content*](#Renderable-Content).
  */
 Blaze.With = function (data, contentFunc) {
@@ -32,23 +33,81 @@ Blaze.With = function (data, contentFunc) {
   return view;
 };
 
+
+/**
+ * @summary Shallow compare of two bindings.
+ * @param {Binding} x
+ * @param {Binding} y
+ */
+function _isEqualBinding(x, y) {
+  if (typeof x === 'object' && typeof y === 'object') {
+    return x.error === y.error && ReactiveVar._isEqual(x.value, y.value);
+  }
+  else {
+    return ReactiveVar._isEqual(x, y);
+  }
+}
+
+/**
+ * @template T
+ * @param {T} x
+ * @returns {T}
+ */
+function _identity(x) {
+  return x;
+}
+
+/**
+ * Attaches a single binding to the instantiated view.
+ * @template T, U
+ * @param {ReactiveVar<U>} reactiveVar Target view.
+ * @param {Promise<T> | T} value Bound value.
+ * @param {(value: T) => U} [mapper] Maps the computed value before store.
+ */
+function _setBindingValue(reactiveVar, value, mapper = _identity) {
+  if (value && typeof value.then === 'function') {
+    value.then(
+      value => reactiveVar.set({ value: mapper(value) }),
+      error => reactiveVar.set({ error }),
+    );
+  } else {
+    reactiveVar.set({ value: mapper(value) });
+  }
+}
+
+/**
+ * @template T, U
+ * @param {Blaze.View} view Target view.
+ * @param {Promise<T> | T | (() => Promise<T> | T)} binding Binding value or its getter.
+ * @param {string} [displayName] Autorun's display name.
+ * @param {(value: T) => U} [mapper] Maps the computed value before store.
+ * @returns {ReactiveVar<U>}
+ */
+function _createBinding(view, binding, displayName, mapper) {
+  const reactiveVar = new ReactiveVar(undefined, _isEqualBinding);
+  if (typeof binding === 'function') {
+    view.autorun(
+      () => _setBindingValue(reactiveVar, binding(), mapper),
+      view.parentView,
+      displayName,
+    );
+  } else {
+    _setBindingValue(reactiveVar, binding, mapper);
+  }
+
+  return reactiveVar;
+}
+
 /**
  * Attaches bindings to the instantiated view.
  * @param {Object} bindings A dictionary of bindings, each binding name
  * corresponds to a value or a function that will be reactively re-run.
- * @param {View} view The target.
+ * @param {Blaze.View} view The target.
  */
 Blaze._attachBindingsToView = function (bindings, view) {
   view.onViewCreated(function () {
     Object.entries(bindings).forEach(function ([name, binding]) {
-      view._scopeBindings[name] = new ReactiveVar();
-      if (typeof binding === 'function') {
-        view.autorun(function () {
-          view._scopeBindings[name].set(binding());
-        }, view.parentView);
-      } else {
-        view._scopeBindings[name].set(binding);
-      }
+      view._scopeBindings[name] = _createBinding(view, binding);
     });
   });
 };
@@ -69,23 +128,33 @@ Blaze.Let = function (bindings, contentFunc) {
 /**
  * @summary Constructs a View that renders content conditionally.
  * @locus Client
- * @param {Function} conditionFunc A function to reactively re-run.  Whether the result is truthy or falsy determines whether `contentFunc` or `elseFunc` is shown.  An empty array is considered falsy.
+ * @param {Function} conditionFunc A function to reactively re-run.  Whether the result is truthy or falsy determines
+ *   whether `contentFunc` or `elseFunc` is shown.  An empty array is considered falsy.
  * @param {Function} contentFunc A Function that returns [*renderable content*](#Renderable-Content).
- * @param {Function} [elseFunc] Optional.  A Function that returns [*renderable content*](#Renderable-Content).  If no `elseFunc` is supplied, no content is shown in the "else" case.
+ * @param {Function} [elseFunc] Optional.  A Function that returns [*renderable content*](#Renderable-Content).  If no
+ *   `elseFunc` is supplied, no content is shown in the "else" case.
  */
 Blaze.If = function (conditionFunc, contentFunc, elseFunc, _not) {
-  var conditionVar = new ReactiveVar;
+  const view = Blaze.View(_not ? 'unless' : 'if', function () {
+    // Render only if the binding has a value, i.e., it's either synchronous or
+    // has resolved. Rejected `Promise`s are NOT rendered.
+    const condition = view.__conditionVar.get();
+    if (condition && 'value' in condition) {
+      return condition.value ? contentFunc() : (elseFunc ? elseFunc() : null);
+    }
 
-  var view = Blaze.View(_not ? 'unless' : 'if', function () {
-    return conditionVar.get() ? contentFunc() :
-      (elseFunc ? elseFunc() : null);
+    return null;
   });
-  view.__conditionVar = conditionVar;
-  view.onViewCreated(function () {
-    this.autorun(function () {
-      var cond = Blaze._calculateCondition(conditionFunc());
-      conditionVar.set(_not ? (! cond) : cond);
-    }, this.parentView, 'condition');
+
+  view.__conditionVar = null;
+  view.onViewCreated(() => {
+    view.__conditionVar = _createBinding(
+      view,
+      conditionFunc,
+      'condition',
+      // Store only the actual condition.
+      value => !Blaze._calculateCondition(value) !== !_not,
+    );
   });
 
   return view;
@@ -94,9 +163,11 @@ Blaze.If = function (conditionFunc, contentFunc, elseFunc, _not) {
 /**
  * @summary An inverted [`Blaze.If`](#Blaze-If).
  * @locus Client
- * @param {Function} conditionFunc A function to reactively re-run.  If the result is falsy, `contentFunc` is shown, otherwise `elseFunc` is shown.  An empty array is considered falsy.
+ * @param {Function} conditionFunc A function to reactively re-run.  If the result is falsy, `contentFunc` is shown,
+ *   otherwise `elseFunc` is shown.  An empty array is considered falsy.
  * @param {Function} contentFunc A Function that returns [*renderable content*](#Renderable-Content).
- * @param {Function} [elseFunc] Optional.  A Function that returns [*renderable content*](#Renderable-Content).  If no `elseFunc` is supplied, no content is shown in the "else" case.
+ * @param {Function} [elseFunc] Optional.  A Function that returns [*renderable content*](#Renderable-Content).  If no
+ *   `elseFunc` is supplied, no content is shown in the "else" case.
  */
 Blaze.Unless = function (conditionFunc, contentFunc, elseFunc) {
   return Blaze.If(conditionFunc, contentFunc, elseFunc, true /*_not*/);
@@ -138,7 +209,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
   eachView.stopHandle = null;
   eachView.contentFunc = contentFunc;
   eachView.elseFunc = elseFunc;
-  eachView.argVar = new ReactiveVar;
+  eachView.argVar = undefined;
   eachView.variableName = null;
 
   // update the @index value in the scope of all subviews in the range
@@ -149,28 +220,29 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
 
     for (var i = from; i <= to; i++) {
       var view = eachView._domrange.members[i].view;
-      view._scopeBindings['@index'].set(i);
+      view._scopeBindings['@index'].set({ value: i });
     }
   };
 
   eachView.onViewCreated(function () {
-    // We evaluate argFunc in an autorun to make sure
-    // Blaze.currentView is always set when it runs (rather than
-    // passing argFunc straight to ObserveSequence).
-    eachView.autorun(function () {
-      // argFunc can return either a sequence as is or a wrapper object with a
-      // _sequence and _variable fields set.
-      var arg = argFunc();
-      if (isObject(arg) && has(arg, '_sequence')) {
-        eachView.variableName = arg._variable || null;
-        arg = arg._sequence;
-      }
-
-      eachView.argVar.set(arg);
-    }, eachView.parentView, 'collection');
+    // We evaluate `argFunc` in `Tracker.autorun` to ensure `Blaze.currentView`
+    // is always set when it runs.
+    eachView.argVar = _createBinding(
+      eachView,
+      // Unwrap a sequence reactively (`{{#each x in xs}}`).
+      () => {
+        let maybeSequence = argFunc();
+        if (isObject(maybeSequence) && has(maybeSequence, '_sequence')) {
+          eachView.variableName = maybeSequence._variable || null;
+          maybeSequence = maybeSequence._sequence;
+        }
+        return maybeSequence;
+      },
+      'collection',
+    );
 
     eachView.stopHandle = ObserveSequence.observe(function () {
-      return eachView.argVar.get();
+      return eachView.argVar.get()?.value;
     }, {
       addedAt: function (id, item, index) {
         Tracker.nonreactive(function () {
@@ -240,7 +312,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
               itemView = eachView.initialSubviews[index];
             }
             if (eachView.variableName) {
-              itemView._scopeBindings[eachView.variableName].set(newItem);
+              itemView._scopeBindings[eachView.variableName].set({ value: newItem });
             } else {
               itemView.dataVar.set(newItem);
             }
@@ -278,6 +350,19 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
   });
 
   return eachView;
+};
+
+/**
+ * Create a new `Blaze.Let` view that unwraps the given value.
+ * @param {unknown} value
+ * @returns {Blaze.View}
+ */
+Blaze._Await = function (value) {
+  return Blaze.Let({ value }, Blaze._AwaitContent);
+};
+
+Blaze._AwaitContent = function () {
+  return Blaze.currentView._scopeBindings.value.get()?.value;
 };
 
 Blaze._TemplateWith = function (arg, contentFunc) {

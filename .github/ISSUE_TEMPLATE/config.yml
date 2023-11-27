@@ -1,0 +1,19 @@
+---
+blank_issues_enabled: false
+contact_links:
+  -
+    about: Ask a question or for help on the Meteor forums
+    name: ❓ Question
+    url: https://forums.meteor.com/
+  -
+    about: Chat on our community Slack
+    name: 🗯 Chat
+    url: https://join.slack.com/t/meteor-community/shared_invite/enQtODA0NTU2Nzk5MTA3LWY5NGMxMWRjZDgzYWMyMTEyYTQ3MTcwZmU2YjM5MTY3MjJkZjQ0NWRjOGZlYmIxZjFlYTA5Mjg4OTk3ODRiOTc
+  -
+    about: The official Blaze website
+    name: ℹ️ Website
+    url: https://www.blazejs.org/
+  -
+    about: Blaze documentation
+    name: 📜 Documentation
+    url: https://www.blazejs.org/guide/introduction.html
