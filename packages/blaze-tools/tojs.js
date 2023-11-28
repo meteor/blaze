@@ -90,9 +90,9 @@ ToJSVisitor.def({
     }
 
     let attrsArray = null;
+    let needsHTMLAttrs = false;
     if (attrs) {
       attrsArray = [];
-      let needsHTMLAttrs = false;
       if (HTML.isArray(attrs)) {
         attrsArray = [];
         for (let i = 0; i < attrs.length; i++) {
