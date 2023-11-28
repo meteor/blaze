@@ -231,7 +231,7 @@ Blaze.View.prototype.lookup = function (name, _options) {
 
   // 5. look up in a data context
   return function (...args) {
-    const isCalledAsFunction = (args?.length > 0);
+    const isCalledAsFunction = (args.length > 0);
     const data = Blaze.getData();
     const x = data && data[name];
     if (! x) {
