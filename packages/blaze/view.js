@@ -302,15 +302,15 @@ Blaze._createView = function (view, parentView, forExpansion) {
 
 const doFirstRender = function (view, initialContent) {
   const domrange = new Blaze._DOMRange(initialContent);
-  view.setAttribute('_domrange', domrange)
+  view._domrange = domrange;
   domrange.view = view;
-  view.setAttribute('isRendered', true)
+  view.isRendered = true;
   Blaze._fireCallbacks(view, 'rendered');
 
   let teardownHook = null;
 
   domrange.onAttached(function attached(range, element) {
-    view.setAttribute('_isAttached', true)
+    view._isAttached = true;
 
     teardownHook = Blaze._DOMBackend.Teardown.onElementTeardown(
       element, function teardown() {
@@ -351,12 +351,12 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
   Tracker.nonreactive(function () {
     view.autorun(function doRender(c) {
       // `view.autorun` sets the current view.
-      view.setAttribute('renderCount', view.renderCount + 1);
-      view.setAttribute('_isInRender', true);
+      view.renderCount = view.renderCount + 1;
+      view._isInRender = true;
       // Any dependencies that should invalidate this Computation come
       // from this line:
       const htmljs = view._render();
-      view.setAttribute('_isInRender', false);
+      view._isInRender = false;
 
       if (! c.firstRun && ! Blaze._isContentEqual(lastHtmljs, htmljs)) {
         Tracker.nonreactive(function doMaterialize() {
@@ -425,11 +425,11 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
 Blaze._expandView = function (view, parentView) {
   Blaze._createView(view, parentView, true /*forExpansion*/);
 
-  view.setAttribute('_isInRender', true);
+  view._isInRender = true;
   const htmljs = Blaze._withCurrentView(view, function () {
     return view._render();
   });
-  view.setAttribute('_isInRender', false);
+  view._isInRender = false;
 
   const result = Blaze._expand(htmljs, view);
 
