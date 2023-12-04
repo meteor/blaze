@@ -75,6 +75,8 @@ Spacebars.mustache = function (value/*, args*/) {
 
   if (result instanceof Spacebars.SafeString)
     return HTML.Raw(result.toString());
+  else if (isPromiseLike(result))
+    return result;
   else
     // map `null`, `undefined`, and `false` to null, which is important
     // so that attributes with nully values are considered absent.
@@ -111,14 +113,39 @@ Spacebars.dataMustache = function (value/*, args*/) {
 Spacebars.makeRaw = function (value) {
   if (value == null) // null or undefined
     return null;
-  else if (value instanceof HTML.Raw)
+  else if (value instanceof HTML.Raw || isPromiseLike(value))
     return value;
   else
     return HTML.Raw(value);
 };
 
+/***
+ * @summary Executes `fn` with the resolved value of `promise` while preserving
+ * the context, i.e., `Blaze.currentView` and `Tracker.currentComputation`.
+ * @template T
+ * @template U
+ * @param {Promise<T>} promise
+ * @param {(x: T) => U} fn
+ * @returns {Promise<U>}
+ */
+function _thenWithContext(promise, fn) {
+  const computation = Tracker.currentComputation;
+  const view = Blaze.currentView;
+  return promise.then(value =>
+    Blaze._withCurrentView(view, () =>
+      Tracker.withComputation(computation, () =>
+        fn(value)
+      )
+    )
+  );
+}
+
 // If `value` is a function, evaluate its `args` (by calling them, if they
 // are functions), and then call it on them. Otherwise, return `value`.
+//
+// If any of the arguments is a `Promise` or a function returning one, then the
+// `value` will be called once all of the arguments resolve. If any of them
+// rejects, so will the call.
 //
 // If `value` is not a function and is not null, then this method will assert
 // that there are no args. We check for null before asserting because a user
@@ -128,9 +155,15 @@ Spacebars.call = function (value/*, args*/) {
   if (typeof value === 'function') {
     // Evaluate arguments by calling them if they are functions.
     var newArgs = [];
+    let anyIsPromise = false;
     for (var i = 1; i < arguments.length; i++) {
       var arg = arguments[i];
       newArgs[i-1] = (typeof arg === 'function' ? arg() : arg);
+      anyIsPromise = anyIsPromise || isPromiseLike(newArgs[i-1]);
+    }
+
+    if (anyIsPromise) {
+      return _thenWithContext(Promise.all(newArgs), newArgs => value.apply(null, newArgs));
     }
 
     return value.apply(null, newArgs);
@@ -141,6 +174,8 @@ Spacebars.call = function (value/*, args*/) {
     return value;
   }
 };
+
+const isPromiseLike = x => !!x && typeof x.then === 'function';
 
 // Call this as `Spacebars.kw({ ... })`.  The return value
 // is `instanceof Spacebars.kw`.
@@ -170,6 +205,10 @@ Spacebars.SafeString.prototype = Handlebars.SafeString.prototype;
 // a wrapped version of `baz` that always uses `foo.bar` as
 // `this`).
 //
+// If any of the intermediate values is a `Promise`, the result will be one as
+// well, i.e., accessing a field of a `Promise` results in a `Promise` of the
+// accessed field. Rejections are passed-through.
+//
 // In `Spacebars.dot(foo, "bar")`, `foo` is assumed to be either
 // a non-function value or a "fully-bound" function wrapping a value,
 // where fully-bound means it takes no arguments and ignores `this`.
@@ -194,11 +233,14 @@ Spacebars.dot = function (value, id1/*, id2, ...*/) {
     return Spacebars.dot.apply(null, argsForRecurse);
   }
 
-  if (typeof value === 'function')
+  while (typeof value === 'function')
     value = value();
 
   if (! value)
     return value; // falsy, don't index, pass through
+
+  if (isPromiseLike(value))
+    return _thenWithContext(value, value => Spacebars.dot(value, id1));
 
   var result = value[id1];
   if (typeof result !== 'function')
