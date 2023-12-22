@@ -57,7 +57,7 @@ asyncSuite('attribute', [
 asyncTest('attributes', '', async (test, template, render) => {
   Blaze._throwNextException = true;
   template.helpers({ x: Promise.resolve() });
-  test.throws(render, 'Asynchronous attributes are not supported. Use #let to unwrap them first.');
+  test.throws(render, 'Asynchronous dynamic attributes are not supported. Use #let to unwrap them first.');
 });
 
 asyncSuite('value_direct', [
