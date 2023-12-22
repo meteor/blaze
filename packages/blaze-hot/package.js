@@ -8,12 +8,11 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.use('modules@0.16.0');
-  api.use('ecmascript@0.15.1');
+  api.use('modules@0.19.0');
+  api.use('ecmascript@0.16.7');
   api.use('blaze@2.8.0');
   api.use('templating-runtime@1.6.4');
-  api.use('hot-module-replacement@0.2.0', { weak: true });
-
+  api.use('hot-module-replacement@0.5.3', { weak: true });
   api.addFiles('hot.js', 'client');
   api.addFiles('update-templates.js', 'client');
 });
