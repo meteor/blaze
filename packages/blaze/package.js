@@ -65,7 +65,7 @@ Package.onTest(function (api) {
   api.use('tracker@1.3.0');
 
   api.use('blaze');
-  api.use('blaze-tools@1.1.3'); // for BlazeTools.toJS
+  api.use('blaze-tools@1.1.4'); // for BlazeTools.toJS
   api.use('html-tools@1.1.4');
   api.use('templating');
 

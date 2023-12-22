@@ -16,5 +16,5 @@ Package.onUse(function (api) {
   api.use('templating-runtime@1.6.4');
   api.imply('templating-runtime');
 
-  api.imply('templating-compiler@1.4.1');
+  api.imply('templating-compiler@1.4.2');
 });
