@@ -11,7 +11,7 @@ Package.registerBuildPlugin({
   use: [
     'ecmascript@0.15.1',
     'caching-html-compiler@1.2.0',
-    'templating-tools@1.2.0'
+    'templating-tools@1.2.3'
   ],
   sources: [
     'compile-templates.js'
