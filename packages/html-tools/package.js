@@ -1,14 +1,14 @@
 Package.describe({
   name: 'html-tools',
   summary: "Standards-compliant HTML tools",
-  version: '1.1.3',
+  version: '1.1.4',
   git: 'https://github.com/meteor/blaze.git'
 });
 
 Package.onUse(function (api) {
   api.use('ecmascript@0.15.1');
-  api.use('htmljs@1.1.1');
-  api.imply('htmljs@1.1.1');
+  api.use('htmljs@1.2.0');
+  api.imply('htmljs@1.2.0');
 
   api.export('HTMLTools');
   api.mainModule('main.js');
@@ -19,7 +19,7 @@ Package.onTest(function (api) {
   api.use('tinytest@1.1.0');
 
   api.use('html-tools');
-  api.use('htmljs@1.1.1');
+  api.use('htmljs@1.2.0');
   api.use('blaze-tools'); // for `toJS`
 
   api.addFiles([
