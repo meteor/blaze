@@ -1,12 +1,12 @@
+/* eslint-env meteor */
 import { HTMLTools } from 'meteor/html-tools';
 
-var Scanner = HTMLTools.Scanner;
-var getCharacterReference = HTMLTools.Parse.getCharacterReference;
+const { Scanner } = HTMLTools;
+const { getCharacterReference } = HTMLTools.Parse;
 
-Tinytest.add("html-tools - entities", function (test) {
-  var succeed = function (input, match, codepoints) {
-    if (typeof input === 'string')
-      input = {input: input};
+Tinytest.add('html-tools - entities', function (test) {
+  const succeed = function (input, match, codepoints) {
+    if (typeof input === 'string') input = { input };
 
     // match arg is optional; codepoints is never a string
     if (typeof match !== 'string') {
@@ -14,43 +14,42 @@ Tinytest.add("html-tools - entities", function (test) {
       match = input.input;
     }
 
-    var scanner = new Scanner(input.input);
-    var result = getCharacterReference(scanner, input.inAttribute, input.allowedChar);
+    const scanner = new Scanner(input.input);
+    const result = getCharacterReference(scanner, input.inAttribute, input.allowedChar);
     test.isTrue(result);
     test.equal(scanner.pos, match.length);
     test.equal(result, {
       t: 'CharRef',
       v: match,
       cp: codepoints.map(
-                function (x) { return (typeof x === 'string' ?
-                                       x.charCodeAt(0) : x); })
+        function (x) {
+          return (typeof x === 'string' ?
+            x.charCodeAt(0) : x);
+        }),
     });
   };
 
-  var ignore = function (input) {
-    if (typeof input === 'string')
-      input = {input: input};
+  const ignore = function (input) {
+    if (typeof input === 'string') input = { input };
 
-    var scanner = new Scanner(input.input);
-    var result = getCharacterReference(scanner, input.inAttribute, input.allowedChar);
+    const scanner = new Scanner(input.input);
+    const result = getCharacterReference(scanner, input.inAttribute, input.allowedChar);
     test.isFalse(result);
     test.equal(scanner.pos, 0);
   };
 
-  var fatal = function (input, messageContains) {
-    if (typeof input === 'string')
-      input = {input: input};
+  const fatal = function (input, messageContains) {
+    if (typeof input === 'string') input = { input };
 
-    var scanner = new Scanner(input.input);
-    var error;
+    const scanner = new Scanner(input.input);
+    let error;
     try {
       getCharacterReference(scanner, input.inAttribute, input.allowedChar);
     } catch (e) {
       error = e;
     }
     test.isTrue(error);
-    if (error)
-      test.isTrue(messageContains && error.message.indexOf(messageContains) >= 0, error.message);
+    if (error) test.isTrue(messageContains && error.message.indexOf(messageContains) >= 0, error.message);
   };
 
   ignore('a');
@@ -61,15 +60,15 @@ Tinytest.add("html-tools - entities", function (test) {
   fatal('&#', 'Invalid numerical character reference starting with &#');
   ignore('&a');
   fatal('&a;', 'Invalid character reference: &a;');
-  ignore({input: '&"', allowedChar: '"'});
+  ignore({ input: '&"', allowedChar: '"' });
   ignore('&"');
 
   succeed('&gt;', ['>']);
   fatal('&gt', 'Character reference requires semicolon');
   ignore('&aaa');
   fatal('&gta', 'Character reference requires semicolon');
-  ignore({input: '&gta', inAttribute: true});
-  fatal({input: '&gt=', inAttribute: true}, 'Character reference requires semicolon: &gt');
+  ignore({ input: '&gta', inAttribute: true });
+  fatal({ input: '&gt=', inAttribute: true }, 'Character reference requires semicolon: &gt');
 
   succeed('&gt;;', '&gt;', ['>']);
 
@@ -112,5 +111,4 @@ Tinytest.add("html-tools - entities", function (test) {
   fatal('&#1114111;', 'Illegal codepoint in numerical character reference');
   fatal('&#1114110;', 'Illegal codepoint in numerical character reference');
   succeed('&#1114109;', [0x10fffd]);
-
 });

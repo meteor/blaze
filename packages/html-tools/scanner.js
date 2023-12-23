@@ -8,7 +8,6 @@
 // * `scanner.peek()` - returns the character at `pos`
 // * `scanner.isEOF()` - true if `pos` is at or beyond the end of `input`
 // * `scanner.fatal(msg)` - throw an error indicating a problem at `pos`
-
 export function Scanner (input) {
   this.input = input; // public, read-only
   this.pos = 0; // public, read-write
@@ -23,31 +22,32 @@ Scanner.prototype.isEOF = function () {
   return this.pos >= this.input.length;
 };
 
-Scanner.prototype.fatal = function (msg) {
-  // despite this default, you should always provide a message!
-  msg = (msg || "Parse error");
+Scanner.prototype.fatal = function (msg = 'Parse error') {
+  const CONTEXT_AMOUNT = 20;
 
-  var CONTEXT_AMOUNT = 20;
+  const { input } = this;
+  const { pos } = this;
 
-  var input = this.input;
-  var pos = this.pos;
-  var pastInput = input.substring(pos - CONTEXT_AMOUNT - 1, pos);
-  if (pastInput.length > CONTEXT_AMOUNT)
-    pastInput = '...' + pastInput.substring(-CONTEXT_AMOUNT);
+  let pastInput = input.substring(pos - CONTEXT_AMOUNT - 1, pos);
 
-  var upcomingInput = input.substring(pos, pos + CONTEXT_AMOUNT + 1);
-  if (upcomingInput.length > CONTEXT_AMOUNT)
-    upcomingInput = upcomingInput.substring(0, CONTEXT_AMOUNT) + '...';
+  if (pastInput.length > CONTEXT_AMOUNT) pastInput = `...${pastInput.substring(-CONTEXT_AMOUNT)}`;
 
-  var positionDisplay = ((pastInput + upcomingInput).replace(/\n/g, ' ') + '\n' +
-                         (new Array(pastInput.length + 1).join(' ')) + "^");
+  let upcomingInput = input.substring(pos, pos + CONTEXT_AMOUNT + 1);
 
-  var e = new Error(msg + "\n" + positionDisplay);
+  if (upcomingInput.length > CONTEXT_AMOUNT) upcomingInput = `${upcomingInput.substring(0, CONTEXT_AMOUNT)}...`;
+
+  const positionDisplay = (`${(pastInput + upcomingInput)
+    .replace(/\n/g, ' ')}\n${new Array(pastInput.length + 1)
+    .join(' ')}^`);
+
+  const e = new Error(`${msg}\n${positionDisplay}`);
 
   e.offset = pos;
-  var allPastInput = input.substring(0, pos);
+  const allPastInput = input.substring(0, pos);
+
   e.line = (1 + (allPastInput.match(/\n/g) || []).length);
   e.col = (1 + pos - allPastInput.lastIndexOf('\n'));
+
   e.scanner = this;
 
   throw e;
@@ -70,11 +70,10 @@ Scanner.prototype.peek = function () {
 // current position is not advanced and a falsy value (typically null)
 // is returned.
 export function makeRegexMatcher(regex) {
-  return function (scanner) {
-    var match = regex.exec(scanner.rest());
+  return (scanner) => {
+    const match = regex.exec(scanner.rest());
 
-    if (! match)
-      return null;
+    if (!match) return null;
 
     scanner.pos += match[0].length;
     return match[1] || match[0];
