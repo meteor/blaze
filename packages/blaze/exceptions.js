@@ -1,4 +1,5 @@
 var debugFunc;
+var customFn;
 
 // We call into user code in many places, and it's nice to catch exceptions
 // propagated from user code immediately so that the whole system doesn't just
@@ -22,10 +23,24 @@ var debugFunc;
 // useful in unit tests that test error messages.
 Blaze._throwNextException = false;
 
+/**
+ * Allows to set a custom exceptions handler.
+ * @param fn {function} the function where exceptions will be piped
+ */
+Blaze.setExceptionHandler = function (fn) {
+  customFn = fn;
+};
+
 Blaze._reportException = function (e, msg) {
   if (Blaze._throwNextException) {
     Blaze._throwNextException = false;
     throw e;
+  }
+
+  // if we have a custom exception handler we pipe the exception
+  // directly into it and omit the Meteor._debug handler here
+  if (customFn) {
+    return customFn(msg, e)
   }
 
   if (! debugFunc)
@@ -43,14 +58,19 @@ Blaze._reportException = function (e, msg) {
 };
 
 Blaze._wrapCatchingExceptions = function (f, where) {
-  if (typeof f !== 'function')
+  if (typeof f !== 'function') {
     return f;
+  }
 
   return function () {
     try {
       return f.apply(this, arguments);
     } catch (e) {
-      Blaze._reportException(e, 'Exception in ' + where + ':');
+      if (Meteor.isPackageTest) {
+        throw e;
+      } else {
+        Blaze._reportException(e, `Exception in ${where}:`);
+      }
     }
   };
 };
