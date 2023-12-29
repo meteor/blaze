@@ -6,7 +6,7 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.use('ecmascript@0.15.1');
+  api.use('ecmascript@0.16.7');
   api.use('htmljs@1.2.0');
 
   api.export('BlazeTools');
@@ -14,7 +14,7 @@ Package.onUse(function (api) {
 });
 
 Package.onTest(function (api) {
-  api.use('tinytest@1.1.0');
+  api.use('tinytest@1.2.2');
   api.use('ecmascript');
 
   api.use('blaze-tools');
