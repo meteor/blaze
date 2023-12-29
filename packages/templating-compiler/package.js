@@ -10,7 +10,7 @@ Package.registerBuildPlugin({
   name: "compileTemplatesBatch",
   use: [
     'ecmascript@0.16.7',
-    'caching-html-compiler@1.2.1',
+    'caching-html-compiler@1.2.2',
     'templating-tools@1.2.3'
   ],
   sources: [
