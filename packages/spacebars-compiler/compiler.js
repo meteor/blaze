@@ -115,7 +115,6 @@ export function beautify (code) {
   }
 
   var result = UglifyJSMinify(code, {
-    fromString: true,
     mangle: false,
     compress: false,
     output: {

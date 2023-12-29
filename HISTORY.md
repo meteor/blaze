@@ -1,3 +1,12 @@
+## v3.0.0, 2023-XXXX-XX
+
+### Potentially breaking changes
+* [#373](https://github.com/meteor/blaze/pull/373) Remove fibers from codebase
+* [#378](https://github.com/meteor/blaze/pull/378) [spacebars-compiler] Update uglify-js to 3.16.1
+* [#351](https://github.com/meteor/blaze/pull/351) Eliminate whitespace in Template.dynamic
+* [#334](https://github.com/meteor/blaze/pull/334) Faster fragnent parsing by retaining a reference to the current document context
+
+
 ## v2.7.1, 2023-May-26
 
 * [#413](https://github.com/meteor/blaze/pull/418) Fix reactivity for non-primitives.
@@ -13,6 +22,7 @@
 * [#403](https://github.com/meteor/blaze/pull/403) Add TS types to core
 * [#405](https://github.com/meteor/blaze/pull/406) Stop establishing unnecessary reactive dependencies
 * [#410](https://github.com/meteor/blaze/pull/410) Fixes for legacy clients
+
 
 ## v2.6.1, 2022-July-25
 
