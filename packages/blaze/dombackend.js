@@ -1,7 +1,7 @@
-var DOMBackend = {};
+const DOMBackend = {};
 Blaze._DOMBackend = DOMBackend;
 
-var $jq = (typeof jQuery !== 'undefined' ? jQuery :
+const $jq = (typeof jQuery !== 'undefined' ? jQuery :
            (typeof Package !== 'undefined' ?
             Package.jquery && Package.jquery.jQuery : null));
 if (! $jq)
@@ -31,9 +31,9 @@ DOMBackend.Events = {
   },
 
   bindEventCapturer: function (elem, type, selector, handler) {
-    var $elem = $jq(elem);
+    const $elem = $jq(elem);
 
-    var wrapper = function (event) {
+    const wrapper = function (event) {
       event = $jq.event.fix(event);
       event.currentTarget = event.target;
 
@@ -43,7 +43,7 @@ DOMBackend.Events = {
       // since jQuery can't bind capturing handlers, it's not clear
       // where we would hook in.  Internal jQuery functions like `dispatch`
       // are too high-level.
-      var $target = $jq(event.currentTarget);
+      const $target = $jq(event.currentTarget);
       if ($target.is($elem.find(selector)))
         handler.call(elem, event);
     };
@@ -62,7 +62,7 @@ DOMBackend.Events = {
 
   parseEventType: function (type) {
     // strip off namespaces
-    var dotLoc = type.indexOf('.');
+    const dotLoc = type.indexOf('.');
     if (dotLoc >= 0)
       return type.slice(0, dotLoc);
     return type;
@@ -80,10 +80,10 @@ DOMBackend.Events = {
 // which we can detect using a custom event with a teardown
 // hook.
 
-var NOOP = function () {};
+const NOOP = function () {};
 
 // Circular doubly-linked list
-var TeardownCallback = function (func) {
+const TeardownCallback = function (func) {
   this.next = this;
   this.prev = this;
   this.func = func;
@@ -103,7 +103,7 @@ TeardownCallback.prototype.unlink = function () {
 };
 
 TeardownCallback.prototype.go = function () {
-  var func = this.func;
+  const func = this.func;
   func && func();
 };
 
@@ -117,9 +117,9 @@ DOMBackend.Teardown = {
   // The callback function is called at most once, and it receives the element
   // in question as an argument.
   onElementTeardown: function (elem, func) {
-    var elt = new TeardownCallback(func);
+    const elt = new TeardownCallback(func);
 
-    var propName = DOMBackend.Teardown._CB_PROP;
+    const propName = DOMBackend.Teardown._CB_PROP;
     if (! elem[propName]) {
       // create an empty node that is never unlinked
       elem[propName] = new TeardownCallback;
@@ -135,11 +135,11 @@ DOMBackend.Teardown = {
   // Recursively call all teardown hooks, in the backend and registered
   // through DOMBackend.onElementTeardown.
   tearDownElement: function (elem) {
-    var elems = [];
+    const elems = [];
     // Array.prototype.slice.call doesn't work when given a NodeList in
     // IE8 ("JScript object expected").
-    var nodeList = elem.getElementsByTagName('*');
-    for (var i = 0; i < nodeList.length; i++) {
+    const nodeList = elem.getElementsByTagName('*');
+    for (let i = 0; i < nodeList.length; i++) {
       elems.push(nodeList[i]);
     }
     elems.push(elem);
@@ -155,10 +155,10 @@ $jq.event.special[DOMBackend.Teardown._JQUERY_EVENT_NAME] = {
     // feature enabled.
   },
   teardown: function() {
-    var elem = this;
-    var callbacks = elem[DOMBackend.Teardown._CB_PROP];
+    const elem = this;
+    const callbacks = elem[DOMBackend.Teardown._CB_PROP];
     if (callbacks) {
-      var elt = callbacks.next;
+      let elt = callbacks.next;
       while (elt !== callbacks) {
         elt.go();
         elt = elt.next;

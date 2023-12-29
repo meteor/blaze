@@ -1,22 +1,22 @@
 import { BlazeTools } from 'meteor/blaze-tools';
 
-var toCode = BlazeTools.toJS;
+const toCode = BlazeTools.toJS;
 
-var P = HTML.P;
-var CharRef = HTML.CharRef;
-var DIV = HTML.DIV;
-var Comment = HTML.Comment;
-var BR = HTML.BR;
-var A = HTML.A;
-var UL = HTML.UL;
-var LI = HTML.LI;
-var SPAN = HTML.SPAN;
-var HR = HTML.HR;
-var TEXTAREA = HTML.TEXTAREA;
-var INPUT = HTML.INPUT;
+const P = HTML.P;
+const CharRef = HTML.CharRef;
+const DIV = HTML.DIV;
+const Comment = HTML.Comment;
+const BR = HTML.BR;
+const A = HTML.A;
+const UL = HTML.UL;
+const LI = HTML.LI;
+const SPAN = HTML.SPAN;
+const HR = HTML.HR;
+const TEXTAREA = HTML.TEXTAREA;
+const INPUT = HTML.INPUT;
 
-var materialize = function (content, parent) {
-  var func = content;
+const materialize = function (content, parent) {
+  let func = content;
   if (typeof content !== 'function') {
     func = function () {
       return content;
@@ -25,11 +25,11 @@ var materialize = function (content, parent) {
   Blaze.render(func, parent);
 };
 
-var toHTML = Blaze.toHTML;
+const toHTML = Blaze.toHTML;
 
 Tinytest.add("blaze - render - basic", function (test) {
-  var run = function (input, expectedInnerHTML, expectedHTML, expectedCode) {
-    var div = document.createElement("DIV");
+  const run = function (input, expectedInnerHTML, expectedHTML, expectedCode) {
+    const div = document.createElement("DIV");
     materialize(input, div);
     test.equal(canonicalizeHtml(div.innerHTML), expectedInnerHTML);
     test.equal(toHTML(input), expectedHTML);
@@ -105,10 +105,10 @@ Tinytest.add("blaze - render - basic", function (test) {
 // rather than the 'value' attribute. the 'value' attribute only sets
 // the initial value.
 Tinytest.add("blaze - render - input - value", function (test) {
-  var R = ReactiveVar("hello");
-  var div = document.createElement("DIV");
+  const R = ReactiveVar("hello");
+  const div = document.createElement("DIV");
   materialize(INPUT({value: function () { return R.get(); }}), div);
-  var inputEl = div.querySelector('input');
+  const inputEl = div.querySelector('input');
   test.equal(inputEl.value, "hello");
   inputEl.value = "goodbye";
   R.set("hola");
@@ -120,10 +120,10 @@ Tinytest.add("blaze - render - input - value", function (test) {
 // the 'checked' attribute on input fields of type 'checkbox'. the
 // 'checked' attribute only sets the initial value.
 Tinytest.add("blaze - render - input - checked", function (test) {
-  var R = ReactiveVar(null);
-  var div = document.createElement("DIV");
+  const R = ReactiveVar(null);
+  const div = document.createElement("DIV");
   materialize(INPUT({type: "checkbox", checked: function () { return R.get(); }}), div);
-  var inputEl = div.querySelector('input');
+  const inputEl = div.querySelector('input');
   test.equal(inputEl.checked, false);
   inputEl.checked = true;
 
@@ -135,7 +135,7 @@ Tinytest.add("blaze - render - input - checked", function (test) {
 });
 
 Tinytest.add("blaze - render - textarea", function (test) {
-  var run = function (optNode, text, html, code) {
+  const run = function (optNode, text, html, code) {
     if (typeof optNode === 'string') {
       // called with args (text, html, code)
       code = html;
@@ -143,11 +143,11 @@ Tinytest.add("blaze - render - textarea", function (test) {
       text = optNode;
       optNode = null;
     }
-    var div = document.createElement("DIV");
-    var node = TEXTAREA({value: optNode || text});
+    const div = document.createElement("DIV");
+    const node = TEXTAREA({value: optNode || text});
     materialize(node, div);
 
-    var value = div.querySelector('textarea').value;
+    let value = div.querySelector('textarea').value;
     value = value.replace(/\r\n/g, "\n"); // IE8 substitutes \n with \r\n
     test.equal(value, text);
 
@@ -181,15 +181,15 @@ Tinytest.add("blaze - render - textarea", function (test) {
 
   // test that reactivity of textarea "value" attribute works...
   (function () {
-    var R = ReactiveVar('one');
-    var div = document.createElement("DIV");
-    var node = TEXTAREA({value: function () {
+    const R = ReactiveVar('one');
+    const div = document.createElement("DIV");
+    const node = TEXTAREA({value: function () {
       return Blaze.View(function () {
         return R.get();
       });
     }});
     materialize(node, div);
-    var textarea = div.querySelector('textarea');
+    const textarea = div.querySelector('textarea');
     test.equal(textarea.value, 'one');
     R.set('two');
     Tracker.flush();
@@ -199,13 +199,13 @@ Tinytest.add("blaze - render - textarea", function (test) {
   // ... while "content" reactivity simply doesn't update
   // (but doesn't throw either)
   (function () {
-    var R = ReactiveVar('one');
-    var div = document.createElement("DIV");
-    var node = TEXTAREA([Blaze.View(function () {
+    const R = ReactiveVar('one');
+    const div = document.createElement("DIV");
+    const node = TEXTAREA([Blaze.View(function () {
       return R.get();
     })]);
     materialize(node, div);
-    var textarea = div.querySelector('textarea');
+    const textarea = div.querySelector('textarea');
     test.equal(textarea.value, 'one');
     R.set('two');
     Tracker.flush({_throwFirstError: true});
@@ -217,14 +217,14 @@ Tinytest.add("blaze - render - view isolation", function (test) {
 
   // Reactively change a text node
   (function () {
-    var R = ReactiveVar('Hello');
-    var test1 = function () {
+    const R = ReactiveVar('Hello');
+    const test1 = function () {
       return P(Blaze.View(function () { return R.get(); }));
     };
 
     test.equal(toHTML(test1()), '<p>Hello</p>');
 
-    var div = document.createElement("DIV");
+    const div = document.createElement("DIV");
     materialize(test1, div);
     test.equal(canonicalizeHtml(div.innerHTML), "<p>Hello</p>");
 
@@ -235,14 +235,14 @@ Tinytest.add("blaze - render - view isolation", function (test) {
 
   // Reactively change an array of text nodes
   (function () {
-    var R = ReactiveVar(['Hello', ' World']);
-    var test1 = function () {
+    const R = ReactiveVar(['Hello', ' World']);
+    const test1 = function () {
       return P(Blaze.View(function () { return R.get(); }));
     };
 
     test.equal(toHTML(test1()), '<p>Hello World</p>');
 
-    var div = document.createElement("DIV");
+    const div = document.createElement("DIV");
     materialize(test1, div);
     test.equal(canonicalizeHtml(div.innerHTML), "<p>Hello World</p>");
 
@@ -256,8 +256,8 @@ Tinytest.add("blaze - render - view isolation", function (test) {
 // IE strips malformed styles like "bar::d" from the `style`
 // attribute. We detect this to adjust expectations for the StyleHandler
 // test below.
-var malformedStylesAllowed = function () {
-  var div = document.createElement("div");
+const malformedStylesAllowed = function () {
+  const div = document.createElement("div");
   div.setAttribute("style", "bar::d;");
   return (div.getAttribute("style") === "bar::d;");
 };
@@ -265,10 +265,10 @@ var malformedStylesAllowed = function () {
 Tinytest.add("blaze - render - view GC", function (test) {
   // test that removing parent element removes listeners and stops autoruns.
   (function () {
-    var R = ReactiveVar('Hello');
-    var test1 = P(Blaze.View(function () { return R.get(); }));
+    const R = ReactiveVar('Hello');
+    const test1 = P(Blaze.View(function () { return R.get(); }));
 
-    var div = document.createElement("DIV");
+    const div = document.createElement("DIV");
     materialize(test1, div);
     test.equal(canonicalizeHtml(div.innerHTML), "<p>Hello</p>");
 
@@ -292,10 +292,10 @@ Tinytest.add("blaze - render - view GC", function (test) {
 
 Tinytest.add("blaze - render - reactive attributes", function (test) {
   (function () {
-    var R = ReactiveVar({'class': ['david gre', CharRef({html: '&euml;', str: '\u00eb'}), 'nspan'],
+    const R = ReactiveVar({'class': ['david gre', CharRef({html: '&euml;', str: '\u00eb'}), 'nspan'],
                          id: 'foo'});
 
-    var spanFunc = function () {
+    const spanFunc = function () {
       return SPAN(HTML.Attrs(
         function () { return R.get(); }));
     };
@@ -305,13 +305,13 @@ Tinytest.add("blaze - render - reactive attributes", function (test) {
 
     test.equal(R._numListeners(), 0);
 
-    var div = document.createElement("DIV");
+    const div = document.createElement("DIV");
     Blaze.render(spanFunc, div);
     test.equal(canonicalizeHtml(div.innerHTML), '<span class="david gre\u00ebnspan" id="foo"></span>');
 
     test.equal(R._numListeners(), 1);
 
-    var span = div.firstChild;
+    const span = div.firstChild;
     test.equal(span.nodeName, 'SPAN');
     span.className += ' blah'; // change the element's class outside of Blaze. this simulates what a jQuery could do
 
@@ -331,11 +331,11 @@ Tinytest.add("blaze - render - reactive attributes", function (test) {
   })();
 
   (function () {
-    var style = ReactiveVar(false);
+    const style = ReactiveVar(false);
 
-    var div = document.createElement("DIV");
+    const div = document.createElement("DIV");
 
-    var divFunc = function () {
+    const divFunc = function () {
       return DIV({
         style: function () {
           return [Blaze.If(function () {
@@ -362,10 +362,10 @@ Tinytest.add("blaze - render - reactive attributes", function (test) {
   // Test styles.
   (function () {
     // Test the case where there is a semicolon in the css attribute.
-    var R = ReactiveVar({'style': 'foo: "a;aa"; bar: b;',
+    const R = ReactiveVar({'style': 'foo: "a;aa"; bar: b;',
       id: 'foo'});
 
-    var spanFunc = function () {
+    const spanFunc = function () {
       return SPAN(HTML.Attrs(function () { return R.get(); }));
     };
 
@@ -373,12 +373,12 @@ Tinytest.add("blaze - render - reactive attributes", function (test) {
 
     test.equal(R._numListeners(), 0);
 
-    var div = document.createElement("DIV");
+    const div = document.createElement("DIV");
     Blaze.render(spanFunc, div);
     test.equal(canonicalizeHtml(div.innerHTML), '<span id="foo" style="foo: &quot;a;aa&quot;; bar: b"></span>');
 
     test.equal(R._numListeners(), 1);
-    var span = div.firstChild;
+    const span = div.firstChild;
     test.equal(span.nodeName, 'SPAN');
 
     span.setAttribute('style', span.getAttribute('style') + '; jquery-style: hidden');
@@ -401,18 +401,18 @@ Tinytest.add("blaze - render - reactive attributes", function (test) {
   // Test that identical styles are successfully overwritten.
   (function () {
 
-    var R = ReactiveVar({'style': 'foo: a;'});
+    const R = ReactiveVar({'style': 'foo: a;'});
 
-    var spanFunc = function () {
+    const spanFunc = function () {
       return SPAN(HTML.Attrs(function () { return R.get(); }));
     };
 
-    var div = document.createElement("DIV");
+    const div = document.createElement("DIV");
     document.body.appendChild(div);
     Blaze.render(spanFunc, div);
     test.equal(canonicalizeHtml(div.innerHTML), '<span style="foo: a"></span>');
 
-    var span = div.firstChild;
+    const span = div.firstChild;
     test.equal(span.nodeName, 'SPAN');
     span.setAttribute("style", 'foo: b;');
     test.equal(canonicalizeHtml(div.innerHTML), '<span style="foo: b"></span>');
@@ -446,7 +446,7 @@ Tinytest.add("blaze - render - reactive attributes", function (test) {
 
   // Test `null`, `undefined`, and `[]` attributes
   (function () {
-    var R = ReactiveVar({id: 'foo',
+    const R = ReactiveVar({id: 'foo',
                          aaa: null,
                          bbb: undefined,
                          ccc: [],
@@ -455,7 +455,7 @@ Tinytest.add("blaze - render - reactive attributes", function (test) {
                          fff: [[]],
                          ggg: ['x', ['y', ['z']]]});
 
-    var spanFunc = function () {
+    const spanFunc = function () {
       return SPAN(HTML.Attrs(
         function () { return R.get(); }));
     };
@@ -464,9 +464,9 @@ Tinytest.add("blaze - render - reactive attributes", function (test) {
     test.equal(toCode(SPAN(R.get())),
                'HTML.SPAN({id: "foo", ggg: ["x", ["y", ["z"]]]})');
 
-    var div = document.createElement("DIV");
+    const div = document.createElement("DIV");
     Blaze.render(spanFunc, div);
-    var span = div.firstChild;
+    const span = div.firstChild;
     test.equal(span.nodeName, 'SPAN');
 
     test.equal(canonicalizeHtml(div.innerHTML), '<span ggg="xyz" id="foo"></span>');
@@ -490,10 +490,10 @@ Tinytest.add("blaze - render - reactive attributes", function (test) {
 
 Tinytest.add("blaze - render - templates and views", function (test) {
   (function () {
-    var counter = 1;
-    var buf = [];
+    let counter = 1;
+    const buf = [];
 
-    var myTemplate = Blaze.Template(
+    const myTemplate = Blaze.Template(
       'myTemplate',
       function () {
         return [String(this.number),
@@ -501,15 +501,15 @@ Tinytest.add("blaze - render - templates and views", function (test) {
       });
 
     myTemplate.constructView = function (number) {
-      var view = Template.prototype.constructView.call(this);
+      const view = Template.prototype.constructView.call(this);
       view.number = number;
       return view;
     };
 
     myTemplate.created = function () {
       test.isFalse(Tracker.active);
-      var view = this.view;
-      var parent = Blaze.getView(view, 'myTemplate');
+      const view = this.view;
+      const parent = Blaze.getView(view, 'myTemplate');
       if (parent) {
         buf.push('parent of ' + view.number + ' is ' +
                  parent.number);
@@ -520,7 +520,7 @@ Tinytest.add("blaze - render - templates and views", function (test) {
 
     myTemplate.onRendered(function () {
       test.isFalse(Tracker.active);
-      var nodeDescr = function (node) {
+      const nodeDescr = function (node) {
         if (node.nodeType === 8) // comment
           return '';
         if (node.nodeType === 3) // text
@@ -529,9 +529,9 @@ Tinytest.add("blaze - render - templates and views", function (test) {
         return node.nodeName;
       };
 
-      var view = this.view;
-      var start = view.firstNode();
-      var end = view.lastNode();
+      const view = this.view;
+      let start = view.firstNode();
+      let end = view.lastNode();
       // skip marker nodes
       while (start !== end && ! nodeDescr(start))
         start = start.nextSibling;
@@ -548,14 +548,14 @@ Tinytest.add("blaze - render - templates and views", function (test) {
       buf.push('destroyed ' + Template.currentData());
     });
 
-    var makeView = function () {
-      var number = counter++;
+    const makeView = function () {
+      let number = counter++;
       return Blaze.With(number, function () {
         return myTemplate.constructView(number);
       });
     };
 
-    var div = document.createElement("DIV");
+    const div = document.createElement("DIV");
 
     Blaze.render(makeView, div);
     buf.push('---flush---');
@@ -583,7 +583,7 @@ Tinytest.add("blaze - render - templates and views", function (test) {
     buf.length = 0;
     counter = 1;
 
-    var html = Blaze.toHTML(makeView());
+    const html = Blaze.toHTML(makeView());
 
     test.equal(buf, ['created 1',
                      'parent of 2 is 1',
@@ -599,10 +599,10 @@ Tinytest.add("blaze - render - templates and views", function (test) {
 });
 
 Tinytest.add("blaze - render - findAll", function (test) {
-  var found = null;
-  var $found = null;
+  let found = null;
+  let $found = null;
 
-  var myTemplate = new Template(
+  const myTemplate = new Template(
     'findAllTest',
     function() {
       return DIV([P('first'), P('second')]);
@@ -612,7 +612,7 @@ Tinytest.add("blaze - render - findAll", function (test) {
     $found = this.$('p');
   };
 
-  var div = document.createElement("DIV");
+  const div = document.createElement("DIV");
 
   Blaze.render(myTemplate, div);
   Tracker.flush();
@@ -624,18 +624,18 @@ Tinytest.add("blaze - render - findAll", function (test) {
 });
 
 Tinytest.add("blaze - render - reactive attributes 2", function (test) {
-  var R1 = ReactiveVar(['foo']);
-  var R2 = ReactiveVar(['bar']);
+  const R1 = ReactiveVar(['foo']);
+  const R2 = ReactiveVar(['bar']);
 
-  var spanFunc = function () {
+  const spanFunc = function () {
     return SPAN(HTML.Attrs(
       { blah: function () { return R1.get(); } },
       function () { return { blah: R2.get() }; }));
   };
 
-  var div = document.createElement("DIV");
+  const div = document.createElement("DIV");
   Blaze.render(spanFunc, div);
-  var check = function (expected) {
+  const check = function (expected) {
     test.equal(Blaze.toHTML(spanFunc()), expected);
     test.equal(canonicalizeHtml(div.innerHTML), expected);
   };
@@ -682,20 +682,20 @@ Tinytest.add("blaze - render - SVG", function (test) {
     return;
   }
 
-  var fillColor = ReactiveVar('red');
-  var classes = ReactiveVar('one two');
+  const fillColor = ReactiveVar('red');
+  const classes = ReactiveVar('one two');
 
-  var content = DIV({'class': 'container'}, HTML.SVG(
+  const content = DIV({'class': 'container'}, HTML.SVG(
     {width: 100, height: 100},
     HTML.CIRCLE({cx: 50, cy: 50, r: 40,
                  stroke: 'black', 'stroke-width': 3,
                  'class': function () { return classes.get(); },
                  fill: function () { return fillColor.get(); }})));
 
-  var div = document.createElement("DIV");
+  const div = document.createElement("DIV");
   materialize(content, div);
 
-  var circle = div.querySelector('.container > svg > circle');
+  const circle = div.querySelector('.container > svg > circle');
   test.equal(circle.getAttribute('fill'), 'red');
   test.equal(circle.className.baseVal, 'one two');
 
@@ -711,8 +711,8 @@ Tinytest.add("blaze - render - SVG", function (test) {
 });
 
 Tinytest.add("ui - attributes", function (test) {
-  var SPAN = HTML.SPAN;
-  var amp = HTML.CharRef({html: '&amp;', str: '&'});
+  const SPAN = HTML.SPAN;
+  const amp = HTML.CharRef({html: '&amp;', str: '&'});
 
   test.equal(HTML.toHTML(SPAN({title: ['M', amp, 'Ms']}, 'M', amp, 'M candies')),
              '<span title="M&amp;Ms">M&amp;M candies</span>');
@@ -722,22 +722,22 @@ if (typeof MutationObserver !== 'undefined') {
   // This test is not really able to test that Blaze._materializeDOM is called only when
   // not Blaze._isContentEqual(lastHtmljs, htmljs), which is what we would in fact want to test.
   Tinytest.addAsync("blaze - render - optimization", function (test, onComplete) {
-    var R = ReactiveVar('aa');
-    var view = Blaze.View(function () { return R.get().substr(0, 1); });
+    const R = ReactiveVar('aa');
+    const view = Blaze.View(function () { return R.get().substr(0, 1); });
 
-    var renderedCount = 0;
+    let renderedCount = 0;
     test.equal(view.renderCount, 0);
 
     view._onViewRendered(function () {
       renderedCount++;
     });
 
-    var test1 = P(view);
+    const test1 = P(view);
 
-    var div = document.createElement("DIV");
+    const div = document.createElement("DIV");
 
-    var observedMutations = [];
-    var observer = new MutationObserver(function (mutations) {
+    const observedMutations = [];
+    const observer = new MutationObserver(function (mutations) {
       mutations.forEach(function (mutation) {
         observedMutations.push(mutation);
       });
@@ -745,8 +745,8 @@ if (typeof MutationObserver !== 'undefined') {
 
     observer.observe(div, {childList: true, subtree: true});
 
-    var materializeCount = 0;
-    var originalMaterializeDOM = Blaze._materializeDOM;
+    let materializeCount = 0;
+    const originalMaterializeDOM = Blaze._materializeDOM;
     Blaze._materializeDOM = function (htmljs, intoArray, parentView, _existingWorkStack) {
       if (parentView === view) {
         materializeCount++;
