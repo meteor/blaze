@@ -3,6 +3,10 @@
 * [#431](https://github.com/meteor/blaze/pull/431) Depracate Ui package.
 * [#431](https://github.com/meteor/blaze/pull/432) Bump blaze hot dependencies.
 * [#428](https://github.com/meteor/blaze/pull/428) Implemented async attributes and content.
+* [#426](https://github.com/meteor/blaze/pull/426) Fix observe-squence has-implementation, close to underscore.
+* [#434](https://github.com/meteor/blaze/pull/434) Update templating deps.
+* [#435](https://github.com/meteor/blaze/pull/435) Updating dependencies for templating-compiler package.
+* [#433](https://github.com/meteor/blaze/pull/433) Update caching-html-compiler.
 
 ## v2.7.1, 2023-May-26
 
