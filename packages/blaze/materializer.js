@@ -21,7 +21,7 @@ Blaze._materializeDOM = function (htmljs, intoArray, parentView,
   // and run, last first, after materializeDOMInner returns.  The
   // reason we use a stack instead of a queue is so that we recurse
   // depth-first, doing newer tasks first.
-  var workStack = (_existingWorkStack || []);
+  const workStack = (_existingWorkStack || []);
   materializeDOMInner(htmljs, intoArray, parentView, workStack);
 
   if (! _existingWorkStack) {
@@ -30,7 +30,7 @@ Blaze._materializeDOM = function (htmljs, intoArray, parentView,
     // of the stack.
     while (workStack.length) {
       // Note that running task() may push new items onto workStack.
-      var task = workStack.pop();
+      const task = workStack.pop();
       task();
     }
   }
@@ -38,7 +38,7 @@ Blaze._materializeDOM = function (htmljs, intoArray, parentView,
   return intoArray;
 };
 
-var materializeDOMInner = function (htmljs, intoArray, parentView, workStack) {
+const materializeDOMInner = function (htmljs, intoArray, parentView, workStack) {
   if (htmljs == null) {
     // null or undefined
     return;
@@ -63,13 +63,13 @@ var materializeDOMInner = function (htmljs, intoArray, parentView, workStack) {
       case HTML.Raw.htmljsType:
         // Get an array of DOM nodes by using the browser's HTML parser
         // (like innerHTML).
-        var nodes = Blaze._DOMBackend.parseHTML(htmljs.value);
-        for (var i = 0; i < nodes.length; i++)
+        const nodes = Blaze._DOMBackend.parseHTML(htmljs.value);
+        for (let i = 0; i < nodes.length; i++)
           intoArray.push(nodes[i]);
         return;
       }
     } else if (HTML.isArray(htmljs)) {
-      for (var i = htmljs.length-1; i >= 0; i--) {
+      for (let i = htmljs.length-1; i >= 0; i--) {
         workStack.push(Blaze._bind(Blaze._materializeDOM, null,
                               htmljs[i], intoArray, parentView, workStack));
       }
@@ -120,9 +120,9 @@ function waitForAllAttributesAndContinue(attrs, fn) {
   }
 }
 
-var materializeTag = function (tag, parentView, workStack) {
-  var tagName = tag.tagName;
-  var elem;
+const materializeTag = function (tag, parentView, workStack) {
+  const tagName = tag.tagName;
+  let elem;
   if ((HTML.isKnownSVGElement(tagName) || isSVGAnchor(tag))
       && document.createElementNS) {
     // inline SVG
@@ -132,8 +132,8 @@ var materializeTag = function (tag, parentView, workStack) {
     elem = document.createElement(tagName);
   }
 
-  var rawAttrs = tag.attrs;
-  var children = tag.children;
+  let rawAttrs = tag.attrs;
+  let children = tag.children;
   if (tagName === 'textarea' && tag.children.length &&
       ! (rawAttrs && ('value' in rawAttrs))) {
     // Provide very limited support for TEXTAREA tags with children
@@ -153,13 +153,13 @@ var materializeTag = function (tag, parentView, workStack) {
   }
 
   if (rawAttrs) {
-    var attrUpdater = new ElementAttributesUpdater(elem);
-    var updateAttributes = function () {
-      var expandedAttrs = Blaze._expandAttributes(rawAttrs, parentView);
+    const attrUpdater = new ElementAttributesUpdater(elem);
+    const updateAttributes = function () {
+      const expandedAttrs = Blaze._expandAttributes(rawAttrs, parentView);
       waitForAllAttributesAndContinue(expandedAttrs, () => {
-        var flattenedAttrs = HTML.flattenAttributes(expandedAttrs);
-        var stringAttrs = {};
-        for (var attrName in flattenedAttrs) {
+        const flattenedAttrs = HTML.flattenAttributes(expandedAttrs);
+        const stringAttrs = {};
+        Object.keys(flattenedAttrs).forEach((attrName) => {
           // map `null`, `undefined`, and `false` to null, which is important
           // so that attributes with nully values are considered absent.
           // stringify anything else (e.g. strings, booleans, numbers including 0).
@@ -169,11 +169,11 @@ var materializeTag = function (tag, parentView, workStack) {
             stringAttrs[attrName] = Blaze._toText(flattenedAttrs[attrName],
                                                   parentView,
                                                   HTML.TEXTMODE.STRING);
-        }
+        });
         attrUpdater.update(stringAttrs);
       });
     };
-    var updaterComputation;
+    let updaterComputation;
     if (parentView) {
       updaterComputation =
         parentView.autorun(updateAttributes, undefined, 'updater');
@@ -190,11 +190,11 @@ var materializeTag = function (tag, parentView, workStack) {
   }
 
   if (children.length) {
-    var childNodesAndRanges = [];
+    const childNodesAndRanges = [];
     // push this function first so that it's done last
     workStack.push(function () {
-      for (var i = 0; i < childNodesAndRanges.length; i++) {
-        var x = childNodesAndRanges[i];
+      for (let i = 0; i < childNodesAndRanges.length; i++) {
+        const x = childNodesAndRanges[i];
         if (x instanceof Blaze._DOMRange)
           x.attach(elem);
         else
@@ -211,7 +211,7 @@ var materializeTag = function (tag, parentView, workStack) {
 };
 
 
-var isSVGAnchor = function (node) {
+const isSVGAnchor = function (node) {
   // We generally aren't able to detect SVG <a> elements because
   // if "A" were in our list of known svg element names, then all
   // <a> nodes would be created using
