@@ -1,3 +1,9 @@
+## v2.8.0 2023-Dec-28
+
+* [#431](https://github.com/meteor/blaze/pull/431) Depracate Ui package.
+* [#431](https://github.com/meteor/blaze/pull/432) Bump blaze hot dependencies.
+* [#428](https://github.com/meteor/blaze/pull/428) Implemented async attributes and content.
+
 ## v2.7.1, 2023-May-26
 
 * [#413](https://github.com/meteor/blaze/pull/418) Fix reactivity for non-primitives.
@@ -63,14 +69,14 @@
 * [#321](https://github.com/meteor/blaze/pull/321) Just source code modernisation, making it easier to read. Shouldn't change any API's; except may need explicit import if other packages are using directly.
 
 * [#324](https://github.com/meteor/blaze/pull/324) Add a whitespace="strip" option to templates, which removes any whitespace that crosses newlines.
-  
+
 * [#276](https://github.com/meteor/blaze/pull/276) [HTML.isArray](https://github.com/brucejo75/blaze/blob/release-2.4/packages/htmljs/README.md#htmlisarrayx) works across iFrames.  This supports running blaze in sandboxed iFrames.
 
 ## v2.3.4, 2019-Dec-13
 
 * jquery 3 support
   [#299](https://github.com/meteor/blaze/pull/299)
-  
+
 ## v2.3.2, 2017-Mar-21
 
 * Made beautification of compiled spacebars code happen only on the server.
