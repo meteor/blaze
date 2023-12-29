@@ -7,7 +7,7 @@ title: BlazeJS
 subtitle: Developers
 description:
 author:
-language:
+language: en
 timezone:
 apis:
   # marketo: 627-RVJ-941
@@ -16,7 +16,7 @@ apis:
   #   apiKey: bdf6b09d12024f6bae3631a0dfdd4a7f
   #   indexName: meteor_api_guide
 versions:
-  - '2.1.8'
+  - '4.2.1'
 
 # This setting also defines the page order used to generate the Previous/Next links at the bottom of each page
 sidebar_categories:
@@ -84,7 +84,8 @@ skip_render:
 new_post_name: :title.md # File name of new posts
 default_layout: post
 titlecase: false # Transform title into titlecase
-external_link: true # Open external links in new tab
+external_link:
+  enable: true # Open external links in new tab
 filename_case: 0
 render_drafts: false
 post_asset_folder: false
