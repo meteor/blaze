@@ -1,7 +1,7 @@
 Package.describe({
   name: 'templating-runtime',
   summary: "Runtime for compiled .html files",
-  version: '1.6.3',
+  version: '1.6.4',
   git: 'https://github.com/meteor/blaze.git',
   documentation: null
 });
@@ -23,20 +23,20 @@ Package.onUse(function (api) {
   // Blaze, so anybody using templating (eg apps) need to implicitly use
   // 'meteor' and 'blaze'.
   api.use([
-    'blaze@2.7.1',
+    'blaze@2.8.0',
     'spacebars@1.2.1',
     'ecmascript@0.15.1'
   ]);
   api.imply([
     'meteor@1.10.0',
-    'blaze@2.7.1',
+    'blaze@2.8.0',
     'spacebars@1.2.1'
   ], 'client');
 
   // to be able to compile dynamic.html. this compiler is used
   // only inside this package and it should not be implied to not
   // conflict with other packages providing .html compilers.
-  api.use('templating-compiler@1.4.1');
+  api.use('templating-compiler@1.4.2');
 
   api.addFiles([
     'dynamic.html',
@@ -54,7 +54,7 @@ Package.onTest(function (api) {
 
   api.use([
     'templating-runtime',
-    'templating-compiler@1.4.1'
+    'templating-compiler@1.4.2'
   ]);
 
   api.addFiles([

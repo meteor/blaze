@@ -1,7 +1,7 @@
 Package.describe({
   name: 'caching-html-compiler',
   summary: "Pluggable class for compiling HTML into templates",
-  version: '1.2.1',
+  version: '1.2.2',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -18,7 +18,7 @@ Package.onUse(function(api) {
   api.export('CachingHtmlCompiler', 'server');
 
   api.use([
-    'templating-tools@1.2.1'
+    'templating-tools@1.2.3'
   ]);
 
   api.addFiles([
