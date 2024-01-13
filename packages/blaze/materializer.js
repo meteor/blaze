@@ -95,7 +95,32 @@ const materializeDOMInner = function (htmljs, intoArray, parentView, workStack) 
 
 const isPromiseLike = x => !!x && typeof x.then === 'function';
 
-function waitForAllAttributesAndContinue(attrs, fn) {
+function then(maybePromise, fn) {
+  if (isPromiseLike(maybePromise)) {
+    maybePromise.then(fn);
+  } else {
+    fn(maybePromise);
+  }
+}
+
+function waitForAllAttributes(attrs) {
+  if (attrs !== Object(attrs)) {
+    console.log(attrs)
+    return attrs;
+  }
+
+  // Combined attributes, e.g., `<img {{x}} {{y}}>`.
+  if (Array.isArray(attrs)) {
+    const mapped = attrs.map(waitForAllAttributes);
+    return mapped.some(isPromiseLike) ? Promise.all(mapped) : mapped;
+  }
+
+  // Singular async attributes, e.g., `<img {{x}}>`.
+  if (isPromiseLike(attrs)) {
+    return attrs.then(waitForAllAttributes);
+  }
+
+  // Singular sync attributes, with potentially async properties.
   const promises = [];
   for (const [key, value] of Object.entries(attrs)) {
     if (isPromiseLike(value)) {
@@ -113,11 +138,8 @@ function waitForAllAttributesAndContinue(attrs, fn) {
     }
   }
 
-  if (promises.length) {
-    Promise.all(promises).then(fn);
-  } else {
-    fn();
-  }
+  // If any of the properties were async, lift the `Promise`.
+  return promises.length ? Promise.all(promises).then(() => attrs) : attrs;
 }
 
 const materializeTag = function (tag, parentView, workStack) {
@@ -156,8 +178,8 @@ const materializeTag = function (tag, parentView, workStack) {
     const attrUpdater = new ElementAttributesUpdater(elem);
     const updateAttributes = function () {
       const expandedAttrs = Blaze._expandAttributes(rawAttrs, parentView);
-      waitForAllAttributesAndContinue(expandedAttrs, () => {
-        const flattenedAttrs = HTML.flattenAttributes(expandedAttrs);
+      then(waitForAllAttributes(expandedAttrs), awaitedAttrs => {
+        const flattenedAttrs = HTML.flattenAttributes(awaitedAttrs);
         const stringAttrs = {};
         Object.keys(flattenedAttrs).forEach((attrName) => {
           // map `null`, `undefined`, and `false` to null, which is important
