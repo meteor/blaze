@@ -104,9 +104,9 @@ function then(maybePromise, fn) {
 }
 
 function waitForAllAttributes(attrs) {
-  if (attrs !== Object(attrs)) {
-    console.log(attrs)
-    return attrs;
+  // Non-object attrs (e.g., `null`) are ignored.
+  if (!attrs || attrs !== Object(attrs)) {
+    return {};
   }
 
   // Combined attributes, e.g., `<img {{x}} {{y}}>`.
