@@ -97,7 +97,7 @@ const isPromiseLike = x => !!x && typeof x.then === 'function';
 
 function then(maybePromise, fn) {
   if (isPromiseLike(maybePromise)) {
-    maybePromise.then(fn);
+    maybePromise.then(fn, Blaze._reportException);
   } else {
     fn(maybePromise);
   }
@@ -117,7 +117,7 @@ function waitForAllAttributes(attrs) {
 
   // Singular async attributes, e.g., `<img {{x}}>`.
   if (isPromiseLike(attrs)) {
-    return attrs.then(waitForAllAttributes);
+    return attrs.then(waitForAllAttributes, Blaze._reportExceptionAndThrow);
   }
 
   // Singular sync attributes, with potentially async properties.
@@ -126,20 +126,22 @@ function waitForAllAttributes(attrs) {
     if (isPromiseLike(value)) {
       promises.push(value.then(value => {
         attrs[key] = value;
-      }));
+      }, Blaze._reportExceptionAndThrow));
     } else if (Array.isArray(value)) {
       value.forEach((element, index) => {
         if (isPromiseLike(element)) {
           promises.push(element.then(element => {
             value[index] = element;
-          }));
+          }, Blaze._reportExceptionAndThrow));
         }
       });
     }
   }
 
   // If any of the properties were async, lift the `Promise`.
-  return promises.length ? Promise.all(promises).then(() => attrs) : attrs;
+  return promises.length
+    ? Promise.all(promises).then(() => attrs, Blaze._reportExceptionAndThrow)
+    : attrs;
 }
 
 const materializeTag = function (tag, parentView, workStack) {
