@@ -1,3 +1,11 @@
+
+## v2.9.0 2024-Mar-XX
+
+* [#460](https://github.com/meteor/blaze/pull/460) Implemented async dynamic attributes.
+* [#458](https://github.com/meteor/blaze/pull/458) Blaze._expandAttributes returns empty object, if null.
+
+
+
 ## v2.8.0 2023-Dec-28
 
 * [#431](https://github.com/meteor/blaze/pull/431) Depracate Ui package.
