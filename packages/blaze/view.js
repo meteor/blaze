@@ -490,8 +490,9 @@ Blaze._expand = function (htmljs, parentView) {
 
 Blaze._expandAttributes = function (attrs, parentView) {
   parentView = parentView || currentViewIfRendering();
-  return (new Blaze._HTMLJSExpander(
+  const expanded = (new Blaze._HTMLJSExpander(
     {parentView: parentView})).visitAttributes(attrs);
+  return expanded || {};
 };
 
 Blaze._destroyView = function (view, _skipNodes) {
