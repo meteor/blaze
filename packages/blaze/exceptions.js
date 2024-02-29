@@ -42,6 +42,13 @@ Blaze._reportException = function (e, msg) {
   debugFunc()(msg || 'Exception caught in template:', e.stack || e.message || e);
 };
 
+// It's meant to be used in `Promise` chains to report the error while not
+// "swallowing" it (i.e., the chain will still reject).
+Blaze._reportExceptionAndThrow = function (error) {
+  Blaze._reportException(error);
+  throw error;
+};
+
 Blaze._wrapCatchingExceptions = function (f, where) {
   if (typeof f !== 'function')
     return f;

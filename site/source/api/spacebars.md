@@ -228,7 +228,7 @@ and value strings. For convenience, the value may also be a string or null. An
 empty string or null expands to `{}`. A non-empty string must be an attribute
 name, and expands to an attribute with an empty value; for example, `"checked"`
 expands to `{checked: ""}` (which, as far as HTML is concerned, means the
-checkbox is checked). `Promise`s are not supported and will throw an error.
+checkbox is checked).
 
 To summarize:
 
@@ -242,10 +242,6 @@ To summarize:
     <tr><td><code>{checked: "", 'class': "foo"}</code></td><td><code>checked class=foo</code></td></tr>
     <tr><td><code>{checked: false, 'class': "foo"}</code></td><td><code>class=foo</code></td></tr>
     <tr><td><code>"checked class=foo"</code></td><td>ERROR, string is not an attribute name</td></tr>
-    <tr>
-      <td><code>Promise.resolve({})</code></td>
-      <td>ERROR, asynchronous dynamic attributes are not supported, see <a href="https://github.com/meteor/blaze/issues/443"><code>#443</code></a></td>
-    </tr>
   </tbody>
 </table>
 
@@ -262,6 +258,12 @@ specifies a value for the `class` attribute, it will overwrite `{% raw %}{{myCla
 As always, Spacebars takes care of recalculating the element's attributes if any
 of `myClass`, `attrs1`, or `attrs2` changes reactively.
 
+### Async Dynamic Attributes
+
+The dynamic attributes can be wrapped in a `Promise`. When that happens, they
+will be treated as `undefined` while it's pending or rejected. Once resolved,
+the resulting value is used. To have more fine-grained handling of non-resolved
+states, use `#let` and the async state helpers (e.g., `@pending`).
 
 ## Triple-braced Tags
 
