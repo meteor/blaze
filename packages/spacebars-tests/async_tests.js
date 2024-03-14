@@ -22,20 +22,20 @@ function asyncSuite(templateName, cases) {
   }
 }
 
-const getter = async () => 'foo';
-const thenable = { then: resolve => Promise.resolve().then(() => resolve('foo')) };
-const value = Promise.resolve('foo');
+const getter = v => async () => v;
+const thenable = v => ({ then: resolve => Promise.resolve().then(() => resolve(v)) });
+const value = v => Promise.resolve(v);
 
 asyncSuite('access', [
-  ['getter', { x: { y: getter } }, '', 'foo'],
-  ['thenable', { x: { y: thenable } }, '', 'foo'],
-  ['value', { x: { y: value } }, '', 'foo'],
+  ['getter', { x: { y: getter('foo') } }, '', 'foo'],
+  ['thenable', { x: { y: thenable('foo') } }, '', 'foo'],
+  ['value', { x: { y: value('foo') } }, '', 'foo'],
 ]);
 
 asyncSuite('direct', [
-  ['getter', { x: getter }, '', 'foo'],
-  ['thenable', { x: thenable }, '', 'foo'],
-  ['value', { x: value }, '', 'foo'],
+  ['getter', { x: getter('foo') }, '', 'foo'],
+  ['thenable', { x: thenable('foo') }, '', 'foo'],
+  ['value', { x: value('foo') }, '', 'foo'],
 ]);
 
 asyncTest('missing1', 'outer', async (test, template, render) => {
@@ -49,27 +49,48 @@ asyncTest('missing2', 'inner', async (test, template, render) => {
 });
 
 asyncSuite('attribute', [
-  ['getter', { x: getter }, '<img>', '<img class="foo">'],
-  ['thenable', { x: thenable }, '<img>', '<img class="foo">'],
-  ['value', { x: value }, '<img>', '<img class="foo">'],
+  ['getter', { x: getter('foo') }, '<img>', '<img class="foo">'],
+  ['thenable', { x: thenable('foo') }, '<img>', '<img class="foo">'],
+  ['value', { x: value('foo') }, '<img>', '<img class="foo">'],
 ]);
 
-asyncTest('attributes', '', async (test, template, render) => {
-  Blaze._throwNextException = true;
-  template.helpers({ x: Promise.resolve() });
-  test.throws(render, 'Asynchronous dynamic attributes are not supported. Use #let to unwrap them first.');
-});
+asyncSuite('attributes', [
+  ['getter in getter', { x: getter({ class: getter('foo') }) }, '<img>', '<img>'], // Nested getters are NOT evaluated.
+  ['getter in thenable', { x: thenable({ class: getter('foo') }) }, '<img>', '<img>'], // Nested getters are NOT evaluated.
+  ['getter in value', { x: value({ class: getter('foo') }) }, '<img>', '<img>'], // Nested getters are NOT evaluated.
+  ['static in getter', { x: getter({ class: 'foo' }) }, '<img>', '<img class="foo">'],
+  ['static in thenable', { x: thenable({ class: 'foo' }) }, '<img>', '<img class="foo">'],
+  ['static in value', { x: value({ class: 'foo' }) }, '<img>', '<img class="foo">'],
+  ['thenable in getter', { x: getter({ class: thenable('foo') }) }, '<img>', '<img class="foo">'],
+  ['thenable in thenable', { x: thenable({ class: thenable('foo') }) }, '<img>', '<img class="foo">'],
+  ['thenable in value', { x: value({ class: thenable('foo') }) }, '<img>', '<img class="foo">'],
+  ['value in getter', { x: getter({ class: value('foo') }) }, '<img>', '<img class="foo">'],
+  ['value in thenable', { x: thenable({ class: value('foo') }) }, '<img>', '<img class="foo">'],
+  ['value in value', { x: value({ class: value('foo') }) }, '<img>', '<img class="foo">'],
+]);
+
+asyncSuite('attributes_double', [
+  ['null lhs getter', { x: getter({ class: null }), y: getter({ class: 'foo' }) }, '<img>', '<img class="foo">'],
+  ['null lhs thenable', { x: thenable({ class: null }), y: thenable({ class: 'foo' }) }, '<img>', '<img class="foo">'],
+  ['null lhs value', { x: value({ class: null }), y: value({ class: 'foo' }) }, '<img>', '<img class="foo">'],
+  ['null rhs getter', { x: getter({ class: 'foo' }), y: getter({ class: null }) }, '<img>', '<img class="foo">'],
+  ['null rhs thenable', { x: thenable({ class: 'foo' }), y: thenable({ class: null }) }, '<img>', '<img class="foo">'],
+  ['null rhs value', { x: value({ class: 'foo' }), y: value({ class: null }) }, '<img>', '<img class="foo">'],
+  ['override getter', { x: getter({ class: 'foo' }), y: getter({ class: 'bar' }) }, '<img>', '<img class="bar">'],
+  ['override thenable', { x: thenable({ class: 'foo' }), y: thenable({ class: 'bar' }) }, '<img>', '<img class="bar">'],
+  ['override value', { x: value({ class: 'foo' }), y: value({ class: 'bar' }) }, '<img>', '<img class="bar">'],
+]);
 
 asyncSuite('value_direct', [
-  ['getter', { x: getter }, '', 'foo'],
-  ['thenable', { x: thenable }, '', 'foo'],
-  ['value', { x: value }, '', 'foo'],
+  ['getter', { x: getter('foo') }, '', 'foo'],
+  ['thenable', { x: thenable('foo') }, '', 'foo'],
+  ['value', { x: value('foo') }, '', 'foo'],
 ]);
 
 asyncSuite('value_raw', [
-  ['getter', { x: getter }, '', 'foo'],
-  ['thenable', { x: thenable }, '', 'foo'],
-  ['value', { x: value }, '', 'foo'],
+  ['getter', { x: getter('foo') }, '', 'foo'],
+  ['thenable', { x: thenable('foo') }, '', 'foo'],
+  ['value', { x: value('foo') }, '', 'foo'],
 ]);
 
 asyncSuite('if', [

@@ -131,12 +131,14 @@ Spacebars.makeRaw = function (value) {
 function _thenWithContext(promise, fn) {
   const computation = Tracker.currentComputation;
   const view = Blaze.currentView;
-  return promise.then(value =>
-    Blaze._withCurrentView(view, () =>
-      Tracker.withComputation(computation, () =>
-        fn(value)
-      )
-    )
+  return promise.then(
+    value =>
+      Blaze._withCurrentView(view, () =>
+        Tracker.withComputation(computation, () =>
+          fn(value)
+        )
+      ),
+    Blaze._reportExceptionAndThrow
   );
 }
 
