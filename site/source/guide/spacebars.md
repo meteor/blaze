@@ -184,6 +184,16 @@ The `{% raw %}{{#if}}{% endraw %}` and `{% raw %}{{#unless}}{% endraw %}` helper
 {{/if}}
 ```
 
+```html
+{{#if condition1}}
+  <p>It's condition1 true</p>
+{{else if condition2}}
+  <p>It's condition2 true</p>
+{{else}}
+  <p>It's false</p>
+{{/if}}
+```
+
 ### Each-in
 
 The `{% raw %}{{#each .. in}}{% endraw %}` helper is a convenient way to step over a list while retaining the outer data context.
