@@ -1,6 +1,6 @@
 import has from 'lodash.has';
 
-/** @param {(binding: Binding) => boolean} fn */
+/** @param {function(Binding): boolean} fn */
 function _createBindingsHelper(fn) {
   /** @param {string[]} names */
   return (...names) => {

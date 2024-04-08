@@ -545,7 +545,7 @@ Blaze.currentView = null;
 /**
  * @template T
  * @param {Blaze.View} view
- * @param {() => T} func
+ * @param {function(): T} func
  * @returns {T}
  */
 Blaze._withCurrentView = function (view, func) {

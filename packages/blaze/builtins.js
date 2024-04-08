@@ -61,7 +61,7 @@ function _identity(x) {
  * @template T, U
  * @param {ReactiveVar<U>} reactiveVar Target view.
  * @param {Promise<T> | T} value Bound value.
- * @param {(value: T) => U} [mapper] Maps the computed value before store.
+ * @param {function(T): U} [mapper] Maps the computed value before store.
  */
 function _setBindingValue(reactiveVar, value, mapper = _identity) {
   if (value && typeof value.then === 'function') {
@@ -77,9 +77,9 @@ function _setBindingValue(reactiveVar, value, mapper = _identity) {
 /**
  * @template T, U
  * @param {Blaze.View} view Target view.
- * @param {Promise<T> | T | (() => Promise<T> | T)} binding Binding value or its getter.
+ * @param {Promise<T> | T | function(): (Promise<T> | T)} binding Binding value or its getter.
  * @param {string} [displayName] Autorun's display name.
- * @param {(value: T) => U} [mapper] Maps the computed value before store.
+ * @param {function(T): U} [mapper] Maps the computed value before store.
  * @returns {ReactiveVar<U>}
  */
 function _createBinding(view, binding, displayName, mapper) {
