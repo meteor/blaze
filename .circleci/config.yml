@@ -1,15 +1,15 @@
-version: 2
+version: 2.1
 
 jobs:
   test app:
     docker:
-      - image: meteor/circleci:android-28-node-12
+      - image: meteor/circleci:2023.12.1-android-34-node-20
     steps:
       - checkout
       - run:
           name: "Install Meteor"
           command: |
-            curl https://install.meteor.com/ | sh
+            npx meteor@rc
       - run:
           name: "Run Tests"
           command: |
