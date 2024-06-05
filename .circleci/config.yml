@@ -10,6 +10,8 @@ jobs:
           name: "Install Meteor"
           command: |
             npx meteor@rc
+            echo 'export PATH=/home/circleci/.meteor:$PATH' >> $BASH_ENV
+            source $BASH_ENV
       - run:
           name: "Run Tests"
           command: |
