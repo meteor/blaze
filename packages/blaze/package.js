@@ -27,8 +27,8 @@ Package.onUse(function (api) {
     'Handlebars'
   ]);
 
-  api.use('htmljs@2.0.0-alpha300.10');
-  api.imply('htmljs@2.0.0-alpha300.10');
+  api.use('htmljs@2.0.0-rc300.2');
+  api.imply('htmljs@2.0.0-rc300.2');
 
   api.addFiles([
     'preamble.js'
@@ -57,7 +57,7 @@ Package.onUse(function (api) {
 });
 
 Package.onTest(function (api) {
-  api.use('ecmascript@0.16.8-alpha300.17');
+  api.use('ecmascript@0.16.9-rc300.2');
   api.use('tinytest');
   api.use('test-helpers');
   api.use('jquery@1.11.9 || 3.0.0'); // strong dependency, for testing jQuery backend
@@ -66,8 +66,8 @@ Package.onTest(function (api) {
   api.use('tracker@1.3.2');
 
   api.use('blaze');
-  api.use('blaze-tools@2.0.0-alpha300.10'); // for BlazeTools.toJS
-  api.use('html-tools@2.0.0-alpha300.10');
+  api.use('blaze-tools@2.0.0-rc300.2'); // for BlazeTools.toJS
+  api.use('html-tools@2.0.0-rc300.2');
   api.use('templating');
 
   api.addFiles('view_tests.js');
