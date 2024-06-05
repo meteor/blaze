@@ -1,7 +1,7 @@
 Package.describe({
   name: 'blaze',
   summary: "Meteor Reactive Templating library",
-  version: '3.0.0-alpha300.17',
+  version: '3.0.0-rc300.2',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -16,10 +16,10 @@ Package.onUse(function (api) {
   api.use('jquery@1.11.9 || 3.0.0', { weak: true }); // should be a weak dep, by having multiple "DOM backends"
   api.use('tracker@1.3.2');
   api.use('check@1.0.12');
-  api.use('observe-sequence@2.0.0-alpha300.17');
+  api.use('observe-sequence@2.0.0-rc300.2');
   api.use('reactive-var@1.0.12');
-  api.use('ordered-dict@1.2.0-alpha300.17');
-  api.use('ecmascript@0.16.8-alpha300.17');
+  api.use('ordered-dict@1.2.0-rc300.2');
+  api.use('ecmascript@0.16.9-rc300.2');
 
   api.export([
     'Blaze',
