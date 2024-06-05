@@ -2,14 +2,16 @@ const isObject = function (value) {
   var type = typeof value;
   return value != null && (type == 'object' || type == 'function');
 }
-const has = function (obj, key) {
-  var keyParts = key.split('.');
-
-  return !!obj && (
-    keyParts.length > 1
-      ? has(obj[key.split('.')[0]], keyParts.slice(1).join('.'))
-      : hasOwnProperty.call(obj, key)
-  );
+const has = (obj, path) => {
+  const thisPath = Array.isArray(path) ? path : [path];
+  const length = thisPath.length;
+  for (let i = 0; i < length; i++) {
+    const key = thisPath[i];
+    const _has = obj != null && Object.hasOwnProperty.call(obj, key);
+    if (!_has) return false;
+    obj = obj[key];
+  }
+  return !!length;
 };
 
 const warn = function () {

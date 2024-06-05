@@ -1,8 +1,8 @@
 import has from 'lodash.has';
 
-var EventSupport = Blaze._EventSupport = {};
+const EventSupport = Blaze._EventSupport = {};
 
-var DOMBackend = Blaze._DOMBackend;
+const DOMBackend = Blaze._DOMBackend;
 
 // List of events to always delegate, never capture.
 // Since jQuery fakes bubbling for certain events in
@@ -12,20 +12,26 @@ var DOMBackend = Blaze._DOMBackend;
 // We could list all known bubbling
 // events here to avoid creating speculative capturers
 // for them, but it would only be an optimization.
-var eventsToDelegate = EventSupport.eventsToDelegate = {
-  blur: 1, change: 1, click: 1, focus: 1, focusin: 1,
-  focusout: 1, reset: 1, submit: 1
+const eventsToDelegate = EventSupport.eventsToDelegate = {
+  blur: 1,
+  change: 1,
+  click: 1,
+  focus: 1,
+  focusin: 1,
+  focusout: 1,
+  reset: 1,
+  submit: 1
 };
 
-var EVENT_MODE = EventSupport.EVENT_MODE = {
+const EVENT_MODE = EventSupport.EVENT_MODE = {
   TBD: 0,
   BUBBLING: 1,
   CAPTURING: 2
 };
 
-var NEXT_HANDLERREC_ID = 1;
+let NEXT_HANDLERREC_ID = 1;
 
-var HandlerRec = function (elem, type, selector, handler, recipient) {
+const HandlerRec = function (elem, type, selector, handler, recipient) {
   this.elem = elem;
   this.type = type;
   this.selector = selector;
@@ -58,7 +64,7 @@ var HandlerRec = function (elem, type, selector, handler, recipient) {
   // events using capture in all browsers except IE 8.
   // IE 8 doesn't support these events anyway.
 
-  var tryCapturing = elem.addEventListener &&
+  const tryCapturing = elem.addEventListener &&
         (!has(eventsToDelegate,
                  DOMBackend.Events.parseEventType(type)));
 
@@ -129,26 +135,26 @@ EventSupport.listen = function (element, events, selector, handler, recipient, g
   // Repro: https://github.com/dgreensp/public/tree/master/safari-crash
   try { element = element; } finally {}
 
-  var eventTypes = [];
+  const eventTypes = [];
   events.replace(/[^ /]+/g, function (e) {
     eventTypes.push(e);
   });
 
-  var newHandlerRecs = [];
-  for (var i = 0, N = eventTypes.length; i < N; i++) {
-    var type = eventTypes[i];
+  const newHandlerRecs = [];
+  for (let i = 0, N = eventTypes.length; i < N; i++) {
+    const type = eventTypes[i];
 
-    var eventDict = element.$blaze_events;
+    let eventDict = element.$blaze_events;
     if (! eventDict)
       eventDict = (element.$blaze_events = {});
 
-    var info = eventDict[type];
+    let info = eventDict[type];
     if (! info) {
       info = eventDict[type] = {};
       info.handlers = [];
     }
-    var handlerList = info.handlers;
-    var handlerRec = new HandlerRec(
+    const handlerList = info.handlers;
+    const handlerRec = new HandlerRec(
       element, type, selector, handler, recipient);
     newHandlerRecs.push(handlerRec);
     handlerRec.bind();
@@ -157,12 +163,12 @@ EventSupport.listen = function (element, events, selector, handler, recipient, g
     // them.  In jQuery (or other DOMBackend) this causes them to fire
     // later when the backend dispatches event handlers.
     if (getParentRecipient) {
-      for (var r = getParentRecipient(recipient); r;
+      for (let r = getParentRecipient(recipient); r;
            r = getParentRecipient(r)) {
         // r is an enclosing range (recipient)
-        for (var j = 0, Nj = handlerList.length;
+        for (let j = 0, Nj = handlerList.length;
              j < Nj; j++) {
-          var h = handlerList[j];
+          const h = handlerList[j];
           if (h.recipient === r) {
             h.unbind();
             h.bind();
@@ -179,7 +185,7 @@ EventSupport.listen = function (element, events, selector, handler, recipient, g
   return {
     // closes over just `element` and `newHandlerRecs`
     stop: function () {
-      var eventDict = element.$blaze_events;
+      const eventDict = element.$blaze_events;
       if (! eventDict)
         return;
       // newHandlerRecs has only one item unless you specify multiple
@@ -187,13 +193,13 @@ EventSupport.listen = function (element, events, selector, handler, recipient, g
       // iterate over handlerList here.  Clearing a whole handlerList
       // via stop() methods is O(N^2) in the number of handlers on
       // an element.
-      for (var i = 0; i < newHandlerRecs.length; i++) {
-        var handlerToRemove = newHandlerRecs[i];
-        var info = eventDict[handlerToRemove.type];
+      for (let i = 0; i < newHandlerRecs.length; i++) {
+        const handlerToRemove = newHandlerRecs[i];
+        const info = eventDict[handlerToRemove.type];
         if (! info)
           continue;
-        var handlerList = info.handlers;
-        for (var j = handlerList.length - 1; j >= 0; j--) {
+        const handlerList = info.handlers;
+        for (let j = handlerList.length - 1; j >= 0; j--) {
           if (handlerList[j] === handlerToRemove) {
             handlerToRemove.unbind();
             handlerList.splice(j, 1); // remove handlerList[j]

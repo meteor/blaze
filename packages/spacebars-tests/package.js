@@ -26,7 +26,7 @@ Package.onTest(function (api) {
     'spacebars@2.0.0-alpha300.17',
     'blaze'
   ]);
-  api.use('templating@1.4.2', 'client');
+  api.use('templating@1.4.3', 'client');
 
   api.addFiles([
     'async_tests.html',
