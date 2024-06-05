@@ -1545,6 +1545,54 @@ Tinytest.add(
   }
 );
 
+// The attribute object could be disabled or null, which
+// should be handled, as if an empty object is passed
+Tinytest.add(
+  'spacebars-tests - template_tests - attribute object helpers are disabled',
+  function (test) {
+    const tmpl =
+      Template.spacebars_template_test_attr_object_helpers_are_disabled;
+    tmpl.helpers({
+      disabled: function () {
+        return undefined;
+      },
+    });
+
+    // should not throw
+    const div = renderToDiv(tmpl);
+
+    // button should not be affected
+    const pElement = div.querySelector('button');
+    test.equal(pElement.getAttribute('title'), null);
+    const text = pElement.firstChild.textContent;
+    test.equal(text, 'test');
+  }
+);
+
+// The attribute object could be disabled or null, which
+// should be handled, as if an empty object is passed
+Tinytest.add(
+  'spacebars-tests - template_tests - attribute object helpers are disabled should not affect existing atts',
+  function (test) {
+    const tmpl =
+      Template.spacebars_template_test_attr_object_helpers_are_disabled2;
+    tmpl.helpers({
+      disabled: function () {
+        return undefined;
+      },
+    });
+
+    // should not throw
+    const div = renderToDiv(tmpl);
+
+    // existing atts should not be affected
+    const pElement = div.querySelector('button');
+    test.equal(pElement.getAttribute('title'), 'foo');
+    const text = pElement.firstChild.textContent
+    test.equal(text, 'test');
+  }
+);
+
 // Test that when a helper in an inclusion directive (`{{> foo }}`)
 // re-runs due to a dependency changing but the return value is the
 // same, the template is not re-rendered.

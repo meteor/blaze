@@ -10,6 +10,7 @@ import {
   isVoidElement,
 } from './html';
 
+const isPromiseLike = x => !!x && typeof x.then === 'function';
 
 var IDENTITY = function (x) { return x; };
 
@@ -156,6 +157,11 @@ TransformingVisitor.def({
   // an array, or in some uses, a foreign object (such as
   // a template tag).
   visitAttributes: function (attrs, ...args) {
+    // Allow Promise-like values here; these will be handled in materializer.
+    if (isPromiseLike(attrs)) {
+      return attrs;
+    }
+
     if (isArray(attrs)) {
       var result = attrs;
       for (var i = 0; i < attrs.length; i++) {

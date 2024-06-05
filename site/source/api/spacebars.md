@@ -166,13 +166,25 @@ and not all tags are allowed at all locations.
 ### Double-braced Tags
 
 A double-braced tag at element level or in an attribute value typically evalutes
-to a string.  If it evalutes to something else, the value will be cast to a
+to a string. If it evalutes to something else, the value will be cast to a
 string, unless the value is `null`, `undefined`, or `false`, which results in
-nothing being displayed.
+nothing being displayed. `Promise`s are also supported -- see below.
 
 Values returned from helpers must be pure text, not HTML.  (That is, strings
 should have `<`, not `&lt;`.)  Spacebars will perform any necessary escaping if
 a template is rendered to HTML.
+
+### Async Content
+
+The values can be wrapped in a `Promise`. When that happens, it will be treated
+as `undefined` while it's pending or rejected. Once resolved, the resulting
+value is used. To have more fine-grained handling of non-resolved states, use
+`#let` and the async state helpers (e.g., `@pending`).
+
+> Please note that the values rendered this way create new `View` objects on
+> every `Promise` change and it may result in _flickering_, i.e., disappearing
+> for a brief moment before appearing again. We plan to optimize it in the next
+> versions. As a workaround, use `#let` to unpack the value.
 
 ### SafeString
 
@@ -193,6 +205,13 @@ An attribute value that consists entirely of template tags that return `null`,
 `undefined`, or `false` is considered absent; otherwise, the attribute is
 considered present, even if its value is empty.
 
+### Async Attributes
+
+The values can be wrapped in a `Promise`. When that happens, it will be treated
+as `undefined` while it's pending or rejected. Once resolved, the resulting
+value is used. To have more fine-grained handling of non-resolved states, use
+`#let` and the async state helpers (e.g., `@pending`).
+
 ### Dynamic Attributes
 
 A double-braced tag can be used in an HTML start tag to specify an arbitrary set
@@ -205,8 +224,8 @@ of attributes:
 ```
 
 The tag must evaluate to an object that serves as a dictionary of attribute name
-and value strings.  For convenience, the value may also be a string or null.  An
-empty string or null expands to `{}`.  A non-empty string must be an attribute
+and value strings. For convenience, the value may also be a string or null. An
+empty string or null expands to `{}`. A non-empty string must be an attribute
 name, and expands to an attribute with an empty value; for example, `"checked"`
 expands to `{checked: ""}` (which, as far as HTML is concerned, means the
 checkbox is checked).
@@ -220,7 +239,7 @@ To summarize:
   <tbody>
     <tr><td><code>""</code> or <code>null</code> or <code>{}</code></td></tr>
     <tr><td><code>"checked"</code> or <code>{checked: ""}</code></td><td><code>checked</code></td></tr>
-    <tr><td><code>{checked: "", 'class': "foo"}</code></td><td><code>checked  class=foo</code></td></tr>
+    <tr><td><code>{checked: "", 'class': "foo"}</code></td><td><code>checked class=foo</code></td></tr>
     <tr><td><code>{checked: false, 'class': "foo"}</code></td><td><code>class=foo</code></td></tr>
     <tr><td><code>"checked class=foo"</code></td><td>ERROR, string is not an attribute name</td></tr>
   </tbody>
@@ -239,6 +258,12 @@ specifies a value for the `class` attribute, it will overwrite `{% raw %}{{myCla
 As always, Spacebars takes care of recalculating the element's attributes if any
 of `myClass`, `attrs1`, or `attrs2` changes reactively.
 
+### Async Dynamic Attributes
+
+The dynamic attributes can be wrapped in a `Promise`. When that happens, they
+will be treated as `undefined` while it's pending or rejected. Once resolved,
+the resulting value is used. To have more fine-grained handling of non-resolved
+states, use `#let` and the async state helpers (e.g., `@pending`).
 
 ## Triple-braced Tags
 
@@ -254,6 +279,13 @@ The inserted HTML must consist of balanced HTML tags.  You can't, for example,
 insert `"</div><div>"` to close an existing div and open a new one.
 
 This template tag cannot be used in attributes or in an HTML start tag.
+
+### Async Content
+
+The raw HTML can be wrapped in a `Promise`. When that happens, it will not
+render anything if it's pending or rejected. Once resolved, the resulting value
+is used. To have more fine-grained handling of non-resolved states, use `#let`
+and the async state helpers (e.g., `@pending`).
 
 ## Inclusion Tags
 
@@ -357,6 +389,13 @@ well as the empty array, while any other value is considered true.
 
 `#unless` is just `#if` with the condition inverted.
 
+### Async Conditions
+
+The condition can be wrapped in a `Promise`. When that happens, both `#if` and
+`#unless` will not render anything if it's pending or rejected. Once resolved,
+the resulting value is used. To have more fine-grained handling of non-resolved
+states, use `#let` and the async state helpers (e.g., `@pending`).
+
 ## With
 
 A `#with` template tag establishes a new data context object for its contents.
@@ -423,6 +462,13 @@ context) if there are zero items in the sequence at any time.
 You can use a special variable `@index` in the body of `#each` to get the
 0-based index of the currently rendered value in the sequence.
 
+### Async Sequences
+
+The sequence argument can be wrapped in a `Promise`. When that happens, `#each`
+will render the "else" if it's pending or rejected. Once resolved, the resulting
+sequence is used. To have more fine-grained handling of non-resolved states, use
+`#let` and the async state helpers (e.g., `@pending`).
+
 ### Reactivity Model for Each
 
 When the argument to `#each` changes, the DOM is always updated to reflect the
@@ -472,10 +518,7 @@ any of the bindings is to one, the bound value won't be a `Promise`, but the
 resolved value instead. Both pending and rejected states will result in
 `undefined`.
 
-### Async states
-
-> This functionality is considered experimental and a subject to change. For
-> details please refer to [#412](https://github.com/meteor/blaze/pull/412).
+### Async States
 
 There are three global helpers used to query the state of the bound `Promise`s:
 * `@pending`, which checks whether any of the given bindings is still pending.
@@ -515,10 +558,7 @@ passing all bindings from the inner-most `#let`.
 {{/let}}
 ```
 
-### Async synchronization
-
-> This functionality is considered experimental and a subject to change. For
-> details please refer to [#412](https://github.com/meteor/blaze/pull/412).
+### Async Synchronization
 
 The bindings are **not** synchronized. That means, bindings store that _latest
 resolved value_, not _value of the latest `Promise`_. If the resolution time

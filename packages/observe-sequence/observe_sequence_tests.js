@@ -476,7 +476,7 @@ Tinytest.add('observe-sequence - cursor to null', function (test) {
 Tinytest.add('observe-sequence - cursor to array', function (test) {
   var dep = new Tracker.Dependency;
   var coll = new Mongo.Collection(null);
-  coll.insert({_id: "13", foo: 1});
+  coll.insert({_id: "13.5", foo: 1});
   var cursor = coll.find({}, {sort: {_id: 1}});
   var seq = cursor;
 
@@ -485,14 +485,14 @@ Tinytest.add('observe-sequence - cursor to array', function (test) {
     return seq;
   }, function () {
     coll.insert({_id: "37", bar: 2});
-    seq = [{_id: "13", foo: 1}, {_id: "38", bar: 2}];
+    seq = [{_id: "13.5", foo: 1}, {_id: "38", bar: 2}];
     dep.changed();
   }, [
-    {addedAt: ["13", {_id: "13", foo: 1}, 0, null]},
+    {addedAt: ["13.5", {_id: "13.5", foo: 1}, 0, null]},
     {addedAt: ["37", {_id: "37", bar: 2}, 1, null]},
     {removedAt: ["37", {_id: "37", bar: 2}, 1]},
     {addedAt: ["38", {_id: "38", bar: 2}, 1, null]},
-    {changedAt: ["13", {_id: "13", foo: 1}, {_id: "13", foo: 1}, 0]}
+    {changedAt: ["13.5", {_id: "13.5", foo: 1}, {_id: "13.5", foo: 1}, 0]}
   ]);
 });
 

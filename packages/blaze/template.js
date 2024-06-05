@@ -45,9 +45,9 @@ Blaze.Template = function (viewName, renderFunction) {
     destroyed: []
   };
 };
-var Template = Blaze.Template;
+const Template = Blaze.Template;
 
-var HelperMap = function () {};
+const HelperMap = function () {};
 HelperMap.prototype.get = function (name) {
   return this[' '+name];
 };
@@ -107,8 +107,8 @@ Template.prototype.onDestroyed = function (cb) {
 };
 
 Template.prototype._getCallbacks = function (which) {
-  var self = this;
-  var callbacks = self[which] ? [self[which]] : [];
+  const self = this;
+  let callbacks = self[which] ? [self[which]] : [];
   // Fire all callbacks added with the new API (Template.onRendered())
   // as well as the old-style callback (e.g. Template.rendered) for
   // backwards-compatibility.
@@ -116,19 +116,19 @@ Template.prototype._getCallbacks = function (which) {
   return callbacks;
 };
 
-var fireCallbacks = function (callbacks, template) {
+const fireCallbacks = function (callbacks, template) {
   Template._withTemplateInstanceFunc(
     function () { return template; },
     function () {
-      for (var i = 0, N = callbacks.length; i < N; i++) {
+      for (let i = 0, N = callbacks.length; i < N; i++) {
         callbacks[i].call(template);
       }
     });
 };
 
 Template.prototype.constructView = function (contentFunc, elseFunc) {
-  var self = this;
-  var view = Blaze.View(self.viewName, self.renderFunction);
+  const self = this;
+  const view = Blaze.View(self.viewName, self.renderFunction);
   view.template = self;
 
   view.templateContentBlock = (
@@ -161,7 +161,7 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
   view.templateInstance = function () {
     // Update data, firstNode, and lastNode, and return the TemplateInstance
     // object.
-    var inst = view._templateInstance;
+    const inst = view._templateInstance;
 
     /**
      * @instance
@@ -195,7 +195,7 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
   // To avoid situations when new callbacks are added in between view
   // instantiation and event being fired, decide on all callbacks to fire
   // immediately and then fire them on the event.
-  var createdCallbacks = self._getCallbacks('created');
+  const createdCallbacks = self._getCallbacks('created');
   view.onViewCreated(function () {
     fireCallbacks(createdCallbacks, view.templateInstance());
   });
@@ -208,7 +208,7 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
    * @locus Client
    * @deprecated in 1.1
    */
-  var renderedCallbacks = self._getCallbacks('rendered');
+  const renderedCallbacks = self._getCallbacks('rendered');
   view.onViewReady(function () {
     fireCallbacks(renderedCallbacks, view.templateInstance());
   });
@@ -221,7 +221,7 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
    * @locus Client
    * @deprecated in 1.1
    */
-  var destroyedCallbacks = self._getCallbacks('destroyed');
+  const destroyedCallbacks = self._getCallbacks('destroyed');
   view.onViewDestroyed(function () {
     fireCallbacks(destroyedCallbacks, view.templateInstance());
   });
@@ -294,7 +294,7 @@ Blaze.TemplateInstance = function (view) {
  * @returns {DOMNode[]}
  */
 Blaze.TemplateInstance.prototype.$ = function (selector) {
-  var view = this.view;
+  const view = this.view;
   if (! view._domrange)
     throw new Error("Can't use $ on template instance with no DOM");
   return view._domrange.$(selector);
@@ -317,7 +317,7 @@ Blaze.TemplateInstance.prototype.findAll = function (selector) {
  * @returns {DOMElement}
  */
 Blaze.TemplateInstance.prototype.find = function (selector) {
-  var result = this.$(selector);
+  const result = this.$(selector);
   return result[0] || null;
 };
 
@@ -350,17 +350,17 @@ Blaze.TemplateInstance.prototype.autorun = function (f) {
  * subscription.
  */
 Blaze.TemplateInstance.prototype.subscribe = function (...args) {
-  var self = this;
+  const self = this;
 
-  var subHandles = self._subscriptionHandles;
+  const subHandles = self._subscriptionHandles;
 
   // Duplicate logic from Meteor.subscribe
-  var options = {};
+  let options = {};
   if (args.length) {
-    var lastParam = args[args.length - 1];
+    const lastParam = args[args.length - 1];
 
     // Match pattern to check if the last arg is an options argument
-    var lastParamOptionsPattern = {
+    const lastParamOptionsPattern = {
       onReady: Match.Optional(Function),
       // XXX COMPAT WITH 1.0.3.1 onError used to exist, but now we use
       // onStop with an error callback instead.
@@ -376,8 +376,8 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
     }
   }
 
-  var subHandle;
-  var oldStopped = options.onStop;
+  let subHandle;
+  const oldStopped = options.onStop;
   options.onStop = function (error) {
     // When the subscription is stopped, remove it from the set of tracked
     // subscriptions to avoid this list growing without bound
@@ -395,9 +395,8 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
     }
   };
 
-  var connection = options.connection;
-  const { onReady, onError, onStop } = options;
-  var callbacks = { onReady, onError, onStop };
+  const { onReady, onError, onStop, connection } = options;
+  const callbacks = { onReady, onError, onStop };
 
   // The callbacks are passed as the last item in the arguments array passed to
   // View#subscribe
@@ -431,7 +430,7 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
  */
 Blaze.TemplateInstance.prototype.subscriptionsReady = function () {
   this._allSubsReadyDep.depend();
-  this._allSubsReady = Object.values(this._subscriptionHandles).every((handle) => {  
+  this._allSubsReady = Object.values(this._subscriptionHandles).every((handle) => {
     return handle.ready();
   });
 
@@ -449,12 +448,12 @@ Template.prototype.helpers = function (dict) {
     throw new Error("Helpers dictionary has to be an object");
   }
 
-  for (var k in dict) this.__helpers.set(k, dict[k]);
+  for (let k in dict) this.__helpers.set(k, dict[k]);
 };
 
-var canUseGetters = (function () {
+const canUseGetters = (function () {
   if (Object.defineProperty) {
-    var obj = {};
+    let obj = {};
     try {
       Object.defineProperty(obj, "self", {
         get: function () { return obj; }
@@ -472,7 +471,7 @@ if (canUseGetters) {
   // rather than a value so that not all helpers are implicitly dependent
   // on the current template instance's `data` property, which would make
   // them dependent on the data context of the template inclusion.
-  var currentTemplateInstanceFunc = null;
+  let currentTemplateInstanceFunc = null;
 
   // If getters are supported, define this property with a getter function
   // to make it effectively read-only, and to work around this bizarre JSC
@@ -487,7 +486,7 @@ if (canUseGetters) {
     if (typeof func !== 'function') {
       throw new Error("Expected function, got: " + func);
     }
-    var oldTmplInstanceFunc = currentTemplateInstanceFunc;
+    const oldTmplInstanceFunc = currentTemplateInstanceFunc;
     try {
       currentTemplateInstanceFunc = templateInstanceFunc;
       return func();
@@ -503,7 +502,7 @@ if (canUseGetters) {
     if (typeof func !== 'function') {
       throw new Error("Expected function, got: " + func);
     }
-    var oldTmplInstanceFunc = Template._currentTemplateInstanceFunc;
+    const oldTmplInstanceFunc = Template._currentTemplateInstanceFunc;
     try {
       Template._currentTemplateInstanceFunc = templateInstanceFunc;
       return func();
@@ -524,20 +523,20 @@ Template.prototype.events = function (eventMap) {
     throw new Error("Event map has to be an object");
   }
 
-  var template = this;
-  var eventMap2 = {};
-  for (var k in eventMap) {
+  const template = this;
+  let eventMap2 = {};
+  for (let k in eventMap) {
     eventMap2[k] = (function (k, v) {
       return function (event /*, ...*/) {
-        var view = this; // passed by EventAugmenter
-        var args = Array.prototype.slice.call(arguments);
+        const view = this; // passed by EventAugmenter
+        const args = Array.prototype.slice.call(arguments);
         // Exiting the current computation to avoid creating unnecessary
         // and unexpected reactive dependencies with Templates data
         // or any other reactive dependencies defined in event handlers
         return Tracker.nonreactive(function () {
-          var data = Blaze.getData(event.currentTarget);
+          let data = Blaze.getData(event.currentTarget);
           if (data == null) data = {};
-          var tmplInstanceFunc = Blaze._bind(view.templateInstance, view);
+          const tmplInstanceFunc = Blaze._bind(view.templateInstance, view);
           args.splice(1, 0, tmplInstanceFunc());
           return Template._withTemplateInstanceFunc(tmplInstanceFunc, function () {
             return v.apply(data, args);

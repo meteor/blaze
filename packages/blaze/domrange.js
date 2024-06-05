@@ -1,6 +1,6 @@
 
 // A constant empty array (frozen if the JS engine supports it).
-var _emptyArray = Object.freeze ? Object.freeze([]) : [];
+const _emptyArray = Object.freeze ? Object.freeze([]) : [];
 
 // `[new] Blaze._DOMRange([nodeAndRangeArray])`
 //
@@ -13,11 +13,11 @@ Blaze._DOMRange = function (nodeAndRangeArray) {
     // called without `new`
     return new DOMRange(nodeAndRangeArray);
 
-  var members = (nodeAndRangeArray || _emptyArray);
+  const members = (nodeAndRangeArray || _emptyArray);
   if (! (members && (typeof members.length) === 'number'))
     throw new Error("Expected array");
 
-  for (var i = 0; i < members.length; i++)
+  for (let i = 0; i < members.length; i++)
     this._memberIn(members[i]);
 
   this.members = members;
@@ -27,7 +27,7 @@ Blaze._DOMRange = function (nodeAndRangeArray) {
   this.parentRange = null;
   this.attachedCallbacks = _emptyArray;
 };
-var DOMRange = Blaze._DOMRange;
+const DOMRange = Blaze._DOMRange;
 
 // In IE 8, don't use empty text nodes as placeholders
 // in empty DOMRanges, use comment nodes instead.  Using
@@ -40,8 +40,8 @@ var DOMRange = Blaze._DOMRange;
 // even though we don't need to set properties on the
 // placeholder anymore.
 DOMRange._USE_COMMENT_PLACEHOLDERS = (function () {
-  var result = false;
-  var textNode = document.createTextNode("");
+  let result = false;
+  const textNode = document.createTextNode("");
   try {
     textNode.someProp = true;
   } catch (e) {
@@ -53,7 +53,7 @@ DOMRange._USE_COMMENT_PLACEHOLDERS = (function () {
 
 // static methods
 DOMRange._insert = function (rangeOrNode, parentElement, nextNode, _isMove) {
-  var m = rangeOrNode;
+  const m = rangeOrNode;
   if (m instanceof DOMRange) {
     m.attach(parentElement, nextNode, _isMove);
   } else {
@@ -65,7 +65,7 @@ DOMRange._insert = function (rangeOrNode, parentElement, nextNode, _isMove) {
 };
 
 DOMRange._remove = function (rangeOrNode) {
-  var m = rangeOrNode;
+  const m = rangeOrNode;
   if (m instanceof DOMRange) {
     m.detach();
   } else {
@@ -111,7 +111,7 @@ DOMRange._moveNodeWithHooks = function (n, parent, next) {
 DOMRange.forElement = function (elem) {
   if (elem.nodeType !== 1)
     throw new Error("Expected element, found: " + elem);
-  var range = null;
+  let range = null;
   while (elem && ! range) {
     range = (elem.$blaze_range || null);
     if (! range)
@@ -133,14 +133,14 @@ DOMRange.prototype.attach = function (parentElement, nextNode, _isMove, _isRepla
       throw new Error("Can only move or replace an attached DOMRange, and only under the same parent element");
   }
 
-  var members = this.members;
+  const members = this.members;
   if (members.length) {
     this.emptyRangePlaceholder = null;
-    for (var i = 0; i < members.length; i++) {
+    for (let i = 0; i < members.length; i++) {
       DOMRange._insert(members[i], parentElement, nextNode, _isMove);
     }
   } else {
-    var placeholder = (
+    const placeholder = (
       DOMRange._USE_COMMENT_PLACEHOLDERS ?
         document.createComment("") :
         document.createTextNode(""));
@@ -151,23 +151,23 @@ DOMRange.prototype.attach = function (parentElement, nextNode, _isMove, _isRepla
   this.parentElement = parentElement;
 
   if (! (_isMove || _isReplace)) {
-    for(var i = 0; i < this.attachedCallbacks.length; i++) {
-      var obj = this.attachedCallbacks[i];
+    for(let i = 0; i < this.attachedCallbacks.length; i++) {
+      const obj = this.attachedCallbacks[i];
       obj.attached && obj.attached(this, parentElement);
     }
   }
 };
 
 DOMRange.prototype.setMembers = function (newNodeAndRangeArray) {
-  var newMembers = newNodeAndRangeArray;
+  const newMembers = newNodeAndRangeArray;
   if (! (newMembers && (typeof newMembers.length) === 'number'))
     throw new Error("Expected array");
 
-  var oldMembers = this.members;
+  const oldMembers = this.members;
 
-  for (var i = 0; i < oldMembers.length; i++)
+  for (let i = 0; i < oldMembers.length; i++)
     this._memberOut(oldMembers[i]);
-  for (var i = 0; i < newMembers.length; i++)
+  for (let i = 0; i < newMembers.length; i++)
     this._memberIn(newMembers[i]);
 
   if (! this.attached) {
@@ -176,8 +176,8 @@ DOMRange.prototype.setMembers = function (newNodeAndRangeArray) {
     // don't do anything if we're going from empty to empty
     if (newMembers.length || oldMembers.length) {
       // detach the old members and insert the new members
-      var nextNode = this.lastNode().nextSibling;
-      var parentElement = this.parentElement;
+      const nextNode = this.lastNode().nextSibling;
+      const parentElement = this.parentElement;
       // Use detach/attach, but don't fire attached/detached hooks
       this.detach(true /*_isReplace*/);
       this.members = newMembers;
@@ -193,7 +193,7 @@ DOMRange.prototype.firstNode = function () {
   if (! this.members.length)
     return this.emptyRangePlaceholder;
 
-  var m = this.members[0];
+  const m = this.members[0];
   return (m instanceof DOMRange) ? m.firstNode() : m;
 };
 
@@ -204,7 +204,7 @@ DOMRange.prototype.lastNode = function () {
   if (! this.members.length)
     return this.emptyRangePlaceholder;
 
-  var m = this.members[this.members.length - 1];
+  const m = this.members[this.members.length - 1];
   return (m instanceof DOMRange) ? m.lastNode() : m;
 };
 
@@ -212,14 +212,14 @@ DOMRange.prototype.detach = function (_isReplace) {
   if (! this.attached)
     throw new Error("Must be attached");
 
-  var oldParentElement = this.parentElement;
-  var members = this.members;
+  const oldParentElement = this.parentElement;
+  const members = this.members;
   if (members.length) {
-    for (var i = 0; i < members.length; i++) {
+    for (let i = 0; i < members.length; i++) {
       DOMRange._remove(members[i]);
     }
   } else {
-    var placeholder = this.emptyRangePlaceholder;
+    const placeholder = this.emptyRangePlaceholder;
     this.parentElement.removeChild(placeholder);
     this.emptyRangePlaceholder = null;
   }
@@ -228,15 +228,15 @@ DOMRange.prototype.detach = function (_isReplace) {
     this.attached = false;
     this.parentElement = null;
 
-    for(var i = 0; i < this.attachedCallbacks.length; i++) {
-      var obj = this.attachedCallbacks[i];
+    for(let i = 0; i < this.attachedCallbacks.length; i++) {
+      const obj = this.attachedCallbacks[i];
       obj.detached && obj.detached(this, oldParentElement);
     }
   }
 };
 
 DOMRange.prototype.addMember = function (newMember, atIndex, _isMove) {
-  var members = this.members;
+  const members = this.members;
   if (! (atIndex >= 0 && atIndex <= members.length))
     throw new Error("Bad index in range.addMember: " + atIndex);
 
@@ -250,12 +250,12 @@ DOMRange.prototype.addMember = function (newMember, atIndex, _isMove) {
     // empty; use the empty-to-nonempty handling of setMembers
     this.setMembers([newMember]);
   } else {
-    var nextNode;
+    let nextNode;
     if (atIndex === members.length) {
       // insert at end
       nextNode = this.lastNode().nextSibling;
     } else {
-      var m = members[atIndex];
+      const m = members[atIndex];
       nextNode = (m instanceof DOMRange) ? m.firstNode() : m;
     }
     members.splice(atIndex, 0, newMember);
@@ -264,14 +264,14 @@ DOMRange.prototype.addMember = function (newMember, atIndex, _isMove) {
 };
 
 DOMRange.prototype.removeMember = function (atIndex, _isMove) {
-  var members = this.members;
+  const members = this.members;
   if (! (atIndex >= 0 && atIndex < members.length))
     throw new Error("Bad index in range.removeMember: " + atIndex);
 
   if (_isMove) {
     members.splice(atIndex, 1);
   } else {
-    var oldMember = members[atIndex];
+    const oldMember = members[atIndex];
     this._memberOut(oldMember);
 
     if (members.length === 1) {
@@ -286,13 +286,13 @@ DOMRange.prototype.removeMember = function (atIndex, _isMove) {
 };
 
 DOMRange.prototype.moveMember = function (oldIndex, newIndex) {
-  var member = this.members[oldIndex];
+  const member = this.members[oldIndex];
   this.removeMember(oldIndex, true /*_isMove*/);
   this.addMember(member, newIndex, true /*_isMove*/);
 };
 
 DOMRange.prototype.getMember = function (atIndex) {
-  var members = this.members;
+  const members = this.members;
   if (! (atIndex >= 0 && atIndex < members.length))
     throw new Error("Bad index in range.getMember: " + atIndex);
   return this.members[atIndex];
@@ -323,8 +323,8 @@ DOMRange.prototype._memberOut = DOMRange._destroy;
 // Tear down, but don't remove, the members.  Used when chunks
 // of DOM are being torn down or replaced.
 DOMRange.prototype.destroyMembers = function (_skipNodes) {
-  var members = this.members;
-  for (var i = 0; i < members.length; i++)
+  const members = this.members;
+  for (let i = 0; i < members.length; i++)
     this._memberOut(members[i], _skipNodes);
 };
 
@@ -357,7 +357,7 @@ DOMRange.prototype.containsElement = function (elem, selector, event) {
   while (elem.parentNode !== this.parentElement)
     elem = elem.parentNode;
 
-  var range = elem.$blaze_range;
+  let range = elem.$blaze_range;
   while (range && range !== this)
     range = range.parentRange;
 
@@ -405,9 +405,9 @@ DOMRange.prototype.onAttachedDetached = function (callbacks) {
 };
 
 DOMRange.prototype.$ = function (selector) {
-  var self = this;
+  const self = this;
 
-  var parentNode = this.parentElement;
+  const parentNode = this.parentElement;
   if (! parentNode)
     throw new Error("Can't select in removed DomRange");
 
@@ -424,7 +424,7 @@ DOMRange.prototype.$ = function (selector) {
   if (parentNode.nodeType === 11 /* DocumentFragment */)
     throw new Error("Can't use $ on an offscreen range");
 
-  var results = Blaze._DOMBackend.findBySelector(selector, parentNode);
+  let results = Blaze._DOMBackend.findBySelector(selector, parentNode);
 
   // We don't assume `results` has jQuery API; a plain array
   // should do just as well.  However, if we do have a jQuery
@@ -434,7 +434,7 @@ DOMRange.prototype.$ = function (selector) {
   // Function that selects only elements that are actually
   // in this DomRange, rather than simply descending from
   // `parentNode`.
-  var filterFunc = function (elem) {
+  const filterFunc = function (elem) {
     // handle jQuery's arguments to filter, where the node
     // is in `this` and the index is the first argument.
     if (typeof elem === 'number')
@@ -446,9 +446,9 @@ DOMRange.prototype.$ = function (selector) {
   if (! results.filter) {
     // not a jQuery array, and not a browser with
     // Array.prototype.filter (e.g. IE <9)
-    var newResults = [];
-    for (var i = 0; i < results.length; i++) {
-      var x = results[i];
+    const newResults = [];
+    for (let i = 0; i < results.length; i++) {
+      const x = results[i];
       if (filterFunc(x))
         newResults.push(x);
     }

@@ -1,6 +1,7 @@
 import has from 'lodash.has';
+import { OrderedDict } from 'meteor/ordered-dict';
 
-var jsUrlsAllowed = false;
+let jsUrlsAllowed = false;
 Blaze._allowJavascriptUrls = function () {
   jsUrlsAllowed = true;
 };
@@ -47,8 +48,8 @@ AttributeHandler.prototype.update = function (element, oldValue, value) {
 };
 
 AttributeHandler.extend = function (options) {
-  var curType = this;
-  var subType = function AttributeHandlerSubtype(/*arguments*/) {
+  const curType = this;
+  const subType = function AttributeHandlerSubtype(/*arguments*/) {
     AttributeHandler.apply(this, arguments);
   };
   subType.prototype = new curType;
@@ -73,13 +74,13 @@ Blaze._DiffingAttributeHandler = AttributeHandler.extend({
     if (!this.getCurrentValue || !this.setValue || !this.parseValue || !this.joinValues)
       throw new Error("Missing methods in subclass of 'DiffingAttributeHandler'");
 
-    var oldAttrsMap = oldValue ? this.parseValue(oldValue) : new OrderedDict();
-    var attrsMap = value ? this.parseValue(value) : new OrderedDict();
+    const oldAttrsMap = oldValue ? this.parseValue(oldValue) : new OrderedDict();
+    const attrsMap = value ? this.parseValue(value) : new OrderedDict();
 
     // the current attributes on the element, which we will mutate.
 
-    var currentAttrString = this.getCurrentValue(element);
-    var currentAttrsMap = currentAttrString ? this.parseValue(currentAttrString) : new OrderedDict();
+    const currentAttrString = this.getCurrentValue(element);
+    const currentAttrsMap = currentAttrString ? this.parseValue(currentAttrString) : new OrderedDict();
 
     // Any outside changes to attributes we add at the end.
     currentAttrsMap.forEach(function (value, key, i) {
@@ -97,7 +98,7 @@ Blaze._DiffingAttributeHandler = AttributeHandler.extend({
       attrsMap.append(key, value);
     });
 
-    var values = [];
+    const values = [];
     attrsMap.forEach(function (value, key, i) {
       values.push(value);
     });
@@ -106,7 +107,7 @@ Blaze._DiffingAttributeHandler = AttributeHandler.extend({
   }
 });
 
-var ClassHandler = Blaze._DiffingAttributeHandler.extend({
+const ClassHandler = Blaze._DiffingAttributeHandler.extend({
   // @param rawValue {String}
   getCurrentValue: function (element) {
     return element.className;
@@ -115,7 +116,7 @@ var ClassHandler = Blaze._DiffingAttributeHandler.extend({
     element.className = className;
   },
   parseValue: function (attrString) {
-    var tokens = new OrderedDict();
+    const tokens = new OrderedDict();
 
     attrString.split(' ').forEach(function (token) {
       if (token) {
@@ -132,7 +133,7 @@ var ClassHandler = Blaze._DiffingAttributeHandler.extend({
   }
 });
 
-var SVGClassHandler = ClassHandler.extend({
+const SVGClassHandler = ClassHandler.extend({
   getCurrentValue: function (element) {
     return element.className.baseVal;
   },
@@ -141,7 +142,7 @@ var SVGClassHandler = ClassHandler.extend({
   }
 });
 
-var StyleHandler = Blaze._DiffingAttributeHandler.extend({
+const StyleHandler = Blaze._DiffingAttributeHandler.extend({
   getCurrentValue: function (element) {
     return element.getAttribute('style');
   },
@@ -158,12 +159,12 @@ var StyleHandler = Blaze._DiffingAttributeHandler.extend({
   // Example:
   // "color:red; foo:12px" produces a token {color: "color:red", foo:"foo:12px"}
   parseValue: function (attrString) {
-    var tokens = new OrderedDict();
+    const tokens = new OrderedDict();
 
     // Regex for parsing a css attribute declaration, taken from css-parse:
     // https://github.com/reworkcss/css-parse/blob/7cef3658d0bba872cde05a85339034b187cb3397/index.js#L219
-    var regex = /(\*?[-#\/\*\\\w]+(?:\[[0-9a-z_-]+\])?)\s*:\s*(?:\'(?:\\\'|.)*?\'|"(?:\\"|.)*?"|\([^\)]*?\)|[^};])+[;\s]*/g;
-    var match = regex.exec(attrString);
+    const regex = /(\*?[-#\/\*\\\w]+(?:\[[0-9a-z_-]+\])?)\s*:\s*(?:\'(?:\\\'|.)*?\'|"(?:\\"|.)*?"|\([^\)]*?\)|[^};])+[;\s]*/g;
+    let match = regex.exec(attrString);
     while (match) {
       // match[0] = entire matching string
       // match[1] = css property
@@ -188,9 +189,9 @@ var StyleHandler = Blaze._DiffingAttributeHandler.extend({
   }
 });
 
-var BooleanHandler = AttributeHandler.extend({
+const BooleanHandler = AttributeHandler.extend({
   update: function (element, oldValue, value) {
-    var name = this.name;
+    const name = this.name;
     if (value == null) {
       if (oldValue != null)
         element[name] = false;
@@ -200,9 +201,9 @@ var BooleanHandler = AttributeHandler.extend({
   }
 });
 
-var DOMPropertyHandler = AttributeHandler.extend({
+const DOMPropertyHandler = AttributeHandler.extend({
   update: function (element, oldValue, value) {
-    var name = this.name;
+    const name = this.name;
     if (value !== element[name])
       element[name] = value;
   }
@@ -210,9 +211,9 @@ var DOMPropertyHandler = AttributeHandler.extend({
 
 // attributes of the type 'xlink:something' should be set using
 // the correct namespace in order to work
-var XlinkHandler = AttributeHandler.extend({
+const XlinkHandler = AttributeHandler.extend({
   update: function(element, oldValue, value) {
-    var NS = 'http://www.w3.org/1999/xlink';
+    const NS = 'http://www.w3.org/1999/xlink';
     if (value === null) {
       if (oldValue !== null)
         element.removeAttributeNS(NS, this.name);
@@ -223,15 +224,15 @@ var XlinkHandler = AttributeHandler.extend({
 });
 
 // cross-browser version of `instanceof SVGElement`
-var isSVGElement = function (elem) {
+const isSVGElement = function (elem) {
   return 'ownerSVGElement' in elem;
 };
 
-var isUrlAttribute = function (tagName, attrName) {
+const isUrlAttribute = function (tagName, attrName) {
   // Compiled from http://www.w3.org/TR/REC-html40/index/attributes.html
   // and
   // http://www.w3.org/html/wg/drafts/html/master/index.html#attributes-1
-  var urlAttrs = {
+  const urlAttrs = {
     FORM: ['action'],
     BODY: ['background'],
     BLOCKQUOTE: ['cite'],
@@ -260,18 +261,19 @@ var isUrlAttribute = function (tagName, attrName) {
     return true;
   }
 
-  var urlAttrNames = urlAttrs[tagName] || [];
+  const urlAttrNames = urlAttrs[tagName] || [];
   return urlAttrNames.includes(attrName);
 };
 
 // To get the protocol for a URL, we let the browser normalize it for
 // us, by setting it as the href for an anchor tag and then reading out
 // the 'protocol' property.
+let anchorForNormalization
 if (Meteor.isClient) {
-  var anchorForNormalization = document.createElement('A');
+  anchorForNormalization = document.createElement('A');
 }
 
-var getUrlProtocol = function (url) {
+const getUrlProtocol = function (url) {
   if (Meteor.isClient) {
     anchorForNormalization.href = url;
     return (anchorForNormalization.protocol || "").toLowerCase();
@@ -285,17 +287,17 @@ var getUrlProtocol = function (url) {
 // Blaze._allowJavascriptUrls() has been called. To detect javascript:
 // urls, we set the attribute on a dummy anchor element and then read
 // out the 'protocol' property of the attribute.
-var origUpdate = AttributeHandler.prototype.update;
-var UrlHandler = AttributeHandler.extend({
+const origUpdate = AttributeHandler.prototype.update;
+const UrlHandler = AttributeHandler.extend({
   update: function (element, oldValue, value) {
-    var self = this;
-    var args = arguments;
+    const self = this;
+    const args = arguments;
 
     if (Blaze._javascriptUrlsAllowed()) {
       origUpdate.apply(self, args);
     } else {
-      var isJavascriptProtocol = (getUrlProtocol(value) === "javascript:");
-      var isVBScriptProtocol   = (getUrlProtocol(value) === "vbscript:");
+      const isJavascriptProtocol = (getUrlProtocol(value) === "javascript:");
+      const isVBScriptProtocol   = (getUrlProtocol(value) === "vbscript:");
       if (isJavascriptProtocol || isVBScriptProtocol) {
         Blaze._warn("URLs that use the 'javascript:' or 'vbscript:' protocol are not " +
         "allowed in URL attribute values. " +
@@ -337,9 +339,6 @@ Blaze._makeAttributeHandler = function (elem, name, value) {
   } else {
     return new AttributeHandler(name, value);
   }
-
-  // XXX will need one for 'style' on IE, though modern browsers
-  // seem to handle setAttribute ok.
 };
 
 ElementAttributesUpdater = function (elem) {
@@ -350,28 +349,28 @@ ElementAttributesUpdater = function (elem) {
 // Update attributes on `elem` to the dictionary `attrs`, whose
 // values are strings.
 ElementAttributesUpdater.prototype.update = function(newAttrs) {
-  var elem = this.elem;
-  var handlers = this.handlers;
+  const elem = this.elem;
+  const handlers = this.handlers;
 
-  for (var k in handlers) {
+  Object.getOwnPropertyNames(handlers).forEach((k) => {
     if (!has(newAttrs, k)) {
       // remove attributes (and handlers) for attribute names
       // that don't exist as keys of `newAttrs` and so won't
       // be visited when traversing it.  (Attributes that
       // exist in the `newAttrs` object but are `null`
       // are handled later.)
-      var handler = handlers[k];
-      var oldValue = handler.value;
+      const handler = handlers[k];
+      const oldValue = handler.value;
       handler.value = null;
       handler.update(elem, oldValue, null);
       delete handlers[k];
     }
-  }
+  })
 
-  for (var k in newAttrs) {
-    var handler = null;
-    var oldValue = null;
-    var value = newAttrs[k];
+  Object.getOwnPropertyNames(newAttrs).forEach((k) => {
+    let handler = null;
+    let oldValue = null;
+    const value = newAttrs[k];
     if (!has(handlers, k)) {
       if (value !== null) {
         // make new handler
@@ -388,5 +387,5 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
       if (value === null)
         delete handlers[k];
     }
-  }
+  })
 };
