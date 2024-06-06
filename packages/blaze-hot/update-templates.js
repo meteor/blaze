@@ -33,7 +33,7 @@ Template.prototype.constructView = function () {
   }
 
   return view;
-}
+};
 
 let updateRootViews = Template._applyHmrChanges;
 
@@ -59,8 +59,8 @@ Template._applyHmrChanges = function (templateName = UpdateAll) {
   }
 
   timeout = setTimeout(() => {
-    for (var i = 0; i < Template.__pendingReplacement.length; i++) {
-      delete Template[Template.__pendingReplacement[i]]
+    for (let i = 0; i < Template.__pendingReplacement.length; i++) {
+      delete Template[Template.__pendingReplacement[i]];
     }
 
     Template.__pendingReplacement = [];
@@ -161,4 +161,4 @@ Template._applyHmrChanges = function (templateName = UpdateAll) {
       }
     });
   });
-}
+};

@@ -10,6 +10,7 @@ import {
   isVoidElement,
 } from './html';
 
+const isPromiseLike = x => !!x && typeof x.then === 'function';
 
 var IDENTITY = function (x) { return x; };
 
@@ -156,6 +157,11 @@ TransformingVisitor.def({
   // an array, or in some uses, a foreign object (such as
   // a template tag).
   visitAttributes: function (attrs, ...args) {
+    // Allow Promise-like values here; these will be handled in materializer.
+    if (isPromiseLike(attrs)) {
+      return attrs;
+    }
+
     if (isArray(attrs)) {
       var result = attrs;
       for (var i = 0; i < attrs.length; i++) {
@@ -172,10 +178,6 @@ TransformingVisitor.def({
     }
 
     if (attrs && isConstructedObject(attrs)) {
-      if (typeof attrs.then === 'function') {
-        throw new Error('Asynchronous attributes are not supported. Use #let to unwrap them first.');
-      }
-
       throw new Error("The basic TransformingVisitor does not support " +
                       "foreign objects in attributes.  Define a custom " +
                       "visitAttributes for this case.");

@@ -2,9 +2,8 @@ import has from 'lodash.has';
 import isObject from 'lodash.isobject';
 
 Blaze._calculateCondition = function (cond) {
-  if (HTML.isArray(cond) && cond.length === 0)
-    cond = false;
-  return !! cond;
+  if (HTML.isArray(cond) && cond.length === 0) return false;
+  return !!cond;
 };
 
 /**
@@ -15,9 +14,9 @@ Blaze._calculateCondition = function (cond) {
  * @param {Function} contentFunc A Function that returns [*renderable content*](#Renderable-Content).
  */
 Blaze.With = function (data, contentFunc) {
-  var view = Blaze.View('with', contentFunc);
+  const view = Blaze.View('with', contentFunc);
 
-  view.dataVar = new ReactiveVar;
+  view.dataVar = new ReactiveVar();
 
   view.onViewCreated(function () {
     if (typeof data === 'function') {
@@ -62,7 +61,7 @@ function _identity(x) {
  * @template T, U
  * @param {ReactiveVar<U>} reactiveVar Target view.
  * @param {Promise<T> | T} value Bound value.
- * @param {(value: T) => U} [mapper] Maps the computed value before store.
+ * @param {function(T): U} [mapper] Maps the computed value before store.
  */
 function _setBindingValue(reactiveVar, value, mapper = _identity) {
   if (value && typeof value.then === 'function') {
@@ -78,9 +77,9 @@ function _setBindingValue(reactiveVar, value, mapper = _identity) {
 /**
  * @template T, U
  * @param {Blaze.View} view Target view.
- * @param {Promise<T> | T | (() => Promise<T> | T)} binding Binding value or its getter.
+ * @param {Promise<T> | T | function(): (Promise<T> | T)} binding Binding value or its getter.
  * @param {string} [displayName] Autorun's display name.
- * @param {(value: T) => U} [mapper] Maps the computed value before store.
+ * @param {function(T): U} [mapper] Maps the computed value before store.
  * @returns {ReactiveVar<U>}
  */
 function _createBinding(view, binding, displayName, mapper) {
@@ -194,8 +193,8 @@ Blaze.Unless = function (conditionFunc, contentFunc, elseFunc) {
  * in the sequence.
  */
 Blaze.Each = function (argFunc, contentFunc, elseFunc) {
-  var eachView = Blaze.View('each', function () {
-    var subviews = this.initialSubviews;
+  const eachView = Blaze.View('each', function () {
+    const subviews = this.initialSubviews;
     this.initialSubviews = null;
     if (this._isCreatedForExpansion) {
       this.expandedValueDep = new Tracker.Dependency;
@@ -213,13 +212,13 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
   eachView.variableName = null;
 
   // update the @index value in the scope of all subviews in the range
-  var updateIndices = function (from, to) {
+  const updateIndices = function (from, to) {
     if (to === undefined) {
       to = eachView.numItems - 1;
     }
 
-    for (var i = from; i <= to; i++) {
-      var view = eachView._domrange.members[i].view;
+    for (let i = from; i <= to; i++) {
+      const view = eachView._domrange.members[i].view;
       view._scopeBindings['@index'].set({ value: i });
     }
   };
@@ -246,7 +245,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
     }, {
       addedAt: function (id, item, index) {
         Tracker.nonreactive(function () {
-          var newItemView;
+          let newItemView;
           if (eachView.variableName) {
             // new-style #each (as in {{#each item in items}})
             // doesn't create a new data context
@@ -257,7 +256,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
 
           eachView.numItems++;
 
-          var bindings = {};
+          const bindings = {};
           bindings['@index'] = index;
           if (eachView.variableName) {
             bindings[eachView.variableName] = item;
@@ -272,7 +271,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
               eachView.inElseMode = false;
             }
 
-            var range = Blaze._materializeView(newItemView, eachView);
+            const range = Blaze._materializeView(newItemView, eachView);
             eachView._domrange.addMember(range, index);
             updateIndices(index);
           } else {
@@ -305,7 +304,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
           if (eachView.expandedValueDep) {
             eachView.expandedValueDep.changed();
           } else {
-            var itemView;
+            let itemView;
             if (eachView._domrange) {
               itemView = eachView._domrange.getMember(index).view;
             } else {
@@ -328,8 +327,8 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
             updateIndices(
               Math.min(fromIndex, toIndex), Math.max(fromIndex, toIndex));
           } else {
-            var subviews = eachView.initialSubviews;
-            var itemView = subviews[fromIndex];
+            const subviews = eachView.initialSubviews;
+            const itemView = subviews[fromIndex];
             subviews.splice(fromIndex, 1);
             subviews.splice(toIndex, 0, itemView);
           }
@@ -366,9 +365,9 @@ Blaze._AwaitContent = function () {
 };
 
 Blaze._TemplateWith = function (arg, contentFunc) {
-  var w;
+  let w;
 
-  var argFunc = arg;
+  let argFunc = arg;
   if (typeof arg !== 'function') {
     argFunc = function () {
       return arg;
@@ -386,8 +385,8 @@ Blaze._TemplateWith = function (arg, contentFunc) {
   //
   // To make this better, reconsider _InOuterTemplateScope as a primitive.
   // Longer term, evaluate expressions in the proper lexical scope.
-  var wrappedArgFunc = function () {
-    var viewToEvaluateArg = null;
+  const wrappedArgFunc = function () {
+    let viewToEvaluateArg = null;
     if (w.parentView && w.parentView.name === 'InOuterTemplateScope') {
       viewToEvaluateArg = w.parentView.originalParentView;
     }
@@ -398,8 +397,8 @@ Blaze._TemplateWith = function (arg, contentFunc) {
     }
   };
 
-  var wrappedContentFunc = function () {
-    var content = contentFunc.call(this);
+  const wrappedContentFunc = function () {
+    let content = contentFunc.call(this);
 
     // Since we are generating the Blaze._TemplateWith view for the
     // user, set the flag on the child view.  If `content` is a template,
@@ -420,8 +419,8 @@ Blaze._TemplateWith = function (arg, contentFunc) {
 };
 
 Blaze._InOuterTemplateScope = function (templateView, contentFunc) {
-  var view = Blaze.View('InOuterTemplateScope', contentFunc);
-  var parentView = templateView.parentView;
+  const view = Blaze.View('InOuterTemplateScope', contentFunc);
+  let parentView = templateView.parentView;
 
   // Hack so that if you call `{{> foo bar}}` and it expands into
   // `{{#with bar}}{{> foo}}{{/with}}`, and then `foo` is a template

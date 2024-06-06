@@ -12,7 +12,7 @@
 // @param expectedCallbacks {Array}
 //     elements are objects eg {addedAt: [array of arguments]}
 // @param numExpectedWarnings {Number}
-runOneObserveSequenceTestCase = function (test, sequenceFunc,
+runOneObserveSequenceTestCase = async function (test, sequenceFunc,
                                           run, expectedCallbacks,
                                           numExpectedWarnings) {
   if (numExpectedWarnings)
@@ -53,7 +53,7 @@ runOneObserveSequenceTestCase = function (test, sequenceFunc,
     }
   });
 
-  run();
+  await run();
   Tracker.flush();
   handle.stop();
 
@@ -476,7 +476,7 @@ Tinytest.add('observe-sequence - cursor to null', function (test) {
 Tinytest.add('observe-sequence - cursor to array', function (test) {
   var dep = new Tracker.Dependency;
   var coll = new Mongo.Collection(null);
-  coll.insert({_id: "13", foo: 1});
+  coll.insert({_id: "13.5", foo: 1});
   var cursor = coll.find({}, {sort: {_id: 1}});
   var seq = cursor;
 
@@ -485,14 +485,14 @@ Tinytest.add('observe-sequence - cursor to array', function (test) {
     return seq;
   }, function () {
     coll.insert({_id: "37", bar: 2});
-    seq = [{_id: "13", foo: 1}, {_id: "38", bar: 2}];
+    seq = [{_id: "13.5", foo: 1}, {_id: "38", bar: 2}];
     dep.changed();
   }, [
-    {addedAt: ["13", {_id: "13", foo: 1}, 0, null]},
+    {addedAt: ["13.5", {_id: "13.5", foo: 1}, 0, null]},
     {addedAt: ["37", {_id: "37", bar: 2}, 1, null]},
     {removedAt: ["37", {_id: "37", bar: 2}, 1]},
     {addedAt: ["38", {_id: "38", bar: 2}, 1, null]},
-    {changedAt: ["13", {_id: "13", foo: 1}, {_id: "13", foo: 1}, 0]}
+    {changedAt: ["13.5", {_id: "13.5", foo: 1}, {_id: "13.5", foo: 1}, 0]}
   ]);
 });
 
@@ -504,13 +504,13 @@ Tinytest.add('observe-sequence - cursor', function (test) {
 
   runOneObserveSequenceTestCase(test, function () {
     return seq;
-  }, function () {
-    coll.insert({_id: "37", rank: 2});
-    coll.insert({_id: "77", rank: 3});
-    coll.remove({_id: "37"});                           // should fire a 'removedAt' callback
-    coll.insert({_id: "11", rank: 0});                  // should fire an 'addedAt' callback
-    coll.update({_id: "13"}, {$set: {updated: true}});  // should fire an 'changedAt' callback
-    coll.update({_id: "77"}, {$set: {rank: -1}});       // should fire 'changedAt' and 'movedTo' callback
+  }, async function () {
+    await coll.insertAsync({_id: "37", rank: 2});
+    await coll.insertAsync({_id: "77", rank: 3});
+    await coll.removeAsync({_id: "37"});                           // should fire a 'removedAt' callback
+    await coll.insertAsync({_id: "11", rank: 0});                  // should fire an 'addedAt' callback
+    await coll.updateAsync({_id: "13"}, {$set: {updated: true}});  // should fire an 'changedAt' callback
+    await coll.updateAsync({_id: "77"}, {$set: {rank: -1}});       // should fire 'changedAt' and 'movedTo' callback
   }, [
     // this case must not fire spurious calls as the array to array
     // case does. otherwise, the entire power of cursors is lost in

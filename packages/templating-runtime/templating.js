@@ -43,7 +43,7 @@ Template.__define__ = function (name, renderFunc) {
   // updating away from this method.
   if (!shownWarning) {
     shownWarning = true;
-    console.warn("You app is using old Template definition that is scheduled to be removed with Blaze 3.0, please check your app and packages for use of: Template.__define__");
+    console.warn("Your app is using old Template definition that is scheduled to be removed with Blaze 3.0, please check your app and packages for use of: Template.__define__");
   }
 };
 
