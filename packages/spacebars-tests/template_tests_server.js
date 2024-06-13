@@ -1,20 +1,30 @@
-var path = Npm.require("path");
-var Future = Npm.require('fibers/future');
+const path = Npm.require("path");
 
 Meteor.methods({
   getAsset: function (filename) {
-    return Assets.getText(path.join("assets", filename));
+    return Assets.getTextAsync(path.join("assets", filename));
   }
 });
 
-var templateSubFutures = {};
+const templateSubFutures = {};
+
 Meteor.publish("templateSub", function (futureId) {
-  var self = this;
-  Meteor.defer(function () {  // because subs are blocking
+  const self = this;
+  Meteor.defer(async function () {  // because subs are blocking
     if (futureId) {
-      var f = new Future();
-      templateSubFutures[futureId] = f;
-      f.wait();
+      // XXX: this looks a little bit weird but we need to make
+      // the internal `resolve` of the promise accessible for the Meteor.method
+      // `makeTemplateSubReady` without introducing an async/wait cascade
+      // Thus we link it to a member of the promise and store it in the dict.
+      // This is the same effect as the prior Future.wait() approach.
+      let resolver;
+      const promise = new Promise((resolve) => {
+        resolver = resolve;
+      });
+      promise.return = () => resolver();
+
+      templateSubFutures[futureId] = promise;
+      await templateSubFutures[futureId];
       delete templateSubFutures[futureId];
     }
 
