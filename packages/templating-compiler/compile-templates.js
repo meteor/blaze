@@ -1,9 +1,10 @@
+/* global CachingHtmlCompiler TemplatingTools */
 Plugin.registerCompiler({
   extensions: ['html'],
   archMatching: 'web',
-  isTemplate: true
+  isTemplate: true,
 }, () => new CachingHtmlCompiler(
-  "templating",
+  'templating',
   TemplatingTools.scanHtmlForTags,
   TemplatingTools.compileTagsWithSpacebars
 ));

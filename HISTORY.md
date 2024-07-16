@@ -1,3 +1,12 @@
+## v3.0.0, 2024-07-16
+
+### Highlights / Potentially breaking changes
+* [#373](https://github.com/meteor/blaze/pull/373) Remove fibers from codebase
+* [#378](https://github.com/meteor/blaze/pull/378) [spacebars-compiler] Update uglify-js to 3.16.1
+* [#351](https://github.com/meteor/blaze/pull/351) Eliminate whitespace in Template.dynamic
+* [#334](https://github.com/meteor/blaze/pull/334) Faster fragnent parsing by retaining a reference to the current document context
+* All packages were bumped to be compatible with Meteor 3.0
+
 
 ## v2.9.0 2024-Mar-14
 
@@ -25,12 +34,14 @@
 
 * [#413](https://github.com/meteor/blaze/pull/413) Added support for Promises in Spacebars.call and Spacebars.dot.
 * [#412](https://github.com/meteor/blaze/pull/412) Implemented async bindings in #let.
+* 
 
 ## v2.6.2, 2023-April-21
 
 * [#403](https://github.com/meteor/blaze/pull/403) Add TS types to core
 * [#405](https://github.com/meteor/blaze/pull/406) Stop establishing unnecessary reactive dependencies
 * [#410](https://github.com/meteor/blaze/pull/410) Fixes for legacy clients
+
 
 ## v2.6.1, 2022-July-25
 

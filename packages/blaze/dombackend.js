@@ -9,13 +9,32 @@ if (! $jq)
 
 DOMBackend._$jq = $jq;
 
+
+DOMBackend.getContext = function() {
+  if (DOMBackend._context) {
+    return DOMBackend._context;
+  }
+  if ( DOMBackend._$jq.support.createHTMLDocument ) {
+    DOMBackend._context = document.implementation.createHTMLDocument( "" );
+
+    // Set the base href for the created document
+    // so any parsed elements with URLs
+    // are based on the document's URL (gh-2965)
+    const base = DOMBackend._context.createElement( "base" );
+    base.href = document.location.href;
+    DOMBackend._context.head.appendChild( base );
+  } else {
+    DOMBackend._context = document;
+  }
+  return DOMBackend._context;
+}
 DOMBackend.parseHTML = function (html) {
   // Return an array of nodes.
   //
   // jQuery does fancy stuff like creating an appropriate
   // container element and setting innerHTML on it, as well
   // as working around various IE quirks.
-  return $jq.parseHTML(html) || [];
+  return $jq.parseHTML(html, DOMBackend.getContext()) || [];
 };
 
 DOMBackend.Events = {

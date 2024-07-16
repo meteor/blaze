@@ -1,9 +1,12 @@
+/* global TemplatingTools CachingCompiler */
+// eslint-disable-next-line import/no-unresolved
 import isEmpty from 'lodash.isempty';
 
-const path = Plugin.path;
+const { path } = Plugin;
 
 // The CompileResult type for this CachingCompiler is the return value of
 // htmlScanner.scan: a {js, head, body, bodyAttrs} object.
+// eslint-disable-next-line no-undef
 CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
   /**
    * Constructor for CachingHtmlCompiler
@@ -18,7 +21,7 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
   constructor(name, tagScannerFunc, tagHandlerFunc) {
     super({
       compilerName: name,
-      defaultCacheSize: 1024*1024*10,
+      defaultCacheSize: 1024 * 1024 * 10,
     });
 
     this._bodyAttrInfo = null;
@@ -28,12 +31,13 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
   }
 
   // Implements method from CachingCompilerBase
+  // eslint-disable-next-line class-methods-use-this
   compileResultSize(compileResult) {
-    function lengthOrZero(field) {
-      return field ? field.length : 0;
-    }
-    return lengthOrZero(compileResult.head) + lengthOrZero(compileResult.body) +
-      lengthOrZero(compileResult.js);
+    const lengthOrZero = (field) => field ? field.length : 0;
+    const headSize = lengthOrZero(compileResult.head);
+    const bodySize = lengthOrZero(compileResult.body);
+    const jsSize = lengthOrZero(compileResult.js);
+    return headSize + bodySize + jsSize;
   }
 
   // Overrides method from CachingCompiler
@@ -43,13 +47,14 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
   }
 
   // Implements method from CachingCompilerBase
+  // eslint-disable-next-line class-methods-use-this
   getCacheKey(inputFile) {
     // Note: the path is only used for errors, so it doesn't have to be part
     // of the cache key.
     return [
       inputFile.getArch(),
       inputFile.getSourceHash(),
-      inputFile.hmrAvailable && inputFile.hmrAvailable()
+      inputFile.hmrAvailable && inputFile.hmrAvailable(),
     ];
   }
 
@@ -60,8 +65,8 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
     try {
       const tags = this.tagScannerFunc({
         sourceName: inputPath,
-        contents: contents,
-        tagNames: ["body", "head", "template"]
+        contents,
+        tagNames: ['body', 'head', 'template'],
       });
 
       return this.tagHandlerFunc(tags, inputFile.hmrAvailable && inputFile.hmrAvailable());
@@ -69,25 +74,24 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
       if (e instanceof TemplatingTools.CompileError) {
         inputFile.error({
           message: e.message,
-          line: e.line
+          line: e.line,
         });
         return null;
-      } else {
-        throw e;
       }
+        throw e;
     }
   }
 
   // Implements method from CachingCompilerBase
   addCompileResult(inputFile, compileResult) {
-    let allJavaScript = "";
+    let allJavaScript = '';
 
     if (compileResult.head) {
-      inputFile.addHtml({ section: "head", data: compileResult.head });
+      inputFile.addHtml({ section: 'head', data: compileResult.head });
     }
 
     if (compileResult.body) {
-      inputFile.addHtml({ section: "body", data: compileResult.body });
+      inputFile.addHtml({ section: 'body', data: compileResult.body });
     }
 
     if (compileResult.js) {
@@ -97,19 +101,19 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
     if (!isEmpty(compileResult.bodyAttrs)) {
       Object.keys(compileResult.bodyAttrs).forEach((attr) => {
         const value = compileResult.bodyAttrs[attr];
-        if (this._bodyAttrInfo.hasOwnProperty(attr) &&
+        if (Object.prototype.hasOwnProperty.call(this._bodyAttrInfo, attr) &&
             this._bodyAttrInfo[attr].value !== value) {
           // two conflicting attributes on <body> tags in two different template
           // files
           inputFile.error({
             message:
-            `<body> declarations have conflicting values for the '${ attr }' ` +
-              `attribute in the following files: ` +
-              this._bodyAttrInfo[attr].inputFile.getPathInPackage() +
-              `, ${ inputFile.getPathInPackage() }`
+            `${`<body> declarations have conflicting values for the '${attr}' ` +
+              'attribute in the following files: '}${
+              this._bodyAttrInfo[attr].inputFile.getPathInPackage()
+              }, ${inputFile.getPathInPackage()}`,
           });
         } else {
-          this._bodyAttrInfo[attr] = {inputFile, value};
+          this._bodyAttrInfo[attr] = { inputFile, value };
         }
       });
 
@@ -123,25 +127,23 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
 });
 `;
     }
-    
+
 
     if (allJavaScript) {
       const filePath = inputFile.getPathInPackage();
       // XXX this path manipulation may be unnecessarily complex
       let pathPart = path.dirname(filePath);
-      if (pathPart === '.')
-        pathPart = '';
-      if (pathPart.length && pathPart !== path.sep)
-        pathPart = pathPart + path.sep;
+      if (pathPart === '.') pathPart = '';
+      if (pathPart.length && pathPart !== path.sep) pathPart += path.sep;
       const ext = path.extname(filePath);
       const basename = path.basename(filePath, ext);
 
       // XXX generate a source map
 
       inputFile.addJavaScript({
-        path: path.join(pathPart, "template." + basename + ".js"),
-        data: allJavaScript
+        path: path.join(pathPart, `template.${basename}.js`),
+        data: allJavaScript,
       });
     }
   }
-}
+};

@@ -1,21 +1,22 @@
+/* eslint-env meteor */
 Package.describe({
   name: 'templating-compiler',
-  summary: "Compile templates in .html files",
-  version: '1.4.2',
+  summary: 'Compile templates in .html files',
+  version: '2.0.0',
   git: 'https://github.com/meteor/blaze.git',
-  documentation: null
+  documentation: null,
 });
 
 Package.registerBuildPlugin({
-  name: "compileTemplatesBatch",
+  name: 'compileTemplatesBatch',
   use: [
-    'ecmascript@0.16.7',
-    'caching-html-compiler@1.2.2',
-    'templating-tools@1.2.3'
+    'ecmascript@0.16.9',
+    'caching-html-compiler@2.0.0',
+    'templating-tools@2.0.0',
   ],
   sources: [
-    'compile-templates.js'
-  ]
+    'compile-templates.js',
+  ],
 });
 
 Package.onUse(function (api) {
