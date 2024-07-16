@@ -1,6 +1,6 @@
-## v3.0.0, 2024-XXXX-XX
+## v3.0.0, 2024-07-16
 
-### Potentially breaking changes
+### Highlights / Potentially breaking changes
 * [#373](https://github.com/meteor/blaze/pull/373) Remove fibers from codebase
 * [#378](https://github.com/meteor/blaze/pull/378) [spacebars-compiler] Update uglify-js to 3.16.1
 * [#351](https://github.com/meteor/blaze/pull/351) Eliminate whitespace in Template.dynamic
