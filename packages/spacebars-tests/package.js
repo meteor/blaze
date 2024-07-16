@@ -1,7 +1,7 @@
 Package.describe({
   name: 'spacebars-tests',
   summary: "Additional tests for Spacebars",
-  version: '2.0.0-rc300.2',
+  version: '2.0.0',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -23,7 +23,7 @@ Package.onTest(function (api) {
   ]);
 
   api.use([
-    'spacebars@2.0.0-rc300.2',
+    'spacebars@2.0.0',
     'blaze'
   ]);
   api.use('templating@1.4.3', 'client');
