@@ -337,7 +337,7 @@ DOMRange.prototype.containsElement = function (elem, selector, event) {
   ? this.view.name.split('.')[1]
   : 'unknown template';
   if (! this.attached)
-    throw new Error(`${event} event triggerd with ${selector} on ${templateName} but associated view is not be found.
+    throw new Error(`${event} event triggered with ${selector} on ${templateName} but associated view is not be found.
     Make sure the event doesn't destroy the view.`);
 
   // An element is contained in this DOMRange if it's possible to
