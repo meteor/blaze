@@ -138,7 +138,7 @@ Template._applyHmrChanges = function (templateName) {
           var newView = Blaze.render(Template.body, document.body, comment);
           Template.body.view = newView;
         } else if (view.dataVar) {
-          Blaze.renderWithData(renderFunc, view.dataVar.curValue, parentEl, comment);
+          Blaze.renderWithData(renderFunc, view.dataVar.curValue?.value, parentEl, comment);
         } else {
           Blaze.render(renderFunc, parentEl, comment);
         }

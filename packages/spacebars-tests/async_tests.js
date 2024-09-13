@@ -11,12 +11,15 @@ function asyncTest(templateName, testName, fn) {
 }
 
 function asyncSuite(templateName, cases) {
-  for (const [testName, helpers, before, after] of cases) {
+  for (const [testName, helpers, before, after, cycles = 1] of cases) {
     asyncTest(templateName, testName, async (test, template, render) => {
       template.helpers(helpers);
       const readHTML = render();
-      test.equal(readHTML(), before);
-      await new Promise(Tracker.afterFlush);
+      // Some test cases require more cycles to propagate.
+      for (let cycle = 0; cycle < cycles; ++cycle) {
+        test.equal(readHTML(), before);
+        await new Promise(Tracker.afterFlush);
+      }
       test.equal(readHTML(), after);
     });
   }
@@ -115,6 +118,13 @@ asyncSuite('each_new', [
   ['empty', { x: Promise.resolve([]) }, '0', '0'],
   ['one', { x: Promise.resolve([1]) }, '0', '1'],
   ['two', { x: Promise.resolve([1, 2]) }, '0', '12'],
+]);
+
+asyncSuite('with', [
+  ['null', { x: Promise.resolve(null) }, '', '', 2],
+  ['empty', { x: Promise.resolve({}) }, '', '', 2],
+  ['direct', { x: Promise.resolve({y: 1}) }, '', '1', 2],
+  ['wrapped', { x: Promise.resolve({y: Promise.resolve(1)}) }, '', '1', 3],
 ]);
 
 // In the following tests pending=1, rejected=2, resolved=3.

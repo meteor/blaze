@@ -16,17 +16,9 @@ Blaze._calculateCondition = function (cond) {
 Blaze.With = function (data, contentFunc) {
   const view = Blaze.View('with', contentFunc);
 
-  view.dataVar = new ReactiveVar();
-
-  view.onViewCreated(function () {
-    if (typeof data === 'function') {
-      // `data` is a reactive function
-      view.autorun(function () {
-        view.dataVar.set(data());
-      }, view.parentView, 'setData');
-    } else {
-      view.dataVar.set(data);
-    }
+  view.dataVar = null;
+  view.onViewCreated(() => {
+    view.dataVar = _createBinding(view, data, 'setData');
   });
 
   return view;

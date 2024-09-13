@@ -792,7 +792,7 @@ Blaze.getData = function (elementOrView) {
     throw new Error("Expected DOM element or View");
   }
 
-  return theWith ? theWith.dataVar.get() : null;
+  return theWith ? theWith.dataVar.get()?.value : null;
 };
 
 // For back-compat
