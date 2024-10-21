@@ -278,8 +278,8 @@ Blaze._parentData = function (height, _functionWrapped) {
   if (! theWith)
     return null;
   if (_functionWrapped)
-    return function () { return theWith.dataVar.get(); };
-  return theWith.dataVar.get();
+    return function () { return theWith.dataVar.get()?.value; };
+  return theWith.dataVar.get()?.value;
 };
 
 
