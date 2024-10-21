@@ -305,7 +305,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
             if (eachView.variableName) {
               itemView._scopeBindings[eachView.variableName].set({ value: newItem });
             } else {
-              itemView.dataVar.set(newItem);
+              itemView.dataVar.set({ value: newItem });
             }
           }
         });
