@@ -16,6 +16,6 @@ Before reporting a bug, please check for existing or closed issues first.
 - [ ] The expected behavior.
 - [ ] The actual behavior.
 - [ ] A **simple** reproduction! (Must either include a minimal code example
-or a link to a Github repository with steps to reproduce the issue on it.)
+or a link to a GitHub repository with steps to reproduce the issue on it.)
 
 -->
