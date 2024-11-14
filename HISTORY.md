@@ -1,3 +1,8 @@
+## v3.0.1, 2024-11-14
+
+### Highlights / Potentially breaking changes
+* [471](https://github.com/meteor/blaze/pull/471) Added support for Promises in `#with`
+ 
 ## v3.0.0, 2024-07-16
 
 ### Highlights / Potentially breaking changes
