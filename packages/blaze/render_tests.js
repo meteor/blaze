@@ -785,3 +785,114 @@ if (typeof MutationObserver !== 'undefined') {
     }, 0);
   });
 }
+
+Tinytest.add("blaze - dombackend - parseHTML", function (test) {
+  // Test basic HTML parsing
+  const basicHtml = "<div>Hello</div>";
+  const basicResult = Blaze._DOMBackend.parseHTML(basicHtml);
+  test.equal(basicResult.length, 1);
+  test.equal(basicResult[0].nodeName, "DIV");
+  test.equal(basicResult[0].textContent || basicResult[0].innerText, "Hello");  // innerText for IE
+
+  // Test table elements (IE has special requirements)
+  const tableTestCases = {
+    tr: {
+      html: "<tr><td>Cell</td></tr>",
+      expectedTags: ["TR", "TD"]
+    },
+    td: {
+      html: "<td>Cell</td>",
+      expectedTags: ["TD"]
+    },
+    tbody: {
+      html: "<tbody><tr><td>Cell</td></tr></tbody>",
+      expectedTags: ["TBODY", "TR", "TD"]
+    },
+    thead: {
+      html: "<thead><tr><th>Header</th></tr></thead>",
+      expectedTags: ["THEAD", "TR", "TH"]
+    },
+    tfoot: {
+      html: "<tfoot><tr><td>Footer</td></tr></tfoot>",
+      expectedTags: ["TFOOT", "TR", "TD"]
+    },
+    colgroup: {
+      html: "<colgroup><col span='2'></colgroup>",
+      expectedTags: ["COLGROUP", "COL"]
+    }
+  };
+
+  Object.entries(tableTestCases).forEach(([testCaseName, testCase]) => {
+    const result = Blaze._DOMBackend.parseHTML(testCase.html);
+    const firstNode = result[0];
+    test.equal(firstNode.nodeName, testCase.expectedTags[0], 
+      `${testCaseName}: Expected ${testCase.expectedTags[0]} but got ${firstNode.nodeName}`);
+  });
+
+  // Test whitespace handling (IE is sensitive to this)
+  const whitespaceTestCases = [
+    {
+      html: "  <div>Padded</div>  ",
+      expectedLength: 1,
+      expectedTag: "DIV"
+    },
+    {
+      html: "\n<div>Newlines</div>\n",
+      expectedLength: 1,
+      expectedTag: "DIV"
+    },
+    {
+      html: "\t<div>Tabs</div>\t",
+      expectedLength: 1,
+      expectedTag: "DIV"
+    }
+  ];
+
+  whitespaceTestCases.forEach((testCase, i) => {
+    const result = Blaze._DOMBackend.parseHTML(testCase.html);
+    test.equal(result.length, testCase.expectedLength,
+      `Whitespace test ${i}: Expected length ${testCase.expectedLength} but got ${result.length}`);
+    test.equal(result[0].nodeName, testCase.expectedTag,
+      `Whitespace test ${i}: Expected tag ${testCase.expectedTag} but got ${result[0].nodeName}`);
+  });
+
+  // Test empty input
+  test.equal(Blaze._DOMBackend.parseHTML("").length, 0);
+  test.equal(Blaze._DOMBackend.parseHTML(null).length, 0);
+  test.equal(Blaze._DOMBackend.parseHTML(undefined).length, 0);
+  test.equal(Blaze._DOMBackend.parseHTML("   ").length, 0);
+  
+  // Test malformed HTML (IE is more strict)
+  const malformedTestCases = [
+    {
+      html: "<div>Hello<span>World</span></div>",  // Well-formed control case
+      expectedLength: 1,
+      expectedChildren: 1
+    },
+    {
+      html: "<div>Test</div><p>",  // Partial second tag
+      expectedLength: 2
+    },
+    {
+      html: "<div class=>Test</div>",  // Invalid attribute
+      expectedLength: 1
+    }
+  ];
+
+  malformedTestCases.forEach((testCase, i) => {
+    const result = Blaze._DOMBackend.parseHTML(testCase.html);
+    test.equal(result.length, testCase.expectedLength,
+      `Malformed test ${i}: Expected length ${testCase.expectedLength} but got ${result.length}`);
+    if (testCase.expectedChildren !== undefined) {
+      const childCount = result[0].getElementsByTagName('span').length;
+      test.equal(childCount, testCase.expectedChildren,
+        `Malformed test ${i}: Expected ${testCase.expectedChildren} span elements but got ${childCount}`);
+    }
+  });
+
+  // Test array-like properties of result (important for IE)
+  const arrayResult = Blaze._DOMBackend.parseHTML("<div></div><span></span>");
+  test.equal(typeof arrayResult.length, "number", "Result should have length property");
+  test.equal(typeof arrayResult[0], "object", "Result should have indexed access");
+  test.equal(arrayResult[0].nodeName, "DIV", "First element should be accessible by index");
+});

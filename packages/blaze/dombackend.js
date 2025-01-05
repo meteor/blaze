@@ -28,13 +28,60 @@ DOMBackend.getContext = function() {
   }
   return DOMBackend._context;
 }
-DOMBackend.parseHTML = function (html) {
-  // Return an array of nodes.
-  //
-  // jQuery does fancy stuff like creating an appropriate
-  // container element and setting innerHTML on it, as well
-  // as working around various IE quirks.
-  return $jq.parseHTML(html, DOMBackend.getContext()) || [];
+
+DOMBackend.parseHTML = function(html, context) {
+  if (!html) {
+    return [];
+  }
+  
+  context = context || DOMBackend.getContext();
+  
+  // Handle special cases like <tr>, <td>, etc.
+  const specialParents = {
+    tr: { parent: 'tbody', context: 'table' },
+    td: { parent: 'tr', context: 'table' },
+    th: { parent: 'tr', context: 'table' },
+    col: { parent: 'colgroup', context: 'table' },
+    legend: { parent: 'fieldset', context: 'div' },
+    area: { parent: 'map', context: 'div' },
+    param: { parent: 'object', context: 'div' },
+    thead: { parent: 'table', context: 'div' },
+    tbody: { parent: 'table', context: 'div' },
+    tfoot: { parent: 'table', context: 'div' },
+    caption: { parent: 'table', context: 'div' },
+    colgroup: { parent: 'table', context: 'div' },
+    option: { parent: 'select', context: 'div' },
+    optgroup: { parent: 'select', context: 'div' }
+  };
+  
+  // Simple regex to get the first tag
+  const firstTagMatch = /<([a-z][^\/\0>\x20\t\r\n\f]*)/i.exec(html);
+  
+  if (firstTagMatch) {
+    const tag = firstTagMatch[1].toLowerCase();
+    const spec = specialParents[tag];
+    
+    if (spec) {
+      const contextElement = context.createElement(spec.context);
+      const parentElement = context.createElement(spec.parent);
+      contextElement.appendChild(parentElement);
+      parentElement.innerHTML = html;
+      return Array.from(parentElement.childNodes);
+    }
+  }
+  
+  // IE-compatible parsing
+  const div = context.createElement('div');
+  
+  // Trim whitespace to avoid IE's automatic wrapping
+  html = html.trim();
+  
+  // Wrap in div and set innerHTML
+  div.innerHTML = html;
+  
+  // Convert childNodes to array for consistency
+  // Use Array.prototype.slice for IE compatibility
+  return Array.prototype.slice.call(div.childNodes);
 };
 
 DOMBackend.Events = {
