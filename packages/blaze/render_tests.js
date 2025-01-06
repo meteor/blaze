@@ -794,6 +794,26 @@ Tinytest.add("blaze - dombackend - parseHTML", function (test) {
   test.equal(basicResult[0].nodeName, "DIV");
   test.equal(basicResult[0].textContent || basicResult[0].innerText, "Hello");  // innerText for IE
 
+  // Test plain text (no HTML)
+  const textOnly = "Just some text";
+  const textResult = Blaze._DOMBackend.parseHTML(textOnly);
+  test.equal(textResult.length, 1);
+  test.equal(textResult[0].nodeType, Node.TEXT_NODE);
+  test.equal(textResult[0].textContent || textResult[0].nodeValue, "Just some text");
+
+  // Test self-closing tags
+  const selfClosing = "<div/>Content";
+  const selfClosingResult = Blaze._DOMBackend.parseHTML(selfClosing);
+  test.equal(selfClosingResult.length, 2);
+  test.equal(selfClosingResult[0].nodeName, "DIV");
+  test.equal(selfClosingResult[1].nodeType, Node.TEXT_NODE);
+
+  // Test nested table elements (testing proper wrapping levels)
+  const nestedTable = "<td>Cell</td>";
+  const nestedResult = Blaze._DOMBackend.parseHTML(nestedTable);
+  test.equal(nestedResult.length, 1);
+  test.equal(nestedResult[0].nodeName, "TD");
+
   // Test table elements (IE has special requirements)
   const tableTestCases = {
     tr: {
