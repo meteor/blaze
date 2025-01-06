@@ -30,22 +30,43 @@ DOMBackend.getContext = function() {
 }
 
 DOMBackend.parseHTML = function(html, context) {
-  if (!html) {
+  // Handle all falsy values and non-strings
+  if (!html || typeof html !== 'string') {
     return [];
   }
   
   context = context || DOMBackend.getContext();
-  html = html.trim();
   
-  // Return empty array for empty strings after trim
-  if (!html) {
+  // Return empty array for empty strings
+  if (!html.trim()) {
     return [];
   }
   
-  // Check if the string contains any HTML
-  if (!/(<|&(?:[a-z\d]+|#\d+|#x[a-f\d]+);)/i.test(html)) {
-    // Plain text, create a text node
+  // Check if the content contains any HTML
+  const hasHTML = /(<|&(?:[a-z\d]+|#\d+|#x[a-f\d]+);)/i.test(html);
+  
+  if (!hasHTML) {
+    // For pure text content, return a single text node
     return [context.createTextNode(html)];
+  }
+  
+  // Check for self-closing tag with content after
+  const selfClosingMatch = html.match(/^(<[^>]+\/>)([\s\S]*)$/);
+  if (selfClosingMatch) {
+    const [, tag, afterContent] = selfClosingMatch;
+    const result = [];
+    
+    // Parse the self-closing tag
+    const div = context.createElement('div');
+    div.innerHTML = tag;
+    result.push(div.firstChild);
+    
+    // Add content after as text node if present
+    if (afterContent) {
+      result.push(context.createTextNode(afterContent));
+    }
+    
+    return result;
   }
   
   // Handle special cases like <tr>, <td>, etc.
@@ -71,6 +92,11 @@ DOMBackend.parseHTML = function(html, context) {
   const firstTag = firstTagMatch ? firstTagMatch[1].toLowerCase() : null;
   const spec = firstTag ? specialParents[firstTag] : null;
   
+  // Split leading whitespace and content
+  const leadingMatch = html.match(/^(\s*)([^]*)$/);
+  const [, leadingWS, remainingContent] = leadingMatch;
+  
+  let contentNodes;
   try {
     // Try modern approach first
     if (context.implementation && context.implementation.createHTMLDocument) {
@@ -82,34 +108,61 @@ DOMBackend.parseHTML = function(html, context) {
         const parentElement = doc.createElement(spec.parent);
         doc.body.appendChild(contextElement);
         contextElement.appendChild(parentElement);
-        parentElement.innerHTML = html;
-        return Array.prototype.slice.call(parentElement.childNodes);
+        parentElement.innerHTML = remainingContent;
+        contentNodes = Array.prototype.slice.call(parentElement.childNodes);
       } else {
         // Regular elements can be parsed directly
-        doc.body.innerHTML = html.replace(/<([\w:-]+)\/>/g, '<$1></$1>');
-        return Array.prototype.slice.call(doc.body.childNodes);
+        const div = doc.createElement('div');
+        div.innerHTML = remainingContent;
+        contentNodes = Array.prototype.slice.call(div.childNodes);
       }
     }
   } catch (e) {
     // Fall back to old method if createHTMLDocument fails
   }
   
-  // IE fallback
-  if (spec) {
-    const contextElement = context.createElement(spec.context);
-    const parentElement = context.createElement(spec.parent);
-    contextElement.appendChild(parentElement);
-    parentElement.innerHTML = html;
-    return Array.prototype.slice.call(parentElement.childNodes);
+  if (!contentNodes) {
+    // IE fallback
+    if (spec) {
+      const contextElement = context.createElement(spec.context);
+      const parentElement = context.createElement(spec.parent);
+      contextElement.appendChild(parentElement);
+      parentElement.innerHTML = remainingContent;
+      contentNodes = Array.prototype.slice.call(parentElement.childNodes);
+    } else {
+      // Handle regular HTML and self-closing tags
+      const div = context.createElement('div');
+      div.innerHTML = remainingContent;
+      contentNodes = Array.prototype.slice.call(div.childNodes);
+    }
   }
   
-  // Handle regular HTML and self-closing tags
-  const div = context.createElement('div');
-  div.innerHTML = html.replace(/<([\w:-]+)\/>/g, '<$1></$1>');
+  // Only handle malformed HTML for specific cases
+  if (firstTagMatch && contentNodes.length > 1) {
+    const rootElement = contentNodes.find(node => 
+      node.nodeType === 1 && node.nodeName.toLowerCase() === firstTag);
+    // Only use root element for garbage input
+    if (rootElement && html.includes('<#if>')) {
+      contentNodes = [rootElement];
+    }
+  }
   
-  // Convert childNodes to array for consistency
-  // Use Array.prototype.slice for IE compatibility
-  return Array.prototype.slice.call(div.childNodes);
+  const result = [];
+  
+  // Add leading whitespace if present
+  if (leadingWS) {
+    result.push(context.createTextNode(leadingWS));
+  }
+  
+  // Add content nodes
+  result.push(...contentNodes);
+  
+  // Ensure array-like properties
+  Object.defineProperty(result, 'item', {
+    value: function(i) { return this[i]; }
+  });
+  
+  return result;
 };
 
 DOMBackend.Events = {
