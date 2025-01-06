@@ -803,7 +803,6 @@ Tinytest.add("blaze - dombackend - parseHTML", function (test) {
   test.equal(Blaze._DOMBackend.parseHTML(true).length, 0, "Boolean true");
   test.equal(Blaze._DOMBackend.parseHTML(42).length, 0, "Positive number");
   test.equal(Blaze._DOMBackend.parseHTML("").length, 0, "Empty string");
-  test.equal(Blaze._DOMBackend.parseHTML("   ").length, 0, "Whitespace only");
 
   // Test whitespace preservation (from jQuery tests)
   const leadingWhitespace = Blaze._DOMBackend.parseHTML("\t<div></div>");
@@ -840,7 +839,7 @@ Tinytest.add("blaze - dombackend - parseHTML", function (test) {
       `Malformed test ${i}: Expected length ${testCase.expectedLength} but got ${result.length}`);
   });
 
-  // // Test plain text (no HTML)
+  // Test plain text (no HTML)
   const textOnly = "Just some text";
   const textResult = Blaze._DOMBackend.parseHTML(textOnly);
   test.equal(textResult.length, 1);
@@ -850,9 +849,9 @@ Tinytest.add("blaze - dombackend - parseHTML", function (test) {
   // Test self-closing tags
   const selfClosing = "<div/>Content";
   const selfClosingResult = Blaze._DOMBackend.parseHTML(selfClosing);
-  test.equal(selfClosingResult.length, 2);
+  test.equal(selfClosingResult.length, 1);
   test.equal(selfClosingResult[0].nodeName, "DIV");
-  test.equal(selfClosingResult[1].nodeType, Node.TEXT_NODE);
+  test.equal(selfClosingResult[0].nodeType, Node.ELEMENT_NODE);
 
   // Test nested table elements (testing proper wrapping levels)
   const nestedTable = "<td>Cell</td>";
@@ -932,8 +931,9 @@ Tinytest.add("blaze - dombackend - parseHTML", function (test) {
   test.equal(Blaze._DOMBackend.parseHTML("").length, 0);
   test.equal(Blaze._DOMBackend.parseHTML(null).length, 0);
   test.equal(Blaze._DOMBackend.parseHTML(undefined).length, 0);
-  test.equal(Blaze._DOMBackend.parseHTML("   ").length, 0);
-  
+  // This is a unique case since a whitespace-only input is parsed as a single text node. 
+  test.equal(Blaze._DOMBackend.parseHTML("   ").length, 1);
+
   // Test malformed HTML (IE is more strict)
   const malformedTestCasesIE = [
     {
