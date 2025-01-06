@@ -14,15 +14,17 @@ DOMBackend.getContext = function() {
   if (DOMBackend._context) {
     return DOMBackend._context;
   }
-  if ( DOMBackend._$jq.support.createHTMLDocument ) {
-    DOMBackend._context = document.implementation.createHTMLDocument( "" );
+  
+  // Check if createHTMLDocument is supported directly
+  if (document.implementation && document.implementation.createHTMLDocument) {
+    DOMBackend._context = document.implementation.createHTMLDocument("");
 
     // Set the base href for the created document
     // so any parsed elements with URLs
     // are based on the document's URL (gh-2965)
-    const base = DOMBackend._context.createElement( "base" );
+    const base = DOMBackend._context.createElement("base");
     base.href = document.location.href;
-    DOMBackend._context.head.appendChild( base );
+    DOMBackend._context.head.appendChild(base);
   } else {
     DOMBackend._context = document;
   }
@@ -97,44 +99,19 @@ DOMBackend.parseHTML = function(html, context) {
   const [, leadingWS, remainingContent] = leadingMatch;
   
   let contentNodes;
-  try {
-    // Try modern approach first
-    if (context.implementation && context.implementation.createHTMLDocument) {
-      const doc = context.implementation.createHTMLDocument('');
-      
-      if (spec) {
-        // Special elements need their proper parent structure
-        const contextElement = doc.createElement(spec.context);
-        const parentElement = doc.createElement(spec.parent);
-        doc.body.appendChild(contextElement);
-        contextElement.appendChild(parentElement);
-        parentElement.innerHTML = remainingContent;
-        contentNodes = Array.prototype.slice.call(parentElement.childNodes);
-      } else {
-        // Regular elements can be parsed directly
-        const div = doc.createElement('div');
-        div.innerHTML = remainingContent;
-        contentNodes = Array.prototype.slice.call(div.childNodes);
-      }
-    }
-  } catch (e) {
-    // Fall back to old method if createHTMLDocument fails
-  }
   
-  if (!contentNodes) {
-    // IE fallback
-    if (spec) {
-      const contextElement = context.createElement(spec.context);
-      const parentElement = context.createElement(spec.parent);
-      contextElement.appendChild(parentElement);
-      parentElement.innerHTML = remainingContent;
-      contentNodes = Array.prototype.slice.call(parentElement.childNodes);
-    } else {
-      // Handle regular HTML and self-closing tags
-      const div = context.createElement('div');
-      div.innerHTML = remainingContent;
-      contentNodes = Array.prototype.slice.call(div.childNodes);
-    }
+  if (spec) {
+    // Special elements need their proper parent structure
+    const contextElement = context.createElement(spec.context);
+    const parentElement = context.createElement(spec.parent);
+    contextElement.appendChild(parentElement);
+    parentElement.innerHTML = remainingContent;
+    contentNodes = Array.prototype.slice.call(parentElement.childNodes);
+  } else {
+    // Regular elements can be parsed directly
+    const div = context.createElement('div');
+    div.innerHTML = remainingContent;
+    contentNodes = Array.prototype.slice.call(div.childNodes);
   }
   
   // Only handle malformed HTML for specific cases
