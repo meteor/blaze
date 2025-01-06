@@ -40,7 +40,7 @@ DOMBackend.parseHTML = function(html, context) {
   context = context || DOMBackend.getContext();
   
   // Return empty array for empty strings
-  if (!html.trim()) {
+  if (html === "") {
     return [];
   }
   
@@ -56,21 +56,17 @@ DOMBackend.parseHTML = function(html, context) {
   const selfClosingMatch = html.match(/^(<[^>]+\/>)([\s\S]*)$/);
   if (selfClosingMatch) {
     const [, tag, afterContent] = selfClosingMatch;
-    const result = [];
+    // Convert self-closing tag to opening tag
+    const openTag = tag.replace(/\/>$/, ">");
+    const tagName = openTag.match(/<([^\s>]+)/)[1];
     
-    // Parse the self-closing tag
+    // Create element with content inside
     const div = context.createElement('div');
-    div.innerHTML = tag;
-    result.push(div.firstChild);
+    div.innerHTML = openTag + afterContent + "</" + tagName + ">";
     
-    // Add content after as text node if present
-    if (afterContent) {
-      result.push(context.createTextNode(afterContent));
-    }
-    
-    return result;
+    return [div.firstChild];
   }
-  
+    
   // Handle special cases like <tr>, <td>, etc.
   const specialParents = {
     tr: { parent: 'tbody', context: 'table' },
