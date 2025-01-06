@@ -35,6 +35,18 @@ DOMBackend.parseHTML = function(html, context) {
   }
   
   context = context || DOMBackend.getContext();
+  html = html.trim();
+  
+  // Return empty array for empty strings after trim
+  if (!html) {
+    return [];
+  }
+  
+  // Check if the string contains any HTML
+  if (!/(<|&(?:[a-z\d]+|#\d+|#x[a-f\d]+);)/i.test(html)) {
+    // Plain text, create a text node
+    return [context.createTextNode(html)];
+  }
   
   // Handle special cases like <tr>, <td>, etc.
   const specialParents = {
@@ -54,33 +66,41 @@ DOMBackend.parseHTML = function(html, context) {
     optgroup: { parent: 'select', context: 'div' }
   };
   
-  html = html.trim();
-  
-  // Return empty array for empty strings after trim
-  if (!html) {
-    return [];
-  }
-  
-  // Check if the string contains any HTML
-  if (!/(<|&(?:[a-z\d]+|#\d+|#x[a-f\d]+);)/i.test(html)) {
-    // Plain text, create a text node
-    return [context.createTextNode(html)];
-  }
-  
   // Simple regex to get the first tag
   const firstTagMatch = /<([a-z][^\/\0>\x20\t\r\n\f]*)/i.exec(html);
+  const firstTag = firstTagMatch ? firstTagMatch[1].toLowerCase() : null;
+  const spec = firstTag ? specialParents[firstTag] : null;
   
-  if (firstTagMatch) {
-    const tag = firstTagMatch[1].toLowerCase();
-    const spec = specialParents[tag];
-    
-    if (spec) {
-      const contextElement = context.createElement(spec.context);
-      const parentElement = context.createElement(spec.parent);
-      contextElement.appendChild(parentElement);
-      parentElement.innerHTML = html;
-      return Array.prototype.slice.call(parentElement.childNodes);
+  try {
+    // Try modern approach first
+    if (context.implementation && context.implementation.createHTMLDocument) {
+      const doc = context.implementation.createHTMLDocument('');
+      
+      if (spec) {
+        // Special elements need their proper parent structure
+        const contextElement = doc.createElement(spec.context);
+        const parentElement = doc.createElement(spec.parent);
+        doc.body.appendChild(contextElement);
+        contextElement.appendChild(parentElement);
+        parentElement.innerHTML = html;
+        return Array.prototype.slice.call(parentElement.childNodes);
+      } else {
+        // Regular elements can be parsed directly
+        doc.body.innerHTML = html.replace(/<([\w:-]+)\/>/g, '<$1></$1>');
+        return Array.prototype.slice.call(doc.body.childNodes);
+      }
     }
+  } catch (e) {
+    // Fall back to old method if createHTMLDocument fails
+  }
+  
+  // IE fallback
+  if (spec) {
+    const contextElement = context.createElement(spec.context);
+    const parentElement = context.createElement(spec.parent);
+    contextElement.appendChild(parentElement);
+    parentElement.innerHTML = html;
+    return Array.prototype.slice.call(parentElement.childNodes);
   }
   
   // Handle regular HTML and self-closing tags
