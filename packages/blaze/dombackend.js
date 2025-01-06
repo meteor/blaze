@@ -54,6 +54,19 @@ DOMBackend.parseHTML = function(html, context) {
     optgroup: { parent: 'select', context: 'div' }
   };
   
+  html = html.trim();
+  
+  // Return empty array for empty strings after trim
+  if (!html) {
+    return [];
+  }
+  
+  // Check if the string contains any HTML
+  if (!/(<|&(?:[a-z\d]+|#\d+|#x[a-f\d]+);)/i.test(html)) {
+    // Plain text, create a text node
+    return [context.createTextNode(html)];
+  }
+  
   // Simple regex to get the first tag
   const firstTagMatch = /<([a-z][^\/\0>\x20\t\r\n\f]*)/i.exec(html);
   
@@ -66,18 +79,13 @@ DOMBackend.parseHTML = function(html, context) {
       const parentElement = context.createElement(spec.parent);
       contextElement.appendChild(parentElement);
       parentElement.innerHTML = html;
-      return Array.from(parentElement.childNodes);
+      return Array.prototype.slice.call(parentElement.childNodes);
     }
   }
   
-  // IE-compatible parsing
+  // Handle regular HTML and self-closing tags
   const div = context.createElement('div');
-  
-  // Trim whitespace to avoid IE's automatic wrapping
-  html = html.trim();
-  
-  // Wrap in div and set innerHTML
-  div.innerHTML = html;
+  div.innerHTML = html.replace(/<([\w:-]+)\/>/g, '<$1></$1>');
   
   // Convert childNodes to array for consistency
   // Use Array.prototype.slice for IE compatibility
