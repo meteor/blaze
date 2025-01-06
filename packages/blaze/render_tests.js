@@ -895,32 +895,38 @@ Tinytest.add("blaze - dombackend - parseHTML", function (test) {
       `${testCaseName}: Expected ${testCase.expectedTags[0]} but got ${firstNode.nodeName}`);
   });
 
-  // // Test whitespace handling (IE is sensitive to this)
-  // const whitespaceTestCases = [
-  //   {
-  //     html: "  <div>Padded</div>  ",
-  //     expectedLength: 1,
-  //     expectedTag: "DIV"
-  //   },
-  //   {
-  //     html: "\n<div>Newlines</div>\n",
-  //     expectedLength: 1,
-  //     expectedTag: "DIV"
-  //   },
-  //   {
-  //     html: "\t<div>Tabs</div>\t",
-  //     expectedLength: 1,
-  //     expectedTag: "DIV"
-  //   }
-  // ];
+  // Test whitespace handling (IE is sensitive to this)
+  const whitespaceTestCases = [
+    {
+      html: "  <div>Padded</div>  ",
+      expectedLength: 3,  // Leading space + div + trailing space
+      expectedTag: "DIV"
+    },
+    {
+      html: "\n<div>Newlines</div>\n",
+      expectedLength: 3,  // Leading newline + div + trailing newline
+      expectedTag: "DIV"
+    },
+    {
+      html: "\t<div>Tabs</div>\t",
+      expectedLength: 3,  // Leading tab + div + trailing tab
+      expectedTag: "DIV"
+    }
+  ];
 
-  // whitespaceTestCases.forEach((testCase, i) => {
-  //   const result = Blaze._DOMBackend.parseHTML(testCase.html);
-  //   test.equal(result.length, testCase.expectedLength,
-  //     `Whitespace test ${i}: Expected length ${testCase.expectedLength} but got ${result.length}`);
-  //   test.equal(result[0].nodeName, testCase.expectedTag,
-  //     `Whitespace test ${i}: Expected tag ${testCase.expectedTag} but got ${result[0].nodeName}`);
-  // });
+  whitespaceTestCases.forEach((testCase, i) => {
+    const result = Blaze._DOMBackend.parseHTML(testCase.html);
+    test.equal(result.length, testCase.expectedLength,
+      `Whitespace test ${i}: Expected length ${testCase.expectedLength} but got ${result.length}`);
+    // Check the middle node (the div)
+    test.equal(result[1].nodeName, testCase.expectedTag,
+      `Whitespace test ${i}: Expected tag ${testCase.expectedTag} but got ${result[1].nodeName}`);
+    // Verify surrounding nodes are text nodes
+    test.equal(result[0].nodeType, Node.TEXT_NODE,
+      `Whitespace test ${i}: Expected leading text node`);
+    test.equal(result[2].nodeType, Node.TEXT_NODE,
+      `Whitespace test ${i}: Expected trailing text node`);
+  });
 
   // Test empty input
   test.equal(Blaze._DOMBackend.parseHTML("").length, 0);
