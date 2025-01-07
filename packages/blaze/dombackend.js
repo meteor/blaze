@@ -45,7 +45,7 @@ DOMBackend.parseHTML = function(html, context) {
   }
   
   // Check if the content contains any HTML
-  const hasHTML = /(<|&(?:[a-z\d]+|#\d+|#x[a-f\d]+);)/i.test(html);
+  var hasHTML = /(<|&(?:[a-z\d]+|#\d+|#x[a-f\d]+);)/i.test(html);
   
   if (!hasHTML) {
     // For pure text content, return a single text node
@@ -53,22 +53,23 @@ DOMBackend.parseHTML = function(html, context) {
   }
   
   // Check for self-closing tag with content after
-  const selfClosingMatch = html.match(/^(<[^>]+\/>)([\s\S]*)$/);
+  var selfClosingMatch = html.match(/^(<[^>]+\/>)([\s\S]*)$/);
   if (selfClosingMatch) {
-    const [, tag, afterContent] = selfClosingMatch;
+    var tag = selfClosingMatch[1];
+    var afterContent = selfClosingMatch[2];
     // Convert self-closing tag to opening tag
-    const openTag = tag.replace(/\/>$/, ">");
-    const tagName = openTag.match(/<([^\s>]+)/)[1];
+    var openTag = tag.replace(/\/>$/, ">");
+    var tagName = openTag.match(/<([^\s>]+)/)[1];
     
     // Create element with content inside
-    const div = context.createElement('div');
+    var div = context.createElement('div');
     div.innerHTML = openTag + afterContent + "</" + tagName + ">";
     
     return [div.firstChild];
   }
     
   // Handle special cases like <tr>, <td>, etc.
-  const specialParents = {
+  var specialParents = {
     tr: { parent: 'tbody', context: 'table' },
     td: { parent: 'tr', context: 'table' },
     th: { parent: 'tr', context: 'table' },
@@ -86,41 +87,48 @@ DOMBackend.parseHTML = function(html, context) {
   };
   
   // Simple regex to get the first tag
-  const firstTagMatch = /<([a-z][^\/\0>\x20\t\r\n\f]*)/i.exec(html);
-  const firstTag = firstTagMatch ? firstTagMatch[1].toLowerCase() : null;
-  const spec = firstTag ? specialParents[firstTag] : null;
+  var firstTagMatch = /<([a-z][^\/\0>\x20\t\r\n\f]*)/i.exec(html);
+  var firstTag = firstTagMatch ? firstTagMatch[1].toLowerCase() : null;
+  var spec = firstTag ? specialParents[firstTag] : null;
   
   // Split leading whitespace and content
-  const leadingMatch = html.match(/^(\s*)([^]*)$/);
-  const [, leadingWS, remainingContent] = leadingMatch;
+  var leadingMatch = html.match(/^(\s*)([^]*)$/);
+  var leadingWS = leadingMatch[1];
+  var remainingContent = leadingMatch[2];
   
-  let contentNodes;
+  var contentNodes;
   
   if (spec) {
     // Special elements need their proper parent structure
-    const contextElement = context.createElement(spec.context);
-    const parentElement = context.createElement(spec.parent);
+    var contextElement = context.createElement(spec.context);
+    var parentElement = context.createElement(spec.parent);
     contextElement.appendChild(parentElement);
     parentElement.innerHTML = remainingContent;
     contentNodes = Array.prototype.slice.call(parentElement.childNodes);
   } else {
     // Regular elements can be parsed directly
-    const div = context.createElement('div');
+    var div = context.createElement('div');
     div.innerHTML = remainingContent;
     contentNodes = Array.prototype.slice.call(div.childNodes);
   }
   
   // Only handle malformed HTML for specific cases
   if (firstTagMatch && contentNodes.length > 1) {
-    const rootElement = contentNodes.find(node => 
-      node.nodeType === 1 && node.nodeName.toLowerCase() === firstTag);
+    var rootElement = null;
+    for (var i = 0; i < contentNodes.length; i++) {
+      var node = contentNodes[i];
+      if (node.nodeType === 1 && node.nodeName.toLowerCase() === firstTag) {
+        rootElement = node;
+        break;
+      }
+    }
     // Only use root element for garbage input
-    if (rootElement && html.includes('<#if>')) {
+    if (rootElement && html.indexOf('<#if>') !== -1) {
       contentNodes = [rootElement];
     }
   }
   
-  const result = [];
+  var result = [];
   
   // Add leading whitespace if present
   if (leadingWS) {
@@ -128,7 +136,9 @@ DOMBackend.parseHTML = function(html, context) {
   }
   
   // Add content nodes
-  result.push(...contentNodes);
+  for (var i = 0; i < contentNodes.length; i++) {
+    result.push(contentNodes[i]);
+  }
   
   // Ensure array-like properties
   Object.defineProperty(result, 'item', {
