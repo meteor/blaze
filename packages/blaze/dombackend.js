@@ -48,13 +48,37 @@ DOMBackend.parseHTML = function(html, context) {
   // First parse the HTML normally
   template.innerHTML = html;
   
-  // Then sanitize any script tags by using a temporary container
+  // Then sanitize by using a temporary container
   const container = document.createElement('div');
   container.appendChild(template.content.cloneNode(true));
   
+  // Remove script tags
   const scripts = container.getElementsByTagName('script');
   while (scripts.length > 0) {
     scripts[0].parentNode.removeChild(scripts[0]);
+  }
+  
+  // Remove dangerous attributes and URLs
+  const allElements = container.getElementsByTagName('*');
+  for (let i = 0; i < allElements.length; i++) {
+    const element = allElements[i];
+    const attributes = element.attributes;
+    for (let j = attributes.length - 1; j >= 0; j--) {
+      const attr = attributes[j];
+      // Remove event handlers
+      if (attr.name.toLowerCase().startsWith('on')) {
+        element.removeAttribute(attr.name);
+        continue;
+      }
+      
+      // Clean javascript: URLs
+      if (attr.value) {
+        const value = attr.value.toLowerCase().trim();
+        if (value.startsWith('javascript:')) {
+          element.removeAttribute(attr.name);
+        }
+      }
+    }
   }
   
   // Copy back the sanitized content

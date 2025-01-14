@@ -985,31 +985,31 @@ Tinytest.add("blaze - security - XSS prevention in HTML parsing", function (test
         test.equal(div.querySelector('p').textContent, "Test", "Safe content should be preserved");
       }
     },
-    // {
-    //   html: "<div><p>Test</p><img src='x' onerror='alert(\"XSS\")'></div>",
-    //   description: "Prevents event handler injection",
-    //   checks: (result) => {
-    //     test.equal(result.length, 1, "Should parse into a single element");
-    //     const div = result[0];
-    //     const img = div.querySelector('img');
-    //     test.isNotNull(img, "Image element should be preserved");
-    //     test.isFalse(img.hasAttribute('onerror'), "Event handler should be stripped");
-    //     test.equal(div.querySelector('p').textContent, "Test", "Safe content should be preserved");
-    //   }
-    // },
-    // {
-    //   html: "<div><p>Test</p><iframe src='javascript:alert(\"XSS\")'></iframe></div>",
-    //   description: "Prevents javascript: URL injection",
-    //   checks: (result) => {
-    //     test.equal(result.length, 1, "Should parse into a single element");
-    //     const div = result[0];
-    //     const iframe = div.querySelector('iframe');
-    //     test.isNotNull(iframe, "iframe element should be preserved");
-    //     const src = iframe.getAttribute('src') || '';
-    //     test.isFalse(src.includes('javascript:'), "javascript: protocol should be stripped");
-    //     test.equal(div.querySelector('p').textContent, "Test", "Safe content should be preserved");
-    //   }
-    // }
+    {
+      html: "<div><p>Test</p><img src='x' onerror='alert(\"XSS\")'></div>",
+      description: "Prevents event handler injection",
+      checks: (result) => {
+        test.equal(result.length, 1, "Should parse into a single element");
+        const div = result[0];
+        const img = div.querySelector('img');
+        test.isNotNull(img, "Image element should be preserved");
+        test.isFalse(img.hasAttribute('onerror'), "Event handler should be stripped");
+        test.equal(div.querySelector('p').textContent, "Test", "Safe content should be preserved");
+      }
+    },
+    {
+      html: "<div><p>Test</p><iframe src='javascript:alert(\"XSS\")'></iframe></div>",
+      description: "Prevents javascript: URL injection",
+      checks: (result) => {
+        test.equal(result.length, 1, "Should parse into a single element");
+        const div = result[0];
+        const iframe = div.querySelector('iframe');
+        test.isNotNull(iframe, "iframe element should be preserved");
+        const src = iframe.getAttribute('src') || '';
+        test.isFalse(src.includes('javascript:'), "javascript: protocol should be stripped");
+        test.equal(div.querySelector('p').textContent, "Test", "Safe content should be preserved");
+      }
+    }
   ];
 
   xssTestCases.forEach((testCase, i) => {
