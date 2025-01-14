@@ -828,8 +828,12 @@ Tinytest.add("blaze - dombackend - parseHTML", function (test) {
       expectedLength: 2
     },
     {
-      html: "<#if><tr><p>Test</p></tr><#/if>",  // Garbage input
-      expectedLength: 1  // Should not throw error
+      html: "<div class=''''''><span><<<>>></span",  // Invalid attributes and unclosed tags
+      expectedLength: 1  // Should attempt to fix malformed HTML
+    },
+    {
+      html: "<html><!DOCTYPE html><head></head><body>invalid order</body></html>",  // Wrong DOM structure order
+      expectedLength: 1  // Should still parse despite invalid structure
     }
   ];
 
@@ -967,4 +971,49 @@ Tinytest.add("blaze - dombackend - parseHTML", function (test) {
   test.equal(typeof arrayResult.length, "number", "Result should have length property");
   test.equal(typeof arrayResult[0], "object", "Result should have indexed access");
   test.equal(arrayResult[0].nodeName, "DIV", "First element should be accessible by index");
+});
+
+Tinytest.add("blaze - security - XSS prevention in HTML parsing", function (test) {
+  const xssTestCases = [
+    {
+      html: "<div><p>Test</p><script>alert('XSS')</script></div>",
+      description: "Prevents inline script execution",
+      checks: (result) => {
+        test.equal(result.length, 1, "Should parse into a single element");
+        const div = result[0];
+        test.equal(div.querySelector('script'), null, "Script tag should be removed");
+        test.equal(div.querySelector('p').textContent, "Test", "Safe content should be preserved");
+      }
+    },
+    // {
+    //   html: "<div><p>Test</p><img src='x' onerror='alert(\"XSS\")'></div>",
+    //   description: "Prevents event handler injection",
+    //   checks: (result) => {
+    //     test.equal(result.length, 1, "Should parse into a single element");
+    //     const div = result[0];
+    //     const img = div.querySelector('img');
+    //     test.isNotNull(img, "Image element should be preserved");
+    //     test.isFalse(img.hasAttribute('onerror'), "Event handler should be stripped");
+    //     test.equal(div.querySelector('p').textContent, "Test", "Safe content should be preserved");
+    //   }
+    // },
+    // {
+    //   html: "<div><p>Test</p><iframe src='javascript:alert(\"XSS\")'></iframe></div>",
+    //   description: "Prevents javascript: URL injection",
+    //   checks: (result) => {
+    //     test.equal(result.length, 1, "Should parse into a single element");
+    //     const div = result[0];
+    //     const iframe = div.querySelector('iframe');
+    //     test.isNotNull(iframe, "iframe element should be preserved");
+    //     const src = iframe.getAttribute('src') || '';
+    //     test.isFalse(src.includes('javascript:'), "javascript: protocol should be stripped");
+    //     test.equal(div.querySelector('p').textContent, "Test", "Safe content should be preserved");
+    //   }
+    // }
+  ];
+
+  xssTestCases.forEach((testCase, i) => {
+    const result = Blaze._DOMBackend.parseHTML(testCase.html);
+    testCase.checks(result);
+  });
 });

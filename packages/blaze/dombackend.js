@@ -32,120 +32,34 @@ DOMBackend.getContext = function() {
 }
 
 DOMBackend.parseHTML = function(html, context) {
+  // Don't trim to preserve whitespace
   // Handle all falsy values and non-strings
   if (!html || typeof html !== 'string') {
     return [];
   }
+
+  const template = document.createElement('template');
   
-  context = context || DOMBackend.getContext();
-  
-  // Return empty array for empty strings
-  if (html === "") {
-    return [];
+  // If the input is just text, return it as a text node
+  if (!/^\s*</.test(html)) {
+    return [document.createTextNode(html)];
   }
   
-  // Check if the content contains any HTML
-  var hasHTML = /(<|&(?:[a-z\d]+|#\d+|#x[a-f\d]+);)/i.test(html);
+  // First parse the HTML normally
+  template.innerHTML = html;
   
-  if (!hasHTML) {
-    // For pure text content, return a single text node
-    return [context.createTextNode(html)];
+  // Then sanitize any script tags by using a temporary container
+  const container = document.createElement('div');
+  container.appendChild(template.content.cloneNode(true));
+  
+  const scripts = container.getElementsByTagName('script');
+  while (scripts.length > 0) {
+    scripts[0].parentNode.removeChild(scripts[0]);
   }
   
-  // Check for self-closing tag with content after
-  var selfClosingMatch = html.match(/^(<[^>]+\/>)([\s\S]*)$/);
-  if (selfClosingMatch) {
-    var tag = selfClosingMatch[1];
-    var afterContent = selfClosingMatch[2];
-    // Convert self-closing tag to opening tag
-    var openTag = tag.replace(/\/>$/, ">");
-    var tagName = openTag.match(/<([^\s>]+)/)[1];
-    
-    // Create element with content inside
-    var div = context.createElement('div');
-    div.innerHTML = openTag + afterContent + "</" + tagName + ">";
-    
-    return [div.firstChild];
-  }
-    
-  // Handle special cases like <tr>, <td>, etc.
-  var specialParents = {
-    tr: { parent: 'tbody', context: 'table' },
-    td: { parent: 'tr', context: 'table' },
-    th: { parent: 'tr', context: 'table' },
-    col: { parent: 'colgroup', context: 'table' },
-    legend: { parent: 'fieldset', context: 'div' },
-    area: { parent: 'map', context: 'div' },
-    param: { parent: 'object', context: 'div' },
-    thead: { parent: 'table', context: 'div' },
-    tbody: { parent: 'table', context: 'div' },
-    tfoot: { parent: 'table', context: 'div' },
-    caption: { parent: 'table', context: 'div' },
-    colgroup: { parent: 'table', context: 'div' },
-    option: { parent: 'select', context: 'div' },
-    optgroup: { parent: 'select', context: 'div' }
-  };
-  
-  // Simple regex to get the first tag
-  var firstTagMatch = /<([a-z][^\/\0>\x20\t\r\n\f]*)/i.exec(html);
-  var firstTag = firstTagMatch ? firstTagMatch[1].toLowerCase() : null;
-  var spec = firstTag ? specialParents[firstTag] : null;
-  
-  // Split leading whitespace and content
-  var leadingMatch = html.match(/^(\s*)([^]*)$/);
-  var leadingWS = leadingMatch[1];
-  var remainingContent = leadingMatch[2];
-  
-  var contentNodes;
-  
-  if (spec) {
-    // Special elements need their proper parent structure
-    var contextElement = context.createElement(spec.context);
-    var parentElement = context.createElement(spec.parent);
-    contextElement.appendChild(parentElement);
-    parentElement.innerHTML = remainingContent;
-    contentNodes = Array.prototype.slice.call(parentElement.childNodes);
-  } else {
-    // Regular elements can be parsed directly
-    var div = context.createElement('div');
-    div.innerHTML = remainingContent;
-    contentNodes = Array.prototype.slice.call(div.childNodes);
-  }
-  
-  // Only handle malformed HTML for specific cases
-  if (firstTagMatch && contentNodes.length > 1) {
-    var rootElement = null;
-    for (var i = 0; i < contentNodes.length; i++) {
-      var node = contentNodes[i];
-      if (node.nodeType === 1 && node.nodeName.toLowerCase() === firstTag) {
-        rootElement = node;
-        break;
-      }
-    }
-    // Only use root element for garbage input
-    if (rootElement && html.indexOf('<#if>') !== -1) {
-      contentNodes = [rootElement];
-    }
-  }
-  
-  var result = [];
-  
-  // Add leading whitespace if present
-  if (leadingWS) {
-    result.push(context.createTextNode(leadingWS));
-  }
-  
-  // Add content nodes
-  for (var i = 0; i < contentNodes.length; i++) {
-    result.push(contentNodes[i]);
-  }
-  
-  // Ensure array-like properties
-  Object.defineProperty(result, 'item', {
-    value: function(i) { return this[i]; }
-  });
-  
-  return result;
+  // Copy back the sanitized content
+  template.innerHTML = container.innerHTML;
+  return Array.from(template.content.childNodes);
 };
 
 DOMBackend.Events = {
