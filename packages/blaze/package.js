@@ -9,7 +9,8 @@ Npm.depends({
   'lodash.has': '4.5.2',
   'lodash.isfunction': '3.0.9',
   'lodash.isempty': '4.4.0',
-  'lodash.isobject': '3.0.2'
+  'lodash.isobject': '3.0.2',
+  'sanitize-html': '2.11.0'
 });
 
 Package.onUse(function (api) {

@@ -7,8 +7,9 @@ const $jq = (typeof jQuery !== 'undefined' ? jQuery :
 if (! $jq)
   throw new Error("jQuery not found");
 
-DOMBackend._$jq = $jq;
+import sanitizeHtml from 'sanitize-html';
 
+DOMBackend._$jq = $jq;
 
 DOMBackend.getContext = function() {
   if (DOMBackend._context) {
@@ -38,52 +39,69 @@ DOMBackend.parseHTML = function(html, context) {
     return [];
   }
 
-  const template = document.createElement('template');
+  // Special handling for table elements to ensure proper parsing
+  const tableElementMatch = html.match(/<(t(?:body|head|foot|r|d|h))\b/i);
+  let container;
   
-  // If the input is just text, return it as a text node
-  if (!/^\s*</.test(html)) {
-    return [document.createTextNode(html)];
-  }
-  
-  // First parse the HTML normally
-  template.innerHTML = html;
-  
-  // Then sanitize by using a temporary container
-  const container = document.createElement('div');
-  container.appendChild(template.content.cloneNode(true));
-  
-  // Remove script tags
-  const scripts = container.getElementsByTagName('script');
-  while (scripts.length > 0) {
-    scripts[0].parentNode.removeChild(scripts[0]);
-  }
-  
-  // Remove dangerous attributes and URLs
-  const allElements = container.getElementsByTagName('*');
-  for (let i = 0; i < allElements.length; i++) {
-    const element = allElements[i];
-    const attributes = element.attributes;
-    for (let j = attributes.length - 1; j >= 0; j--) {
-      const attr = attributes[j];
-      // Remove event handlers
-      if (attr.name.toLowerCase().startsWith('on')) {
-        element.removeAttribute(attr.name);
-        continue;
-      }
-      
-      // Clean javascript: URLs
-      if (attr.value) {
-        const value = attr.value.toLowerCase().trim();
-        if (value.startsWith('javascript:')) {
-          element.removeAttribute(attr.name);
-        }
-      }
+  if (tableElementMatch) {
+    const tagName = tableElementMatch[1].toLowerCase();
+    // Create appropriate container based on the table element
+    switch (tagName) {
+      case 'td':
+      case 'th':
+        container = document.createElement('tr');
+        break;
+      case 'tr':
+        container = document.createElement('tbody');
+        break;
+      case 'tbody':
+      case 'thead':
+      case 'tfoot':
+        container = document.createElement('table');
+        break;
+      default:
+        container = document.createElement('template');
     }
+  } else {
+    container = document.createElement('template');
   }
+
+  // Sanitize the HTML with sanitize-html
+  const cleanHtml = sanitizeHtml(html, {
+    allowedTags: [
+      // Basic elements
+      'div', 'span', 'p', 'br', 'hr',
+      'a', 'img',
+      // Table elements
+      'table', 'thead', 'tbody', 'tfoot',
+      'tr', 'td', 'th', 'col', 'colgroup',
+      // Form elements
+      'input', 'textarea', 'select', 'option',
+      // Other elements
+      'iframe', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'ul', 'ol', 'li', 'dl', 'dt', 'dd'
+    ],
+    allowedAttributes: {
+      '*': ['class', 'id', 'style'],
+      'a': ['href', 'target'],
+      'img': ['src', 'alt'],
+      'iframe': ['src'],
+      'col': ['span']
+    },
+    allowedSchemes: ['http', 'https', 'ftp', 'mailto'],
+    allowedSchemesByTag: {},
+    allowedSchemesAppliedToAttributes: ['href', 'src'],
+    allowProtocolRelative: true,
+    parser: {
+      lowerCaseTags: false,  // Preserve tag case for proper testing
+    }
+  });
+
+  // Parse the sanitized HTML
+  container.innerHTML = cleanHtml;
   
-  // Copy back the sanitized content
-  template.innerHTML = container.innerHTML;
-  return Array.from(template.content.childNodes);
+  // Return the nodes, handling both template and regular elements
+  return Array.from(container instanceof HTMLTemplateElement ? container.content.childNodes : container.childNodes);
 };
 
 DOMBackend.Events = {
