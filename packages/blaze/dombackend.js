@@ -70,30 +70,65 @@ DOMBackend.parseHTML = function(html, context) {
   const cleanHtml = sanitizeHtml(html, {
     allowedTags: [
       // Basic elements
-      'div', 'span', 'p', 'br', 'hr',
-      'a', 'img',
+      'div', 'span', 'p', 'br', 'hr', 'b', 'i', 'em', 'strong', 'u',
+      'a', 'img', 'pre', 'code', 'blockquote',
+      // Lists
+      'ul', 'ol', 'li', 'dl', 'dt', 'dd',
+      // Headers
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
       // Table elements
       'table', 'thead', 'tbody', 'tfoot',
       'tr', 'td', 'th', 'col', 'colgroup',
       // Form elements
-      'input', 'textarea', 'select', 'option',
+      'input', 'textarea', 'select', 'option', 'label', 'button',
       // Other elements
-      'iframe', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-      'ul', 'ol', 'li', 'dl', 'dt', 'dd'
+      'iframe', 'article', 'section', 'header', 'footer', 'nav',
+      'aside', 'main', 'figure', 'figcaption', 'audio', 'video',
+      'source', 'canvas', 'details', 'summary'
     ],
     allowedAttributes: {
-      '*': ['class', 'id', 'style'],
-      'a': ['href', 'target'],
-      'img': ['src', 'alt'],
-      'iframe': ['src'],
-      'col': ['span']
+      '*': [
+        'class', 'id', 'style', 'title', 'role', 'data-*', 'aria-*',
+        // Allow event handlers
+        'onclick', 'onmouseover', 'onmouseout', 'onkeydown', 'onkeyup', 'onkeypress',
+        'onfocus', 'onblur', 'onchange', 'onsubmit', 'onreset'
+      ],
+      'a': ['href', 'target', 'rel'],
+      'img': ['src', 'alt', 'width', 'height'],
+      'iframe': ['src', 'width', 'height', 'frameborder', 'allowfullscreen'],
+      'input': ['type', 'value', 'placeholder', 'checked', 'disabled', 'readonly', 'required', 'pattern', 'min', 'max', 'step', 'minlength', 'maxlength', 'stuff'],
+      'textarea': ['rows', 'cols', 'wrap', 'placeholder', 'disabled', 'readonly', 'required', 'minlength', 'maxlength'],
+      'select': ['multiple', 'disabled', 'required', 'size'],
+      'option': ['value', 'selected', 'disabled'],
+      'button': ['type', 'disabled'],
+      'col': ['span', 'width'],
+      'td': ['colspan', 'rowspan', 'headers'],
+      'th': ['colspan', 'rowspan', 'headers', 'scope']
     },
-    allowedSchemes: ['http', 'https', 'ftp', 'mailto'],
-    allowedSchemesByTag: {},
-    allowedSchemesAppliedToAttributes: ['href', 'src'],
+    allowedSchemes: ['http', 'https', 'ftp', 'mailto', 'tel', 'data'],
+    allowedSchemesByTag: {
+      'img': ['data']
+    },
+    allowedSchemesAppliedToAttributes: ['href', 'src', 'cite'],
     allowProtocolRelative: true,
     parser: {
       lowerCaseTags: false,  // Preserve tag case for proper testing
+      decodeEntities: true
+    },
+    // Preserve empty attributes
+    transformTags: {
+      '*': function(tagName, attribs) {
+        // Convert null/undefined attributes to empty strings
+        Object.keys(attribs).forEach(key => {
+          if (attribs[key] === null || attribs[key] === undefined) {
+            delete attribs[key];
+          }
+        });
+        return {
+          tagName,
+          attribs
+        };
+      }
     }
   });
 
