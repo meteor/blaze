@@ -1,3 +1,8 @@
+## v3.0.2, 2025-02-04
+
+### Highlights
+* [475](https://github.com/meteor/blaze/pull/475) Enhanced error context for exceptions in helper functions.
+
 ## v3.0.1, 2024-11-14
 
 ### Highlights / Potentially breaking changes
