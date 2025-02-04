@@ -75,7 +75,8 @@ Blaze._getTemplateHelper = function (template, name, tmplInstanceFunc) {
     if (helper === Blaze._OLDSTYLE_HELPER) {
       isKnownOldStyleHelper = true;
     } else if (helper != null) {
-      return wrapHelper(bindDataContext(helper), tmplInstanceFunc);
+      const printName = `${template.viewName} ${name}`;
+      return wrapHelper(bindDataContext(helper), tmplInstanceFunc, printName);
     } else {
       return null;
     }
@@ -100,7 +101,7 @@ Blaze._getTemplateHelper = function (template, name, tmplInstanceFunc) {
   return null;
 };
 
-const wrapHelper = function (f, templateFunc) {
+const wrapHelper = function (f, templateFunc, name = 'template helper') {
   if (typeof f !== "function") {
     return f;
   }
@@ -109,7 +110,7 @@ const wrapHelper = function (f, templateFunc) {
     const self = this;
 
     return Blaze.Template._withTemplateInstanceFunc(templateFunc, function () {
-      return Blaze._wrapCatchingExceptions(f, 'template helper').apply(self, args);
+      return Blaze._wrapCatchingExceptions(f, name).apply(self, args);
     });
   };
 };
@@ -165,7 +166,8 @@ Blaze._getTemplate = function (name, templateInstance) {
 
 Blaze._getGlobalHelper = function (name, templateInstance) {
   if (Blaze._globalHelpers[name] != null) {
-    return wrapHelper(bindDataContext(Blaze._globalHelpers[name]), templateInstance);
+    const printName = `global helper ${name}`;
+    return wrapHelper(bindDataContext(Blaze._globalHelpers[name]), templateInstance, printName);
   }
   return null;
 };
