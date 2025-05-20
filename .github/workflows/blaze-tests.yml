@@ -27,11 +27,44 @@ jobs:
 
       - name: Install Meteor
         run: |
-          npx meteor@rc
-          echo 'export PATH=/home/runner/.meteor:$PATH' >> $GITHUB_ENV
-          source $GITHUB_ENV
-      - name: Run Tests
+          npx meteor@latest
+          echo "$HOME/.meteor" >> $GITHUB_PATH
+
+      - name: Link packages directory
+        run: ln -sfn ../packages ./packages
+        working-directory: test-app
+
+      - name: Meteor npm install
+        run: meteor npm install
+        working-directory: test-app
+
+      - name: Start meteor test-packages (background)
         run: |
-          cd test-app
-          pwd
-          ./ci.sh
+          export URL='http://localhost:4096/'
+          meteor test-packages --driver-package test-in-console -p 4096 --exclude "${TEST_PACKAGES_EXCLUDE:-}" &
+          echo $! > /tmp/meteor_test_pid
+        working-directory: test-app
+
+      - name: Wait for test-in-console to be ready
+        run: |
+          for i in {1..60}; do
+            if grep -q 'test-in-console listening' <(cat <&3); then
+              break
+            fi
+            sleep 1
+          done
+        shell: bash
+        working-directory: test-app
+
+      - name: Run puppeteerRunner.js
+        run: meteor node puppeteerRunner.js
+        working-directory: test-app
+
+      - name: Kill meteor test-packages process
+        if: always()
+        run: |
+          if [ -f /tmp/meteor_test_pid ]; then
+            pkill -TERM -P $(cat /tmp/meteor_test_pid)
+          fi
+        shell: bash
+        working-directory: test-app
