@@ -66,6 +66,8 @@ jobs:
 
       - name: Run puppeteerRunner.js
         run: meteor node puppeteerRunner.js
+        env:
+          URL: http://localhost:4096/
         working-directory: test-app
 
       - name: Kill meteor test-packages process
