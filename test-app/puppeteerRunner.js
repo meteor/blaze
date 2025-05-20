@@ -4,7 +4,13 @@ async function runNextUrl(browser) {
   const page = await browser.newPage();
 
   page.on('console', msg => {
-    console.log(msg._text);
+    const text = msg.text(); // Use msg.text() instead of msg._text
+    if (text) {
+      console.log(`Browser console: ${text}`);
+    } else {
+      // Log the type and arguments if text is not available for better debugging
+      console.log(`Browser console (raw): type=${msg.type()}, args=${JSON.stringify(msg.args())}`);
+    }
   });
 
   if (!process.env.URL) {
