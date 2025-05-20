@@ -28,7 +28,7 @@ jobs:
       - name: Install Meteor
         run: |
           npx meteor@rc
-          echo 'export PATH=$HOME/.meteor:$PATH' >> $GITHUB_ENV
+          echo 'export PATH=/home/runner/.meteor:$PATH' >> $GITHUB_ENV
           source $GITHUB_ENV
       - name: Run Tests
         run: |
