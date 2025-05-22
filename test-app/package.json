@@ -10,8 +10,7 @@
     "setup": "ln -sfn ../packages ./packages",
     "lint:check": "npx eslint",
     "lint:fix": "npm run eslint --fix",
-    "test:watch": "meteor test-packages --raw-logs ./packages/*",
-    "test:ci": "ci.sh"
+    "test:watch": "meteor test-packages --raw-logs ./packages/*"
   },
   "license": "MIT",
   "dependencies": {
