@@ -15,13 +15,16 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@babel/runtime": "^7.23.5",
+    "@babel/runtime": "^7.27.1",
     "jquery": "^3.7.1",
-    "meteor-node-stubs": "^1.2.7",
-    "puppeteer": "^10.4.0"
+    "meteor-node-stubs": "^1.2.17",
+    "puppeteer": "^24.8.2"
+  },
+  "meteor": {
+    "modern": true
   },
   "devDependencies": {
-    "@quave/eslint-config-quave": "^1.0.7"
+    "@quave/eslint-config-quave": "^3.0.0"
   },
   "eslintConfig": {
     "extends": [

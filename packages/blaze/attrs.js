@@ -352,18 +352,18 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
   const elem = this.elem;
   const handlers = this.handlers;
 
+  // Cache for last set values to avoid redundant DOM updates
+  if (!this._lastValues) this._lastValues = {};
+  const lastValues = this._lastValues;
+
   Object.getOwnPropertyNames(handlers).forEach((k) => {
     if (!has(newAttrs, k)) {
-      // remove attributes (and handlers) for attribute names
-      // that don't exist as keys of `newAttrs` and so won't
-      // be visited when traversing it.  (Attributes that
-      // exist in the `newAttrs` object but are `null`
-      // are handled later.)
       const handler = handlers[k];
       const oldValue = handler.value;
       handler.value = null;
       handler.update(elem, oldValue, null);
       delete handlers[k];
+      delete lastValues[k];
     }
   })
 
@@ -373,7 +373,6 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
     const value = newAttrs[k];
     if (!has(handlers, k)) {
       if (value !== null) {
-        // make new handler
         handler = Blaze._makeAttributeHandler(elem, k, value);
         handlers[k] = handler;
       }
@@ -381,11 +380,17 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
       handler = handlers[k];
       oldValue = handler.value;
     }
-    if (oldValue !== value) {
+    // Only update if value has changed (shallow equality or string compare)
+    const last = lastValues[k];
+    const shouldUpdate = last !== value && String(last) !== String(value);
+    if (shouldUpdate) {
       handler.value = value;
       handler.update(elem, oldValue, value);
-      if (value === null)
+      lastValues[k] = value;
+      if (value === null) {
         delete handlers[k];
+        delete lastValues[k];
+      }
     }
   })
 };
