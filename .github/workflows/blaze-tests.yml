@@ -1,0 +1,80 @@
+# This workflow runs tests for the app using a similar setup as the CircleCI config.
+name: Blaze Tests
+
+# Trigger on any push or pull request
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  test-app:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4.2.0
+        with:
+          node-version: 22.15.0
+
+      - name: Install Meteor
+        run: |
+          npx meteor@latest
+          echo "$HOME/.meteor" >> $GITHUB_PATH
+
+      - name: Link packages directory
+        run: ln -sfn ../packages ./packages
+        working-directory: test-app
+
+      - name: Meteor npm install
+        run: meteor npm install
+        working-directory: test-app
+
+      - name: Start meteor test-packages (background)
+        run: |
+          export URL='http://localhost:4096/'
+          meteor test-packages --driver-package test-in-console -p 4096 --exclude "${TEST_PACKAGES_EXCLUDE:-}" > /tmp/meteor_test_output.log 2>&1 &
+          echo $! > /tmp/meteor_test_pid
+        working-directory: test-app
+
+      - name: Wait for test-in-console to be ready
+        run: |
+          for i in {1..60}; do
+            if grep -q 'test-in-console listening' /tmp/meteor_test_output.log; then
+              echo "test-in-console is ready."
+              break
+            fi
+            echo "Waiting for test-in-console... attempt $i"
+            sleep 1
+          done
+          # Fail if the service didn't start
+          if ! grep -q 'test-in-console listening' /tmp/meteor_test_output.log; then
+            echo "test-in-console did not start in time."
+            cat /tmp/meteor_test_output.log # Print the log for debugging
+            exit 1
+          fi
+        shell: bash
+        working-directory: test-app
+
+      - name: Run puppeteerRunner.js
+        run: meteor node puppeteerRunner.js
+        env:
+          URL: http://localhost:4096/
+        working-directory: test-app
+
+      - name: Kill meteor test-packages process
+        if: always()
+        run: |
+          if [ -f /tmp/meteor_test_pid ]; then
+            pkill -TERM -P $(cat /tmp/meteor_test_pid)
+          fi
+        shell: bash
+        working-directory: test-app
