@@ -6,3 +6,4 @@ db.json
 test-app/packages
 node_modules
 package-lock.json
+.env
