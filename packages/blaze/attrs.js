@@ -273,10 +273,16 @@ if (Meteor.isClient) {
   anchorForNormalization = document.createElement('A');
 }
 
+const _protocolCache = new Map(); // Simple cache
 const getUrlProtocol = function (url) {
+  if (_protocolCache.has(url)) {
+    return _protocolCache.get(url);
+  }
   if (Meteor.isClient) {
     anchorForNormalization.href = url;
-    return (anchorForNormalization.protocol || "").toLowerCase();
+    const protocol = (anchorForNormalization.protocol || "").toLowerCase();
+    _protocolCache.set(url, protocol);
+    return protocol;
   } else {
     throw new Error('getUrlProtocol not implemented on the server');
   }
