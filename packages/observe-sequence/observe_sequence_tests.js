@@ -107,9 +107,8 @@ const extend = function(child, parent) {
 const ArraySubclass = (function (superClass) {
   extend(ArraySubclass, superClass);
 
-  function ArraySubclass() {
-    if (arguments.length > 0) {
-      const items = this.slice.call(arguments, 0);
+  function ArraySubclass(...items) {
+    if (items.length > 0) {
       this.splice.apply(this, [0, 0].concat(this.slice.call(items)));
     }
   }

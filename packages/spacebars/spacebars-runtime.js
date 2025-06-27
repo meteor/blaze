@@ -44,17 +44,13 @@ Spacebars.include = function (templateOrFunction, contentFunc, elseFunc) {
 // This is the shared part of Spacebars.mustache and
 // Spacebars.attrMustache, which differ in how they post-process the
 // result.
-Spacebars.mustacheImpl = function (value/*, args*/) {
-  var args = arguments;
+Spacebars.mustacheImpl = function (...args) {
   // if we have any arguments (pos or kw), add an options argument
   // if there isn't one.
   if (args.length > 1) {
     var kw = args[args.length - 1];
     if (! (kw instanceof Spacebars.kw)) {
       kw = Spacebars.kw();
-      // clone arguments into an actual array, then push
-      // the empty kw object.
-      args = Array.prototype.slice.call(arguments);
       args.push(kw);
     } else {
       // For each keyword arg, call it if it's a function
@@ -70,8 +66,8 @@ Spacebars.mustacheImpl = function (value/*, args*/) {
   return Spacebars.call.apply(null, args);
 };
 
-Spacebars.mustache = function (value/*, args*/) {
-  var result = Spacebars.mustacheImpl.apply(null, arguments);
+Spacebars.mustache = function (...args) {
+  var result = Spacebars.mustacheImpl.apply(null, args);
 
   if (result instanceof Spacebars.SafeString)
     return HTML.Raw(result.toString());
@@ -84,8 +80,8 @@ Spacebars.mustache = function (value/*, args*/) {
     return (result == null || result === false) ? null : String(result);
 };
 
-Spacebars.attrMustache = function (value/*, args*/) {
-  var result = Spacebars.mustacheImpl.apply(null, arguments);
+Spacebars.attrMustache = function (...args) {
+  var result = Spacebars.mustacheImpl.apply(null, args);
 
   if (result == null || result === '') {
     return null;
@@ -100,10 +96,8 @@ Spacebars.attrMustache = function (value/*, args*/) {
   }
 };
 
-Spacebars.dataMustache = function (value/*, args*/) {
-  var result = Spacebars.mustacheImpl.apply(null, arguments);
-
-  return result;
+Spacebars.dataMustache = function (...args) {
+  return Spacebars.mustacheImpl.apply(null, args);
 };
 
 // Idempotently wrap in `HTML.Raw`.
@@ -153,13 +147,14 @@ function _thenWithContext(promise, fn) {
 // that there are no args. We check for null before asserting because a user
 // may write a template like {{user.fullNameWithPrefix 'Mr.'}}, where the
 // function will be null until data is ready.
-Spacebars.call = function (value/*, args*/) {
+Spacebars.call = function (...args) {
+  const [value] = args;
   if (typeof value === 'function') {
     // Evaluate arguments by calling them if they are functions.
     var newArgs = [];
     let anyIsPromise = false;
-    for (var i = 1; i < arguments.length; i++) {
-      var arg = arguments[i];
+    for (var i = 1; i < args.length; i++) {
+      var arg = args[i];
       newArgs[i-1] = (typeof arg === 'function' ? arg() : arg);
       anyIsPromise = anyIsPromise || isPromiseLike(newArgs[i-1]);
     }
@@ -170,7 +165,7 @@ Spacebars.call = function (value/*, args*/) {
 
     return value.apply(null, newArgs);
   } else {
-    if (value != null && arguments.length > 1) {
+    if (value != null && args.length > 1) {
       throw new Error("Can't call non-function: " + value);
     }
     return value;
@@ -224,14 +219,15 @@ Spacebars.SafeString.prototype = Handlebars.SafeString.prototype;
 // * If `foo` is falsy now, return `foo`.
 //
 // * Return `foo.bar`, binding it to `foo` if it's a function.
-Spacebars.dot = function (value, id1/*, id2, ...*/) {
-  if (arguments.length > 2) {
+Spacebars.dot = function (...args) {
+  let [value, id1 /*, id2, ...*/] = args;
+  if (args.length > 2) {
     // Note: doing this recursively is probably less efficient than
     // doing it in an iterative loop.
     var argsForRecurse = [];
     argsForRecurse.push(Spacebars.dot(value, id1));
     argsForRecurse.push.apply(argsForRecurse,
-                              Array.prototype.slice.call(arguments, 2));
+                              Array.prototype.slice.call(args, 2));
     return Spacebars.dot.apply(null, argsForRecurse);
   }
 
@@ -250,7 +246,7 @@ Spacebars.dot = function (value, id1/*, id2, ...*/) {
   // `value[id1]` (or `value()[id1]`) is a function.
   // Bind it so that when called, `value` will be placed in `this`.
   return function (/*arguments*/) {
-    return result.apply(value, arguments);
+    return result.apply(value, args);
   };
 };
 

@@ -49,8 +49,8 @@ AttributeHandler.prototype.update = function (element, oldValue, value) {
 
 AttributeHandler.extend = function (options) {
   const curType = this;
-  const subType = function AttributeHandlerSubtype(/*arguments*/) {
-    AttributeHandler.apply(this, arguments);
+  const subType = function AttributeHandlerSubtype(...args) {
+    AttributeHandler.apply(this, args);
   };
   subType.prototype = new curType;
   subType.extend = curType.extend;
@@ -289,9 +289,9 @@ const getUrlProtocol = function (url) {
 // out the 'protocol' property of the attribute.
 const origUpdate = AttributeHandler.prototype.update;
 const UrlHandler = AttributeHandler.extend({
-  update: function (element, oldValue, value) {
+  update: function (...args) {
+    const [element, oldValue, value] = args;
     const self = this;
-    const args = arguments;
 
     if (Blaze._javascriptUrlsAllowed()) {
       origUpdate.apply(self, args);

@@ -14,12 +14,12 @@ const has = (obj, path) => {
   return !!length;
 };
 
-const warn = function () {
+const warn = function (...args) {
   if (ObserveSequence._suppressWarnings) {
     ObserveSequence._suppressWarnings--;
   } else {
     if (typeof console !== 'undefined' && console.warn)
-      console.warn.apply(console, arguments);
+      console.warn.apply(console, args);
 
     ObserveSequence._loggedWarnings++;
   }
