@@ -143,13 +143,13 @@ Tinytest.add(
 
     // One more test, similar to the above, but where `user` is not null but
     // `user.prefixName` is. This test was also broken prior to the fix.
-    var tmpl4 = copyTemplate(baseTmpl);
-    tmpl4.helpers({
+    var tmpl5 = copyTemplate(baseTmpl);
+    tmpl5.helpers({
       user: function () {
         return { prefixName: null };
       },
     });
-    div = renderToDiv(tmpl4);
+    div = renderToDiv(tmpl5);
     test.equal(canonicalizeHtml(div.innerHTML), '');
   }
 );

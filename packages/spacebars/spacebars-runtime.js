@@ -226,8 +226,7 @@ Spacebars.dot = function (...args) {
     // doing it in an iterative loop.
     var argsForRecurse = [];
     argsForRecurse.push(Spacebars.dot(value, id1));
-    argsForRecurse.push.apply(argsForRecurse,
-                              Array.prototype.slice.call(args, 2));
+    argsForRecurse.push.apply(argsForRecurse, args.slice(2));
     return Spacebars.dot.apply(null, argsForRecurse);
   }
 
@@ -245,8 +244,8 @@ Spacebars.dot = function (...args) {
     return result;
   // `value[id1]` (or `value()[id1]`) is a function.
   // Bind it so that when called, `value` will be placed in `this`.
-  return function (/*arguments*/) {
-    return result.apply(value, args);
+  return function (...args1) {
+    return result.apply(value, args1);
   };
 };
 
