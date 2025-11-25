@@ -238,9 +238,14 @@ Blaze.View.prototype.lookup = function (name, _options) {
     const x = data && data[name];
     if (! x) {
       if (lookupTemplate) {
-        throw new Error("No such template: " + name);
+        const error = new Error("No such template: " + name);
+        Blaze._reportException(error, 'Template lookup error:');
+        // Return an error placeholder template instead of throwing
+        return Blaze._errorPlaceholder(name, error);
       } else if (isCalledAsFunction) {
-        throw new Error("No such function: " + name);
+        const error = new Error("No such function: " + name);
+        Blaze._reportException(error, 'Function lookup error:');
+        return null; // Return null instead of throwing for missing functions
       } else if (name.charAt(0) === '@' && ((x === null) ||
                                             (x === undefined))) {
         // Throw an error if the user tries to use a `@directive`
@@ -249,7 +254,9 @@ Blaze.View.prototype.lookup = function (name, _options) {
         // if we fail silently.  On the other hand, we want to
         // throw late in case some app or package wants to provide
         // a missing directive.
-        throw new Error("Unsupported directive: " + name);
+        const error = new Error("Unsupported directive: " + name);
+        Blaze._reportException(error, 'Directive lookup error:');
+        throw error;
       }
     }
     if (! data) {
@@ -257,7 +264,9 @@ Blaze.View.prototype.lookup = function (name, _options) {
     }
     if (typeof x !== 'function') {
       if (isCalledAsFunction) {
-        throw new Error("Can't call non-function: " + x);
+        const error = new Error("Can't call non-function: " + x);
+        Blaze._reportException(error, 'Function call error:');
+        throw error;
       }
       return x;
     }
