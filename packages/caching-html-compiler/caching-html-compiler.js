@@ -72,11 +72,37 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
       return this.tagHandlerFunc(tags, inputFile.hmrAvailable && inputFile.hmrAvailable());
     } catch (e) {
       if (e instanceof TemplatingTools.CompileError) {
+        // Report the error to Meteor's build system (shows in terminal)
         inputFile.error({
           message: e.message,
           line: e.line,
         });
-        return null;
+        
+        // Return a result that will display the error on the client side
+        // This ensures the error is visible in the browser's error overlay
+        const errorMessage = e.message.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
+        const errorJs = `
+// Blaze template compilation error
+Meteor.startup(function() {
+  var error = new Error('Template compilation error in ${inputPath}${e.line ? ' (line ' + e.line + ')' : ''}: ${errorMessage}');
+  error.file = '${inputPath}';
+  error.line = ${e.line || 'null'};
+  
+  // Try to use Blaze error indicator if available
+  if (typeof Blaze !== 'undefined' && Blaze._errorIndicator && typeof Blaze._errorIndicator.addError === 'function') {
+    Blaze._errorIndicator.addError(error, 'Template compilation failed:');
+  }
+  
+  // Also log to console for visibility
+  console.error('[Blaze Compile Error] ' + error.message);
+});
+`;
+        return {
+          head: '',
+          body: '',
+          js: errorJs,
+          bodyAttrs: {}
+        };
       }
         throw e;
     }
