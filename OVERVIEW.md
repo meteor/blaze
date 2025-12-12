@@ -1,8 +1,12 @@
 # Overview
 
-Provide a detailed architecture overview for Blaze and the related packages.
+Provide a detailed architecture overview for Blaze and the related packages. In order to have an easier entry for newcomers it is essential to provide a starting point for understanding Blaze.
 
-In order to have an easier entry for newcomers it is essential to provide a starting point for understanding Blaze.
+## Stages
+
+The Blaze package ecosystem operates in two stages: build and runtime.
+Duing build...
+During runtime...
 
 ## All Blaze packages and their dependencies
 
