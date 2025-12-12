@@ -379,9 +379,9 @@ Blaze.render(view, document.body);
 ```
 Template (Blueprint)
     ↓ constructView()
-Template Instance (Specific instantiation)
-    ↓ contains
 View (Low-level rendering primitive)
+    ↑ referenced by
+Template Instance (Specific instantiation, created alongside View)
     ↓ renders to
 HTMLjs (Intermediate representation)
     ↓ materializes to
@@ -393,6 +393,7 @@ DOM Nodes (Actual browser elements)
 - **Template** is the _blueprint_ that defines structure and behavior  
 - **Template Instance** is a _specific occurrence_ of that template with its own state
 - **View** is the _underlying mechanism_ that handles reactive rendering
+- Template Instance and View are created together; the instance references the view via `instance.view`
 
 ## All Blaze packages and their dependencies
 
