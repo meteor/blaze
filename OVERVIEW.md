@@ -211,6 +211,189 @@ Template function called
            → Selective DOM updates (observe-sequence for {{#each}})
 ```
 
+## Key Terms in the Blaze Ecosystem
+
+Understanding these core concepts is essential for working with Blaze:
+
+### Spacebars
+
+**Spacebars** is the template language used by Blaze. It's a variant of Handlebars designed specifically for reactive Meteor applications. Spacebars provides:
+
+- **Mustache-style syntax** - Uses double curly braces `{{ }}` for dynamic content
+- **Block helpers** - Control flow structures like `{{#if}}`, `{{#each}}`, `{{#with}}`, `{{#unless}}`
+- **Data helpers** - Access data and call helper functions with `{{helperName arg}}`
+- **Template inclusion** - Include other templates with `{{> templateName}}`
+- **Reactive expressions** - All expressions automatically re-evaluate when their dependencies change
+
+**Examples:**
+```html
+{{! Simple data output }}
+<p>Hello {{username}}</p>
+
+{{! Conditional rendering }}
+{{#if isLoggedIn}}
+  <p>Welcome back!</p>
+{{else}}
+  <p>Please log in</p>
+{{/if}}
+
+{{! Iteration }}
+{{#each items}}
+  <li>{{name}}</li>
+{{/each}}
+
+{{! Template inclusion }}
+{{> userProfile}}
+```
+
+At build time, Spacebars templates are compiled by the `spacebars-compiler` package into JavaScript functions. At runtime, the `spacebars` package provides the helper functions and runtime support needed to execute the compiled templates.
+
+### Template
+
+A **Template** is a reusable component that defines both the structure (HTML) and behavior (helpers, events) of a UI element. Templates are the primary way developers structure their Blaze applications.
+
+**Key aspects:**
+
+- **Definition** - Templates are defined in `.html` files using `<template name="templateName">` tags
+- **JavaScript object** - Each template becomes a `Blaze.Template` instance accessible as `Template.templateName`
+- **Render function** - Contains compiled code that generates HTMLjs structures
+- **Helpers** - Custom functions that provide data or logic: `Template.myTemplate.helpers({ ... })`
+- **Event handlers** - DOM event listeners: `Template.myTemplate.events({ 'click button': function() { ... } })`
+- **Lifecycle hooks** - Callbacks for creation, rendering, and destruction:
+  - `onCreated` - Called when template instance is created
+  - `onRendered` - Called when template is inserted into the DOM
+  - `onDestroyed` - Called when template is removed from the DOM
+
+**Example:**
+```html
+<template name="todoItem">
+  <li class="{{#if completed}}done{{/if}}">
+    {{text}}
+    <button class="delete">Delete</button>
+  </li>
+</template>
+```
+
+```javascript
+Template.todoItem.helpers({
+  completed: function() {
+    return this.done === true;
+  }
+});
+
+Template.todoItem.events({
+  'click .delete': function() {
+    Todos.remove(this._id);
+  }
+});
+```
+
+### Template Instance
+
+A **Template Instance** (or `TemplateInstance`) represents a specific instantiation of a template. When a template is rendered, a new instance is created with its own state, data context, and lifecycle.
+
+**Key aspects:**
+
+- **Class** - `Blaze.TemplateInstance` object accessible via `Template.instance()` in helpers and event handlers
+- **Instance-specific state** - Can store reactive variables and state: `instance.myVar = new ReactiveVar()`
+- **View reference** - Contains a reference to the underlying `Blaze.View` via `instance.view`
+- **Data context** - Access to the data context via `instance.data`
+- **DOM nodes** - Direct access to the template's DOM: `instance.firstNode`, `instance.lastNode`
+- **Helper methods** - Convenience methods like `instance.$()` for jQuery selection within the template
+- **Subscriptions** - Can manage Meteor subscriptions: `instance.subscribe('publication')`
+
+**Example:**
+```javascript
+Template.myTemplate.onCreated(function() {
+  // 'this' is the template instance
+  this.counter = new ReactiveVar(0);
+  this.subscribe('someData');
+});
+
+Template.myTemplate.helpers({
+  count: function() {
+    const instance = Template.instance();
+    return instance.counter.get();
+  }
+});
+
+Template.myTemplate.events({
+  'click button': function(event, instance) {
+    // instance is passed as second parameter
+    const currentCount = instance.counter.get();
+    instance.counter.set(currentCount + 1);
+  }
+});
+```
+
+Each time a template is used in your UI (e.g., `{{> myTemplate}}`), a new `TemplateInstance` is created with its own independent state.
+
+### View
+
+A **View** is the fundamental building block of Blaze's reactive rendering system. Views represent reactive regions of the DOM and manage the lifecycle of rendered content.
+
+**Key aspects:**
+
+- **Low-level primitive** - `Blaze.View` is the underlying mechanism that powers Templates
+- **Render function** - Each View has a render function that returns HTMLjs content
+- **Parent-child hierarchy** - Views form a tree structure via `view.parentView`
+- **Lifecycle management** - Views go through creation, rendering, and destruction phases
+- **Reactive computation** - Views re-render automatically when their dependencies change
+- **DOM tracking** - When rendered, Views track their DOM extent using a `DOMRange`
+- **Named views** - Views can have names like "with", "if", "each", or "Template.foo"
+
+**View lifecycle:**
+
+1. **Created** - View is constructed but not yet initialized
+2. **Rendered** - View's render function is called, producing HTMLjs
+3. **Materialized** - HTMLjs is converted to actual DOM nodes
+4. **Attached** - DOM nodes are inserted into the document
+5. **Destroyed** - View is removed from DOM and cleaned up
+
+**Relationship to Templates:**
+
+- Templates use Views internally: when you render a template, it creates a View
+- `Template.myTemplate.constructView()` creates a View from a Template
+- The template instance's `view` property is the underlying `Blaze.View` object
+- You rarely create Views directly; they're usually created by Templates or Blaze helpers
+
+**Example of direct View usage (advanced):**
+```javascript
+// Most developers work with Templates, not Views directly
+const view = Blaze.View('myView', function() {
+  return HTML.DIV('Hello from a View');
+});
+
+Blaze.render(view, document.body);
+```
+
+**Common View types in Blaze:**
+
+- `Template.foo` - Views created from templates
+- `with` - Views that establish a new data context (`{{#with}}`)
+- `if`/`unless` - Conditional rendering views (`{{#if}}`)
+- `each` - Iteration views (`{{#each}}`)
+
+### Relationship Between Terms
+
+```
+Template (Blueprint)
+    ↓ constructView()
+Template Instance (Specific instantiation)
+    ↓ contains
+View (Low-level rendering primitive)
+    ↓ renders to
+HTMLjs (Intermediate representation)
+    ↓ materializes to
+DOM Nodes (Actual browser elements)
+```
+
+**Summary:**
+- **Spacebars** is the _language_ you write templates in
+- **Template** is the _blueprint_ that defines structure and behavior  
+- **Template Instance** is a _specific occurrence_ of that template with its own state
+- **View** is the _underlying mechanism_ that handles reactive rendering
+
 ## All Blaze packages and their dependencies
 
 ### Summary of Package Interactions
