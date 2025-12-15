@@ -48,10 +48,6 @@ jobs:
       # in order to accommodate slower CI environments
       - name: Wait for test-in-console to be ready
         run: |
-          if lsof -i :4096; then
-            echo "Port 4096 is in use. Exiting."
-            exit 1
-          fi
 
           for i in {1..360}; do
             if grep -q 'test-in-console listening' /tmp/meteor_test_output.log; then
