@@ -109,7 +109,7 @@ const ArraySubclass = (function (superClass) {
 
   function ArraySubclass(...items) {
     if (items.length > 0) {
-      this.splice.apply(this, [0, 0].concat(this.slice.call(items)));
+      this.splice.apply(this, [0, 0].concat(items.slice()));
     }
   }
 
