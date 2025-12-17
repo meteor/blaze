@@ -53,9 +53,9 @@ Blaze._wrapCatchingExceptions = function (f, where) {
   if (typeof f !== 'function')
     return f;
 
-  return function (...arguments) {
+  return function (...args) {
     try {
-      return f.apply(this, arguments);
+      return f.apply(this, args);
     } catch (e) {
       Blaze._reportException(e, 'Exception in ' + where + ':');
     }

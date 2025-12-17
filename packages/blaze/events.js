@@ -48,11 +48,12 @@ const HandlerRec = function (elem, type, selector, handler, recipient) {
   // It's also important that the closure have access to
   // `this` when it is not called with it set.
   this.delegatedHandler = (function (h) {
-    return function (evt) {
+    return function (...args) {
+      const [evt] = args;
       if ((! h.selector) && evt.currentTarget !== evt.target)
         // no selector means only fire on target
         return;
-      return h.handler.apply(h.recipient, arguments);
+      return h.handler.apply(h.recipient, args);
     };
   })(this);
 

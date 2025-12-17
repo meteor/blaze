@@ -14,8 +14,8 @@ var extendTemplateWithInit = function (template, initFunc) {
     template.viewName + '-extended',
     template.renderFunction
   );
-  tmpl.constructView = function (/*args*/) {
-    var view = Template.prototype.constructView.apply(this, arguments);
+  tmpl.constructView = function (...args) {
+    var view = Template.prototype.constructView.apply(this, args);
     initFunc(view);
     return view;
   };
@@ -143,13 +143,13 @@ Tinytest.add(
 
     // One more test, similar to the above, but where `user` is not null but
     // `user.prefixName` is. This test was also broken prior to the fix.
-    var tmpl4 = copyTemplate(baseTmpl);
-    tmpl4.helpers({
+    var tmpl5 = copyTemplate(baseTmpl);
+    tmpl5.helpers({
       user: function () {
         return { prefixName: null };
       },
     });
-    div = renderToDiv(tmpl4);
+    div = renderToDiv(tmpl5);
     test.equal(canonicalizeHtml(div.innerHTML), '');
   }
 );
@@ -2576,11 +2576,11 @@ Tinytest.add(
     var args = ['param1', 'param2', { option: 1 }, 1, 2, 3];
 
     tmpl.events({
-      someCustomEvent: function (event, template) {
+      someCustomEvent: function (...args1) {
         var i;
         for (i = 0; i < args.length; i++) {
           // expect the arguments to be just after template
-          test.equal(arguments[i + 2], args[i]);
+          test.equal(args1[i + 2], args[i]);
         }
         captured = true;
       },

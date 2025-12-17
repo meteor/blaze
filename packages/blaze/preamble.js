@@ -39,14 +39,13 @@ const nativeBind = Function.prototype.bind;
 // An implementation of _.bind which allows better optimization.
 // See: https://github.com/petkaantonov/bluebird/wiki/Optimization-killers#3-managing-arguments
 if (nativeBind) {
-  Blaze._bind = function (func, obj, ...rest) {
-    if (arguments.length === 2) {
+  Blaze._bind = function (...args) {
+    const [func, obj, ...rest] = args
+    if (args.length === 2) {
       return nativeBind.call(func, obj);
     }
 
-    const args = [obj, ...rest];
-
-    return nativeBind.apply(func, args);
+    return nativeBind.apply(func, [obj, ...rest]);
   };
 }
 else {

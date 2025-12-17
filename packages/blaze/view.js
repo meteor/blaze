@@ -911,11 +911,12 @@ Blaze._addEventMap = function (view, eventMap, thisInHandler) {
         const selector = parts.join(' ');
         handles.push(Blaze._EventSupport.listen(
           element, newEvents, selector,
-          function (evt) {
+          function (...args) {
+            const [evt] = args
             if (! range.containsElement(evt.currentTarget, selector, newEvents))
               return null;
             const handlerThis = thisInHandler || this;
-            const handlerArgs = arguments;
+            const handlerArgs = args;
             return Blaze._withCurrentView(view, function () {
               return handler.apply(handlerThis, handlerArgs);
             });
