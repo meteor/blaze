@@ -1,14 +1,13 @@
 # This workflow runs tests for the app using a similar setup as the CircleCI config.
 name: Blaze Tests
 
-# Trigger on any push or pull request
+# Trigger on any pull request
+# and on pushes to the master branch
 on:
   push:
     branches:
-      - '**'
+      - master
   pull_request:
-    branches:
-      - '**'
 
 jobs:
   test-app:
@@ -16,14 +15,14 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v4.2.0
+        uses: actions/setup-node@v6
         with:
-          node-version: 22.15.0
+          node-version: 22
 
       - name: Install Meteor
         run: |
@@ -45,9 +44,12 @@ jobs:
           echo $! > /tmp/meteor_test_pid
         working-directory: test-app
 
+      # Wait for test-in-console to be ready for up to 6 minutes
+      # in order to accommodate slower CI environments
       - name: Wait for test-in-console to be ready
         run: |
-          for i in {1..60}; do
+
+          for i in {1..360}; do
             if grep -q 'test-in-console listening' /tmp/meteor_test_output.log; then
               echo "test-in-console is ready."
               break
