@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ElementAttributesUpdater Benchmark (_lastValues)</title>
+<style>
+  body { font-family: sans-serif; padding: 20px; }
+  pre { background-color: #f4f4f4; padding: 10px; border: 1px solid #ccc; }
+  .result { margin-bottom: 10px; }
+  table { border-collapse: collapse; margin-top: 10px; width: 100%; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+  th { background-color: #f0f0f0; }
+  td.num { text-align: right; }
+  td.improvement { text-align: right; }
+</style>
+</head>
+<body>
+
+<h1>ElementAttributesUpdater Benchmark (<code>_lastValues</code> Cache)</h1>
+<p>Open your browser's developer console to see detailed timing. Results will also appear below.</p>
+<div id="status"></div>
+<div id="table-container"></div>
+
+<script>
+  // Minimal Blaze Preamble for benchmark
+  Blaze = {};
+
+  Blaze._warn = function (msg) {
+    msg = 'Warning: ' + msg;
+    if ((typeof console !== 'undefined') && console.warn) {
+      console.warn(msg);
+    }
+  };
+
+  Blaze._makeAttributeHandler = function (elem, name, value) {
+    // Simplified for benchmark: always return SimpleAttributeHandler
+    return new SimpleAttributeHandler(name, value);
+  };
+  // --- SimpleAttributeHandler for benchmark ---
+  function SimpleAttributeHandler(name, value) {
+    this.name = name;
+    this.value = value; // This stores the current value as known by the handler
+  }
+  SimpleAttributeHandler.prototype.update = function (element, oldValue, value) {
+    // In a real scenario, this could be more complex.
+    // For benchmark, we just want to ensure it's called or not.
+    if (value === null) {
+      if (oldValue !== null) element.removeAttribute(this.name);
+    } else {
+      element.setAttribute(this.name, value);
+    }
+    // console.log(`Updated ${this.name} on ${element.id}: ${oldValue} -> ${value}`);
+  };
+
+  // --- ElementAttributesUpdater - Original (simulated, without cache) ---
+  function ElementAttributesUpdater_Original(elem) {
+    this.elem = elem;
+    this.handlers = {};
+    // NO _lastValues cache
+  }
+  ElementAttributesUpdater_Original.prototype.update = function(newAttrs) {
+    const elem = this.elem;
+    const handlers = this.handlers; // Initialized as {} in constructor
+
+    // Phase 1: Remove or update attributes that are currently managed by handlers
+    Object.keys(handlers).forEach(attrName => {
+        if (!Object.prototype.hasOwnProperty.call(newAttrs, attrName) || newAttrs[attrName] === null) {
+            // Attribute is in handlers, but not in newAttrs or is null in newAttrs: Remove it
+            // "was_set" acts as a placeholder for any previous non-null value to ensure removal logic is triggered.
+            handlers[attrName].update(elem, "was_set", null); 
+            delete handlers[attrName]; // Remove the handler
+        } else {
+            // Attribute is in handlers and also in newAttrs (and not null): Update it
+            const newValue = newAttrs[attrName];
+            // For an update in a non-cached version, we call the handler's update method.
+            // "was_set" is a placeholder for the old value. The handler itself will manage the update.
+            handlers[attrName].update(elem, "was_set", newValue); 
+        }
+    });
+
+    // Phase 2: Add new attributes (those in newAttrs but not yet in handlers)
+    Object.keys(newAttrs).forEach(attrName => {
+        if (!Object.prototype.hasOwnProperty.call(handlers, attrName)) {
+            // This is a new attribute.
+            const newValue = newAttrs[attrName];
+            if (newValue !== null) { // Only add if the new value is not null
+                const handler = Blaze._makeAttributeHandler(elem, attrName, newValue);
+                handlers[attrName] = handler;
+                // For an initial set, the oldValue is null.
+                handler.update(elem, null, newValue); 
+            }
+        }
+    });
+  };
+
+  // --- ElementAttributesUpdater - Cached (current version from attrs.js) ---
+  function ElementAttributesUpdater_Cached(elem) {
+    this.elem = elem;
+    this.handlers = {};
+    this._lastValues = {}; // THE CACHE
+  }
+  ElementAttributesUpdater_Cached.prototype.update = function(newAttrs) {
+    const elem = this.elem;
+    const handlers = this.handlers;
+    const lastValues = this._lastValues; // USE THE CACHE
+
+    // Loop 1: Remove attributes not in newAttrs
+    Object.getOwnPropertyNames(handlers).forEach((k) => {
+      if (!Object.prototype.hasOwnProperty.call(newAttrs, k)) {
+        const handler = handlers[k];
+        const valueCurrentlyOnHandler = handler.value; // This was also the lastValue
+        handler.value = null;
+        handler.update(elem, valueCurrentlyOnHandler, null);
+        delete handlers[k];
+        delete lastValues[k]; // Clear from cache
+      }
+    });
+
+    // Loop 2: Add/Update attributes from newAttrs
+    Object.getOwnPropertyNames(newAttrs).forEach((k) => {
+      let handler = null;
+      let valueCurrentlyOnHandler = null; 
+      const newValueForAttr = newAttrs[k];
+
+      if (!Object.prototype.hasOwnProperty.call(handlers, k)) {
+        if (newValueForAttr !== null) {
+          handler = new SimpleAttributeHandler(k, newValueForAttr); // Sets handler.value
+          handlers[k] = handler;
+          // valueCurrentlyOnHandler remains null for the update call
+        }
+      } else {
+        handler = handlers[k];
+        valueCurrentlyOnHandler = handler.value;
+      }
+
+      if (handler) { // Proceed only if a handler exists or was created
+        const lastCachedValue = lastValues[k]; // Read from cache
+        // The crucial check using _lastValues
+        const shouldUpdate = (lastCachedValue !== newValueForAttr && String(lastCachedValue) !== String(newValueForAttr)); // Changed || to &&
+
+        if (shouldUpdate) {
+          handler.value = newValueForAttr;
+          handler.update(elem, valueCurrentlyOnHandler, newValueForAttr);
+          lastValues[k] = newValueForAttr; // Write to cache
+
+          if (newValueForAttr === null) {
+            delete handlers[k];
+            delete lastValues[k];
+          }
+        }
+      }
+    });
+  };
+
+  // --- Benchmark Workload & Iteration Logic ---
+  function runUpdaterSequence(updater) {
+    const sequence = [
+      { id: "1", "data-text": "initial" }, // 1. Initial
+      { id: "1", "data-text": "initial" }, // 2. Same (cache hit for Cached)
+      { id: "1", "data-text": "changed", "new-attr": "added" }, // 3. Change, Add
+      { id: "1", "new-attr": "added" }, // 4. Remove data-text
+      { id: "1", "new-attr": null, "another": "val" }, // 5. Set to null, add another
+      { id: "1", "another": "val" }, // 6. new-attr is gone
+      { id: "1", "another": "val" }, // 7. Same again
+      { "data-final": "done" } // 8. Completely different set (id removed)
+    ];
+    for (const attrs of sequence) {
+      updater.update(attrs);
+    }
+  }
+
+  function runBenchmarkIteration(UpdaterConstructor, description, statusElement, suppressConsoleLog = false) {
+    const testElement = document.createElement('div');
+    // Assign unique ID for potential debugging, though not strictly needed for logic
+    testElement.id = description.replace(/\s+/g, '') + "_" + Date.now(); // Corrected regex replacement string 
+    const updater = new UpdaterConstructor(testElement);
+    
+    const workloadIterations = 5000; // Number of times to run the sequence
+    
+    console.time(description);
+    const startTime = performance.now();
+
+    for (let i = 0; i < workloadIterations; i++) {
+      runUpdaterSequence(updater);
+    }
+
+    const endTime = performance.now();
+    console.timeEnd(description);
+    const duration = endTime - startTime;
+
+    if (!suppressConsoleLog) {
+      // console.log(`Finished ${description}: ${duration.toFixed(3)} ms`);
+    }
+    return duration;
+  }
+
+  // --- Table and Summary Generation (similar to getUrlProtocol benchmark) ---
+  function generateResultsTable(results, container) {
+    let tableHTML = `
+        <h2>Benchmark Results (${results.length} Iterations)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Iteration</th>
+                    <th>Original Time (ms)</th>
+                    <th>Cached Time (ms)</th>
+                    <th>Improvement (%)</th>
+                </tr>
+            </thead>
+            <tbody>`;
+    results.forEach(res => {
+        tableHTML += `
+            <tr>
+                <td class="num">${res.iteration}</td>
+                <td class="num">${res.originalTime.toFixed(3)}</td>
+                <td class="num">${res.cachedTime.toFixed(3)}</td>
+                <td class="improvement" style="color: ${res.improvement >= 0 ? 'green' : 'red'};">${res.improvement.toFixed(2)}%</td>
+            </tr>`;
+    });
+    tableHTML += `
+            </tbody>
+        </table>`;
+    container.innerHTML = tableHTML;
+  }
+
+  function displaySummary(results, summaryContainer) {
+    if (results.length === 0) {
+        summaryContainer.innerHTML += "<p>No results to summarize.</p>";
+        return;
+    }
+    const totalOriginalTime = results.reduce((sum, res) => sum + res.originalTime, 0);
+    const totalCachedTime = results.reduce((sum, res) => sum + res.cachedTime, 0);
+    const avgOriginalTime = totalOriginalTime / results.length;
+    const avgCachedTime = totalCachedTime / results.length;
+    let overallImprovement = 0;
+    if (totalOriginalTime > 0) {
+        overallImprovement = ((totalOriginalTime - totalCachedTime) / totalOriginalTime * 100);
+    } else if (totalCachedTime > 0) {
+        overallImprovement = -Infinity; 
+    }
+
+    const summaryHTML = `
+        <hr style="margin-top: 20px;">
+        <h3>Overall Summary (Average of ${results.length} iterations)</h3>
+        <p>Average Original Time: ${avgOriginalTime.toFixed(3)} ms</p>
+        <p>Average Cached Time: ${avgCachedTime.toFixed(3)} ms</p>
+        <p><strong>Overall Average Improvement: <span style="color: ${overallImprovement >= 0 ? 'green' : 'red'};">${overallImprovement.toFixed(2)}%</span></strong></p>
+        ${overallImprovement >= 0 ? "<p>(Cached version is faster on average)</p>" : "<p>(Cached version is slower or no improvement on average)</p>"}
+    `;
+    summaryContainer.innerHTML += summaryHTML; // Append to existing content
+    console.log(`Average Original Time: ${avgOriginalTime.toFixed(3)} ms`);
+    console.log(`Average Cached Time: ${avgCachedTime.toFixed(3)} ms`);
+    console.log(`Overall Average Improvement: ${overallImprovement.toFixed(2)}%`);
+  }
+
+  // --- Run Benchmarks ---
+  document.addEventListener('DOMContentLoaded', () => {
+    const statusDiv = document.getElementById('status');
+    const tableContainerDiv = document.getElementById('table-container');
+    statusDiv.innerHTML = '<p>Preparing benchmarks...</p>';
+
+    const numberOfBenchmarkSeries = 10; // How many times to run the original vs cached pair
+    const allSeriesResults = [];
+
+    // Warm-up runs (suppress console output for these specific calls if desired)
+    runBenchmarkIteration(ElementAttributesUpdater_Original, "Warm-up Original", statusDiv, true);
+    runBenchmarkIteration(ElementAttributesUpdater_Cached, "Warm-up Cached", statusDiv, true);
+
+    setTimeout(async () => { 
+        statusDiv.innerHTML = `<p>Running ${numberOfBenchmarkSeries} benchmark series...</p>`;
+
+        for (let i = 1; i <= numberOfBenchmarkSeries; i++) {
+            console.log("Starting series " + i + "...");
+            statusDiv.innerHTML = "<p>Running benchmark series " + i + " of " + numberOfBenchmarkSeries + "...</p>";
+
+            const timeBefore = runBenchmarkIteration(ElementAttributesUpdater_Original, "Original - Series " + i, statusDiv, true);
+            const timeAfter = runBenchmarkIteration(ElementAttributesUpdater_Cached, "Cached - Series " + i, statusDiv, true);
+
+            let improvement = 0;
+            if (timeBefore > 0) {
+                improvement = ((timeBefore - timeAfter) / timeBefore * 100);
+            } else if (timeAfter > 0) { 
+                improvement = -Infinity; 
+            }
+            allSeriesResults.push({ iteration: i, originalTime: timeBefore, cachedTime: timeAfter, improvement: improvement });
+            
+            console.log("Finished series " + i + ": Original=" + timeBefore.toFixed(3) + "ms, Cached=" + timeAfter.toFixed(3) + "ms");
+            // Optional: Brief pause to allow UI to update if many iterations
+            // await new Promise(resolve => setTimeout(resolve, 10)); 
+        }
+        statusDiv.innerHTML = '<p>Benchmark series complete. Generating results...</p>';
+        generateResultsTable(allSeriesResults, tableContainerDiv);
+        displaySummary(allSeriesResults, tableContainerDiv); 
+        statusDiv.innerHTML = '<p>Benchmark complete. Results are shown above and in the console.</p>';
+
+    }, 100); // Small delay before starting the actual benchmark runs
+  });
+
+</script>
+
+</body>
+</html>

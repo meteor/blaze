@@ -19,6 +19,9 @@
     "meteor-node-stubs": "^1.2.17",
     "puppeteer": "^24.8.2"
   },
+  "meteor": {
+    "modern": true
+  },
   "devDependencies": {
     "@quave/eslint-config-quave": "^3.0.0"
   },
