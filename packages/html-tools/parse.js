@@ -47,10 +47,13 @@ export function parseFragment(input, options) {
 
     var posBefore = scanner.pos;
 
+    var endTag;
+    var parseError;
     try {
-      var endTag = getHTMLToken(scanner);
+      endTag = getHTMLToken(scanner);
     } catch (e) {
-      // ignore errors from getTemplateTag
+      // Save the error - we may need to report it if we can't provide a better one
+      parseError = e;
     }
 
     // XXX we make some assumptions about shouldStop here, like that it
@@ -68,8 +71,12 @@ export function parseFragment(input, options) {
 
     // If no "shouldStop" option was provided, we should have consumed the whole
     // input.
-    if (! shouldStop)
+    if (! shouldStop) {
+      // If we captured a parse error earlier, throw it instead of a generic "Expected EOF"
+      if (parseError)
+        throw parseError;
       scanner.fatal("Expected EOF");
+    }
   }
 
   return result;

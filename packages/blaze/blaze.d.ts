@@ -123,5 +123,28 @@ declare module 'meteor/blaze' {
     function toHTML(templateOrView: Template | View): string;
 
     function toHTMLWithData(templateOrView: Template | View, data: Object | Function): string;
+
+    /**
+     * Enable or disable the visual error indicator for Blaze errors.
+     * @param enabled Whether to enable the error indicator (default: true)
+     */
+    function showErrorIndicator(enabled?: boolean): void;
+
+    /**
+     * Clear all errors from the error indicator.
+     */
+    function clearErrors(): void;
+
+    /**
+     * Get the current list of Blaze errors.
+     * @returns Array of error objects
+     */
+    function getErrors(): Array<{
+      id: number;
+      message: string;
+      error: string;
+      stack: string;
+      time: string;
+    }>;
   }
 }

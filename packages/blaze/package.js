@@ -1,7 +1,7 @@
 Package.describe({
   name: 'blaze',
   summary: "Meteor Reactive Templating library",
-  version: '3.0.2',
+  version: '3.1.0',
   git: 'https://github.com/meteor/blaze.git'
 });
 
@@ -52,6 +52,13 @@ Package.onUse(function (api) {
     'template.js',
     'backcompat.js'
   ]);
+
+  // Error indicator for development - provides visual error feedback
+  // with inline placeholders for missing templates. Client-only and
+  // automatically disabled in production. See errorIndicator.js for details.
+  api.addFiles([
+    'errorIndicator.js'
+  ], 'client');
   // Maybe in order to work properly user will need to have Jquery typedefs
   api.addAssets('blaze.d.ts', 'server');
 });
