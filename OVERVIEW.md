@@ -1,37 +1,42 @@
-# Overview
+# Blaze Architecture Overview
 
-This document provides a detailed architecture overview of Blaze and its related packages, offering a starting point for newcomers to understand how the system works.
+Blaze transforms HTML templates into dynamic, reactive user interfaces.
+This document provides a detailed architecture overview of Blaze and its related packages, offering a starting point for newcomers to understand how the engine works.
+This is crucial in order to contribute effectively to the Blaze codebase or build advanced features on top of it.
 
 ## High-Level Architecture
 
-Blaze is a reactive templating library that transforms HTML templates into dynamic, reactive user interfaces. The architecture consists of two major components:
+Blaze is designed as a modular package ecosystem, where each package has a specific responsibility.
+Packages interact through well-defined interfaces, with some packages operating exclusively during the build phase, 
+others exclusively at runtime, and some spanning both phases.
 
-1. **Template Compiler** - Compiles template files (`.html`) into JavaScript code at build time
+From the highest level view, the architecture consists of two major components:
+
+1. **Template Compilation (Build)** - Parses and compiles template files (`.html` + `.js`) into JavaScript code at build time
 2. **Reactive Runtime** - Manages DOM rendering and reactivity at runtime, responding to data changes automatically
 
-The system is designed as a modular ecosystem where each package has a specific responsibility. Packages interact through well-defined interfaces, with some packages operating exclusively during the build phase, others exclusively at runtime, and some spanning both phases.
+![package overview](https://raw.githubusercontent.com/meteor/blaze/architecture/images/architecture_packages.svg)
 
-## Stages
-
-The Blaze package ecosystem operates in two distinct stages:
-
-### Build Stage
+## Build Stage
 
 During the build stage, template files are processed and compiled into executable JavaScript:
 
-1. **HTML files are scanned** (`html-tools`, `templating-tools`) - The build system reads `.html` files and tokenizes them into processable structures
-2. **Templates are parsed** (`spacebars-compiler`) - Spacebars syntax (e.g., `{{#if}}`, `{{#each}}`) is parsed and analyzed
-3. **Code is generated** (`spacebars-compiler`, `templating-tools`) - Templates are compiled into JavaScript functions that can render and update the DOM
-4. **Compiled code is bundled** - The generated JavaScript is included in the application bundle for runtime execution
+1. **HTML files are picked up** (`templating-compiler`) - The build system identifies `.html` files containing templates
+2. **HTML files are scanned** (`html-tools`, `templating-tools`) - The build system reads `.html` files and tokenizes them into processable structures
+3. **Templates are parsed** (`spacebars-compiler`) - Spacebars syntax (e.g., `{{#if}}`, `{{#each}}`) is parsed and analyzed
+4. **Code is generated** (`spacebars-compiler`, `templating-tools`) - Templates are compiled into JavaScript functions that can render and update the DOM
+5. **Compiled code is bundled** - The generated JavaScript is included in the application bundle for runtime execution
 
 **Key packages in build stage:**
-- `templating-compiler` - Build plugin that orchestrates the compilation process
-- `caching-html-compiler` - Provides caching infrastructure for efficient compilation
-- `templating-tools` - Utility functions for scanning and processing HTML files
-- `spacebars-compiler` - Compiles Spacebars template syntax into JavaScript
-- `html-tools` - Tokenizes and parses HTML with support for template extensions
+- [`templating-compiler`](./packages/templating-compiler) - Build plugin that orchestrates the compilation process
+- [`caching-html-compiler`](./packages/caching-html-compiler) - Provides caching infrastructure for efficient compilation
+- [`templating-tools`](./packages/templating-tools) - Utility functions for scanning and processing HTML files
+- [`spacebars-compiler`](./packages/spacebars-compiler) - Compiles Spacebars template syntax into JavaScript
+- [`html-tools`](./packages/html-tools) - Tokenizes and parses HTML with support for template extensions
 
-### Runtime Stage
+
+
+## Runtime Stage
 
 During runtime, the compiled templates execute to create and manage reactive DOM:
 
@@ -394,44 +399,3 @@ DOM Nodes (Actual browser elements)
 - **Template Instance** is a _specific occurrence_ of that template with its own state
 - **View** is the _underlying mechanism_ that handles reactive rendering
 - Template Instance and View are created together; the instance references the view via `instance.view`
-
-## All Blaze packages and their dependencies
-
-### Summary of Package Interactions
-
-The Blaze architecture follows a clear separation of concerns:
-
-1. **Build-time packages** process source files and generate code
-   - `templating-compiler` orchestrates the build
-   - `caching-html-compiler` provides caching infrastructure
-   - `templating-tools` scans and processes HTML
-   - `html-tools` tokenizes HTML
-   - `spacebars-compiler` compiles Spacebars to JavaScript
-   - `htmljs` provides the intermediate representation
-
-2. **Runtime packages** execute the compiled code and manage the UI
-   - `blaze` is the core rendering engine
-   - `templating-runtime` provides the Template API
-   - `spacebars` provides runtime helper support
-   - `observe-sequence` tracks collection changes
-   - `htmljs` serves as the intermediate representation
-
-3. **Integration packages** bridge the build and runtime worlds
-   - `templating` combines build + runtime
-   - `blaze-html-templates` is the user-facing package
-
-**Key Insight:** The clear separation between build and runtime allows Blaze to:
-- Ship minimal code to the client (no compiler code needed at runtime)
-- Optimize templates at build time
-- Provide fast runtime performance with pre-compiled templates
-- Support different template syntaxes through pluggable compilers
-
-![all packages](https://raw.githubusercontent.com/jankapunkt/blaze/architecture/images/architecture_packages.svg)
-
-## Package `templating-tools`
-
-![package templating-tools](https://raw.githubusercontent.com/jankapunkt/blaze/architecture/images/architecture-templating-tools.svg)
-
-## Package `static-html`
-
-![package static-html](https://raw.githubusercontent.com/jankapunkt/blaze/architecture/images/architecture-static-html.svg)
