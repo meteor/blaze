@@ -1,17 +1,401 @@
-# Overview
+# Blaze Architecture Overview
 
-Provide a detailed architecture overview for Blaze and the related packages.
+Blaze transforms HTML templates into dynamic, reactive user interfaces.
+This document provides a detailed architecture overview of Blaze and its related packages, offering a starting point for newcomers to understand how the engine works.
+This is crucial in order to contribute effectively to the Blaze codebase or build advanced features on top of it.
 
-In order to have an easier entry for newcomers it is essential to provide a starting point for understanding Blaze.
+## High-Level Architecture
 
-## All Blaze packages and their dependencies
+Blaze is designed as a modular package ecosystem, where each package has a specific responsibility.
+Packages interact through well-defined interfaces, with some packages operating exclusively during the build phase, 
+others exclusively at runtime, and some spanning both phases.
 
-![all packages](https://raw.githubusercontent.com/jankapunkt/blaze/architecture/images/architecture_packages.svg)
+From the highest level view, the architecture consists of two major components:
 
-## Package `templating-tools`
+1. **Template Compilation (Build)** - Parses and compiles template files (`.html` + `.js`) into JavaScript code at build time
+2. **Reactive Runtime** - Manages DOM rendering and reactivity at runtime, responding to data changes automatically
 
-![package templating-tools](https://raw.githubusercontent.com/jankapunkt/blaze/architecture/images/architecture-templating-tools.svg)
+![package overview](https://raw.githubusercontent.com/meteor/blaze/architecture/images/architecture_packages.svg)
 
-## Package `static-html`
+## Build Stage
 
-![package static-html](https://raw.githubusercontent.com/jankapunkt/blaze/architecture/images/architecture-static-html.svg)
+During the build stage, template files are processed and compiled into executable JavaScript:
+
+1. **HTML files are picked up** (`templating-compiler`) - The build system identifies `.html` files containing templates
+2. **HTML files are scanned** (`html-tools`, `templating-tools`) - The build system reads `.html` files and tokenizes them into processable structures
+3. **Templates are parsed** (`spacebars-compiler`) - Spacebars syntax (e.g., `{{#if}}`, `{{#each}}`) is parsed and analyzed
+4. **Code is generated** (`spacebars-compiler`, `templating-tools`) - Templates are compiled into JavaScript functions that can render and update the DOM
+5. **Compiled code is bundled** - The generated JavaScript is included in the application bundle for runtime execution
+
+**Key packages in build stage:**
+- [`templating-compiler`](./packages/templating-compiler) - Build plugin that orchestrates the compilation process
+- [`caching-html-compiler`](./packages/caching-html-compiler) - Provides caching infrastructure for efficient compilation
+- [`templating-tools`](./packages/templating-tools) - Utility functions for scanning and processing HTML files
+- [`spacebars-compiler`](./packages/spacebars-compiler) - Compiles Spacebars template syntax into JavaScript
+- [`html-tools`](./packages/html-tools) - Tokenizes and parses HTML with support for template extensions
+
+
+
+## Runtime Stage
+
+During runtime, the compiled templates execute to create and manage reactive DOM:
+
+1. **Templates are instantiated** (`templating-runtime`, `blaze`) - Compiled template functions are called to create View objects
+2. **HTMLjs structures are created** (`htmljs`) - Templates produce intermediate HTMLjs representations
+3. **DOM is materialized** (`blaze`) - HTMLjs is converted into actual DOM nodes
+4. **Reactivity is established** (`blaze`, `observe-sequence`) - Dependencies are tracked using Tracker, enabling automatic updates
+5. **Changes trigger updates** (`blaze`) - When reactive data sources change, affected DOM regions are automatically updated
+
+**Key packages in runtime stage:**
+- `blaze` - Core reactive rendering engine that manages Views, DOM manipulation, and reactivity
+- `templating-runtime` - Provides the Template API and dynamic template rendering
+- `spacebars` - Runtime support for Spacebars helpers and operations
+- `htmljs` - Intermediate representation for HTML structures
+- `observe-sequence` - Efficiently tracks changes in arrays and cursors for reactive lists
+- `ui` - Legacy compatibility layer
+
+## Package Roles and Inter-relations
+
+### Core Runtime Packages
+
+#### `blaze` (Runtime)
+The heart of the reactive rendering system. Blaze provides:
+- **View management** - Creates and manages View objects that represent reactive DOM regions
+- **DOM materialization** - Converts HTMLjs structures into actual DOM nodes
+- **Reactivity integration** - Integrates with Tracker to automatically update the DOM when dependencies change
+- **Event handling** - Delegates and manages DOM events
+- **Reactive regions** - Maintains reactive computations for dynamic template regions
+
+**Dependencies:** `htmljs`, `observe-sequence`, `tracker`, `reactive-var`, `jquery` (optional)
+**Stage:** Runtime only
+
+#### `htmljs` (Both Build and Runtime)
+A lightweight library for expressing HTML trees with concise JavaScript syntax. HTMLjs serves as the intermediate representation between compiled templates and actual DOM.
+- **Tag constructors** - Provides constructors like `HTML.DIV()`, `HTML.P()` for building HTML structures
+- **Foreign objects** - Supports embedding Blaze directives (like `{{#if}}`) in the tree
+- **Multiple output formats** - Can render to HTML strings or DOM nodes
+
+**Dependencies:** None (standalone)
+**Stage:** Build (used by compiler) and Runtime (used by Blaze)
+
+#### `spacebars` (Runtime)
+The runtime counterpart to `spacebars-compiler`. Provides the runtime functions and helpers needed by compiled Spacebars templates.
+- **Helper execution** - Executes template helpers like `{{helper arg}}`
+- **Block helpers** - Supports block helpers like `{{#each}}` and `{{#if}}`
+- **Inclusion helpers** - Handles template inclusion with `{{> templateName}}`
+- **Data context management** - Manages the data context stack
+
+**Dependencies:** `htmljs`, `blaze` (implied)
+**Stage:** Runtime only
+
+#### `observe-sequence` (Runtime)
+Efficiently observes changes to various sequence types (arrays, cursors, objects) and produces minimal diffs.
+- **Cursor observation** - Tracks changes in Minimongo cursors
+- **Array observation** - Detects additions, moves, and removals in arrays
+- **Efficient diffing** - Produces minimal change sets to avoid unnecessary DOM updates
+
+**Dependencies:** `tracker`, `mongo-id`, `diff-sequence`
+**Stage:** Runtime only
+
+#### `templating-runtime` (Runtime)
+Provides the `Template` global object and APIs that developers use to define helpers, events, and lifecycle callbacks.
+- **Template registry** - Maintains a registry of all defined templates
+- **Template instance** - Provides the `Template` constructor and instance API
+- **Dynamic template rendering** - Enables `{{> Template.dynamic}}`
+- **Lifecycle hooks** - Supports `onCreated`, `onRendered`, `onDestroyed`
+
+**Dependencies:** `blaze`, `spacebars`
+**Stage:** Runtime only
+
+### Build-Time Packages
+
+#### `templating-compiler` (Build)
+A build plugin that compiles `.html` files containing Spacebars templates.
+- **Build integration** - Registers as a Meteor build plugin for `.html` files
+- **Orchestration** - Coordinates the compilation pipeline
+- **File processing** - Processes template files and generates JavaScript output
+
+**Dependencies:** `caching-html-compiler`, `templating-tools`
+**Stage:** Build only
+
+#### `spacebars-compiler` (Build)
+The core compiler that transforms Spacebars template syntax into JavaScript code.
+- **Syntax parsing** - Parses Spacebars syntax (mustache tags, block helpers, etc.)
+- **Code generation** - Generates JavaScript functions that construct HTMLjs trees
+- **Optimization** - Performs optimizations like constant folding
+- **Error reporting** - Provides helpful error messages for template syntax errors
+
+**Dependencies:** `htmljs`, `html-tools`
+**Stage:** Build only (though it can be used at runtime on server for dynamic compilation)
+
+#### `html-tools` (Build)
+A lightweight HTML tokenizer and parser that outputs HTMLjs structures.
+- **HTML tokenization** - Breaks HTML into tokens following WHATWG spec
+- **Parsing with extensions** - Supports hooks for template syntax (like `{{}}`)
+- **Strict validation** - Enforces valid HTML5 (catches unclosed tags, etc.)
+- **Character references** - Handles HTML entities like `&nbsp;`
+
+**Dependencies:** `htmljs`
+**Stage:** Build only (though can be used at runtime for parsing)
+
+#### `templating-tools` (Build)
+Utility functions shared between build plugins that compile templates.
+- **HTML scanning** - Scans HTML files for `<template>`, `<head>`, `<body>` tags
+- **Tag compilation** - Compiles scanned tags with Spacebars
+- **Error handling** - Provides standardized error reporting
+- **Reusable utilities** - Used by `templating-compiler` and alternative compilers
+
+**Dependencies:** `spacebars-compiler`, `html-tools`
+**Stage:** Build only
+
+#### `caching-html-compiler` (Build)
+Provides a pluggable, cacheable base class for HTML template compilers.
+- **Caching infrastructure** - Automatically caches compilation results
+- **Build plugin abstraction** - Simplifies creating new template compilers
+- **Pluggable pipeline** - Accepts custom scanner and handler functions
+
+**Dependencies:** None (standalone)
+**Stage:** Build only
+
+### Integration Packages
+
+#### `templating` (Build + Runtime)
+A convenience package that combines build and runtime functionality.
+- **Simple integration** - Single package that provides complete templating support
+- **Backward compatibility** - Maintains compatibility with older Meteor apps
+
+**Dependencies/Exports:** `templating-runtime` (runtime), `templating-compiler` (build)
+**Stage:** Both (combines build and runtime packages)
+
+#### `blaze-html-templates` (Build + Runtime)
+The top-level package that most Meteor applications include to get Blaze templating.
+- **Complete solution** - Bundles everything needed for Blaze templates
+- **Default setup** - The recommended way to add Blaze to a Meteor app
+
+**Dependencies/Exports:** `blaze`, `templating`
+**Stage:** Both (implies both build and runtime packages)
+
+### Supporting Packages
+
+#### `ui` (Runtime)
+A legacy compatibility package that exports UI-related functionality.
+- **Backward compatibility** - Maintains old `UI` namespace for legacy code
+- **Deprecated** - Most functionality has been moved to `blaze` package
+
+**Dependencies:** `blaze`
+**Stage:** Runtime only
+
+#### `blaze-tools` (Build + Runtime)
+Developer tools for working with Blaze internals.
+- **Testing utilities** - Helper functions for testing Blaze code
+- **Debugging aids** - Tools like `BlazeTools.toJS()` for inspecting Blaze structures
+
+**Dependencies:** `htmljs`, `html-tools`
+**Stage:** Both
+
+### Data Flow
+
+**Build Time:**
+```
+.html file → templating-compiler
+           → caching-html-compiler
+           → templating-tools.scanHtmlForTags
+           → html-tools (parsing)
+           → spacebars-compiler (compilation)
+           → JavaScript code (output)
+```
+
+**Runtime:**
+```
+Template function called
+           → Creates Blaze.View
+           → View.render() → HTMLjs structure
+           → Blaze.materialize() → DOM nodes
+           → Reactive dependencies tracked (Tracker)
+           → Data changes → View.invalidate()
+           → Selective DOM updates (observe-sequence for {{#each}})
+```
+
+## Key Terms in the Blaze Ecosystem
+
+Understanding these core concepts is essential for working with Blaze:
+
+### Spacebars
+
+**Spacebars** is the template language used by Blaze. It's a variant of Handlebars designed specifically for reactive Meteor applications. Spacebars provides:
+
+- **Mustache-style syntax** - Uses double curly braces `{{ }}` for dynamic content
+- **Block helpers** - Control flow structures like `{{#if}}`, `{{#each}}`, `{{#with}}`, `{{#unless}}`
+- **Data helpers** - Access data and call helper functions with `{{helperName arg}}`
+- **Template inclusion** - Include other templates with `{{> templateName}}`
+- **Reactive expressions** - All expressions automatically re-evaluate when their dependencies change
+
+**Examples:**
+```html
+{{! Simple data output }}
+<p>Hello {{username}}</p>
+
+{{! Conditional rendering }}
+{{#if isLoggedIn}}
+  <p>Welcome back!</p>
+{{else}}
+  <p>Please log in</p>
+{{/if}}
+
+{{! Iteration }}
+{{#each items}}
+  <li>{{name}}</li>
+{{/each}}
+
+{{! Template inclusion }}
+{{> userProfile}}
+```
+
+At build time, Spacebars templates are compiled by the `spacebars-compiler` package into JavaScript functions. At runtime, the `spacebars` package provides the helper functions and runtime support needed to execute the compiled templates.
+
+### Template
+
+A **Template** is a reusable component that defines both the structure (HTML) and behavior (helpers, events) of a UI element. Templates are the primary way developers structure their Blaze applications.
+
+**Key aspects:**
+
+- **Definition** - Templates are defined in `.html` files using `<template name="templateName">` tags
+- **JavaScript object** - Each template becomes a `Blaze.Template` instance accessible as `Template.templateName`
+- **Render function** - Contains compiled code that generates HTMLjs structures
+- **Helpers** - Custom functions that provide data or logic: `Template.myTemplate.helpers({ ... })`
+- **Event handlers** - DOM event listeners: `Template.myTemplate.events({ 'click button': function() { ... } })`
+- **Lifecycle hooks** - Callbacks for creation, rendering, and destruction:
+  - `onCreated` - Called when template instance is created
+  - `onRendered` - Called when template is inserted into the DOM
+  - `onDestroyed` - Called when template is removed from the DOM
+
+**Example:**
+```html
+<template name="todoItem">
+  <li class="{{#if completed}}done{{/if}}">
+    {{text}}
+    <button class="delete">Delete</button>
+  </li>
+</template>
+```
+
+```javascript
+Template.todoItem.helpers({
+  completed: function() {
+    return this.done === true;
+  }
+});
+
+Template.todoItem.events({
+  'click .delete': function() {
+    Todos.remove(this._id);
+  }
+});
+```
+
+### Template Instance
+
+A **Template Instance** (or `TemplateInstance`) represents a specific instantiation of a template. When a template is rendered, a new instance is created with its own state, data context, and lifecycle.
+
+**Key aspects:**
+
+- **Class** - `Blaze.TemplateInstance` object accessible via `Template.instance()` in helpers and event handlers
+- **Instance-specific state** - Can store reactive variables and state: `instance.myVar = new ReactiveVar()`
+- **View reference** - Contains a reference to the underlying `Blaze.View` via `instance.view`
+- **Data context** - Access to the data context via `instance.data`
+- **DOM nodes** - Direct access to the template's DOM: `instance.firstNode`, `instance.lastNode`
+- **Helper methods** - Convenience methods like `instance.$()` for jQuery selection within the template
+- **Subscriptions** - Can manage Meteor subscriptions: `instance.subscribe('publication')`
+
+**Example:**
+```javascript
+Template.myTemplate.onCreated(function() {
+  // 'this' is the template instance
+  this.counter = new ReactiveVar(0);
+  this.subscribe('someData');
+});
+
+Template.myTemplate.helpers({
+  count: function() {
+    const instance = Template.instance();
+    return instance.counter.get();
+  }
+});
+
+Template.myTemplate.events({
+  'click button': function(event, instance) {
+    // instance is passed as second parameter
+    const currentCount = instance.counter.get();
+    instance.counter.set(currentCount + 1);
+  }
+});
+```
+
+Each time a template is used in your UI (e.g., `{{> myTemplate}}`), a new `TemplateInstance` is created with its own independent state.
+
+### View
+
+A **View** is the fundamental building block of Blaze's reactive rendering system. Views represent reactive regions of the DOM and manage the lifecycle of rendered content.
+
+**Key aspects:**
+
+- **Low-level primitive** - `Blaze.View` is the underlying mechanism that powers Templates
+- **Render function** - Each View has a render function that returns HTMLjs content
+- **Parent-child hierarchy** - Views form a tree structure via `view.parentView`
+- **Lifecycle management** - Views go through creation, rendering, and destruction phases
+- **Reactive computation** - Views re-render automatically when their dependencies change
+- **DOM tracking** - When rendered, Views track their DOM extent using a `DOMRange`
+- **Named views** - Views can have names like "with", "if", "each", or "Template.foo"
+
+**View lifecycle:**
+
+1. **Created** - View is constructed but not yet initialized
+2. **Rendered** - View's render function is called, producing HTMLjs
+3. **Materialized** - HTMLjs is converted to actual DOM nodes
+4. **Attached** - DOM nodes are inserted into the document
+5. **Destroyed** - View is removed from DOM and cleaned up
+
+**Relationship to Templates:**
+
+- Templates use Views internally: when you render a template, it creates a View
+- `Template.myTemplate.constructView()` creates a View from a Template
+- The template instance's `view` property is the underlying `Blaze.View` object
+- You rarely create Views directly; they're usually created by Templates or Blaze helpers
+
+**Example of direct View usage (advanced):**
+```javascript
+// Most developers work with Templates, not Views directly
+const view = Blaze.View('myView', function() {
+  return HTML.DIV('Hello from a View');
+});
+
+Blaze.render(view, document.body);
+```
+
+**Common View types in Blaze:**
+
+- `Template.foo` - Views created from templates
+- `with` - Views that establish a new data context (`{{#with}}`)
+- `if`/`unless` - Conditional rendering views (`{{#if}}`)
+- `each` - Iteration views (`{{#each}}`)
+
+### Relationship Between Terms
+
+```
+Template (Blueprint)
+    ↓ constructView()
+View (Low-level rendering primitive)
+    ↑ referenced by
+Template Instance (Specific instantiation, created alongside View)
+    ↓ renders to
+HTMLjs (Intermediate representation)
+    ↓ materializes to
+DOM Nodes (Actual browser elements)
+```
+
+**Summary:**
+- **Spacebars** is the _language_ you write templates in
+- **Template** is the _blueprint_ that defines structure and behavior  
+- **Template Instance** is a _specific occurrence_ of that template with its own state
+- **View** is the _underlying mechanism_ that handles reactive rendering
+- Template Instance and View are created together; the instance references the view via `instance.view`
