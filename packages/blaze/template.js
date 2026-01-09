@@ -527,9 +527,9 @@ Template.prototype.events = function (eventMap) {
   let eventMap2 = {};
   for (let k in eventMap) {
     eventMap2[k] = (function (k, v) {
-      return function (event /*, ...*/) {
+      return function (...args) {
         const view = this; // passed by EventAugmenter
-        const args = Array.prototype.slice.call(arguments);
+        const [event] = args;
         // Exiting the current computation to avoid creating unnecessary
         // and unexpected reactive dependencies with Templates data
         // or any other reactive dependencies defined in event handlers

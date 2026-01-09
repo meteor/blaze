@@ -606,11 +606,11 @@ Tinytest.add("spacebars-tests - templating_tests - events", function (test) {
 
 Tinytest.add('spacebars-tests - templating_tests - helper typecast Issue #617', function (test) {
 
-  Template.registerHelper('testTypeCasting', function (/*arguments*/) {
+  Template.registerHelper('testTypeCasting', function (...args) {
     // Return a string representing the arguments passed to this
     // function, including types. eg:
     // (1, true) -> "[number,1][boolean,true]"
-    return Array.from(arguments).reduce(function (memo, arg) {
+    return Array.from(args).reduce(function (memo, arg) {
       if (typeof arg === 'object')
         return memo + "[object]";
       return memo + "[" + typeof arg + "," + arg + "]";
