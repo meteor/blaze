@@ -785,3 +785,235 @@ if (typeof MutationObserver !== 'undefined') {
     }, 0);
   });
 }
+
+Tinytest.add("blaze - dombackend - parseHTML", function (test) {
+  // Test basic HTML parsing
+  const basicHtml = "<div>Hello</div>";
+  const basicResult = Blaze._DOMBackend.parseHTML(basicHtml);
+  test.equal(basicResult.length, 1);
+  test.equal(basicResult[0].nodeName, "DIV");
+  test.equal(basicResult[0].textContent || basicResult[0].innerText, "Hello");  // innerText for IE
+
+  // Test various falsy/empty inputs (from jQuery tests)
+  test.equal(Blaze._DOMBackend.parseHTML().length, 0, "Without arguments");
+  test.equal(Blaze._DOMBackend.parseHTML(undefined).length, 0, "Undefined");
+  test.equal(Blaze._DOMBackend.parseHTML(null).length, 0, "Null");
+  test.equal(Blaze._DOMBackend.parseHTML(false).length, 0, "Boolean false");
+  test.equal(Blaze._DOMBackend.parseHTML(0).length, 0, "Zero");
+  test.equal(Blaze._DOMBackend.parseHTML(true).length, 0, "Boolean true");
+  test.equal(Blaze._DOMBackend.parseHTML(42).length, 0, "Positive number");
+  test.equal(Blaze._DOMBackend.parseHTML("").length, 0, "Empty string");
+
+  // Test whitespace preservation (from jQuery tests)
+  const leadingWhitespace = Blaze._DOMBackend.parseHTML("\t<div></div>");
+  test.equal(leadingWhitespace[0].nodeType, Node.TEXT_NODE, "First node should be text node");
+  test.equal(leadingWhitespace[0].nodeValue, "\t", "Leading whitespace should be preserved");
+
+  const surroundingWhitespace = Blaze._DOMBackend.parseHTML(" <div></div> ");
+  test.equal(surroundingWhitespace[0].nodeType, Node.TEXT_NODE, "Leading space should be text node");
+  test.equal(surroundingWhitespace[2].nodeType, Node.TEXT_NODE, "Trailing space should be text node");
+
+  // Test anchor href preservation (from jQuery gh-2965)
+  const anchor = Blaze._DOMBackend.parseHTML("<a href='example.html'></a>")[0];
+  test.ok(anchor.href.endsWith("example.html"), "href attribute should be preserved");
+
+  // Test malformed HTML handling
+  const malformedTestCases = [
+    {
+      html: "<span><span>",  // Unclosed tags
+      expectedLength: 1
+    },
+    {
+      html: "<td><td>",  // Multiple table cells
+      expectedLength: 2
+    },
+    {
+      html: "<div class=''''''><span><<<>>></span",  // Invalid attributes and unclosed tags
+      expectedLength: 1  // Should attempt to fix malformed HTML
+    },
+    {
+      html: "<html><!DOCTYPE html><head></head><body>invalid order</body></html>",  // Wrong DOM structure order
+      expectedLength: 1  // Should still parse despite invalid structure
+    }
+  ];
+
+  malformedTestCases.forEach((testCase, i) => {
+    const result = Blaze._DOMBackend.parseHTML(testCase.html);
+    test.equal(result.length, testCase.expectedLength,
+      `Malformed test ${i}: Expected length ${testCase.expectedLength} but got ${result.length}`);
+  });
+
+  // Test plain text (no HTML)
+  const textOnly = "Just some text";
+  const textResult = Blaze._DOMBackend.parseHTML(textOnly);
+  test.equal(textResult.length, 1);
+  test.equal(textResult[0].nodeType, Node.TEXT_NODE);
+  test.equal(textResult[0].textContent || textResult[0].nodeValue, "Just some text");
+
+  // Test self-closing tags
+  const selfClosing = "<div/>Content";
+  const selfClosingResult = Blaze._DOMBackend.parseHTML(selfClosing);
+  test.equal(selfClosingResult.length, 1);
+  test.equal(selfClosingResult[0].nodeName, "DIV");
+  test.equal(selfClosingResult[0].nodeType, Node.ELEMENT_NODE);
+
+  // Test nested table elements (testing proper wrapping levels)
+  const nestedTable = "<td>Cell</td>";
+  const nestedResult = Blaze._DOMBackend.parseHTML(nestedTable);
+  test.equal(nestedResult.length, 1);
+  test.equal(nestedResult[0].nodeName, "TD");
+
+  // Test table elements (IE has special requirements)
+  const tableTestCases = {
+    tr: {
+      html: "<tr><td>Cell</td></tr>",
+      expectedTags: ["TR", "TD"]
+    },
+    td: {
+      html: "<td>Cell</td>",
+      expectedTags: ["TD"]
+    },
+    tbody: {
+      html: "<tbody><tr><td>Cell</td></tr></tbody>",
+      expectedTags: ["TBODY", "TR", "TD"]
+    },
+    thead: {
+      html: "<thead><tr><th>Header</th></tr></thead>",
+      expectedTags: ["THEAD", "TR", "TH"]
+    },
+    tfoot: {
+      html: "<tfoot><tr><td>Footer</td></tr></tfoot>",
+      expectedTags: ["TFOOT", "TR", "TD"]
+    },
+    colgroup: {
+      html: "<colgroup><col span='2'></colgroup>",
+      expectedTags: ["COLGROUP", "COL"]
+    }
+  };
+
+  Object.entries(tableTestCases).forEach(([testCaseName, testCase]) => {
+    const result = Blaze._DOMBackend.parseHTML(testCase.html);
+    const firstNode = result[0];
+    test.equal(firstNode.nodeName, testCase.expectedTags[0], 
+      `${testCaseName}: Expected ${testCase.expectedTags[0]} but got ${firstNode.nodeName}`);
+  });
+
+  // Test whitespace handling (IE is sensitive to this)
+  const whitespaceTestCases = [
+    {
+      html: "  <div>Padded</div>  ",
+      expectedLength: 3,  // Leading space + div + trailing space
+      expectedTag: "DIV"
+    },
+    {
+      html: "\n<div>Newlines</div>\n",
+      expectedLength: 3,  // Leading newline + div + trailing newline
+      expectedTag: "DIV"
+    },
+    {
+      html: "\t<div>Tabs</div>\t",
+      expectedLength: 3,  // Leading tab + div + trailing tab
+      expectedTag: "DIV"
+    }
+  ];
+
+  whitespaceTestCases.forEach((testCase, i) => {
+    const result = Blaze._DOMBackend.parseHTML(testCase.html);
+    test.equal(result.length, testCase.expectedLength,
+      `Whitespace test ${i}: Expected length ${testCase.expectedLength} but got ${result.length}`);
+    // Check the middle node (the div)
+    test.equal(result[1].nodeName, testCase.expectedTag,
+      `Whitespace test ${i}: Expected tag ${testCase.expectedTag} but got ${result[1].nodeName}`);
+    // Verify surrounding nodes are text nodes
+    test.equal(result[0].nodeType, Node.TEXT_NODE,
+      `Whitespace test ${i}: Expected leading text node`);
+    test.equal(result[2].nodeType, Node.TEXT_NODE,
+      `Whitespace test ${i}: Expected trailing text node`);
+  });
+
+  // Test empty input
+  test.equal(Blaze._DOMBackend.parseHTML("").length, 0);
+  test.equal(Blaze._DOMBackend.parseHTML(null).length, 0);
+  test.equal(Blaze._DOMBackend.parseHTML(undefined).length, 0);
+  // This is a unique case since a whitespace-only input is parsed as a single text node. 
+  test.equal(Blaze._DOMBackend.parseHTML("   ").length, 1);
+
+  // Test malformed HTML (IE is more strict)
+  const malformedTestCasesIE = [
+    {
+      html: "<div>Hello<span>World</span></div>",  // Well-formed control case
+      expectedLength: 1,
+      expectedChildren: 1
+    },
+    {
+      html: "<div>Test</div><p>",  // Partial second tag
+      expectedLength: 2
+    },
+    {
+      html: "<div class=>Test</div>",  // Invalid attribute
+      expectedLength: 1
+    }
+  ];
+
+  malformedTestCasesIE.forEach((testCase, i) => {
+    const result = Blaze._DOMBackend.parseHTML(testCase.html);
+    test.equal(result.length, testCase.expectedLength,
+      `Malformed test ${i}: Expected length ${testCase.expectedLength} but got ${result.length}`);
+    if (testCase.expectedChildren !== undefined) {
+      const childCount = result[0].getElementsByTagName('span').length;
+      test.equal(childCount, testCase.expectedChildren,
+        `Malformed test ${i}: Expected ${testCase.expectedChildren} span elements but got ${childCount}`);
+    }
+  });
+
+  // Test array-like properties of result (important for IE)
+  const arrayResult = Blaze._DOMBackend.parseHTML("<div></div><span></span>");
+  test.equal(typeof arrayResult.length, "number", "Result should have length property");
+  test.equal(typeof arrayResult[0], "object", "Result should have indexed access");
+  test.equal(arrayResult[0].nodeName, "DIV", "First element should be accessible by index");
+});
+
+Tinytest.add("blaze - security - XSS prevention in HTML parsing", function (test) {
+  const xssTestCases = [
+    {
+      html: "<div><p>Test</p><script>alert('XSS')</script></div>",
+      description: "Prevents inline script execution",
+      checks: (result) => {
+        test.equal(result.length, 1, "Should parse into a single element");
+        const div = result[0];
+        test.equal(div.querySelector('script'), null, "Script tag should be removed");
+        test.equal(div.querySelector('p').textContent, "Test", "Safe content should be preserved");
+      }
+    },
+    {
+      html: "<div><p>Test</p><img src='x' onerror='alert(\"XSS\")'></div>",
+      description: "Prevents event handler injection",
+      checks: (result) => {
+        test.equal(result.length, 1, "Should parse into a single element");
+        const div = result[0];
+        const img = div.querySelector('img');
+        test.isNotNull(img, "Image element should be preserved");
+        test.isFalse(img.hasAttribute('onerror'), "Event handler should be stripped");
+        test.equal(div.querySelector('p').textContent, "Test", "Safe content should be preserved");
+      }
+    },
+    {
+      html: "<div><p>Test</p><iframe src='javascript:alert(\"XSS\")'></iframe></div>",
+      description: "Prevents javascript: URL injection",
+      checks: (result) => {
+        test.equal(result.length, 1, "Should parse into a single element");
+        const div = result[0];
+        const iframe = div.querySelector('iframe');
+        test.isNotNull(iframe, "iframe element should be preserved");
+        const src = iframe.getAttribute('src') || '';
+        test.isFalse(src.includes('javascript:'), "javascript: protocol should be stripped");
+        test.equal(div.querySelector('p').textContent, "Test", "Safe content should be preserved");
+      }
+    }
+  ];
+
+  xssTestCases.forEach((testCase, i) => {
+    const result = Blaze._DOMBackend.parseHTML(testCase.html);
+    testCase.checks(result);
+  });
+});

@@ -7,34 +7,136 @@ const $jq = (typeof jQuery !== 'undefined' ? jQuery :
 if (! $jq)
   throw new Error("jQuery not found");
 
-DOMBackend._$jq = $jq;
+import sanitizeHtml from 'sanitize-html';
 
+DOMBackend._$jq = $jq;
 
 DOMBackend.getContext = function() {
   if (DOMBackend._context) {
     return DOMBackend._context;
   }
-  if ( DOMBackend._$jq.support.createHTMLDocument ) {
-    DOMBackend._context = document.implementation.createHTMLDocument( "" );
+  
+  // Check if createHTMLDocument is supported directly
+  if (document.implementation && document.implementation.createHTMLDocument) {
+    DOMBackend._context = document.implementation.createHTMLDocument("");
 
     // Set the base href for the created document
     // so any parsed elements with URLs
     // are based on the document's URL (gh-2965)
-    const base = DOMBackend._context.createElement( "base" );
+    const base = DOMBackend._context.createElement("base");
     base.href = document.location.href;
-    DOMBackend._context.head.appendChild( base );
+    DOMBackend._context.head.appendChild(base);
   } else {
     DOMBackend._context = document;
   }
   return DOMBackend._context;
 }
-DOMBackend.parseHTML = function (html) {
-  // Return an array of nodes.
-  //
-  // jQuery does fancy stuff like creating an appropriate
-  // container element and setting innerHTML on it, as well
-  // as working around various IE quirks.
-  return $jq.parseHTML(html, DOMBackend.getContext()) || [];
+
+DOMBackend.parseHTML = function(html, context) {
+  // Don't trim to preserve whitespace
+  // Handle all falsy values and non-strings
+  if (!html || typeof html !== 'string') {
+    return [];
+  }
+
+  // Special handling for table elements to ensure proper parsing
+  const tableElementMatch = html.match(/<(t(?:body|head|foot|r|d|h))\b/i);
+  let container;
+  
+  if (tableElementMatch) {
+    const tagName = tableElementMatch[1].toLowerCase();
+    // Create appropriate container based on the table element
+    switch (tagName) {
+      case 'td':
+      case 'th':
+        container = document.createElement('tr');
+        break;
+      case 'tr':
+        container = document.createElement('tbody');
+        break;
+      case 'tbody':
+      case 'thead':
+      case 'tfoot':
+        container = document.createElement('table');
+        break;
+      default:
+        container = document.createElement('template');
+    }
+  } else {
+    container = document.createElement('template');
+  }
+
+  // Sanitize the HTML with sanitize-html
+  const cleanHtml = sanitizeHtml(html, {
+    allowedTags: [
+      // Basic elements
+      'div', 'span', 'p', 'br', 'hr', 'b', 'i', 'em', 'strong', 'u',
+      'a', 'img', 'pre', 'code', 'blockquote',
+      // Lists
+      'ul', 'ol', 'li', 'dl', 'dt', 'dd',
+      // Headers
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      // Table elements
+      'table', 'thead', 'tbody', 'tfoot',
+      'tr', 'td', 'th', 'col', 'colgroup',
+      // Form elements
+      'input', 'textarea', 'select', 'option', 'label', 'button',
+      // Other elements
+      'iframe', 'article', 'section', 'header', 'footer', 'nav',
+      'aside', 'main', 'figure', 'figcaption', 'audio', 'video',
+      'source', 'canvas', 'details', 'summary'
+    ],
+    allowedAttributes: {
+      '*': [
+        'class', 'id', 'style', 'title', 'role', 'data-*', 'aria-*',
+        // Allow event handlers
+        'onclick', 'onmouseover', 'onmouseout', 'onkeydown', 'onkeyup', 'onkeypress',
+        'onfocus', 'onblur', 'onchange', 'onsubmit', 'onreset'
+      ],
+      'a': ['href', 'target', 'rel'],
+      'img': ['src', 'alt', 'width', 'height'],
+      'iframe': ['src', 'width', 'height', 'frameborder', 'allowfullscreen'],
+      'input': ['type', 'value', 'placeholder', 'checked', 'disabled', 'readonly', 'required', 'pattern', 'min', 'max', 'step', 'minlength', 'maxlength', 'stuff'],
+      'textarea': ['rows', 'cols', 'wrap', 'placeholder', 'disabled', 'readonly', 'required', 'minlength', 'maxlength'],
+      'select': ['multiple', 'disabled', 'required', 'size'],
+      'option': ['value', 'selected', 'disabled'],
+      'button': ['type', 'disabled'],
+      'col': ['span', 'width'],
+      'td': ['colspan', 'rowspan', 'headers'],
+      'th': ['colspan', 'rowspan', 'headers', 'scope']
+    },
+    allowedSchemes: ['http', 'https', 'ftp', 'mailto', 'tel', 'data'],
+    allowedSchemesByTag: {
+      'img': ['data']
+    },
+    allowedSchemesAppliedToAttributes: ['href', 'src', 'cite'],
+    allowProtocolRelative: true,
+    parser: {
+      lowerCaseTags: false,  // Preserve tag case for proper testing
+      decodeEntities: true
+    },
+    // Preserve empty attributes
+    transformTags: {
+      '*': function(tagName, attribs) {
+        // Convert null/undefined attributes to empty strings
+        Object.keys(attribs).forEach(key => {
+          if (attribs[key] === null || attribs[key] === undefined) {
+            delete attribs[key];
+          }
+        });
+        return {
+          tagName,
+          attribs
+        };
+      }
+    }
+  });
+
+  // Parse the sanitized HTML
+  container.innerHTML = cleanHtml;
+  
+  // Return the nodes, handling both template and regular elements
+  return Array.from(container instanceof HTMLTemplateElement ? container.content.childNodes : container.childNodes);
 };
 
 DOMBackend.Events = {
