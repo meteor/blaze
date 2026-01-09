@@ -2,11 +2,8 @@
   <img src="https://cdn.rawgit.com/meteor/blaze/master/images/logo.svg" width="260" />
 </p>
 <p align="center">
-  <a href="http://slack.blazejs.org" target="_blank">
-  	<img src="http://slack.blazejs.org/badge.svg">
-  </a>
-  <a href="https://circleci.com/gh/meteor/blaze" target="_blank">
-  	<img src="https://circleci.com/gh/meteor/blaze.svg?style=shield">
+  <a href="#Blaze Tests" href="https://github.com/meteor/blaze/actions/workflows/blaze-tests.yml">
+  	<img src="https://github.com/meteor/blaze/actions/workflows/blaze-tests.yml/badge.svg">
   </a>
   <a href="#backers">
   	<img src="https://opencollective.com/blaze/backers/badge.svg">
@@ -18,7 +15,7 @@
 
 ## What is Blaze?
 
-Blaze is a powerful library for creating user interfaces by writing reactive HTML templates.  Compared to using a combination of traditional templates and jQuery, Blaze eliminates the need for all the "update logic" in your app that listens for data changes and manipulates the DOM.  Instead, familiar template directives like ``{{#if}}`` and ``{{#each}}`` integrate with [Tracker's](https://github.com/meteor/meteor/tree/master/packages/tracker) "transparent reactivity" and [Minimongo's](https://meteor.com/mini-databases) database cursors so that the DOM updates automatically.
+Blaze is a powerful library for creating user interfaces by writing reactive HTML templates.  Compared to using a combination of traditional templates and jQuery, Blaze eliminates the need for all the "update logic" in your app that listens for data changes and manipulates the DOM.  Instead, familiar template directives like ``{{#if}}`` and ``{{#each}}`` integrate with [Tracker's](https://github.com/meteor/meteor/tree/master/packages/tracker) "transparent reactivity" and [Minimongo's](https://github.com/meteor/meteor/tree/devel/packages/minimongo) database cursors so that the DOM updates automatically.
 
 ### Blaze has two major parts:
 
@@ -30,9 +27,9 @@ Check our [Overview](OVERVIEW.md) to learn more.
 
 ## Quick Start
 
-Blaze is a [Meteor](http://meteor.com/)-only package for now. Soon we will have Blaze on npm so you can use it in your stack.
+Blaze is a [Meteor](http://meteor.com/)-only package for now. In the future, we intend have Blaze on npm so you can use it in your stack.
 
-Each new Meteor project you create has Blaze included (the `blaze-html-templates` package).
+Each new Meteor project you create using the `--blaze` flag has Blaze included (via the `blaze-html-templates` package).
 
 ## Get involved
 
@@ -40,7 +37,7 @@ We'd love for you to help us build Blaze. If you'd like to be a contributor,
 check out our [contributing guide](/CONTRIBUTING.md).
 
 Also, to stay up-to-date on all Blaze related news and the community you should
-definitely [join us on Slack](http://slack.blazejs.org).
+definitely [join us on the Meteor forums](http://forums.meteor.com).
 
 See [open issues](https://github.com/meteor/blaze/issues) and consider helping with any of the tasks. Those [labeled "contributions welcome"](https://github.com/meteor/blaze/issues?q=is%3Aopen+is%3Aissue+label%3A%22contributions+welcome%22) are probably a good start. We have issues [organized into GitHub projects](https://github.com/meteor/blaze/projects) for a better overview as well. And the current [roadmap](https://github.com/meteor/blaze/milestones) shows the issues we need help with for the next release.
 
