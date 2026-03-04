@@ -1,7 +1,7 @@
 
 // for events to bubble an element needs to be in the DOM.
 // @return {Function} call this for cleanup
-var addToBody = function (el) {
+const addToBody = function (el) {
   el.style.display = "none";
   document.body.appendChild(el);
   return function () {
@@ -14,7 +14,7 @@ Tinytest.add("spacebars-tests - templating_tests - assembly", function (test) {
 
   // Test for a bug that made it to production -- after a replacement,
   // we need to also check the newly replaced node for replacements
-  var div = renderToDiv(Template.test_assembly_a0);
+  const div = renderToDiv(Template.test_assembly_a0);
   test.equal(canonicalizeHtml(div.innerHTML),
                "Hi");
 
@@ -26,7 +26,7 @@ Tinytest.add("spacebars-tests - templating_tests - assembly", function (test) {
       return Session.get("stuff");
     }
   });
-  var onscreen = renderToDiv(Template.test_assembly_b0);
+  const onscreen = renderToDiv(Template.test_assembly_b0);
   test.equal(canonicalizeHtml(onscreen.innerHTML), "xyhi");
   Session.set("stuff", false);
   Tracker.flush();
@@ -43,7 +43,7 @@ Tinytest.add("spacebars-tests - templating_tests - assembly", function (test) {
 
 
 Tinytest.add("spacebars-tests - templating_tests - table assembly", function(test) {
-  var childWithTag = function(node, tag) {
+  const childWithTag = function(node, tag) {
     return Array.from(node.childNodes).find(function(n) {
       return n.nodeName === tag;
     });
@@ -51,18 +51,18 @@ Tinytest.add("spacebars-tests - templating_tests - table assembly", function(tes
 
   // The table.rows test would fail when TR/TD tags are stripped due
   // to improper html-to-fragment
-  var table = childWithTag(renderToDiv(Template.test_table_b0), "TABLE");
+  let table = childWithTag(renderToDiv(Template.test_table_b0), "TABLE");
   test.equal(table.rows.length, 3);
 
-  var c = new LocalCollection();
+  const c = new LocalCollection();
   c.insert({bar:'a'});
   c.insert({bar:'b'});
   c.insert({bar:'c'});
-  var onscreen = renderToDiv(Template.test_table_each, {foo: c.find()});
+  const onscreen = renderToDiv(Template.test_table_each, {foo: c.find()});
   table = childWithTag(onscreen, "TABLE");
 
   test.equal(table.rows.length, 3, table.parentNode.innerHTML);
-  var tds = onscreen.getElementsByTagName("TD");
+  const tds = onscreen.getElementsByTagName("TD");
   test.equal(tds.length, 3);
   test.equal(canonicalizeHtml(tds[0].innerHTML), "a");
   test.equal(canonicalizeHtml(tds[1].innerHTML), "b");
@@ -87,11 +87,11 @@ Tinytest.add("spacebars-tests - templating_tests - event handler this", function
     }
   });
 
-  var event_buf = [];
-  var containerDiv = renderToDiv(Template.test_event_data_with, {str: "one"});
-  var cleanupDiv = addToBody(containerDiv);
+  const event_buf = [];
+  const containerDiv = renderToDiv(Template.test_event_data_with, {str: "one"});
+  const cleanupDiv = addToBody(containerDiv);
 
-  var divs = containerDiv.getElementsByTagName("div");
+  const divs = containerDiv.getElementsByTagName("div");
   test.equal(3, divs.length);
 
   clickElement(divs[0]);
@@ -118,7 +118,7 @@ Tinytest.add("spacebars-tests - templating_tests - event handler dependencies lo
 
   Template.test_event_reactive_loop_parent.helpers({
     childData: function() {
-      var count = Template.instance().count.get();
+      const count = Template.instance().count.get();
       return { count };
     },
   });
@@ -134,7 +134,7 @@ Tinytest.add("spacebars-tests - templating_tests - event handler dependencies lo
   Template.test_event_reactive_loop_child.onRendered(function() {
     const tmpl = this;
     this.autorun(function(comp) {
-      var event = new Event('customEvent');
+      const event = new Event('customEvent');
       tmpl.firstNode.dispatchEvent(event);
       // Since there are no explicit reactive dependencies defined, we don't expect this to be executed more than once
       if (!comp.firstRun) {
@@ -144,8 +144,8 @@ Tinytest.add("spacebars-tests - templating_tests - event handler dependencies lo
     });
   });
 
-  var containerDiv = renderToDiv(Template.test_event_reactive_loop_parent, {});
-  var cleanupDiv = addToBody(containerDiv);
+  const containerDiv = renderToDiv(Template.test_event_reactive_loop_parent, {});
+  const cleanupDiv = addToBody(containerDiv);
   Tracker.flush();
   
   cleanupDiv();
@@ -164,7 +164,7 @@ if (document.addEventListener) {
   // This test isn't written against mouseenter because it is synthesized by jQuery,
   // the bug also happened with the play event
   Tinytest.add("spacebars-tests - templating_tests - capturing events", function (test) {
-    var video1Played = 0,
+    let video1Played = 0,
         video2Played = 0;
 
     Template.test_capture_events.events({
@@ -177,10 +177,10 @@ if (document.addEventListener) {
     });
 
     // add to body or else events don't actually fire
-    var containerDiv = renderToDiv(Template.test_capture_events);
-    var cleanupDiv = addToBody(containerDiv);
+    const containerDiv = renderToDiv(Template.test_capture_events);
+    const cleanupDiv = addToBody(containerDiv);
 
-    var checkAndResetEvents = function(video1, video2) {
+    const checkAndResetEvents = function(video1, video2) {
       test.equal(video1Played, video1);
       test.equal(video2Played, video2);
 
@@ -217,9 +217,9 @@ Tinytest.add("spacebars-tests - templating_tests - safestring", function(test) {
     }
   });
 
-  var obj = {fooprop: "<br>",
+  const obj = {fooprop: "<br>",
              barprop: new Spacebars.SafeString("<hr>")};
-  var html = canonicalizeHtml(
+  const html = canonicalizeHtml(
     renderToDiv(Template.test_safestring_a, obj).innerHTML);
 
   test.equal(html,
@@ -245,7 +245,7 @@ Tinytest.add("spacebars-tests - templating_tests - helpers and dots", function(t
     debugger;
   });
 
-  var getFancyObject = function() {
+  const getFancyObject = function() {
     return {
       foo: 'bar',
       apple: {banana: 'smoothie'},
@@ -276,16 +276,16 @@ Tinytest.add("spacebars-tests - templating_tests - helpers and dots", function(t
     }
   });
 
-  var listFour = function(a, b, c, d, options) {
+  const listFour = function(a, b, c, d, options) {
     test.isTrue(options instanceof Spacebars.kw);
-    var keywordArgs = Object.keys(options.hash).map(function(k) {
-      var val = options.hash[k];
+    const keywordArgs = Object.keys(options.hash).map(function(k) {
+      const val = options.hash[k];
       return k+':'+val;
     });
     return [a, b, c, d].concat(keywordArgs).join(' ');
   };
 
-  var dataObj = {
+  const dataObj = {
     zero: 0,
     platypus: 'weird',
     watermelon: 'rind',
@@ -298,7 +298,7 @@ Tinytest.add("spacebars-tests - templating_tests - helpers and dots", function(t
     methodListFour: listFour
   };
 
-  var html;
+  let html;
   html = canonicalizeHtml(
     renderToDiv(Template.test_helpers_a, dataObj).innerHTML);
   test.equal(html.match(/\S+/g), [
@@ -383,7 +383,7 @@ Tinytest.add("spacebars-tests - templating_tests - helpers and dots", function(t
 
   html = canonicalizeHtml(
     renderToDiv(Template.test_helpers_h, dataObj).innerHTML);
-  var trials =
+  const trials =
         html.match(/\(.*?\)/g);
   test.equal(trials[0],
              '(methodListFour 6 7 8 9=6 7 8 9)');
@@ -401,7 +401,7 @@ Tinytest.add("spacebars-tests - templating_tests - helpers and dots", function(t
 
 
 Tinytest.add("spacebars-tests - templating_tests - rendered template", function(test) {
-  var R = ReactiveVar('foo');
+  let R = ReactiveVar('foo');
   Template.test_render_a.helpers({
     foo: function() {
       R.get();
@@ -409,18 +409,18 @@ Tinytest.add("spacebars-tests - templating_tests - rendered template", function(
     }
   });
 
-  var div = renderToDiv(Template.test_render_a, {x: 123});
+  let div = renderToDiv(Template.test_render_a, {x: 123});
   test.equal($(div).text().match(/\S+/)[0], "124");
 
-  var br1 = div.getElementsByTagName('br')[0];
-  var hr1 = div.getElementsByTagName('hr')[0];
+  let br1 = div.getElementsByTagName('br')[0];
+  let hr1 = div.getElementsByTagName('hr')[0];
   test.isTrue(br1);
   test.isTrue(hr1);
 
   R.set('bar');
   Tracker.flush();
-  var br2 = div.getElementsByTagName('br')[0];
-  var hr2 = div.getElementsByTagName('hr')[0];
+  let br2 = div.getElementsByTagName('br')[0];
+  let hr2 = div.getElementsByTagName('hr')[0];
   test.isTrue(br2);
   test.isTrue(br1 === br2);
   test.isTrue(hr2);
@@ -440,15 +440,15 @@ Tinytest.add("spacebars-tests - templating_tests - rendered template", function(
   div = renderToDiv(Template.test_render_b, {x: 123});
   test.equal($(div).text().match(/\S+/)[0], "201");
 
-  var br1 = div.getElementsByTagName('br')[0];
-  var hr1 = div.getElementsByTagName('hr')[0];
+  br1 = div.getElementsByTagName('br')[0];
+  hr1 = div.getElementsByTagName('hr')[0];
   test.isTrue(br1);
   test.isTrue(hr1);
 
   R.set('bar');
   Tracker.flush();
-  var br2 = div.getElementsByTagName('br')[0];
-  var hr2 = div.getElementsByTagName('hr')[0];
+  br2 = div.getElementsByTagName('br')[0];
+  hr2 = div.getElementsByTagName('hr')[0];
   test.isTrue(br2);
   test.isTrue(br1 === br2);
   test.isTrue(hr2);
@@ -471,7 +471,7 @@ Tinytest.add("spacebars-tests - templating_tests - template arg", function (test
   });
 
   Template.test_template_arg_a.created = function() {
-    var self = this;
+    const self = this;
     test.isFalse(self.firstNode);
     test.isFalse(self.lastNode);
     test.throws(function () { return self.find("*"); });
@@ -479,7 +479,7 @@ Tinytest.add("spacebars-tests - templating_tests - template arg", function (test
   };
 
   Template.test_template_arg_a.rendered = function () {
-    var template = this;
+    const template = this;
     template.firstNode.innerHTML = 'Greetings';
     template.lastNode.innerHTML = 'Line';
     template.find('i').innerHTML =
@@ -488,15 +488,15 @@ Tinytest.add("spacebars-tests - templating_tests - template arg", function (test
   };
 
   Template.test_template_arg_a.destroyed = function() {
-    var self = this;
+    const self = this;
     test.isFalse(self.firstNode);
     test.isFalse(self.lastNode);
     test.throws(function () { return self.find("*"); });
     test.throws(function () { return self.findAll("*"); });
   };
 
-  var div = renderToDiv(Template.test_template_arg_a, {food: "pie"});
-  var cleanupDiv = addToBody(div);
+  const div = renderToDiv(Template.test_template_arg_a, {food: "pie"});
+  const cleanupDiv = addToBody(div);
   Tracker.flush(); // cause `rendered` to be called
   test.equal($(div).text(), "Greetings 1-bold Line");
   clickElement(div.querySelector('i'));
@@ -507,7 +507,7 @@ Tinytest.add("spacebars-tests - templating_tests - template arg", function (test
 });
 
 Tinytest.add("spacebars-tests - templating_tests - helpers", function (test) {
-  var tmpl = Template.test_template_helpers_a;
+  let tmpl = Template.test_template_helpers_a;
 
   tmpl._NOWARN_OLDSTYLE_HELPERS = true;
   tmpl.foo = 'z';
@@ -515,7 +515,7 @@ Tinytest.add("spacebars-tests - templating_tests - helpers", function (test) {
   // helpers(...) takes precendence of assigned helper
   tmpl.helpers({foo: 'a', baz: function() { return 'c'; }});
 
-  var div = renderToDiv(tmpl);
+  let div = renderToDiv(tmpl);
   test.equal($(div).text().match(/\S+/)[0], 'abc');
   Tracker.flush();
 
@@ -530,7 +530,7 @@ Tinytest.add("spacebars-tests - templating_tests - helpers", function (test) {
   });
 
   div = renderToDiv(tmpl);
-  var txt = $(div).text();
+  let txt = $(div).text();
   txt = txt.replace('[object Object]', 'X'); // IE 8
   txt = txt.match(/\S+/)[0];
   test.isTrue(txt.match(/^AB[CX]4D$/));
@@ -547,17 +547,17 @@ Tinytest.add("spacebars-tests - templating_tests - helpers", function (test) {
 });
 
 Tinytest.add("spacebars-tests - templating_tests - events", function (test) {
-  var tmpl = Template.test_template_events_a;
+  let tmpl = Template.test_template_events_a;
 
-  var buf = [];
+  let buf = [];
 
   // old style
   tmpl.events = {
     'click b': function () { buf.push('b'); }
   };
 
-  var div = renderToDiv(tmpl);
-  var cleanupDiv = addToBody(div);
+  let div = renderToDiv(tmpl);
+  let cleanupDiv = addToBody(div);
   clickElement($(div).find('b')[0]);
   test.equal(buf, ['b']);
   cleanupDiv();
@@ -617,8 +617,8 @@ Tinytest.add('spacebars-tests - templating_tests - helper typecast Issue #617', 
     }, "");
   });
 
-  var div = renderToDiv(Template.test_type_casting);
-  var result = canonicalizeHtml(div.innerHTML);
+  const div = renderToDiv(Template.test_type_casting);
+  const result = canonicalizeHtml(div.innerHTML);
   test.equal(
     result,
     // This corresponds to entries in templating_tests.html.
@@ -634,7 +634,7 @@ Tinytest.add('spacebars-tests - templating_tests - each falsy Issue #801', funct
   //Minor test for issue #801 (#each over array containing nulls)
   Template.test_template_issue801.helpers({
     values: function() { return [0,1,2,null,undefined,false]; }});
-  var div = renderToDiv(Template.test_template_issue801);
+  const div = renderToDiv(Template.test_template_issue801);
   test.equal(canonicalizeHtml(div.innerHTML), "012");
 });
 
