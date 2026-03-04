@@ -7,7 +7,7 @@
  */
 Template = Blaze.Template;
 
-var RESERVED_TEMPLATE_NAMES = "__proto__ name".split(" ");
+const RESERVED_TEMPLATE_NAMES = "__proto__ name".split(" ");
 
 // Check for duplicate template names and illegal names that won't work.
 Template.__checkName = function (name) {
@@ -22,16 +22,16 @@ Template.__checkName = function (name) {
           name +
           "'. Each template needs a unique name."
       );
-    throw new Error('This template name is reserved: ' + name);
+    throw new Error(`This template name is reserved: ${name}`);
   }
 };
 
-var shownWarning = false;
+let shownWarning = false;
 
 // XXX COMPAT WITH 0.8.3
 Template.__define__ = function (name, renderFunc) {
   Template.__checkName(name);
-  Template[name] = new Template("Template." + name, renderFunc);
+  Template[name] = new Template(`Template.${name}`, renderFunc);
   // Exempt packages built pre-0.9.0 from warnings about using old
   // helper syntax, because we can.  It's not very useful to get a
   // warning about someone else's code (like a package on Atmosphere),
@@ -57,10 +57,8 @@ Template.__define__ = function (name, renderFunc) {
  * @locus Client
  */
 Template.body = new Template('body', function () {
-  var view = this;
-  return Template.body.contentRenderFuncs.map(function (func) {
-    return func.apply(view);
-  });
+  const view = this;
+  return Template.body.contentRenderFuncs.map((func) => func.apply(view));
 });
 Template.body.contentRenderFuncs = []; // array of Blaze.Views
 Template.body.view = null;
@@ -76,13 +74,13 @@ Template.body.renderToDocument = function () {
   if (Template.body.view)
     return;
 
-  var view = Blaze.render(Template.body, document.body);
+  const view = Blaze.render(Template.body, document.body);
   Template.body.view = view;
 };
 
 Template.__pendingReplacement = []
 
-var updateTimeout = null;
+let updateTimeout = null;
 
 // Simple HMR integration to re-render all of the root views
 // when a template is modified. This function can be overridden to provide
@@ -93,35 +91,35 @@ Template._applyHmrChanges = function (templateName) {
   }
 
   // debounce so we only re-render once per rebuild
-  updateTimeout = setTimeout(function () {
+  updateTimeout = setTimeout(() => {
     updateTimeout = null;
 
-    for (var i = 0; i < Template.__pendingReplacement.length; i++) {
+    for (let i = 0; i < Template.__pendingReplacement.length; i++) {
       delete Template[Template.__pendingReplacement[i]];
     }
 
     Template.__pendingReplacement = [];
 
-    var views = Blaze.__rootViews.slice();
-    for (var i = 0; i < views.length; i++) {
-      var view = views[i];
+    const views = Blaze.__rootViews.slice();
+    for (let i = 0; i < views.length; i++) {
+      const view = views[i];
       if (view.destroyed) {
         continue;
       }
 
-      var renderFunc = view._render;
-      var parentEl;
+      const renderFunc = view._render;
+      let parentEl;
       if (view._domrange && view._domrange.parentElement) {
         parentEl = view._domrange.parentElement;
       } else if (view._hmrParent) {
         parentEl = view._hmrParent;
       }
 
-      var comment;
+      let comment;
       if (view._hmrAfter) {
         comment = view._hmrAfter;
       } else {
-        var first = view._domrange.firstNode();
+        const first = view._domrange.firstNode();
         comment = document.createComment('Blaze HMR PLaceholder');
         parentEl.insertBefore(comment, first);
       }
@@ -135,7 +133,7 @@ Template._applyHmrChanges = function (templateName) {
 
       try {
         if (view === Template.body.view) {
-          var newView = Blaze.render(Template.body, document.body, comment);
+          const newView = Blaze.render(Template.body, document.body, comment);
           Template.body.view = newView;
         } else if (view.dataVar) {
           Blaze.renderWithData(renderFunc, view.dataVar.curValue?.value, parentEl, comment);
@@ -150,7 +148,7 @@ Template._applyHmrChanges = function (templateName) {
 
         // Record where the view should have been so we can still render it
         // during the next update
-        var newestRoot = Blaze.__rootViews[Blaze.__rootViews.length - 1];
+        const newestRoot = Blaze.__rootViews[Blaze.__rootViews.length - 1];
         if (newestRoot && newestRoot.isCreated && !newestRoot.isRendered) {
           newestRoot._hmrAfter = comment;
           newestRoot._hmrParent = parentEl;
@@ -161,8 +159,8 @@ Template._applyHmrChanges = function (templateName) {
 };
 
 Template._migrateTemplate = function (templateName, newTemplate, migrate) {
-  var oldTemplate = Template[templateName];
-  var migrate = Template.__pendingReplacement.indexOf(templateName) > -1
+  const oldTemplate = Template[templateName];
+  migrate = Template.__pendingReplacement.includes(templateName)
 
   if (oldTemplate && migrate) {
     newTemplate.__helpers = oldTemplate.__helpers;
