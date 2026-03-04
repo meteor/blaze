@@ -6,7 +6,7 @@ import { makeRegexMatcher } from './scanner';
 // Note that some entities don't have a final semicolon!  These are used to
 // make `&lt` (for example) with no semicolon a parse error but `&abcde` not.
 
-var ENTITIES = {
+const ENTITIES = {
   "&Aacute;": { "codepoints": [193], "characters": "\u00C1" },
   "&Aacute": { "codepoints": [193], "characters": "\u00C1" },
   "&aacute;": { "codepoints": [225], "characters": "\u00E1" },
@@ -2240,19 +2240,19 @@ var ENTITIES = {
   "&zwnj;": { "codepoints": [8204], "characters": "\u200C" }
 };
 
-var ALPHANUMERIC = /^[a-zA-Z0-9]/;
-var getPossibleNamedEntityStart = makeRegexMatcher(/^&[a-zA-Z0-9]/);
-var getApparentNamedEntity = makeRegexMatcher(/^&[a-zA-Z0-9]+;/);
+const ALPHANUMERIC = /^[a-zA-Z0-9]/;
+const getPossibleNamedEntityStart = makeRegexMatcher(/^&[a-zA-Z0-9]/);
+const getApparentNamedEntity = makeRegexMatcher(/^&[a-zA-Z0-9]+;/);
 
-var getNamedEntityByFirstChar = {};
+const getNamedEntityByFirstChar = {};
 (function () {
-  var namedEntitiesByFirstChar = {};
-  for (var ent in ENTITIES) {
-    var chr = ent.charAt(1);
+  const namedEntitiesByFirstChar = {};
+  for (const ent in ENTITIES) {
+    const chr = ent.charAt(1);
     namedEntitiesByFirstChar[chr] = (namedEntitiesByFirstChar[chr] || []);
     namedEntitiesByFirstChar[chr].push(ent.slice(2));
   }
-  for (var chr in namedEntitiesByFirstChar) {
+  for (const chr in namedEntitiesByFirstChar) {
     getNamedEntityByFirstChar[chr] = makeRegexMatcher(
       new RegExp('^&' + chr + '(?:' +
                  namedEntitiesByFirstChar[chr].join('|') + ')'));
@@ -2261,22 +2261,22 @@ var getNamedEntityByFirstChar = {};
 
 // Run a provided "matcher" function but reset the current position afterwards.
 // Fatal failure of the matcher is not suppressed.
-var peekMatcher = function (scanner, matcher) {
-  var start = scanner.pos;
-  var result = matcher(scanner);
+const peekMatcher = function (scanner, matcher) {
+  const start = scanner.pos;
+  const result = matcher(scanner);
   scanner.pos = start;
   return result;
 };
 
 // Returns a string like "&amp;" or a falsy value if no match.  Fails fatally
 // if something looks like a named entity but isn't.
-var getNamedCharRef = function (scanner, inAttribute) {
+const getNamedCharRef = function (scanner, inAttribute) {
   // look for `&` followed by alphanumeric
   if (! peekMatcher(scanner, getPossibleNamedEntityStart))
     return null;
 
-  var matcher = getNamedEntityByFirstChar[scanner.rest().charAt(1)];
-  var entity = null;
+  const matcher = getNamedEntityByFirstChar[scanner.rest().charAt(1)];
+  let entity = null;
   if (matcher)
     entity = peekMatcher(scanner, matcher);
 
@@ -2298,7 +2298,7 @@ var getNamedCharRef = function (scanner, inAttribute) {
   } else {
     // we couldn't match any real entity, so see if this is a bad entity
     // or something we can overlook.
-    var badEntity = peekMatcher(scanner, getApparentNamedEntity);
+    const badEntity = peekMatcher(scanner, getApparentNamedEntity);
     if (badEntity)
       scanner.fatal("Invalid character reference: " + badEntity);
     // `&aaaa` is ok with no semicolon
@@ -2309,28 +2309,28 @@ var getNamedCharRef = function (scanner, inAttribute) {
 // Returns the sequence of one or two codepoints making up an entity as an array.
 // Codepoints in the array are integers and may be out of the single-char JavaScript
 // range.
-var getCodePoints = function (namedEntity) {
+const getCodePoints = function (namedEntity) {
   return ENTITIES[namedEntity].codepoints;
 };
 
-var ALLOWED_AFTER_AMP = /^[\u0009\u000a\u000c <&]/;
+const ALLOWED_AFTER_AMP = /^[\u0009\u000a\u000c <&]/;
 
-var getCharRefNumber = makeRegexMatcher(/^(?:[xX][0-9a-fA-F]+|[0-9]+);/);
+const getCharRefNumber = makeRegexMatcher(/^(?:[xX][0-9a-fA-F]+|[0-9]+);/);
 
-var BIG_BAD_CODEPOINTS = (function (obj) {
-  var list = [0x1FFFE, 0x1FFFF, 0x2FFFE, 0x2FFFF, 0x3FFFE, 0x3FFFF,
+const BIG_BAD_CODEPOINTS = (function (obj) {
+  const list = [0x1FFFE, 0x1FFFF, 0x2FFFE, 0x2FFFF, 0x3FFFE, 0x3FFFF,
               0x4FFFE, 0x4FFFF, 0x5FFFE, 0x5FFFF, 0x6FFFE, 0x6FFFF,
               0x7FFFE, 0x7FFFF, 0x8FFFE, 0x8FFFF, 0x9FFFE, 0x9FFFF,
               0xAFFFE, 0xAFFFF, 0xBFFFE, 0xBFFFF, 0xCFFFE, 0xCFFFF,
               0xDFFFE, 0xDFFFF, 0xEFFFE, 0xEFFFF, 0xFFFFE, 0xFFFFF,
               0x10FFFE, 0x10FFFF];
-  for (var i = 0; i < list.length; i++)
+  for (let i = 0; i < list.length; i++)
     obj[list[i]] = true;
 
   return obj;
 })({});
 
-var isLegalCodepoint = function (cp) {
+const isLegalCodepoint = function (cp) {
   if ((cp === 0) ||
       (cp >= 0x80 && cp <= 0x9f) ||
       (cp >= 0xd800 && cp <= 0xdfff) ||
@@ -2366,27 +2366,27 @@ export function getCharacterReference (scanner, inAttribute, allowedChar) {
     // no ampersand
     return null;
 
-  var afterAmp = scanner.rest().charAt(1);
+  const afterAmp = scanner.rest().charAt(1);
 
   if (afterAmp === '#') {
     scanner.pos += 2;
     // refNumber includes possible initial `x` and final semicolon
-    var refNumber = getCharRefNumber(scanner);
+    const refNumber = getCharRefNumber(scanner);
     // At this point we've consumed the input, so we're committed to returning
     // something or failing fatally.
     if (! refNumber)
       scanner.fatal("Invalid numerical character reference starting with &#");
-    var codepoint;
+    let codepoint;
     if (refNumber.charAt(0) === 'x' || refNumber.charAt(0) === 'X') {
       // hex
-      var hex = refNumber.slice(1, -1);
+      let hex = refNumber.slice(1, -1);
       while (hex.charAt(0) === '0')
         hex = hex.slice(1);
       if (hex.length > 6)
         scanner.fatal("Numerical character reference too large: 0x" + hex);
       codepoint = parseInt(hex || "0", 16);
     } else {
-      var dec = refNumber.slice(0, -1);
+      let dec = refNumber.slice(0, -1);
       while (dec.charAt(0) === '0')
         dec = dec.slice(1);
       if (dec.length > 7)
@@ -2403,7 +2403,7 @@ export function getCharacterReference (scanner, inAttribute, allowedChar) {
              || ALLOWED_AFTER_AMP.test(afterAmp)) {
     return null;
   } else {
-    var namedEntity = getNamedCharRef(scanner, inAttribute);
+    const namedEntity = getNamedCharRef(scanner, inAttribute);
     if (namedEntity) {
       return { t: 'CharRef',
                v: namedEntity,
