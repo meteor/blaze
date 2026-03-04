@@ -21,14 +21,12 @@ export function toJSLiteral (obj) {
   // See <http://timelessrepo.com/json-isnt-a-javascript-subset> for `\u2028\u2029`.
   // Also escape Unicode surrogates.
   return (JSON.stringify(obj)
-          .replace(/[\u2028\u2029\ud800-\udfff]/g, function (c) {
-            return '\\u' + ('000' + c.charCodeAt(0).toString(16)).slice(-4);
-          }));
+          .replace(/[\u2028\u2029\ud800-\udfff]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`));
 }
 
 
 
-var jsReservedWordSet = (function (set) {
+const jsReservedWordSet = (function (set) {
   "abstract else instanceof super boolean enum int switch break export interface synchronized byte extends let this case false long throw catch final native throws char finally new transient class float null true const for package try continue function private typeof debugger goto protected var default if public void delete implements return volatile do import short while double in static with".split(' ').forEach(function (w) {
     set[w] = 1;
   });
@@ -41,7 +39,7 @@ export function toObjectLiteralKey (k) {
   return toJSLiteral(k);
 }
 
-var hasToJS = function (x) {
+const hasToJS = (x) => {
   return x.toJS && (typeof (x.toJS) === 'function');
 };
 
@@ -54,10 +52,10 @@ ToJSVisitor.def({
     return toJSLiteral(stringBooleanOrNumber);
   },
   visitArray: function (array) {
-    var parts = [];
-    for (var i = 0; i < array.length; i++)
+    const parts = [];
+    for (let i = 0; i < array.length; i++)
       parts.push(this.visit(array[i]));
-    return '[' + parts.join(', ') + ']';
+    return `[${parts.join(', ')}]`;
   },
   visitTag: function (tag) {
     return this.generateCall(tag.tagName, tag.attrs, tag.children);
@@ -77,31 +75,31 @@ ToJSVisitor.def({
       return x.toJS(this);
     }
 
-    throw new Error("Unexpected object in HTMLjs in toJS: " + x);
+    throw new Error(`Unexpected object in HTMLjs in toJS: ${x}`);
   },
   generateCall: function (name, attrs, children) {
-    var tagSymbol;
-    if (name.indexOf('.') >= 0) {
+    let tagSymbol;
+    if (name.includes('.')) {
       tagSymbol = name;
     } else if (HTML.isTagEnsured(name)) {
-      tagSymbol = 'HTML.' + HTML.getSymbolName(name);
+      tagSymbol = `HTML.${HTML.getSymbolName(name)}`;
     } else {
-      tagSymbol = 'HTML.getTag(' + toJSLiteral(name) + ')';
+      tagSymbol = `HTML.getTag(${toJSLiteral(name)})`;
     }
 
-    var attrsArray = null;
+    let attrsArray = null;
+    let needsHTMLAttrs = false;
     if (attrs) {
       attrsArray = [];
-      var needsHTMLAttrs = false;
       if (HTML.isArray(attrs)) {
-        var attrsArray = [];
-        for (var i = 0; i < attrs.length; i++) {
-          var a = attrs[i];
+        attrsArray = [];
+        for (let i = 0; i < attrs.length; i++) {
+          const a = attrs[i];
           if (hasToJS(a)) {
             attrsArray.push(a.toJS(this));
             needsHTMLAttrs = true;
           } else {
-            var attrsObjStr = this.generateAttrsDictionary(attrs[i]);
+            const attrsObjStr = this.generateAttrsDictionary(attrs[i]);
             if (attrsObjStr !== null)
               attrsArray.push(attrsObjStr);
           }
@@ -113,25 +111,25 @@ ToJSVisitor.def({
         attrsArray.push(this.generateAttrsDictionary(attrs));
       }
     }
-    var attrsStr = null;
+    let attrsStr = null;
     if (attrsArray && attrsArray.length) {
       if (attrsArray.length === 1 && ! needsHTMLAttrs) {
         attrsStr = attrsArray[0];
       } else {
-        attrsStr = 'HTML.Attrs(' + attrsArray.join(', ') + ')';
+        attrsStr = `HTML.Attrs(${attrsArray.join(', ')})`;
       }
     }
 
-    var argStrs = [];
+    const argStrs = [];
     if (attrsStr !== null)
       argStrs.push(attrsStr);
 
     if (children) {
-      for (var i = 0; i < children.length; i++)
+      for (let i = 0; i < children.length; i++)
         argStrs.push(this.visit(children[i]));
     }
 
-    return tagSymbol + '(' + argStrs.join(', ') + ')';
+    return `${tagSymbol}(${argStrs.join(', ')})`;
   },
   generateAttrsDictionary: function (attrsDict) {
     if (attrsDict.toJS && (typeof (attrsDict.toJS) === 'function')) {
@@ -139,14 +137,13 @@ ToJSVisitor.def({
       return attrsDict.toJS(this);
     }
 
-    var kvStrs = [];
-    for (var k in attrsDict) {
+    const kvStrs = [];
+    for (const k in attrsDict) {
       if (! HTML.isNully(attrsDict[k]))
-        kvStrs.push(toObjectLiteralKey(k) + ': ' +
-                    this.visit(attrsDict[k]));
+        kvStrs.push(`${toObjectLiteralKey(k)}: ${this.visit(attrsDict[k])}`);
     }
     if (kvStrs.length)
-      return '{' + kvStrs.join(', ') + '}';
+      return `{${kvStrs.join(', ')}}`;
     return null;
   }
 });
