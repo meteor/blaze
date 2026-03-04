@@ -4,7 +4,7 @@ import { generateBodyJS, generateTemplateJS } from './code-generation';
 import { throwCompileError } from './throw-compile-error';
 
 export function compileTagsWithSpacebars(tags, hmrAvailable) {
-  var handler = new SpacebarsTagCompiler();
+  const handler = new SpacebarsTagCompiler();
 
   tags.forEach((tag) => {
     handler.addTagToResults(tag, hmrAvailable);
