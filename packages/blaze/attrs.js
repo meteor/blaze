@@ -50,7 +50,7 @@ AttributeHandler.prototype.update = function (element, oldValue, value) {
 AttributeHandler.extend = function (options) {
   const curType = this;
   const subType = function AttributeHandlerSubtype(...args) {
-    AttributeHandler.apply(this, args);
+    AttributeHandler.call(this, ...args);
   };
   subType.prototype = new curType;
   subType.extend = curType.extend;
@@ -224,11 +224,10 @@ const XlinkHandler = AttributeHandler.extend({
 });
 
 // cross-browser version of `instanceof SVGElement`
-const isSVGElement = function (elem) {
-  return 'ownerSVGElement' in elem;
-};
+const isSVGElement = (elem) =>
+  'ownerSVGElement' in elem;
 
-const isUrlAttribute = function (tagName, attrName) {
+const isUrlAttribute = (tagName, attrName) => {
   // Compiled from http://www.w3.org/TR/REC-html40/index/attributes.html
   // and
   // http://www.w3.org/html/wg/drafts/html/master/index.html#attributes-1
@@ -273,7 +272,7 @@ if (Meteor.isClient) {
   anchorForNormalization = document.createElement('A');
 }
 
-const getUrlProtocol = function (url) {
+const getUrlProtocol = (url) => {
   if (Meteor.isClient) {
     anchorForNormalization.href = url;
     return (anchorForNormalization.protocol || "").toLowerCase();
@@ -291,10 +290,9 @@ const origUpdate = AttributeHandler.prototype.update;
 const UrlHandler = AttributeHandler.extend({
   update: function (...args) {
     const [element, oldValue, value] = args;
-    const self = this;
 
     if (Blaze._javascriptUrlsAllowed()) {
-      origUpdate.apply(self, args);
+      origUpdate.call(this, ...args);
     } else {
       const isJavascriptProtocol = (getUrlProtocol(value) === "javascript:");
       const isVBScriptProtocol   = (getUrlProtocol(value) === "vbscript:");
@@ -303,9 +301,9 @@ const UrlHandler = AttributeHandler.extend({
         "allowed in URL attribute values. " +
         "Call Blaze._allowJavascriptUrls() " +
         "to enable them.");
-        origUpdate.apply(self, [element, oldValue, null]);
+        origUpdate.call(this, element, oldValue, null);
       } else {
-        origUpdate.apply(self, args);
+        origUpdate.call(this, ...args);
       }
     }
   }
@@ -332,7 +330,7 @@ Blaze._makeAttributeHandler = function (elem, name, value) {
     // internally, TEXTAREAs tracks their value in the 'value'
     // attribute just like INPUTs.
     return new DOMPropertyHandler(name, value);
-  } else if (name.substring(0,6) === 'xlink:') {
+  } else if (name.startsWith('xlink:')) {
     return new XlinkHandler(name.substring(6), value);
   } else if (isUrlAttribute(elem.tagName, name)) {
     return new UrlHandler(name, value);

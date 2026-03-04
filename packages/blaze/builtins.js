@@ -97,7 +97,7 @@ function _createBinding(view, binding, displayName, mapper) {
  */
 Blaze._attachBindingsToView = function (bindings, view) {
   view.onViewCreated(function () {
-    Object.entries(bindings).forEach(function ([name, binding]) {
+    Object.entries(bindings).forEach(([name, binding]) => {
       view._scopeBindings[name] = _createBinding(view, binding);
     });
   });
@@ -110,7 +110,7 @@ Blaze._attachBindingsToView = function (bindings, view) {
  * @param {Function} contentFunc A Function that returns [*renderable content*](#Renderable-Content).
  */
 Blaze.Let = function (bindings, contentFunc) {
-  var view = Blaze.View('let', contentFunc);
+  const view = Blaze.View('let', contentFunc);
   Blaze._attachBindingsToView(bindings, view);
 
   return view;

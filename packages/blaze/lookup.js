@@ -88,9 +88,7 @@ Blaze._getTemplateHelper = function (template, name, tmplInstanceFunc) {
     if (! isKnownOldStyleHelper) {
       template.__helpers.set(name, Blaze._OLDSTYLE_HELPER);
       if (! template._NOWARN_OLDSTYLE_HELPERS) {
-        Blaze._warn('Assigning helper with `' + template.viewName + '.' +
-                    name + ' = ...` is deprecated.  Use `' + template.viewName +
-                    '.helpers(...)` instead.');
+        Blaze._warn(`Assigning helper with \`${template.viewName}.${name} = ...\` is deprecated.  Use \`${template.viewName}.helpers(...)\` instead.`);
       }
     }
     if (template[name] != null) {
@@ -107,10 +105,8 @@ const wrapHelper = function (f, templateFunc, name = 'template helper') {
   }
 
   return function (...args) {
-    const self = this;
-
-    return Blaze.Template._withTemplateInstanceFunc(templateFunc, function () {
-      return Blaze._wrapCatchingExceptions(f, name).apply(self, args);
+    return Blaze.Template._withTemplateInstanceFunc(templateFunc, () => {
+      return Blaze._wrapCatchingExceptions(f, name).apply(this, args);
     });
   };
 };
@@ -238,9 +234,9 @@ Blaze.View.prototype.lookup = function (name, _options) {
     const x = data && data[name];
     if (! x) {
       if (lookupTemplate) {
-        throw new Error("No such template: " + name);
+        throw new Error(`No such template: ${name}`);
       } else if (isCalledAsFunction) {
-        throw new Error("No such function: " + name);
+        throw new Error(`No such function: ${name}`);
       } else if (name.charAt(0) === '@' && ((x === null) ||
                                             (x === undefined))) {
         // Throw an error if the user tries to use a `@directive`
@@ -249,7 +245,7 @@ Blaze.View.prototype.lookup = function (name, _options) {
         // if we fail silently.  On the other hand, we want to
         // throw late in case some app or package wants to provide
         // a missing directive.
-        throw new Error("Unsupported directive: " + name);
+        throw new Error(`Unsupported directive: ${name}`);
       }
     }
     if (! data) {
@@ -257,7 +253,7 @@ Blaze.View.prototype.lookup = function (name, _options) {
     }
     if (typeof x !== 'function') {
       if (isCalledAsFunction) {
-        throw new Error("Can't call non-function: " + x);
+        throw new Error(`Can't call non-function: ${x}`);
       }
       return x;
     }
@@ -280,7 +276,7 @@ Blaze._parentData = function (height, _functionWrapped) {
   if (! theWith)
     return null;
   if (_functionWrapped)
-    return function () { return theWith.dataVar.get()?.value; };
+    return () => theWith.dataVar.get()?.value;
   return theWith.dataVar.get()?.value;
 };
 
