@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor';
 import { HTMLTools } from 'meteor/html-tools';
 import { HTML } from 'meteor/htmljs';
 import { BlazeTools } from 'meteor/blaze-tools';
@@ -7,11 +6,6 @@ import { optimize } from './optimizer';
 import { ReactComponentSiblingForbidder} from './react';
 import { TemplateTag } from './templatetag';
 import { removeWhitespace } from './whitespace';
-
-var UglifyJSMinify = null;
-if (Meteor.isServer) {
-  UglifyJSMinify = Npm.require('uglify-js').minify;
-}
 
 export function parse(input) {
   return HTMLTools.parseFragment(
@@ -110,23 +104,5 @@ export function codeGen (parseTree, options) {
 }
 
 export function beautify (code) {
-  if (!UglifyJSMinify) {
-    return code;
-  }
-
-  var result = UglifyJSMinify(code, {
-    mangle: false,
-    compress: false,
-    output: {
-      beautify: true,
-      indent_level: 2,
-      width: 80
-    }
-  });
-
-  var output = result.code;
-  // Uglify interprets our expression as a statement and may add a semicolon.
-  // Strip trailing semicolon.
-  output = output.replace(/;$/, '');
-  return output;
+  return code;
 }
