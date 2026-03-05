@@ -1,8 +1,3 @@
-import isObject from 'lodash.isobject';
-import isFunction from 'lodash.isfunction';
-import has from 'lodash.has';
-import isEmpty from 'lodash.isempty';
-
 // [new] Blaze.Template([viewName], renderFunction)
 //
 // `Blaze.Template` is the class of templates, like `Template.foo` in
@@ -369,9 +364,9 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
       connection: Match.Optional(Match.Any)
     };
 
-    if (isFunction(lastParam)) {
+    if (typeof lastParam === 'function') {
       options.onReady = args.pop();
-    } else if (lastParam && ! isEmpty(lastParam) && Match.test(lastParam, lastParamOptionsPattern)) {
+    } else if (lastParam && Object.keys(lastParam).length > 0 && Match.test(lastParam, lastParamOptionsPattern)) {
       options = args.pop();
     }
   }
@@ -408,7 +403,7 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
     connection: connection
   });
 
-  if (!has(subHandles, subHandle.subscriptionId)) {
+  if (!Object.prototype.hasOwnProperty.call(subHandles, subHandle.subscriptionId)) {
     subHandles[subHandle.subscriptionId] = subHandle;
 
     // Adding a new subscription will always cause us to transition from ready
@@ -444,7 +439,7 @@ Blaze.TemplateInstance.prototype.subscriptionsReady = function () {
  * @importFromPackage templating
  */
 Template.prototype.helpers = function (dict) {
-  if (!isObject(dict)) {
+  if (typeof dict !== 'object' || dict === null) {
     throw new Error("Helpers dictionary has to be an object");
   }
 
@@ -519,7 +514,7 @@ if (canUseGetters) {
  * @importFromPackage templating
  */
 Template.prototype.events = function (eventMap) {
-  if (!isObject(eventMap)) {
+  if (typeof eventMap !== 'object' || eventMap === null) {
     throw new Error("Event map has to be an object");
   }
 

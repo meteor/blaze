@@ -1,5 +1,3 @@
-import has from 'lodash.has';
-
 /** @param {function(Binding): boolean} fn */
 function _createBindingsHelper(fn) {
   /** @param {string[]} names */
@@ -142,7 +140,7 @@ function _lexicalBindingLookup(view, name) {
   do {
     // skip block helpers views
     // if we found the binding on the scope, return it
-    if (has(currentView._scopeBindings, name)) {
+    if (Object.prototype.hasOwnProperty.call(currentView._scopeBindings, name)) {
       return currentView._scopeBindings[name];
     }
   } while (currentView = _lexicalKeepGoing(currentView));

@@ -1,6 +1,3 @@
-import has from 'lodash.has';
-import isObject from 'lodash.isobject';
-
 Blaze._calculateCondition = function (cond) {
   if (HTML.isArray(cond) && cond.length === 0) return false;
   return !!cond;
@@ -223,7 +220,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
       // Unwrap a sequence reactively (`{{#each x in xs}}`).
       () => {
         let maybeSequence = argFunc();
-        if (isObject(maybeSequence) && has(maybeSequence, '_sequence')) {
+        if (typeof maybeSequence === 'object' && maybeSequence !== null && Object.prototype.hasOwnProperty.call(maybeSequence, '_sequence')) {
           eachView.variableName = maybeSequence._variable || null;
           maybeSequence = maybeSequence._sequence;
         }

@@ -1,4 +1,3 @@
-import has from 'lodash.has';
 import { OrderedDict } from 'meteor/ordered-dict';
 
 let jsUrlsAllowed = false;
@@ -353,7 +352,7 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
   const handlers = this.handlers;
 
   Object.getOwnPropertyNames(handlers).forEach((k) => {
-    if (!has(newAttrs, k)) {
+    if (!Object.prototype.hasOwnProperty.call(newAttrs, k)) {
       // remove attributes (and handlers) for attribute names
       // that don't exist as keys of `newAttrs` and so won't
       // be visited when traversing it.  (Attributes that
@@ -371,7 +370,7 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
     let handler = null;
     let oldValue = null;
     const value = newAttrs[k];
-    if (!has(handlers, k)) {
+    if (!Object.prototype.hasOwnProperty.call(handlers, k)) {
       if (value !== null) {
         // make new handler
         handler = Blaze._makeAttributeHandler(elem, k, value);
