@@ -6,10 +6,6 @@ Package.describe({
   documentation: null
 });
 
-Npm.depends({
-  'lodash.has': '4.5.2'
-});
-
 Package.onUse(function (api) {
 
   // XXX would like to do the following only when the first html file
