@@ -104,5 +104,15 @@ export function codeGen (parseTree, options) {
 }
 
 export function beautify (code) {
+  // Validate syntax of generated code at compile time.
+  // new Function() parses without executing.
+  try {
+    new Function(code);
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      throw new Error(`Internal error: generated code has a syntax error: ${e.message}\n${code}`);
+    }
+    throw e;
+  }
   return code;
 }
