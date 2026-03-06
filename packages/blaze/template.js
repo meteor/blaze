@@ -1,4 +1,4 @@
-import { hasOwn } from './utils';
+import { hasOwn, isObject } from './utils';
 
 // [new] Blaze.Template([viewName], renderFunction)
 //
@@ -441,7 +441,7 @@ Blaze.TemplateInstance.prototype.subscriptionsReady = function () {
  * @importFromPackage templating
  */
 Template.prototype.helpers = function (dict) {
-  if (typeof dict !== 'object' || dict === null) {
+  if (!isObject(dict)) {
     throw new Error("Helpers dictionary has to be an object");
   }
 
@@ -516,7 +516,7 @@ if (canUseGetters) {
  * @importFromPackage templating
  */
 Template.prototype.events = function (eventMap) {
-  if (typeof eventMap !== 'object' || eventMap === null) {
+  if (!isObject(eventMap)) {
     throw new Error("Event map has to be an object");
   }
 
