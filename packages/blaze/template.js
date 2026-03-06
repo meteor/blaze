@@ -1,3 +1,5 @@
+import { hasOwn } from './utils';
+
 // [new] Blaze.Template([viewName], renderFunction)
 //
 // `Blaze.Template` is the class of templates, like `Template.foo` in
@@ -403,7 +405,7 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
     connection: connection
   });
 
-  if (!Object.prototype.hasOwnProperty.call(subHandles, subHandle.subscriptionId)) {
+  if (!hasOwn(subHandles, subHandle.subscriptionId)) {
     subHandles[subHandle.subscriptionId] = subHandle;
 
     // Adding a new subscription will always cause us to transition from ready

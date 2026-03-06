@@ -1,4 +1,5 @@
 import { OrderedDict } from 'meteor/ordered-dict';
+import { hasOwn } from './utils';
 
 let jsUrlsAllowed = false;
 Blaze._allowJavascriptUrls = function () {
@@ -352,7 +353,7 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
   const handlers = this.handlers;
 
   Object.getOwnPropertyNames(handlers).forEach((k) => {
-    if (!Object.prototype.hasOwnProperty.call(newAttrs, k)) {
+    if (!hasOwn(newAttrs, k)) {
       // remove attributes (and handlers) for attribute names
       // that don't exist as keys of `newAttrs` and so won't
       // be visited when traversing it.  (Attributes that
@@ -370,7 +371,7 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
     let handler = null;
     let oldValue = null;
     const value = newAttrs[k];
-    if (!Object.prototype.hasOwnProperty.call(handlers, k)) {
+    if (!hasOwn(handlers, k)) {
       if (value !== null) {
         // make new handler
         handler = Blaze._makeAttributeHandler(elem, k, value);
