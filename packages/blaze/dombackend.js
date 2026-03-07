@@ -19,24 +19,16 @@ DOMBackend._hasJQuery = _hasJQuery;
 
 
 DOMBackend.getContext = function () {
-  if (DOMBackend._context) {
-    return DOMBackend._context;
-  }
-  if (_hasJQuery) {
-    if ($jq.support.createHTMLDocument) {
-      DOMBackend._context = document.implementation.createHTMLDocument("");
-      const base = DOMBackend._context.createElement("base");
-      base.href = document.location.href;
-      DOMBackend._context.head.appendChild(base);
-    } else {
-      DOMBackend._context = document;
-    }
-  } else {
-    // Modern browsers all support createHTMLDocument
+  if (DOMBackend._context) return DOMBackend._context;
+  // jQuery may need the legacy check; native path always supports createHTMLDocument
+  const useCreateHTMLDocument = _hasJQuery ? $jq.support.createHTMLDocument : true;
+  if (useCreateHTMLDocument) {
     DOMBackend._context = document.implementation.createHTMLDocument("");
     const base = DOMBackend._context.createElement("base");
     base.href = document.location.href;
     DOMBackend._context.head.appendChild(base);
+  } else {
+    DOMBackend._context = document;
   }
   return DOMBackend._context;
 };
@@ -50,7 +42,7 @@ DOMBackend.parseHTML = function (html) {
   return Array.from(template.content.childNodes);
 };
 
-// WeakMap for native event delegation: elem -> Map<handler, {wrapper, type}>
+// WeakMap for native event delegation: elem -> Map<handler, Array<{wrapper, eventType}>>
 const _delegateMap = new WeakMap();
 
 // focus/blur don't bubble — use focusin/focusout for native delegation
@@ -72,7 +64,9 @@ DOMBackend.Events = {
     eventType = _delegateEventAlias[eventType] || eventType;
 
     const wrapper = (event) => {
-      const target = event.target.closest(selector);
+      // event.target can be a text node (nodeType 3) — walk to parent element first
+      const origin = event.target;
+      const target = origin.nodeType === 1 ? origin.closest(selector) : origin.parentElement?.closest(selector);
       if (target && elem.contains(target)) {
         // Mimic jQuery's delegated event behavior
         Object.defineProperty(event, 'currentTarget', {
@@ -87,7 +81,7 @@ DOMBackend.Events = {
       _delegateMap.set(elem, new Map());
     }
     const handlerMap = _delegateMap.get(elem);
-    // Store wrapper keyed by handler+type for later removal
+    // Store wrapper keyed by handler for later removal (eventType stored in the entry)
     const key = handler;
     if (!handlerMap.has(key)) {
       handlerMap.set(key, []);
@@ -130,10 +124,12 @@ DOMBackend.Events = {
       handler._meteorui_wrapper = wrapper;
     } else {
       const wrapper = (event) => {
-        const target = event.target;
-        if (target.closest(selector) && elem.contains(target)) {
+        // event.target can be a text node — walk to parent element first
+        const origin = event.target;
+        const matched = origin.nodeType === 1 ? origin.closest(selector) : origin.parentElement?.closest(selector);
+        if (matched && elem.contains(matched)) {
           Object.defineProperty(event, 'currentTarget', {
-            value: target,
+            value: matched,
             configurable: true,
           });
           handler.call(elem, event);
