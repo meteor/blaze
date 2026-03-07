@@ -5,9 +5,8 @@
  * It handles different types of attributes (URLs, styles, classes, boolean attributes, etc.)
  * with specialized handlers that ensure cross-browser compatibility and security.
  */
-
-import has from 'lodash.has';
 import { OrderedDict } from 'meteor/ordered-dict';
+import { hasOwn } from './utils';
 
 // Global security configuration for JavaScript URLs
 // By default, javascript: and vbscript: URLs are blocked for security
@@ -88,8 +87,8 @@ AttributeHandler.prototype.update = function (element, oldValue, value) {
  */
 AttributeHandler.extend = function (options) {
   const curType = this;
-  const subType = function AttributeHandlerSubtype(/*arguments*/) {
-    AttributeHandler.apply(this, arguments);
+  const subType = function AttributeHandlerSubtype(...args) {
+    AttributeHandler.apply(this, args);
   };
   subType.prototype = new curType;
   subType.extend = curType.extend;
@@ -556,6 +555,7 @@ const getUrlProtocol = function (url) {
  */
 const origUpdate = AttributeHandler.prototype.update;
 const UrlHandler = AttributeHandler.extend({
+
   /**
    * Update URL attribute with security validation
    * 
@@ -563,9 +563,9 @@ const UrlHandler = AttributeHandler.extend({
    * @param {string|null} oldValue - Previous attribute value
    * @param {string|null} value - New URL value to validate and set
    */
-  update: function (element, oldValue, value) {
+  update: function (...args) {
+    const [element, oldValue, value] = args;
     const self = this;
-    const args = arguments;
 
     // If JavaScript URLs are explicitly allowed, skip validation
     if (Blaze._javascriptUrlsAllowed()) {
@@ -700,7 +700,12 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
 
   // Phase 1: Clean up attributes that are no longer in newAttrs
   Object.getOwnPropertyNames(handlers).forEach((k) => {
-    if (!has(newAttrs, k)) {
+    if (!hasOwn(newAttrs, k)) {
+      // remove attributes (and handlers) for attribute names
+      // that don't exist as keys of `newAttrs` and so won't
+      // be visited when traversing it.  (Attributes that
+      // exist in the `newAttrs` object but are `null`
+      // are handled later.)
       const handler = handlers[k];
       const oldValue = handler.value;
       // Tell handler to remove the attribute
@@ -719,7 +724,7 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
     const value = newAttrs[k];
     
     // Create new handler if this attribute doesn't exist yet
-    if (!has(handlers, k)) {
+    if (!hasOwn(handlers, k)) {
       if (value !== null) {
         handler = Blaze._makeAttributeHandler(elem, k, value);
         handlers[k] = handler;

@@ -1,7 +1,4 @@
-import isObject from 'lodash.isobject';
-import isFunction from 'lodash.isfunction';
-import has from 'lodash.has';
-import isEmpty from 'lodash.isempty';
+import { hasOwn, isObject } from './utils';
 
 // [new] Blaze.Template([viewName], renderFunction)
 //
@@ -369,9 +366,9 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
       connection: Match.Optional(Match.Any)
     };
 
-    if (isFunction(lastParam)) {
+    if (typeof lastParam === 'function') {
       options.onReady = args.pop();
-    } else if (lastParam && ! isEmpty(lastParam) && Match.test(lastParam, lastParamOptionsPattern)) {
+    } else if (lastParam && Object.keys(lastParam).length > 0 && Match.test(lastParam, lastParamOptionsPattern)) {
       options = args.pop();
     }
   }
@@ -408,7 +405,7 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
     connection: connection
   });
 
-  if (!has(subHandles, subHandle.subscriptionId)) {
+  if (!hasOwn(subHandles, subHandle.subscriptionId)) {
     subHandles[subHandle.subscriptionId] = subHandle;
 
     // Adding a new subscription will always cause us to transition from ready
@@ -527,9 +524,9 @@ Template.prototype.events = function (eventMap) {
   let eventMap2 = {};
   for (let k in eventMap) {
     eventMap2[k] = (function (k, v) {
-      return function (event /*, ...*/) {
+      return function (...args) {
         const view = this; // passed by EventAugmenter
-        const args = Array.prototype.slice.call(arguments);
+        const [event] = args;
         // Exiting the current computation to avoid creating unnecessary
         // and unexpected reactive dependencies with Templates data
         // or any other reactive dependencies defined in event handlers

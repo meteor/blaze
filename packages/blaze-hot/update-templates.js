@@ -6,8 +6,8 @@ let overrideTemplateElseBlock = null;
 
 const oldConstructView = Template.prototype.constructView;
 
-Template.prototype.constructView = function () {
-  let view = oldConstructView.apply(this, arguments);
+Template.prototype.constructView = function (...args) {
+  let view = oldConstructView.apply(this, args);
   let templateName = this.viewName;
 
   view.onViewCreated(function () {

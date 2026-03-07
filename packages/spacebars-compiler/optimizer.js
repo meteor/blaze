@@ -99,13 +99,14 @@ export function toRaw(x) {
 
 export const TreeTransformer = HTML.TransformingVisitor.extend();
 TreeTransformer.def({
-  visitAttributes: function (attrs/*, ...*/) {
+  visitAttributes: function (...args) {
+    const [attrs] = args;
     // pass template tags through by default
     if (attrs instanceof HTMLTools.TemplateTag)
       return attrs;
 
     return HTML.TransformingVisitor.prototype.visitAttributes.apply(
-      this, arguments);
+      this, args);
   }
 });
 

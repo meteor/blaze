@@ -45,8 +45,8 @@ import { BlazeTools } from 'meteor/blaze-tools';
 
 var TEMPLATE_TAG_POSITION = HTMLTools.TEMPLATE_TAG_POSITION;
 
-export function TemplateTag () {
-  HTMLTools.TemplateTag.apply(this, arguments);
+export function TemplateTag (...args) {
+  HTMLTools.TemplateTag.apply(this, args);
 }
 
 TemplateTag.prototype = new HTMLTools.TemplateTag;
