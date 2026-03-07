@@ -134,8 +134,9 @@
 
       if (handler) { // Proceed only if a handler exists or was created
         const lastCachedValue = lastValues[k]; // Read from cache
-        // The crucial check using _lastValues
-        const shouldUpdate = (lastCachedValue !== newValueForAttr && String(lastCachedValue) !== String(newValueForAttr)); // Changed || to &&
+        const shouldUpdate = !(lastCachedValue === newValueForAttr ||
+          (lastCachedValue == null && newValueForAttr == null) ||
+          (typeof lastCachedValue === typeof newValueForAttr && String(lastCachedValue) === String(newValueForAttr)));
 
         if (shouldUpdate) {
           handler.value = newValueForAttr;
@@ -171,7 +172,7 @@
   function runBenchmarkIteration(UpdaterConstructor, description, statusElement, suppressConsoleLog = false) {
     const testElement = document.createElement('div');
     // Assign unique ID for potential debugging, though not strictly needed for logic
-    testElement.id = description.replace(/\s+/g, '') + "_" + Date.now(); // Corrected regex replacement string 
+    testElement.id = description.replace(/\s+/g, '') + "_" + Date.now();
     const updater = new UpdaterConstructor(testElement);
     
     const workloadIterations = 5000; // Number of times to run the sequence

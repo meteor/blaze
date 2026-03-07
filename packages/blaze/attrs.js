@@ -495,7 +495,7 @@ if (Meteor.isClient) {
  * Protocol cache for performance optimization
  * 
  * Since URL protocol detection requires DOM manipulation, we cache results
- * to avoid repeated operations on the same URLs. Uses LRU-style eviction
+ * to avoid repeated operations on the same URLs. Uses FIFO eviction
  * to prevent memory leaks in long-running applications.
  */
 const _protocolCache = new Map(); 
@@ -522,7 +522,7 @@ const getUrlProtocol = function (url) {
     anchorForNormalization.href = url;
     const protocol = (anchorForNormalization.protocol || "").toLowerCase();
     
-    // Implement simple LRU cache eviction to prevent memory leaks
+    // Implement simple FIFO cache eviction to prevent memory leaks
     if (_protocolCache.size >= MAX_CACHE_SIZE) {
       // Remove oldest entry (first key in insertion order)
       const firstKey = _protocolCache.keys().next().value;
@@ -736,10 +736,10 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
     }
     
     // Performance optimization: only update if value actually changed
-    // This handles edge cases with null/undefined values and type coercion
+    // Short-circuit on strict equality first, then handle null/undefined and type coercion
     const last = lastValues[k];
-    const shouldUpdate = last !== value && 
-                        !((last == null && value == null) || 
+    const shouldUpdate = !(last === value ||
+                          (last == null && value == null) ||
                           (typeof last === typeof value && String(last) === String(value)));
                           
     if (shouldUpdate) {
