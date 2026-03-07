@@ -2,7 +2,7 @@
   <img src="https://cdn.rawgit.com/meteor/blaze/master/images/logo.svg" width="260" />
 </p>
 <p align="center">
-  <a href="#Blaze Tests" href="https://github.com/meteor/blaze/actions/workflows/blaze-tests.yml">
+  <a href="https://github.com/meteor/blaze/actions/workflows/blaze-tests.yml">
   	<img src="https://github.com/meteor/blaze/actions/workflows/blaze-tests.yml/badge.svg">
   </a>
   <a href="#backers">
