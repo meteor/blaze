@@ -27,7 +27,7 @@ Check our [Overview](OVERVIEW.md) to learn more.
 
 ## Quick Start
 
-Blaze is a [Meteor](http://meteor.com/)-only package for now. In the future, we intend have Blaze on npm so you can use it in your stack.
+Blaze is a [Meteor](http://meteor.com/)-only package for now. In the future, we intend to have Blaze on npm so you can use it in your stack.
 
 Each new Meteor project you create using the `--blaze` flag has Blaze included (via the `blaze-html-templates` package).
 
