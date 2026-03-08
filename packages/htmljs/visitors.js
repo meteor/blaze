@@ -36,8 +36,8 @@ Visitor.def = function (options) {
 
 Visitor.extend = function (options) {
   var curType = this;
-  var subType = function HTMLVisitorSubtype(/*arguments*/) {
-    Visitor.apply(this, arguments);
+  var subType = function HTMLVisitorSubtype(...args) {
+    Visitor.apply(this, args);
   };
   subType.prototype = new curType;
   subType.extend = curType.extend;
@@ -48,39 +48,40 @@ Visitor.extend = function (options) {
 };
 
 Visitor.def({
-  visit: function (content/*, ...*/) {
+  visit: function (...args) {
+    const [content] = args;
     if (content == null)
       // null or undefined.
-      return this.visitNull.apply(this, arguments);
+      return this.visitNull.apply(this, args);
 
     if (typeof content === 'object') {
       if (content.htmljsType) {
         switch (content.htmljsType) {
         case Tag.htmljsType:
-          return this.visitTag.apply(this, arguments);
+          return this.visitTag.apply(this, args);
         case CharRef.htmljsType:
-          return this.visitCharRef.apply(this, arguments);
+          return this.visitCharRef.apply(this, args);
         case Comment.htmljsType:
-          return this.visitComment.apply(this, arguments);
+          return this.visitComment.apply(this, args);
         case Raw.htmljsType:
-          return this.visitRaw.apply(this, arguments);
+          return this.visitRaw.apply(this, args);
         default:
           throw new Error("Unknown htmljs type: " + content.htmljsType);
         }
       }
 
       if (isArray(content))
-        return this.visitArray.apply(this, arguments);
+        return this.visitArray.apply(this, args);
 
-      return this.visitObject.apply(this, arguments);
+      return this.visitObject.apply(this, args);
 
     } else if ((typeof content === 'string') ||
                (typeof content === 'boolean') ||
                (typeof content === 'number')) {
-      return this.visitPrimitive.apply(this, arguments);
+      return this.visitPrimitive.apply(this, args);
 
     } else if (typeof content === 'function') {
-      return this.visitFunction.apply(this, arguments);
+      return this.visitFunction.apply(this, args);
     }
 
     throw new Error("Unexpected object in htmljs: " + content);
@@ -156,7 +157,8 @@ TransformingVisitor.def({
   // Transform the `.attrs` property of a tag, which may be a dictionary,
   // an array, or in some uses, a foreign object (such as
   // a template tag).
-  visitAttributes: function (attrs, ...args) {
+  visitAttributes: function (...all) {
+    const [attrs, ...args] = all;
     // Allow Promise-like values here; these will be handled in materializer.
     if (isPromiseLike(attrs)) {
       return attrs;
@@ -187,7 +189,7 @@ TransformingVisitor.def({
     var newAttrs = oldAttrs;
     if (oldAttrs) {
       var attrArgs = [null, null];
-      attrArgs.push.apply(attrArgs, arguments);
+      attrArgs.push.apply(attrArgs, all);
       for (var k in oldAttrs) {
         var oldValue = oldAttrs[k];
         attrArgs[0] = k;
