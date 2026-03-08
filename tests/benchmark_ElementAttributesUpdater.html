@@ -135,8 +135,7 @@
       if (handler) { // Proceed only if a handler exists or was created
         const lastCachedValue = lastValues[k]; // Read from cache
         const shouldUpdate = !(lastCachedValue === newValueForAttr ||
-          (lastCachedValue == null && newValueForAttr == null) ||
-          (typeof lastCachedValue === typeof newValueForAttr && String(lastCachedValue) === String(newValueForAttr)));
+          (lastCachedValue == null && newValueForAttr == null));
 
         if (shouldUpdate) {
           handler.value = newValueForAttr;

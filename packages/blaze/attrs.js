@@ -335,8 +335,12 @@ const StyleHandler = Blaze._DiffingAttributeHandler.extend({
  * BooleanHandler - Manages boolean HTML attributes
  * 
  * Some HTML attributes are boolean (like 'checked', 'selected', 'muted').
- * These need to be set as DOM properties rather than attributes, and their
- * value should be true/false rather than a string.
+ * These need to be set as DOM properties rather than attributes.
+ * 
+ * Attribute values are normalized to text before reaching this handler;
+ * only `null`, `false`, and `undefined` are mapped to `null`. Any non-null
+ * value means the boolean property should be set (`true`), and `null`
+ * means it should be unset (`false`).
  * 
  * Used for: input[checked], option[selected], video[muted]
  */
@@ -500,6 +504,14 @@ if (Meteor.isClient) {
  */
 const _protocolCache = new Map(); 
 const MAX_CACHE_SIZE = 1000;
+
+/**
+ * Clear the protocol cache.
+ * Useful for testing or when URL resolution context changes.
+ */
+Blaze._clearProtocolCache = function () {
+  _protocolCache.clear();
+};
 
 /**
  * Extract and normalize the protocol from a URL
@@ -736,11 +748,10 @@ ElementAttributesUpdater.prototype.update = function(newAttrs) {
     }
     
     // Performance optimization: only update if value actually changed
-    // Short-circuit on strict equality first, then handle null/undefined and type coercion
+    // Values are always string or null (normalized by materializer), so strict equality suffices
     const last = lastValues[k];
     const shouldUpdate = !(last === value ||
-                          (last == null && value == null) ||
-                          (typeof last === typeof value && String(last) === String(value)));
+                          (last == null && value == null));
                           
     if (shouldUpdate) {
       // Update the handler's stored value and apply to DOM
