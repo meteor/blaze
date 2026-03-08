@@ -160,7 +160,7 @@ Template._applyHmrChanges = function (templateName) {
 
 Template._migrateTemplate = function (templateName, newTemplate, migrate) {
   const oldTemplate = Template[templateName];
-  migrate = Template.__pendingReplacement.includes(templateName)
+  migrate = Template.__pendingReplacement.includes(templateName);
 
   if (oldTemplate && migrate) {
     newTemplate.__helpers = oldTemplate.__helpers;

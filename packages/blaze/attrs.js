@@ -595,14 +595,14 @@ const UrlHandler = AttributeHandler.extend({
           "Call Blaze._allowJavascriptUrls() " +
           "to enable them.");
           // Set attribute to null instead of the dangerous URL
-          origUpdate.apply(self, [element, oldValue, null]);
+          origUpdate.call(this, element, oldValue, null);
         } else {
           // URL is safe, proceed with normal update
-          origUpdate.apply(self, args);
+          origUpdate.call(this, ...args);
         }
       } else {
         // Value is null/undefined, proceed with normal update
-        origUpdate.apply(self, args);
+        origUpdate.call(this, ...args);
       }
     }
   }

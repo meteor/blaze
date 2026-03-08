@@ -1,4 +1,4 @@
-var Template = Blaze.Template;
+const Template = Blaze.Template;
 
 /**
  * @isTemplate true
