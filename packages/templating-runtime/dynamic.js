@@ -1,6 +1,4 @@
-import has from 'lodash.has';
-
-const Template = Blaze.Template;
+var Template = Blaze.Template;
 
 /**
  * @isTemplate true
@@ -23,10 +21,10 @@ Template.__dynamicWithDataContext.helpers({
 
 Template.__dynamic.helpers({
   dataContextPresent: function () {
-    return has(this, 'data');
+    return Object.prototype.hasOwnProperty.call(this, 'data');
   },
   checkContext: function () {
-    if (!has(this, 'template')) {
+    if (!Object.prototype.hasOwnProperty.call(this, 'template')) {
       throw new Error(
         "Must specify name in the 'template' argument " +
           'to {{> Template.dynamic}}.'

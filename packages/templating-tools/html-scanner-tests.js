@@ -31,8 +31,8 @@ Tinytest.add("templating-tools - html scanner", function (test) {
   // returns the appropriate code to put content in the body,
   // where content is something simple like the string "Hello"
   // (passed in as a source string including the quotes).
-  const simpleBody = function (content) {
-    return "\nTemplate.body.addContent((function() {\n  var view = this;\n  return " + content + ";\n}));\nMeteor.startup(Template.body.renderToDocument);\n";
+  var simpleBody = function (content) {
+    return "\nTemplate.body.addContent((function () { var view = this; return " + content + "; }));\nMeteor.startup(Template.body.renderToDocument);\n";
   };
 
   // arguments are quoted strings like '"hello"'
@@ -42,7 +42,7 @@ Tinytest.add("templating-tools - html scanner", function (test) {
 
     return '\nTemplate.__checkName(' + templateName + ');\nTemplate[' + templateName +
       '] = new Template(' + viewName +
-      ', (function() {\n  var view = this;\n  return ' + content + ';\n}));\n';
+      ', (function () { var view = this; return ' + content + '; }));\n';
   };
 
   const checkResults = function(results, expectJs, expectHead, expectBodyAttrs) {

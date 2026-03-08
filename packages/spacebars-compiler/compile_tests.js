@@ -25,20 +25,9 @@ Tinytest.add("spacebars-compiler - compiler output", function (test) {
       const postProcess = function (string) {
         // remove initial and trailing parens
         string = string.replace(/^\(([\S\s]*)\)$/, '$1');
-        if (! (Package['minifier-js'] && Package['minifier-js'].UglifyJSMinify)) {
-          // these tests work a lot better with access to beautification,
-          // but let's at least do some sort of test without it.
-          // These regexes may have to be adjusted if new tests are added.
-
-          // ======================== !!NOTE!! =================================
-          // Since we are bringing uglify-js in from NPM, this code should no
-          // longer ever be needed. Leaving it just in case.
-          // ==================================+================================
-
-          // Remove single-line comments, including line nums from build system.
-          string = string.replace(/\/\/.*$/mg, '');
-          string = string.replace(/\s+/g, ''); // kill whitespace
-        }
+        // Remove single-line comments, including line nums from build system.
+        string = string.replace(/\/\/.*$/mg, '');
+        string = string.replace(/\s+/g, ''); // kill whitespace
         return string;
       };
       // compare using Function .toString()!

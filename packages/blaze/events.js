@@ -1,4 +1,4 @@
-import has from 'lodash.has';
+import { hasOwn } from './utils';
 
 const EventSupport = Blaze._EventSupport = {};
 
@@ -66,7 +66,7 @@ const HandlerRec = function (elem, type, selector, handler, recipient) {
   // IE 8 doesn't support these events anyway.
 
   const tryCapturing = elem.addEventListener &&
-        (!has(eventsToDelegate,
+        (!hasOwn(eventsToDelegate,
                  DOMBackend.Events.parseEventType(type)));
 
   if (tryCapturing) {

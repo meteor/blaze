@@ -1,4 +1,4 @@
-import has from 'lodash.has';
+import { hasOwn } from './utils';
 
 /** @param {function(Binding): boolean} fn */
 function _createBindingsHelper(fn) {
@@ -138,7 +138,7 @@ function _lexicalBindingLookup(view, name) {
   do {
     // skip block helpers views
     // if we found the binding on the scope, return it
-    if (has(currentView._scopeBindings, name)) {
+    if (hasOwn(currentView._scopeBindings, name)) {
       return currentView._scopeBindings[name];
     }
   } while (currentView = _lexicalKeepGoing(currentView));
