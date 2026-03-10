@@ -3,6 +3,8 @@ title: Writing smart components with Blaze
 description:
 ---
 
+# Smart Components
+
 Some of your components will need to access state outside of their data context---for instance, data from the server via subscriptions or the contents of client-side store. As discussed in the [data loading](https://guide.meteor.com/data-loading.html#patterns) and [UI](https://guide.meteor.com/ui-ux.html#smart-components) articles, you should be careful and considered in how you use such smart components.
 
 All of the suggestions about reusable components apply to smart components. In addition:
@@ -21,7 +23,7 @@ Template.Lists_show_page.onCreated(function() {
 });
 ```
 
-We use `this.subscribe()` as opposed to `Meteor.subscribe()` so that the component automatically keeps track of when the subscriptions are ready. We can use this information in our HTML template with the built-in `{% raw %}{{Template.subscriptionsReady}}{% endraw %}` helper or within helpers using `instance.subscriptionsReady()`.
+We use `this.subscribe()` as opposed to `Meteor.subscribe()` so that the component automatically keeps track of when the subscriptions are ready. We can use this information in our HTML template with the built-in <code v-pre>{{Template.subscriptionsReady}}</code> helper or within helpers using `instance.subscriptionsReady()`.
 
 Notice that in this component we are also accessing the global client-side state store `FlowRouter`, which we wrap in a instance method called `getListId()`. This instance method is called both from the `autorun` in `onCreated`, and from the `listIdArray` helper:
 

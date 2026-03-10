@@ -3,6 +3,8 @@ title: Blaze
 description: Documentation of how to use Blaze, Meteor's reactive rendering engine.
 ---
 
+# Blaze API
+
 Blaze is the package that makes reactive templates possible.
 You can use the Blaze API directly in order to render templates programmatically
 and manipulate "Views," the building blocks of reactive templates.
@@ -10,7 +12,7 @@ and manipulate "Views," the building blocks of reactive templates.
 {% apibox "Blaze.render" %}
 
 When you render a template, the callbacks added with
-[`onCreated`](../api/templates.html#Template-onCreated) are invoked immediately, before evaluating
+[`onCreated`](./templates#Template-onCreated) are invoked immediately, before evaluating
 the content of the template.  The callbacks added with
 [`onRendered`](../api/templates.html#Template-onRendered) are invoked after the View is rendered and
 inserted into the DOM.
@@ -20,14 +22,13 @@ will update reactively in response to data changes until the View is
 removed using [`Blaze.remove`](#Blaze-remove) or the View's
 parent element is removed by Meteor or jQuery.
 
-{% pullquote warning %}
-If the View is removed by some other mechanism
+> If the View is removed by some other mechanism
 besides Meteor or jQuery (which Meteor integrates with by default),
 the View may continue to update indefinitely.  Most users will not need to
 manually render templates and insert them into the DOM, but if you do,
 be mindful to always call [`Blaze.remove`](#Blaze-remove) when the View is
 no longer needed.
-{% endpullquote %}
+
 
 {% apibox "Blaze.renderWithData" %}
 
@@ -59,7 +60,7 @@ updating these nodes.
 
 Rendering a template to HTML loses all fine-grained reactivity.  The
 normal way to render a template is to either include it from another
-template (`{% raw %}{{> myTemplate}}{% endraw %}`) or render and insert it
+template (<code v-pre>{{> myTemplate}}</code>) or render and insert it
 programmatically using `Blaze.render`.  Only occasionally
 is generating HTML useful.
 
@@ -72,7 +73,7 @@ changes will invalidate the current Computation if there is one
 
 {% apibox "Blaze.View" %}
 
-Behind every template or part of a template &mdash; a template tag, say, like `{% raw %}{{foo}}{% endraw %}` or `{% raw %}{{#if}}{% endraw %}` &mdash; is
+Behind every template or part of a template &mdash; a template tag, say, like <code v-pre>{{foo}}</code> or <code v-pre>{{#if}}</code> &mdash; is
 a View object, which is a reactively updating region of DOM.
 
 Most applications do not need to be aware of these Views, but they offer a
@@ -236,7 +237,7 @@ error will be thrown.  This is in contrast to
 
 Returns an unrendered View object you can pass to `Blaze.render`.
 
-Unlike `{% raw %}{{#with}}{% endraw %}` (as used in templates), `Blaze.With` has no "else" case, and
+Unlike <code v-pre>{{#with}}</code> (as used in templates), `Blaze.With` has no "else" case, and
 a falsy value for the data context will not prevent the content from
 rendering.
 
@@ -244,19 +245,19 @@ rendering.
 
 Returns an unrendered View object you can pass to `Blaze.render`.
 
-Matches the behavior of `{% raw %}{{#if}}{% endraw %}` in templates.
+Matches the behavior of <code v-pre>{{#if}}</code> in templates.
 
 {% apibox "Blaze.Unless" nested:true %}
 
 Returns an unrendered View object you can pass to `Blaze.render`.
 
-Matches the behavior of `{% raw %}{{#unless}}{% endraw %}` in templates.
+Matches the behavior of <code v-pre>{{#unless}}</code> in templates.
 
 {% apibox "Blaze.Each" nested:true %}
 
 Returns an unrendered View object you can pass to `Blaze.render`.
 
-Matches the behavior of `{% raw %}{{#each}}{% endraw %}` in templates.
+Matches the behavior of <code v-pre>{{#each}}</code> in templates.
 
 {% apibox "Blaze.Template" %}
 
@@ -280,7 +281,7 @@ present on template objects:
 {% dtdd name:"constructView()" id:"template_constructview" %}
   Constructs and returns an unrendered View object.  This method is invoked
   by Meteor whenever the template is used, such as by `Blaze.render` or by
-  `{% raw %}{{> foo}}{% endraw %}` where `foo` resolves to a Template object.
+  <code v-pre>{{> foo}}</code> where `foo` resolves to a Template object.
 
   `constructView()` constructs a View using `viewName` and `renderFunction`
   as constructor arguments, and then configures it as a template

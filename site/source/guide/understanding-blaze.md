@@ -1,7 +1,5 @@
----
-title: Understanding Blaze
-description:
----
+
+# Understanding Blaze
 
 Although Blaze is a very intuitive rendering system, it does have some quirks and complexities that are worth knowing about when you are trying to do complex things.
 
@@ -59,10 +57,10 @@ Template.myTemplate.helpers({
 
 ## Lookup order
 
-Another complicated topic in Blaze is name lookups. In what order does Blaze look when you write `{% raw %}{{something}}{% endraw %}`? It runs in the following order:
+Another complicated topic in Blaze is name lookups. In what order does Blaze look when you write <code v-pre>{{something}}</code>? It runs in the following order:
 
 1. Helper defined on the current component
-2. Binding (eg. from `{% raw %}{{#let}}{% endraw %}` or `{% raw %}{{#each in}}{% endraw %}`) in current scope
+2. Binding (eg. from <code v-pre>{{#let}}</code> or <code v-pre>{{#each in}}</code>) in current scope
 3. Template name
 4. Global helper
 5. Field on the current data context

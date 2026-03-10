@@ -3,6 +3,8 @@ title: Reusing code in Blaze
 description:
 ---
 
+# Reusing Code
+
 It's common to want to reuse code between two otherwise unrelated components. There are two main ways to do this in Blaze.
 
 ## Composition

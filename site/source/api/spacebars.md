@@ -2,6 +2,7 @@
 title: Spacebars
 description: Documentation of Meteor's `spacebars` package.
 ---
+# Spacebars API
 
 Spacebars is a Meteor template language inspired by
 [Handlebars](http://handlebarsjs.com/).  It shares some of the spirit and syntax
@@ -11,7 +12,7 @@ when compiled.
 ## Getting Started
 
 A Spacebars template consists of HTML interspersed with template tags, which are
-delimited by `{% raw %}{{{% endraw %}` and `}}` (two curly braces).
+delimited by <code v-pre>{{</code> and `}}` (two curly braces).
 
 ```html
 <template name="myPage">
@@ -33,21 +34,21 @@ delimited by `{% raw %}{{{% endraw %}` and `}}` (two curly braces).
 As illustrated by the above example, there are four major types of template
 tags:
 
-* `{% raw %}{{pageTitle}}{% endraw %}` - Double-braced template tags are used to insert a string of
+* <code v-pre>{{pageTitle}}</code> - Double-braced template tags are used to insert a string of
   text.  The text is automatically made safe.  It may contain any characters
   (like `<`) and will never produce HTML tags.
 
-* `{% raw %}{{> nav}}{% endraw %}` - Inclusion template tags are used to insert another template by
+* <code v-pre>{{> nav}}</code> - Inclusion template tags are used to insert another template by
   name.
 
-* `{% raw %}{{#each}}{% endraw %}` - Block template tags are notable for having a block of content.
+* <code v-pre>{{#each}}</code> - Block template tags are notable for having a block of content.
   The block tags `#if`, `#each`, `#with`, and `#unless` are built in, and it is
   also possible define custom ones.  Some block tags, like `#each` and `#with`,
   establish a new data context for evaluating their contents.  In the above
-  example, `{% raw %}{{title}}{% endraw %}` and `{% raw %}{{content}}{% endraw %}` most likely refer to properties of the
+  example, <code v-pre>{{title}}</code> and <code v-pre>{{content}}</code> most likely refer to properties of the
   current post (though they could also refer to template helpers).
 
-* `{% raw %}{{{content}}}{% endraw %}` - Triple-braced template tags are used to insert raw HTML.  Be
+* <code v-pre>{{{content}}}</code> - Triple-braced template tags are used to insert raw HTML.  Be
   careful with these!  It's your job to make sure the HTML is safe, either by
   generating it yourself or sanitizing it if it came from a user input.
 
@@ -98,12 +99,12 @@ When evaluating a path, identifiers after the first are used to index into the
 object so far, like JavaScript's `.`.  However, an error is never thrown when
 trying to index into a non-object or an undefined value.
 
-In addition, Spacebars will call functions for you, so `{% raw %}{{foo.bar}}{% endraw %}` may be
+In addition, Spacebars will call functions for you, so <code v-pre>{{foo.bar}}</code> may be
 taken to mean `foo().bar`, `foo.bar()`, or `foo().bar()` as appropriate.
 
 Similarly, if the accessed object is wrapped in a `Promise`, Spacebars will
 defer the path evaluation in a `Promise` as well. That is,
-`{% raw %}{{foo.bar}}{% endraw %}` will evaluate to `foo().then(x => x.bar)`.
+<code v-pre>{{foo.bar}}</code> will evaluate to `foo().then(x => x.bar)`.
 Both pending and rejected states will result in `undefined`.
 
 ## Helper Arguments
@@ -128,18 +129,18 @@ frob(a, b, c, Spacebars.kw({verily: true}))
 The helper's implementation can access the current data context as `this`.
 
 If any of the arguments is a `Promise`, Spacebars will defer the call as long as
-all of the arguments will resolve. That is, `{% raw %}{{foo x y z}}{% endraw %}`
+all of the arguments will resolve. That is, <code v-pre>{{foo x y z}}</code>
 will evaluate to `Promise.all([x, y, z]).then(args => foo(...args))`. Both
 pending and rejected states will result in `undefined`.
 
 ## Inclusion and Block Arguments
 
-Inclusion tags (`{% raw %}{{> foo}}{% endraw %}`) and block tags (`{% raw %}{{#foo}}{% endraw %}`) take a single
+Inclusion tags (<code v-pre>{{> foo}}</code>) and block tags (<code v-pre>{{#foo}}</code>) take a single
 data argument, or no argument.  Any other form of arguments will be interpreted
 as an *object specification* or a *nested helper*:
 
-* **Object specification**: If there are only keyword arguments, as in `{% raw %}{{#with
-  x=1 y=2}}{% endraw %}` or `{% raw %}{{> prettyBox color=red}}{% endraw %}`, the keyword arguments will be
+* **Object specification**: If there are only keyword arguments, as in <code v-pre>{{#with
+  x=1 y=2}}</code> or <code v-pre>{{> prettyBox color=red}}</code>, the keyword arguments will be
   assembled into a data object with properties named after the keywords.
 
 * **Nested Helper**: If there is a positional argument followed by other
@@ -254,7 +255,7 @@ You can combine multiple dynamic attributes tags with other attributes:
 Attributes from dynamic attribute tags are combined from left to right, after
 normal attributes, with later attribute values overwriting previous ones.
 Multiple values for the same attribute are not merged in any way, so if `attrs1`
-specifies a value for the `class` attribute, it will overwrite `{% raw %}{{myClass}}{% endraw %}`.
+specifies a value for the `class` attribute, it will overwrite <code v-pre>{{myClass}}</code>.
 As always, Spacebars takes care of recalculating the element's attributes if any
 of `myClass`, `attrs1`, or `attrs2` changes reactively.
 
@@ -289,8 +290,8 @@ and the async state helpers (e.g., `@pending`).
 
 ## Inclusion Tags
 
-An inclusion tag takes the form `{% raw %}{{> templateName}}{% endraw %}` or `{% raw %}{{> templateName
-dataObj}}{% endraw %}`.  Other argument forms are syntactic sugar for constructing a data
+An inclusion tag takes the form <code v-pre>{{> templateName}}</code> or <code v-pre>{{> templateName
+dataObj}}</code>.  Other argument forms are syntactic sugar for constructing a data
 object (see Inclusion and Block Arguments).
 
 An inclusion tag inserts an instantiation of the given template at the current
@@ -309,10 +310,10 @@ object.
 
 Note that the above two points interact in a way that can be surprising!
 If `foo` is a template helper function that returns another template, then
-`{% raw %}{{>foo bar}}{% endraw %}` will _first_ push `bar` onto the data context stack _then_ call
+<code v-pre>{{>foo bar}}</code> will _first_ push `bar` onto the data context stack _then_ call
 `foo()`, due to the way this line is expanded as shown above. You will need to
 use `Template.parentData(1)` to access the original context. This differs
-from regular helper calls like `{% raw %}{{foo bar}}{% endraw %}`, in which `bar` is passed as a
+from regular helper calls like <code v-pre>{{foo bar}}</code>, in which `bar` is passed as a
 parameter rather than pushed onto the data context stack.
 
 ## Function Returning a Template
@@ -334,7 +335,7 @@ by the directive or helper.
 ```
 
 Block tags may also specify "else" content, separated from the main content by
-the special template tag `{% raw %}{{else}}{% endraw %}`.
+the special template tag <code v-pre>{{else}}</code>.
 
 A block tag's content must consist of HTML with balanced tags.
 
@@ -590,11 +591,11 @@ synchronization mechanism, e.g., a queue of pending async operations.
 ## Custom Block Helpers
 
 To define your own block helper, simply declare a template, and then invoke it
-using `{% raw %}{{#someTemplate}}{% endraw %}` (block) instead of `{% raw %}{{> someTemplate}}{% endraw %}` (inclusion)
+using <code v-pre>{{#someTemplate}}</code> (block) instead of <code v-pre>{{> someTemplate}}</code> (inclusion)
 syntax.
 
-When a template is invoked as a block helper, it can use `{% raw %}{{>
-Template.contentBlock}}{% endraw %}` and `{% raw %}{{> Template.elseBlock}}{% endraw %}` to include the block
+When a template is invoked as a block helper, it can use <code v-pre>{{>
+Template.contentBlock}}</code> and <code v-pre>{{> Template.elseBlock}}</code> to include the block
 content it was passed.
 
 Here is a simple block helper that wraps its content in a div:
@@ -633,21 +634,21 @@ the `unless` template and is accessed via `this`.  However, it would not work
 very well if this data context was visible to `Template.contentBlock`, which is
 supplied by the user of `unless`.
 
-Therefore, when you include `{% raw %}{{> Template.contentBlock}}{% endraw %}`, Spacebars hides the
+Therefore, when you include <code v-pre>{{> Template.contentBlock}}</code>, Spacebars hides the
 data context of the calling template, and any data contexts established in the
 template by `#each` and `#with`.  They are not visible to the content block,
-even via `..`.  Put another way, it's as if the `{% raw %}{{> Template.contentBlock}}{% endraw %}`
-inclusion occurred at the location where `{% raw %}{{#unless}}{% endraw %}` was invoked, as far as
+even via `..`.  Put another way, it's as if the <code v-pre>{{> Template.contentBlock}}</code>
+inclusion occurred at the location where <code v-pre>{{#unless}}</code> was invoked, as far as
 the data context stack is concerned.
 
-You can pass an argument to `{% raw %}{{> Template.contentBlock}}{% endraw %}` or `{% raw %}{{>
-Template.elseBlock}}{% endraw %}` to invoke it with a data context of your choice.  You can
-also use `{% raw %}{{#if Template.contentBlock}}{% endraw %}` to see if the current template was
+You can pass an argument to <code v-pre>{{> Template.contentBlock}}</code> or <code v-pre>{{>
+Template.elseBlock}}</code> to invoke it with a data context of your choice.  You can
+also use <code v-pre>{{#if Template.contentBlock}}</code> to see if the current template was
 invoked as a block helper rather than an inclusion.
 
 ## Comment Tags
 
-Comment template tags begin with `{% raw %}{{!{% endraw %}` and can contain any characters except for
+Comment template tags begin with <code v-pre>{{!</code> and can contain any characters except for
 `}}`.  Comments are removed upon compilation and never appear in the compiled
 template code or the generated HTML.
 
@@ -659,7 +660,7 @@ template code or the generated HTML.
 ```
 
 Comment tags also come in a "block comment" form.  Block comments may contain
-`{% raw %}{{{% endraw %}` and `}}`:
+<code v-pre>{{</code> and `}}`:
 
 ```html
 {{!-- This is a block comment.
@@ -736,6 +737,6 @@ following elements:
 
 ## Escaping Curly Braces
 
-To insert a literal `{% raw %}{{{% endraw %}`, `{% raw %}{{{{% endraw %}`, or any number of curly braces, put a
-vertical bar after it.  So `{% raw %}{{|{% endraw %}` will show up as `{% raw %}{{{% endraw %}`, `{% raw %}{{{|{% endraw %}` will
-show up as `{% raw %}{{{{% endraw %}`, and so on.
+To insert a literal <code v-pre>{{</code>, <code v-pre>{{{</code>, or any number of curly braces, put a
+vertical bar after it.  So <code v-pre>{{|</code> will show up as <code v-pre>{{</code>, <code v-pre>{{{|</code> will
+show up as <code v-pre>{{{</code>, and so on.
