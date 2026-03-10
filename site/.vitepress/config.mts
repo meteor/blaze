@@ -44,7 +44,7 @@ export default defineConfig({
             {
                 text: 'Development',
                 items: [
-                    {text: 'Changelog',}
+                    {text: 'Contributing', link: '/repo/CONTRIBUTING'}
                 ]
             }
         ],
@@ -56,6 +56,11 @@ export default defineConfig({
         ],
         editLink: {
             pattern: 'https://github.com/meteor/blaze/edit/master/site/sources/:path'
+        }
+    },
+    vite: {
+        resolve: {
+            preserveSymlinks: true
         }
     }
 })

@@ -7,3 +7,4 @@ public/
 .deploy*/
 data
 .vitepress/cache/
+source/repo/*.md
