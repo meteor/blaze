@@ -98,3 +98,15 @@ to walk the rendered component hierarchy, but it's better to avoid this in favor
 using callbacks, template arguments, or global data stores.
 
 You can read more about views in the [Blaze View](../api/blaze.html#Blaze-View).
+
+## Renderable Content
+
+A value is *renderable content* if it is one of the following:
+
+* A [template object](../api/templates.html) like `Template.myTemplate`
+* An unrendered [View](../api/blaze.html#Blaze-View) object, like the return value of `Blaze.With`
+* `null` or `undefined`
+
+> Internally, renderable content includes objects representing HTML tags
+as well, but these objects are not yet part of the officially-supported,
+public API.

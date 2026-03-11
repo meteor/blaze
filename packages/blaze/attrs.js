@@ -28,11 +28,12 @@ Blaze._javascriptUrlsAllowed = function () {
   return jsUrlsAllowed;
 };
 
+
 /**
  * AttributeHandler Base Class
- * 
+ *
  * An AttributeHandler object is responsible for updating a particular attribute
- * of a particular element. AttributeHandler subclasses implement browser-specific 
+ * of a particular element. AttributeHandler subclasses implement browser-specific
  * logic for dealing with particular attributes across different browsers.
  *
  * Key Features:
@@ -45,14 +46,17 @@ Blaze._javascriptUrlsAllowed = function () {
  * To define a new type of AttributeHandler, use:
  * `var FooHandler = AttributeHandler.extend({ update: function ... })`
  * where the `update` function takes arguments `(element, oldValue, value)`.
- * 
+ *
  * @param {string} name - The attribute name (e.g., 'class', 'href', 'style')
  * @param {string|null} value - The initial attribute value
+ * @private
  */
 AttributeHandler = function (name, value) {
   this.name = name;   // The HTML attribute name this handler manages
   this.value = value; // Current value of the attribute
 };
+
+
 Blaze._AttributeHandler = AttributeHandler;
 
 /**
@@ -64,6 +68,7 @@ Blaze._AttributeHandler = AttributeHandler;
  * @param {Element} element - The DOM element to update
  * @param {string|null} oldValue - The previous attribute value
  * @param {string|null} value - The new attribute value (null means remove)
+ * @private
  */
 AttributeHandler.prototype.update = function (element, oldValue, value) {
   if (value === null) {
@@ -118,11 +123,13 @@ AttributeHandler.extend = function (options) {
  * - joinValues(array): Join array of values back into attribute string
  * 
  * Used by: ClassHandler, StyleHandler, SVGClassHandler
+ * @private
  */
 Blaze._DiffingAttributeHandler = AttributeHandler.extend({
   /**
    * Update the attribute by diffing old vs new values
    * This preserves any external changes while applying our updates
+   * @private
    */
   update: function (element, oldValue, value) {
     // Ensure all required methods are implemented by subclass
@@ -176,12 +183,14 @@ Blaze._DiffingAttributeHandler = AttributeHandler.extend({
  * 
  * Example: If template sets "foo bar" and external code adds "baz",
  * the final result will be "foo bar baz"
+ * @private
  */
 const ClassHandler = Blaze._DiffingAttributeHandler.extend({
   /**
    * Get current class attribute value from the DOM element
    * @param {Element} element - The DOM element
    * @returns {string} Current className property value
+   * @private
    */
   getCurrentValue: function (element) {
     return element.className;
@@ -191,6 +200,7 @@ const ClassHandler = Blaze._DiffingAttributeHandler.extend({
    * Set the complete class attribute on the DOM element
    * @param {Element} element - The DOM element
    * @param {string} className - Complete class string to set
+   * @private
    */
   setValue: function (element, className) {
     element.className = className;
@@ -200,6 +210,7 @@ const ClassHandler = Blaze._DiffingAttributeHandler.extend({
    * Parse a class string into individual class names
    * @param {string} attrString - Space-separated class names
    * @returns {OrderedDict} Map of class names (both key and value are the class name)
+   * @private
    */
   parseValue: function (attrString) {
     const tokens = new OrderedDict();
@@ -219,6 +230,7 @@ const ClassHandler = Blaze._DiffingAttributeHandler.extend({
    * Join individual class names back into a space-separated string
    * @param {Array} values - Array of class names
    * @returns {string} Space-separated class string
+   * @private
    */
   joinValues: function (values) {
     return values.join(' ');
@@ -231,11 +243,13 @@ const ClassHandler = Blaze._DiffingAttributeHandler.extend({
  * SVG elements handle classes differently than regular HTML elements.
  * The className property is an object with a baseVal property for SVG elements.
  * This handler ensures proper SVG class attribute management.
+ * @private
  */
 const SVGClassHandler = ClassHandler.extend({
   /**
    * Get current class value from SVG element
    * SVG className is an object, we need the baseVal property
+   * @private
    */
   getCurrentValue: function (element) {
     return element.className.baseVal;
@@ -244,6 +258,7 @@ const SVGClassHandler = ClassHandler.extend({
   /**
    * Set class attribute on SVG element using setAttribute
    * SVG elements require setAttribute rather than className assignment
+   * @private
    */
   setValue: function (element, className) {
     element.setAttribute('class', className);
@@ -261,10 +276,12 @@ const SVGClassHandler = ClassHandler.extend({
  * 
  * Example: If template sets "color: red; font-size: 14px" and external code 
  * adds "background: blue", the result will include all three properties.
+ * @private
  */
 const StyleHandler = Blaze._DiffingAttributeHandler.extend({
   /**
    * Get current style attribute value from the DOM element
+   * @private
    */
   getCurrentValue: function (element) {
     return element.getAttribute('style');
@@ -273,6 +290,7 @@ const StyleHandler = Blaze._DiffingAttributeHandler.extend({
   /**
    * Set the complete style attribute on the DOM element
    * Removes the attribute entirely if style is empty
+   * @private
    */
   setValue: function (element, style) {
     if (style === '') {
@@ -290,10 +308,11 @@ const StyleHandler = Blaze._DiffingAttributeHandler.extend({
    * contain the complete "property: value" string.
    * 
    * Example: "color:red; font-size:14px" becomes:
-   * { "color": "color:red", "font-size": "font-size:14px" }
+   * `{ "color": "color:red", "font-size": "font-size:14px" }`
    * 
    * @param {string} attrString - CSS style string to parse
    * @returns {OrderedDict} Map of CSS properties
+   * @private
    */
   parseValue: function (attrString) {
     const tokens = new OrderedDict();
@@ -324,6 +343,7 @@ const StyleHandler = Blaze._DiffingAttributeHandler.extend({
    * Join CSS property declarations back into a style string
    * @param {Array} values - Array of CSS property declarations
    * @returns {string} Complete CSS style string
+   * @private
    */
   joinValues: function (values) {
     // Join all CSS properties with spaces (semicolons are already included in each value)
@@ -343,6 +363,7 @@ const StyleHandler = Blaze._DiffingAttributeHandler.extend({
  * means it should be unset (`false`).
  * 
  * Used for: input[checked], option[selected], video[muted]
+ * @private
  */
 const BooleanHandler = AttributeHandler.extend({
   /**
@@ -350,6 +371,7 @@ const BooleanHandler = AttributeHandler.extend({
    * @param {Element} element - The DOM element
    * @param {*} oldValue - Previous value (ignored)
    * @param {*} value - New value (truthy = true, falsy = false)
+   * @private
    */
   update: function (element, oldValue, value) {
     const name = this.name;
@@ -370,6 +392,7 @@ const BooleanHandler = AttributeHandler.extend({
  * avoiding unnecessary DOM operations.
  * 
  * Used for: textarea[value], input[value]
+ * @private
  */
 const DOMPropertyHandler = AttributeHandler.extend({
   /**
@@ -377,6 +400,7 @@ const DOMPropertyHandler = AttributeHandler.extend({
    * @param {Element} element - The DOM element
    * @param {*} oldValue - Previous value (ignored)
    * @param {*} value - New value to set
+   * @private
    */
   update: function (element, oldValue, value) {
     const name = this.name;
@@ -394,10 +418,12 @@ const DOMPropertyHandler = AttributeHandler.extend({
  * with the proper XLink namespace URI.
  * 
  * Used for: Any attribute starting with 'xlink:' (e.g., xlink:href)
+ * @private
  */
 const XlinkHandler = AttributeHandler.extend({
   /**
    * Update XLink attribute using proper namespace methods
+   * @private
    */
   update: function(element, oldValue, value) {
     const NS = 'http://www.w3.org/1999/xlink';
@@ -418,6 +444,7 @@ const XlinkHandler = AttributeHandler.extend({
  * 
  * @param {Element} elem - DOM element to check
  * @returns {boolean} True if element is an SVG element
+ * @private
  */
 const isSVGElement = function (elem) {
   return 'ownerSVGElement' in elem;
@@ -435,6 +462,7 @@ const isSVGElement = function (elem) {
  * @param {string} tagName - HTML tag name (uppercase, e.g., 'A', 'IMG')
  * @param {string} attrName - Attribute name (e.g., 'href', 'src')
  * @returns {boolean} True if this attribute typically contains URLs
+ * @private
  */
 const isUrlAttribute = function (tagName, attrName) {
   // Map of HTML tags to their URL-containing attributes
@@ -479,6 +507,7 @@ const isUrlAttribute = function (tagName, attrName) {
  * 
  * These components work together to efficiently and securely detect URL protocols,
  * particularly to block dangerous protocols like javascript: and vbscript:.
+ * @private
  */
 
 /**
@@ -489,6 +518,7 @@ const isUrlAttribute = function (tagName, attrName) {
  * This handles edge cases and browser differences in URL parsing.
  * 
  * Only created on the client side since DOM is not available on server.
+ * @private
  */
 let anchorForNormalization
 if (Meteor.isClient) {
@@ -501,6 +531,7 @@ if (Meteor.isClient) {
  * Since URL protocol detection requires DOM manipulation, we cache results
  * to avoid repeated operations on the same URLs. Uses FIFO eviction
  * to prevent memory leaks in long-running applications.
+ * @private
  */
 const _protocolCache = new Map(); 
 const MAX_CACHE_SIZE = 1000;
@@ -522,6 +553,7 @@ Blaze._clearProtocolCache = function () {
  * @param {string} url - The URL to analyze
  * @returns {string} Normalized protocol (e.g., "http:", "javascript:")
  * @throws {Error} When called on the server (not implemented)
+ * @private
  */
 const getUrlProtocol = function (url) {
   // Check cache first for performance
@@ -564,6 +596,7 @@ const getUrlProtocol = function (url) {
  * - Can be disabled for trusted applications
  * 
  * Used for: All URL-containing attributes (href, src, action, etc.)
+ * @private
  */
 const origUpdate = AttributeHandler.prototype.update;
 const UrlHandler = AttributeHandler.extend({
@@ -574,6 +607,7 @@ const UrlHandler = AttributeHandler.extend({
    * @param {Element} element - The DOM element to update
    * @param {string|null} oldValue - Previous attribute value
    * @param {string|null} value - New URL value to validate and set
+   * @private
    */
   update: function (...args) {
     const [element, oldValue, value] = args;
@@ -685,6 +719,7 @@ Blaze._makeAttributeHandler = function (elem, name, value) {
  * - Maintains performance during frequent re-renders
  * 
  * @param {Element} elem - The DOM element to manage attributes for
+ * @private
  */
 ElementAttributesUpdater = function (elem) {
   this.elem = elem;              // The DOM element we're managing
