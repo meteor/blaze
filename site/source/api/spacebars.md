@@ -14,7 +14,7 @@ when compiled.
 A Spacebars template consists of HTML interspersed with template tags, which are
 delimited by <code v-pre>{{</code> and `}}` (two curly braces).
 
-```html
+```handlebars
 <template name="myPage">
   <h1>{{pageTitle}}</h1>
 
@@ -115,7 +115,7 @@ number literal, or null.
 Double-braced and triple-braced template tags take any number of positional and
 keyword arguments:
 
-```html
+```handlebars
 {{frob a b c verily=true}}
 ```
 calls:
@@ -198,7 +198,7 @@ is safe to insert.
 
 A double-braced tag may be part of, or all of, an HTML attribute value:
 
-```html
+```handlebars
 <input type="checkbox" class="checky {{moreClasses}}" checked={{isChecked}}>
 ```
 
@@ -218,7 +218,7 @@ value is used. To have more fine-grained handling of non-resolved states, use
 A double-braced tag can be used in an HTML start tag to specify an arbitrary set
 of attributes:
 
-```html
+```handlebars
 <div {{attrs}}>...</div>
 
 <input type=checkbox {{isChecked}}>
@@ -248,7 +248,7 @@ To summarize:
 
 You can combine multiple dynamic attributes tags with other attributes:
 
-```html
+```handlebars
 <div id=foo class={{myClass}} {{attrs1}} {{attrs2}}>...</div>
 ```
 
@@ -270,7 +270,7 @@ states, use `#let` and the async state helpers (e.g., `@pending`).
 
 Triple-braced tags are used to insert raw HTML into a template:
 
-```html
+```handlebars
 <div class="snippet">
   {{{snippetBody}}}
 </div>
@@ -298,7 +298,7 @@ An inclusion tag inserts an instantiation of the given template at the current
 location.  If there is an argument, it becomes the data context, much as if the
 following code were used:
 
-```html
+```handlebars
 {{#with dataObj}}
   {{> templateName}}
 {{/with}}
@@ -328,7 +328,7 @@ Block tags invoke built-in directives or custom block helpers, passing a block
 of template content that may be instantiated once, more than once, or not at all
 by the directive or helper.
 
-```html
+```handlebars
 {{#block}}
   <p>Hello</p>
 {{/block}}
@@ -341,7 +341,7 @@ A block tag's content must consist of HTML with balanced tags.
 
 Block tags can be used inside attribute values:
 
-```html
+```handlebars
 <div class="{{#if done}}done{{else}}notdone{{/if}}">
   ...
 </div>
@@ -349,7 +349,7 @@ Block tags can be used inside attribute values:
 
 You can chain block tags:
 
-```html
+```handlebars
 {{#foo}}
   <p>Foo</p>
 {{else bar}}
@@ -361,7 +361,7 @@ You can chain block tags:
 
 This is equivalent to:
 
-```html
+```handlebars
 {{#foo}}
   <p>Foo</p>
 {{else}}
@@ -380,7 +380,7 @@ depending on the value of its data argument.  Any falsy JavaScript value
 (including `null`, `undefined`, `0`, `""`, and `false`) is considered false, as
 well as the empty array, while any other value is considered true.
 
-```html
+```handlebars
 {{#if something}}
   <p>It's true</p>
 {{else}}
@@ -403,7 +403,7 @@ A `#with` template tag establishes a new data context object for its contents.
 The properties of the data context object are where Spacebars looks when
 resolving template tag names.
 
-```html
+```handlebars
 {{#with employee}}
   <div>Name: {{name}}</div>
   <div>Age: {{age}}</div>
@@ -413,7 +413,7 @@ resolving template tag names.
 We can take advantage of the object specification form of a block tag to define
 an object with properties we name:
 
-```html
+```handlebars
 {{#with x=1 y=2}}
   {{{getHTMLForPoint this}}}
 {{/with}}
@@ -434,7 +434,7 @@ get an unboxed number value.
 An `#each` template tag takes a sequence argument and inserts its content for
 each item in the sequence, setting the data context to the value of that item:
 
-```html
+```handlebars
 <ul>
 {{#each people}}
   <li>{{name}}</li>
@@ -445,7 +445,7 @@ each item in the sequence, setting the data context to the value of that item:
 The newer variant of `#each` doesn't change the data context but introduces a
 new variable that can be used in the body to refer to the current item:
 
-```html
+```handlebars
 <ul>
 {{#each person in people}}
   <li>{{person.name}}</li>
@@ -504,7 +504,7 @@ The `#let` tag creates a new alias variable for a given expression. While it
 doesn't change the data context, it allows to refer to an expression (helper,
 data context, another variable) with a short-hand within the template:
 
-```html
+```handlebars
 {{#let name=person.bio.firstName color=generateColor}}
   <div>{{name}} gets a {{color}} card!</div>
 {{/let}}
@@ -526,7 +526,7 @@ There are three global helpers used to query the state of the bound `Promise`s:
 * `@rejected`, which checks whether any of the given bindings has rejected.
 * `@resolved`, which checks whether any of the given bindings has resolved.
 
-```html
+```handlebars
 {{#let name=getNameAsynchronously}}
   {{#if @pending 'name'}}
     We are fetching your name...
@@ -543,7 +543,7 @@ There are three global helpers used to query the state of the bound `Promise`s:
 All of them accept a list of names to check. Passing no arguments is the same as
 passing all bindings from the inner-most `#let`.
 
-```html
+```handlebars
 {{#let name=getNameAsynchronously}}
   {{#let color=getColorAsynchronously}}
     {{#if @pending}}
@@ -567,7 +567,7 @@ varies (e.g., involves network), it may result in desynchronized UI. In the
 below example, the rendered text is **not** guaranteed to be the result of the
 latest `getName` execution.
 
-```html
+```handlebars
 <template name="example">
   {{#let name=getName}}
     Hi, {{name}}!
@@ -600,7 +600,7 @@ content it was passed.
 
 Here is a simple block helper that wraps its content in a div:
 
-```html
+```handlebars
 <template name="note">
   <div class="note">
     {{> Template.contentBlock}}
@@ -610,7 +610,7 @@ Here is a simple block helper that wraps its content in a div:
 
 You would invoke it as:
 
-```html
+```handlebars
 {{#note}}
   Any content here
 {{/note}}
@@ -619,7 +619,7 @@ You would invoke it as:
 Here is an example of implementing `#unless` in terms of `#if` (ignoring for the
 moment that `unless` is a built-in directive):
 
-```html
+```handlebars
 <template name="unless">
   {{#if this}}
     {{> Template.elseBlock}}
@@ -652,7 +652,7 @@ Comment template tags begin with <code v-pre>{{!</code> and can contain any char
 `}}`.  Comments are removed upon compilation and never appear in the compiled
 template code or the generated HTML.
 
-```html
+```handlebars
 {{! Start of a section}}
 <div class="section">
   ...
@@ -662,7 +662,7 @@ template code or the generated HTML.
 Comment tags also come in a "block comment" form.  Block comments may contain
 <code v-pre>{{</code> and `}}`:
 
-```html
+```handlebars
 {{!-- This is a block comment.
 We can write {{foo}} and it doesn't matter.
 {{#with x}}This code is commented out.{{/with}}
@@ -677,7 +677,7 @@ Sometimes an argument to a helper call is best expressed as a return value of
 some other expression. For this and other cases, one can use parentheses to
 express the evaluation order of nested expressions.
 
-```html
+```handlebars
 {{capitalize (getSummary post)}}
 ```
 
@@ -686,7 +686,7 @@ the `capitalize` helper.
 
 Sub-expressions can be used to calculate key-word arguments, too:
 
-```html
+```handlebars
 {{> tmpl arg=(helper post)}}
 ```
 

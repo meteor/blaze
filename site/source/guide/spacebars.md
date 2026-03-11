@@ -34,7 +34,7 @@ The default behavior is to render that property as a string; however for some at
 Note that simple string interpolations like this will always escape any HTML for you, so you don't need to perform
 safety checks for XSS.
 
-Additionally, we can see an example of a *template helper*--- <code v-pre>{{checkedClass todo}}</code> calls out to a
+Additionally, we can see an example of a *template helper* - <code v-pre>{{checkedClass todo}}</code> calls out to a
 `checkedClass` helper defined in a separate JavaScript file. The HTML template and JavaScript file together define the
 `Todos_item` component:
 
@@ -316,7 +316,7 @@ you when it can't understand your code with an exact line number for the error.
 To insert literal curly braces: <code v-pre>{{ }}</code> and the like, add a pipe character, `|`, to the opening
 braces:
 
-```
+```html
 <!-- will render as <h1>All about {{</h1> -->
 <h1>All about {{|</h1>
 

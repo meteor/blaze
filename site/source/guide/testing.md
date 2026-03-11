@@ -148,7 +148,7 @@ built `todo` document directly into the template.
 
 To run the tests that our app defines, we run our app in [test mode](#test-modes):
 
-```txt
+```shell
 TEST_WATCH=1 meteor test --driver-package meteortesting:mocha
 ```
 
@@ -158,7 +158,7 @@ To run the tests, visit http://localhost:3000 in your browser. This kicks off `m
 
 Usually, while developing an application, it makes sense to run `meteor test` on a second port (say `3100`), while also running your main application in a separate process:
 
-```bash
+```shell
 # in one terminal window
 meteor
 

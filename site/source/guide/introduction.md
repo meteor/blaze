@@ -1,9 +1,10 @@
----
+--- 
 title: Introduction
 description: How to use Blaze, Meteor's frontend rendering system, to build usable and maintainable user interfaces.
 ---
 
 # Getting started with Blaze
+
 
 Blaze is Meteor's built-in reactive rendering library. Usually, templates are written
 in [Spacebars](../guide/spacebars), a variant of [Handlebars](http://handlebarsjs.com) designed to take advantage
@@ -11,9 +12,9 @@ of [Tracker](https://github.com/meteor/meteor/tree/devel/packages/tracker), Mete
 are compiled into JavaScript UI components that are rendered by the Blaze library.
 
 Blaze is not required to build applications in Meteor - you can also easily
-use [React](http://react-in-meteor.readthedocs.org/en/latest/) or [Angular](http://www.angular-meteor.com) to develop
-your UI. However, this particular article will take you through best practices in building an application in Blaze,
-which is used as the UI engine in all of the other articles.
+use other frontends to develop  your UI. 
+However, this particular article will take you through best practices in building an application in Blaze,
+which is used as the UI engine in all the other articles.
 
 ## About this guide
 
@@ -40,16 +41,16 @@ The Meteor installer makes sure everything is in place.
 
 This will vary, depending on which frontend you currently use.
 Most definitely, you will have to remove `static-html` from your Meteor packages and replace it
-with `templating`:
+with BLazes' packages:
 
 ```shell
 meteor remove static-html jquery
 meteor add blaze-html-templates reactive-dict hot-module-replacement blaze-hot
 ```
 
+**Note:** removing jQuery is only supported with Blaze >= 3.1.0, see the [migrations guide](../migrations.md#remove-jquery).
 Also, make sure you remove any **Meteor and NPM package**, that was used with your prior frontend.
-
-Then, make sure you create a `client/main.js` and `client/main.html` file with the following content:
+Finally, create a `client/main.js` and `client/main.html` file with the following content:
 
 *client/main.html*
 
@@ -99,3 +100,9 @@ Template.example.events({
 })
 ```
 
+From this point you can start writing your Blaze templates.
+
+## Blaze Tutorial
+
+The official Meteor docs contain [a comprehensive Tutorial using Blaze and Meteor 3](https://docs.meteor.com/tutorials/blaze/).
+This is a good starting point for beginners to understand the basics of Blaze hands-on.

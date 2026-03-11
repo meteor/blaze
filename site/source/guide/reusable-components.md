@@ -50,7 +50,7 @@ editing state of the item, which would have been a hassle to add if the item was
 Additionally, for better clarity, always explicitly provide a data context to an inclusion rather than letting it
 inherit the context of the template where it was rendered:
 
-```html
+```handlebars
 <!-- bad: inherits data context, who knows what is in there! -->
 {{> myTemplate}}
 
@@ -68,7 +68,7 @@ The only reason not to use <code v-pre>{{#each .. in}}</code> would be because i
 `todo` symbol inside event handlers. Typically the solution to this is to use a sub-component to render the inside of
 the loop:
 
-```html
+```handlebars
 {{#each todo in todos}}
 {{> Todos_item todo=todo}}
 {{/each}}
@@ -203,7 +203,7 @@ the [custom block helper](../guide/spacebars.html#Block-Helpers) to provide a bl
 flexibility, typically just providing the component name as an argument is the way to go. The sub-component can then
 just render that component with:
 
-```html
+```handlebars
 {{> Template.dynamic templateName dataContext}}
 ```
 
@@ -219,7 +219,7 @@ of which is edited. When you focus on an item, that item needs to tell the list'
 To do that, we pass a callback into the `Todos_item` component, and the child calls it whenever the state needs to be
 updated in the parent:
 
-```html
+```handlebars
 {{> Todos_item (todoArgs todo)}}
 ```
 

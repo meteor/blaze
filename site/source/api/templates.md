@@ -94,7 +94,7 @@ Because your template has been rendered, you can use functions like
 This can be a good place to apply any DOM manipulations you want, after the
 template is rendered for the first time.
 
-```html
+```handlebars
 <template name="myPictures">
   <div class="container">
     {{#each pictures}}
@@ -249,7 +249,7 @@ Template.notifications.onCreated(function () {
 });
 ```
 
-```html
+```handlebars
 <template name="notifications">
   {{#if Template.subscriptionsReady}}
     <!-- This is displayed when all data is ready. -->
@@ -274,7 +274,7 @@ Template.comments.onCreated(function () {
 });
 ```
 
-```html
+```handlebars
 {{#with post}}
   {{> comments postId=_id}}
 {{/with}}
