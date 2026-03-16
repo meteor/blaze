@@ -1,4 +1,4 @@
-var Template = Blaze.Template;
+const Template = Blaze.Template;
 
 /**
  * @isTemplate true
@@ -31,9 +31,9 @@ Template.__dynamic.helpers({
       );
     }
 
-    Object.keys(this).forEach(function (k) {
+    Object.keys(this).forEach((k) => {
       if (k !== 'template' && k !== 'data') {
-        throw new Error('Invalid argument to {{> Template.dynamic}}: ' + k);
+        throw new Error(`Invalid argument to {{> Template.dynamic}}: ${k}`);
       }
     });
   },

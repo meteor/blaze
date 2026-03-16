@@ -161,34 +161,44 @@ DOMBackend.Events = {
 
 ///// Removal detection and interoperability.
 
-const NOOP = function () {};
+// For an explanation of this technique, see:
+// http://bugs.jquery.com/ticket/12213#comment:23 .
+//
+// In short, an element is considered "removed" when jQuery
+// cleans up its *private* userdata on the element,
+// which we can detect using a custom event with a teardown
+// hook.
+
+const NOOP = () => {};
 
 // Circular doubly-linked list
-const TeardownCallback = function (func) {
-  this.next = this;
-  this.prev = this;
-  this.func = func;
-};
+class TeardownCallback {
+  constructor(func) {
+    this.next = this;
+    this.prev = this;
+    this.func = func;
+  }
 
-// Insert newElt before oldElt in the circular list
-TeardownCallback.prototype.linkBefore = function (oldElt) {
-  this.prev = oldElt.prev;
-  this.next = oldElt;
-  oldElt.prev.next = this;
-  oldElt.prev = this;
-};
+  // Insert newElt before oldElt in the circular list
+  linkBefore(oldElt) {
+    this.prev = oldElt.prev;
+    this.next = oldElt;
+    oldElt.prev.next = this;
+    oldElt.prev = this;
+  }
 
-TeardownCallback.prototype.unlink = function () {
-  this.prev.next = this.next;
-  this.next.prev = this.prev;
-};
+  unlink() {
+    this.prev.next = this.next;
+    this.next.prev = this.prev;
+  }
 
-TeardownCallback.prototype.go = function () {
-  const func = this.func;
-  func && func();
-};
+  go() {
+    const func = this.func;
+    func && func();
+  }
 
-TeardownCallback.prototype.stop = TeardownCallback.prototype.unlink;
+  stop() { this.unlink(); }
+}
 
 // Shared helper: execute all teardown callbacks on an element
 function _executeTeardownCallbacks(elem) {

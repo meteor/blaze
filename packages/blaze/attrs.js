@@ -88,7 +88,7 @@ AttributeHandler.prototype.update = function (element, oldValue, value) {
 AttributeHandler.extend = function (options) {
   const curType = this;
   const subType = function AttributeHandlerSubtype(...args) {
-    AttributeHandler.apply(this, args);
+    AttributeHandler.call(this, ...args);
   };
   subType.prototype = new curType;
   subType.extend = curType.extend;
@@ -410,6 +410,7 @@ const XlinkHandler = AttributeHandler.extend({
   }
 });
 
+
 /**
  * Cross-browser check for SVG elements
  * 
@@ -419,9 +420,8 @@ const XlinkHandler = AttributeHandler.extend({
  * @param {Element} elem - DOM element to check
  * @returns {boolean} True if element is an SVG element
  */
-const isSVGElement = function (elem) {
-  return 'ownerSVGElement' in elem;
-};
+const isSVGElement = (elem) =>
+  'ownerSVGElement' in elem;
 
 /**
  * Determine if an attribute contains URL values
@@ -436,7 +436,7 @@ const isSVGElement = function (elem) {
  * @param {string} attrName - Attribute name (e.g., 'href', 'src')
  * @returns {boolean} True if this attribute typically contains URLs
  */
-const isUrlAttribute = function (tagName, attrName) {
+const isUrlAttribute = (tagName, attrName) => {
   // Map of HTML tags to their URL-containing attributes
   // Compiled from HTML4/HTML5 specifications
   const urlAttrs = {
@@ -509,7 +509,7 @@ const MAX_CACHE_SIZE = 1000;
  * Clear the protocol cache.
  * Useful for testing or when URL resolution context changes.
  */
-Blaze._clearProtocolCache = function () {
+Blaze._clearProtocolCache = () => {
   _protocolCache.clear();
 };
 
@@ -523,7 +523,7 @@ Blaze._clearProtocolCache = function () {
  * @returns {string} Normalized protocol (e.g., "http:", "javascript:")
  * @throws {Error} When called on the server (not implemented)
  */
-const getUrlProtocol = function (url) {
+const getUrlProtocol = (url) => {
   // Check cache first for performance
   if (_protocolCache.has(url)) {
     return _protocolCache.get(url);
@@ -577,11 +577,10 @@ const UrlHandler = AttributeHandler.extend({
    */
   update: function (...args) {
     const [element, oldValue, value] = args;
-    const self = this;
 
     // If JavaScript URLs are explicitly allowed, skip validation
     if (Blaze._javascriptUrlsAllowed()) {
-      origUpdate.apply(self, args);
+      origUpdate.call(this, ...args);
     } else {
       // Only validate non-null values
       if (value != null) {
@@ -596,14 +595,14 @@ const UrlHandler = AttributeHandler.extend({
           "Call Blaze._allowJavascriptUrls() " +
           "to enable them.");
           // Set attribute to null instead of the dangerous URL
-          origUpdate.apply(self, [element, oldValue, null]);
+          origUpdate.call(this, element, oldValue, null);
         } else {
           // URL is safe, proceed with normal update
-          origUpdate.apply(self, args);
+          origUpdate.call(this, ...args);
         }
       } else {
         // Value is null/undefined, proceed with normal update
-        origUpdate.apply(self, args);
+        origUpdate.call(this, ...args);
       }
     }
   }
@@ -653,10 +652,7 @@ Blaze._makeAttributeHandler = function (elem, name, value) {
   else if ((elem.tagName === 'TEXTAREA' || elem.tagName === 'INPUT') && name === 'value') {
     // Both TEXTAREA and INPUT track their value in the DOM 'value' property
     return new DOMPropertyHandler(name, value);
-  } 
-  // XLink attributes need namespace handling for SVG
-  else if (name.substring(0,6) === 'xlink:') {
-    // Remove 'xlink:' prefix and use XLink namespace
+  } else if (name.startsWith('xlink:')) {
     return new XlinkHandler(name.substring(6), value);
   } 
   // URL attributes need security validation
