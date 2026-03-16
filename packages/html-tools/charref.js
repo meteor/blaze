@@ -2309,7 +2309,7 @@ const getNamedCharRef = function (scanner, inAttribute) {
 // Returns the sequence of one or two codepoints making up an entity as an array.
 // Codepoints in the array are integers and may be out of the single-char JavaScript
 // range.
-const getCodePoints = function (namedEntity) {
+const getCodePoints = (namedEntity) => {
   return ENTITIES[namedEntity].codepoints;
 };
 
@@ -2330,7 +2330,7 @@ const BIG_BAD_CODEPOINTS = (function (obj) {
   return obj;
 })({});
 
-const isLegalCodepoint = function (cp) {
+const isLegalCodepoint = (cp) => {
   if ((cp === 0) ||
       (cp >= 0x80 && cp <= 0x9f) ||
       (cp >= 0xd800 && cp <= 0xdfff) ||
