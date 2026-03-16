@@ -14,7 +14,7 @@ export function parse(input) {
 }
 
 export function compile(input, options) {
-  var tree = parse(input);
+  const tree = parse(input);
   return codeGen(tree, options);
 }
 
@@ -46,7 +46,7 @@ TemplateTagReplacer.def({
   },
   visitAttribute: function (name, value, tag) {
     this.inAttributeValue = true;
-    var result = this.visit(value);
+    const result = this.visit(value);
     this.inAttributeValue = false;
 
     if (result !== value) {
@@ -65,12 +65,12 @@ TemplateTagReplacer.def({
 export function codeGen (parseTree, options) {
   // is this a template, rather than a block passed to
   // a block helper, say
-  var isTemplate = (options && options.isTemplate);
-  var isBody = (options && options.isBody);
-  var whitespace = (options && options.whitespace)
-  var sourceName = (options && options.sourceName);
+  const isTemplate = (options && options.isTemplate);
+  const isBody = (options && options.isBody);
+  const whitespace = (options && options.whitespace)
+  const sourceName = (options && options.sourceName);
 
-  var tree = parseTree;
+  let tree = parseTree;
 
   // The flags `isTemplate` and `isBody` are kind of a hack.
   if (isTemplate || isBody) {
@@ -86,17 +86,11 @@ export function codeGen (parseTree, options) {
   new ReactComponentSiblingForbidder({sourceName: sourceName})
     .visit(tree);
 
-  var codegen = new CodeGen;
+  const codegen = new CodeGen;
   tree = (new TemplateTagReplacer(
     {codegen: codegen})).visit(tree);
 
-  var code = '(function () { ';
-  if (isTemplate || isBody) {
-    code += 'var view = this; ';
-  }
-  code += 'return ';
-  code += BlazeTools.toJS(tree);
-  code += '; })';
+  let code = `(function () { ${isTemplate || isBody ? 'var view = this; ' : ''}return ${BlazeTools.toJS(tree)}; })`;
 
   code = beautify(code);
 

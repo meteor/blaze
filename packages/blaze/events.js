@@ -137,7 +137,7 @@ EventSupport.listen = function (element, events, selector, handler, recipient, g
   try { element = element; } finally {}
 
   const eventTypes = [];
-  events.replace(/[^ /]+/g, function (e) {
+  events.replace(/[^ /]+/g, (e) => {
     eventTypes.push(e);
   });
 

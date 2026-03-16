@@ -1,9 +1,9 @@
 // _assign is like _.extend or the upcoming Object.assign.
 // Copy src's own, enumerable properties onto tgt and return
 // tgt.
-var _hasOwnProperty = Object.prototype.hasOwnProperty;
-var _assign = function (tgt, src) {
-  for (var k in src) {
+const _hasOwnProperty = Object.prototype.hasOwnProperty;
+const _assign = (tgt, src) => {
+  for (const k in src) {
     if (_hasOwnProperty.call(src, k))
       tgt[k] = src[k];
   }
