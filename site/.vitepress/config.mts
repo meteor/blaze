@@ -20,9 +20,8 @@ export default defineConfig({
             {
                 text: 'Docs', items: [
                     {text: 'Guide', link: '/guide/introduction'},
-                    {text: 'API', link: '/api/index'},
+                    {text: 'API', link: '/api/templates'},
                     {text: 'Migrations', link: '/migrations'},
-
                 ]
             },
             {
@@ -103,17 +102,18 @@ export default defineConfig({
                     {text: 'Smart Components', link: '/guide/smart-components'},
                     {text: 'Reusing Code', link: '/guide/reusing-code'},
                     {text: 'Routing', link: '/guide/routing'},
+                    {text: 'React in Blaze', link: '/guide/react'},
                     {text: 'Testing', link: '/guide/testing'},
                     {text: 'Understanding Blaze', link: '/guide/understanding-blaze'},
                 ]
             },
+            {text: 'Migrations', link: '/migrations'},
             {
                 text: 'API',
                 items: [
-                    {text: 'Overview', link: '/api/index'},
+                    {text: 'Templates', link: '/api/templates'},
                     {text: 'Blaze', link: '/api/blaze'},
                     {text: 'Spacebars', link: '/api/spacebars'},
-                    {text: 'Templates', link: '/api/templates'},
                 ]
             },
             {

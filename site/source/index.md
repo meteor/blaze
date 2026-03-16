@@ -14,7 +14,7 @@ hero:
       link: /guide/introduction
     - theme: alt
       text: API Docs
-      link: /api/index
+      link: /api/templates
     - theme: alt
       text: Tutorial
       link: https://docs.meteor.com/tutorials/blaze/
