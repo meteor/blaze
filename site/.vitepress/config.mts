@@ -121,7 +121,8 @@ export default defineConfig({
                 items: [
                     {text: 'Contributing', link: '/repo/CONTRIBUTING'},
                     {text: 'Code of Conduct', link: '/repo/CODE_OF_CONDUCT'},
-                    {text: 'Security', link: '/repo/SECURITY'}
+                    {text: 'Security', link: '/repo/SECURITY'},
+                    {text: 'Blaze Architecture', link: '/repo/architecture'},
                 ]
             }
         ],
