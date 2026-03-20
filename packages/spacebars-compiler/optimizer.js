@@ -4,11 +4,9 @@ import { HTML } from 'meteor/htmljs';
 // Optimize parts of an HTMLjs tree into raw HTML strings when they don't
 // contain template tags.
 
-var constant = function (value) {
-  return function () { return value; };
-};
+const constant = (value) => () => value;
 
-var OPTIMIZABLE = {
+const OPTIMIZABLE = {
   NONE: 0,
   PARTS: 1,
   FULL: 2
@@ -25,7 +23,7 @@ var OPTIMIZABLE = {
 // However, if we are given a big tree that contains SVG somewhere, we
 // return PARTS so that the optimizer can descend into the tree and optimize
 // other parts of it.
-var CanOptimizeVisitor = HTML.Visitor.extend();
+const CanOptimizeVisitor = HTML.Visitor.extend();
 CanOptimizeVisitor.def({
   visitNull: constant(OPTIMIZABLE.FULL),
   visitPrimitive: constant(OPTIMIZABLE.FULL),
@@ -35,13 +33,13 @@ CanOptimizeVisitor.def({
   visitObject: constant(OPTIMIZABLE.NONE),
   visitFunction: constant(OPTIMIZABLE.NONE),
   visitArray: function (x) {
-    for (var i = 0; i < x.length; i++)
+    for (let i = 0; i < x.length; i++)
       if (this.visit(x[i]) !== OPTIMIZABLE.FULL)
         return OPTIMIZABLE.PARTS;
     return OPTIMIZABLE.FULL;
   },
   visitTag: function (tag) {
-    var tagName = tag.tagName;
+    const tagName = tag.tagName;
     if (tagName === 'textarea') {
       // optimizing into a TEXTAREA's RCDATA would require being a little
       // more clever.
@@ -63,8 +61,8 @@ CanOptimizeVisitor.def({
       return OPTIMIZABLE.PARTS;
     }
 
-    var children = tag.children;
-    for (var i = 0; i < children.length; i++)
+    const children = tag.children;
+    for (let i = 0; i < children.length; i++)
       if (this.visit(children[i]) !== OPTIMIZABLE.FULL)
         return OPTIMIZABLE.PARTS;
 
@@ -75,12 +73,12 @@ CanOptimizeVisitor.def({
   },
   visitAttributes: function (attrs) {
     if (attrs) {
-      var isArray = HTML.isArray(attrs);
-      for (var i = 0; i < (isArray ? attrs.length : 1); i++) {
-        var a = (isArray ? attrs[i] : attrs);
+      const isArray = HTML.isArray(attrs);
+      for (let i = 0; i < (isArray ? attrs.length : 1); i++) {
+        const a = (isArray ? attrs[i] : attrs);
         if ((typeof a !== 'object') || (a instanceof HTMLTools.TemplateTag))
           return OPTIMIZABLE.PARTS;
-        for (var k in a)
+        for (const k in a)
           if (this.visit(a[k]) !== OPTIMIZABLE.FULL)
             return OPTIMIZABLE.PARTS;
       }
@@ -89,7 +87,7 @@ CanOptimizeVisitor.def({
   }
 });
 
-var getOptimizability = function (content) {
+const getOptimizability = (content) => {
   return (new CanOptimizeVisitor).visit(content);
 };
 
@@ -99,26 +97,27 @@ export function toRaw(x) {
 
 export const TreeTransformer = HTML.TransformingVisitor.extend();
 TreeTransformer.def({
-  visitAttributes: function (attrs/*, ...*/) {
+  visitAttributes: function (...args) {
+    const [attrs] = args;
     // pass template tags through by default
     if (attrs instanceof HTMLTools.TemplateTag)
       return attrs;
 
     return HTML.TransformingVisitor.prototype.visitAttributes.apply(
-      this, arguments);
+      this, args);
   }
 });
 
 // Replace parts of the HTMLjs tree that have no template tags (or
 // tricky HTML tags) with HTML.Raw objects containing raw HTML.
-var OptimizingVisitor = TreeTransformer.extend();
+const OptimizingVisitor = TreeTransformer.extend();
 OptimizingVisitor.def({
   visitNull: toRaw,
   visitPrimitive: toRaw,
   visitComment: toRaw,
   visitCharRef: toRaw,
   visitArray: function (array) {
-    var optimizability = getOptimizability(array);
+    const optimizability = getOptimizability(array);
     if (optimizability === OPTIMIZABLE.FULL) {
       return toRaw(array);
     } else if (optimizability === OPTIMIZABLE.PARTS) {
@@ -128,7 +127,7 @@ OptimizingVisitor.def({
     }
   },
   visitTag: function (tag) {
-    var optimizability = getOptimizability(tag);
+    const optimizability = getOptimizability(tag);
     if (optimizability === OPTIMIZABLE.FULL) {
       return toRaw(tag);
     } else if (optimizability === OPTIMIZABLE.PARTS) {
@@ -147,12 +146,12 @@ OptimizingVisitor.def({
 });
 
 // Combine consecutive HTML.Raws.  Remove empty ones.
-var RawCompactingVisitor = TreeTransformer.extend();
+const RawCompactingVisitor = TreeTransformer.extend();
 RawCompactingVisitor.def({
   visitArray: function (array) {
-    var result = [];
-    for (var i = 0; i < array.length; i++) {
-      var item = array[i];
+    const result = [];
+    for (let i = 0; i < array.length; i++) {
+      const item = array[i];
       if ((item instanceof HTML.Raw) &&
           ((! item.value) ||
            (result.length &&
@@ -174,11 +173,11 @@ RawCompactingVisitor.def({
 
 // Replace pointless Raws like `HTMl.Raw('foo')` that contain no special
 // characters with simple strings.
-var RawReplacingVisitor = TreeTransformer.extend();
+const RawReplacingVisitor = TreeTransformer.extend();
 RawReplacingVisitor.def({
   visitRaw: function (raw) {
-    var html = raw.value;
-    if (html.indexOf('&') < 0 && html.indexOf('<') < 0) {
+    const html = raw.value;
+    if (!html.includes('&') && !html.includes('<')) {
       return html;
     } else {
       return raw;

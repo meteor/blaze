@@ -6,10 +6,6 @@ Package.describe({
   git: 'https://github.com/meteor/blaze.git',
 });
 
-Npm.depends({
-  'lodash.isempty': '4.4.0',
-});
-
 Package.onUse(function(api) {
   api.use([
     'caching-compiler@2.0.0',

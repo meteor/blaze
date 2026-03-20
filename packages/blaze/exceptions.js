@@ -30,10 +30,10 @@ Blaze._reportException = function (e, msg) {
 
   if (! debugFunc)
     // adapted from Tracker
-    debugFunc = function () {
+    debugFunc = () => {
       return (typeof Meteor !== "undefined" ? Meteor._debug :
               ((typeof console !== "undefined") && console.log ? console.log :
-               function () {}));
+               () => {}));
     };
 
   // In Chrome, `e.stack` is a multiline string that starts with the message
@@ -53,9 +53,9 @@ Blaze._wrapCatchingExceptions = function (f, where) {
   if (typeof f !== 'function')
     return f;
 
-  return function (...arguments) {
+  return function (...args) {
     try {
-      return f.apply(this, arguments);
+      return f.apply(this, args);
     } catch (e) {
       Blaze._reportException(e, 'Exception in ' + where + ':');
     }

@@ -109,21 +109,20 @@ Blaze.View.prototype._onViewRendered = function (cb) {
 };
 
 Blaze.View.prototype.onViewReady = function (cb) {
-  const self = this;
-  const fire = function () {
-    Tracker.afterFlush(function () {
-      if (! self.isDestroyed) {
-        Blaze._withCurrentView(self, function () {
-          cb.call(self);
+  const fire = () => {
+    Tracker.afterFlush(() => {
+      if (! this.isDestroyed) {
+        Blaze._withCurrentView(this, () => {
+          cb.call(this);
         });
       }
     });
   };
-  self._onViewRendered(function onViewRendered() {
-    if (self.isDestroyed)
+  this._onViewRendered(() => {
+    if (this.isDestroyed)
       return;
-    if (! self._domrange.attached)
-      self._domrange.onAttached(fire);
+    if (! this._domrange.attached)
+      this._domrange.onAttached(fire);
     else
       fire();
   });
@@ -167,8 +166,6 @@ Blaze.View.prototype.removeViewDestroyedListener = function (cb) {
 /// from either onViewCreated (guarded against the absence of
 /// view._domrange), or onViewReady.
 Blaze.View.prototype.autorun = function (f, _inViewScope, displayName) {
-  const self = this;
-
   // The restrictions on when View#autorun can be called are in order
   // to avoid bad patterns, like creating a Blaze.View and immediately
   // calling autorun on it.  A freshly created View is not ready to
@@ -190,7 +187,7 @@ Blaze.View.prototype.autorun = function (f, _inViewScope, displayName) {
   // the autorun so that it starts at an appropriate time.  However,
   // then we can't return the Computation object to the caller, because
   // it doesn't exist yet.
-  if (! self.isCreated) {
+  if (! this.isCreated) {
     throw new Error("View#autorun must be called from the created callback at the earliest");
   }
   if (this._isInRender) {
@@ -199,11 +196,11 @@ Blaze.View.prototype.autorun = function (f, _inViewScope, displayName) {
 
   const templateInstanceFunc = Blaze.Template._currentTemplateInstanceFunc;
 
-  const func = function viewAutorun(c) {
-    return Blaze._withCurrentView(_inViewScope || self, function () {
+  const func = (c) => {
+    return Blaze._withCurrentView(_inViewScope || this, () => {
       return Blaze.Template._withTemplateInstanceFunc(
-        templateInstanceFunc, function () {
-          return f.call(self, c);
+        templateInstanceFunc, () => {
+          return f.call(this, c);
         });
     });
   };
@@ -212,28 +209,26 @@ Blaze.View.prototype.autorun = function (f, _inViewScope, displayName) {
   // The `displayName` property is not part of the spec but browsers like Chrome
   // and Firefox prefer it in debuggers over the name function was declared by.
   func.displayName =
-    (self.name || 'anonymous') + ':' + (displayName || 'anonymous');
+    `${this.name || 'anonymous'}:${displayName || 'anonymous'}`;
   const comp = Tracker.autorun(func);
 
-  const stopComputation = function () { comp.stop(); };
-  self.onViewDestroyed(stopComputation);
-  comp.onStop(function () {
-    self.removeViewDestroyedListener(stopComputation);
+  const stopComputation = () => { comp.stop(); };
+  this.onViewDestroyed(stopComputation);
+  comp.onStop(() => {
+    this.removeViewDestroyedListener(stopComputation);
   });
 
   return comp;
 };
 
 Blaze.View.prototype._errorIfShouldntCallSubscribe = function () {
-  const self = this;
-
-  if (! self.isCreated) {
+  if (! this.isCreated) {
     throw new Error("View#subscribe must be called from the created callback at the earliest");
   }
-  if (self._isInRender) {
+  if (this._isInRender) {
     throw new Error("Can't call View#subscribe from inside render(); try calling it from the created or rendered callback");
   }
-  if (self.isDestroyed) {
+  if (this.isDestroyed) {
     throw new Error("Can't call View#subscribe from inside the destroyed callback, try calling it inside created or rendered.");
   }
 };
@@ -245,10 +240,9 @@ Blaze.View.prototype._errorIfShouldntCallSubscribe = function () {
  * see if it is ready, or stop it manually
  */
 Blaze.View.prototype.subscribe = function (args, options) {
-  const self = this;
   options = options || {};
 
-  self._errorIfShouldntCallSubscribe();
+  this._errorIfShouldntCallSubscribe();
 
   let subHandle;
   if (options.connection) {
@@ -257,7 +251,7 @@ Blaze.View.prototype.subscribe = function (args, options) {
     subHandle = Meteor.subscribe.apply(Meteor, args);
   }
 
-  self.onViewDestroyed(function () {
+  this.onViewDestroyed(() => {
     subHandle.stop();
   });
 
@@ -765,7 +759,7 @@ Blaze._toText = function (htmljs, parentView, textMode) {
   if (! (textMode === HTML.TEXTMODE.STRING ||
          textMode === HTML.TEXTMODE.RCDATA ||
          textMode === HTML.TEXTMODE.ATTRIBUTE))
-    throw new Error("Unknown textMode: " + textMode);
+    throw new Error(`Unknown textMode: ${textMode}`);
 
   return HTML.toText(Blaze._expand(htmljs, parentView), textMode);
 };
@@ -898,11 +892,11 @@ Blaze._addEventMap = function (view, eventMap, thisInHandler) {
     throw new Error("View must have a DOMRange");
 
   view._domrange.onAttached(function attached_eventMaps(range, element) {
-    Object.keys(eventMap).forEach(function (spec) {
+    Object.keys(eventMap).forEach((spec) => {
       let handler = eventMap[spec];
       const clauses = spec.split(/,\s+/);
       // iterate over clauses of spec, e.g. ['click .foo', 'click .bar']
-      clauses.forEach(function (clause) {
+      clauses.forEach((clause) => {
         const parts = clause.split(/\s+/);
         if (parts.length === 0)
           return;
@@ -911,11 +905,12 @@ Blaze._addEventMap = function (view, eventMap, thisInHandler) {
         const selector = parts.join(' ');
         handles.push(Blaze._EventSupport.listen(
           element, newEvents, selector,
-          function (evt) {
+          function (...args) {
+            const [evt] = args
             if (! range.containsElement(evt.currentTarget, selector, newEvents))
               return null;
             const handlerThis = thisInHandler || this;
-            const handlerArgs = arguments;
+            const handlerArgs = args;
             return Blaze._withCurrentView(view, function () {
               return handler.apply(handlerThis, handlerArgs);
             });
@@ -928,7 +923,7 @@ Blaze._addEventMap = function (view, eventMap, thisInHandler) {
   });
 
   view.onViewDestroyed(function () {
-    handles.forEach(function (h) {
+    handles.forEach((h) => {
       h.stop();
     });
     handles.length = 0;

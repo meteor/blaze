@@ -12,14 +12,14 @@ import {
 
 const isPromiseLike = x => !!x && typeof x.then === 'function';
 
-var IDENTITY = function (x) { return x; };
+const IDENTITY = (x) => x;
 
 // _assign is like _.extend or the upcoming Object.assign.
 // Copy src's own, enumerable properties onto tgt and return
 // tgt.
-var _hasOwnProperty = Object.prototype.hasOwnProperty;
-var _assign = function (tgt, src) {
-  for (var k in src) {
+const _hasOwnProperty = Object.prototype.hasOwnProperty;
+const _assign = (tgt, src) => {
+  for (const k in src) {
     if (_hasOwnProperty.call(src, k))
       tgt[k] = src[k];
   }
@@ -35,9 +35,9 @@ Visitor.def = function (options) {
 };
 
 Visitor.extend = function (options) {
-  var curType = this;
-  var subType = function HTMLVisitorSubtype(/*arguments*/) {
-    Visitor.apply(this, arguments);
+  const curType = this;
+  const subType = function HTMLVisitorSubtype(...args) {
+    Visitor.apply(this, args);
   };
   subType.prototype = new curType;
   subType.extend = curType.extend;
@@ -48,42 +48,43 @@ Visitor.extend = function (options) {
 };
 
 Visitor.def({
-  visit: function (content/*, ...*/) {
+  visit: function (...args) {
+    const [content] = args;
     if (content == null)
       // null or undefined.
-      return this.visitNull.apply(this, arguments);
+      return this.visitNull.apply(this, args);
 
     if (typeof content === 'object') {
       if (content.htmljsType) {
         switch (content.htmljsType) {
         case Tag.htmljsType:
-          return this.visitTag.apply(this, arguments);
+          return this.visitTag.apply(this, args);
         case CharRef.htmljsType:
-          return this.visitCharRef.apply(this, arguments);
+          return this.visitCharRef.apply(this, args);
         case Comment.htmljsType:
-          return this.visitComment.apply(this, arguments);
+          return this.visitComment.apply(this, args);
         case Raw.htmljsType:
-          return this.visitRaw.apply(this, arguments);
+          return this.visitRaw.apply(this, args);
         default:
-          throw new Error("Unknown htmljs type: " + content.htmljsType);
+          throw new Error(`Unknown htmljs type: ${content.htmljsType}`);
         }
       }
 
       if (isArray(content))
-        return this.visitArray.apply(this, arguments);
+        return this.visitArray.apply(this, args);
 
-      return this.visitObject.apply(this, arguments);
+      return this.visitObject.apply(this, args);
 
     } else if ((typeof content === 'string') ||
                (typeof content === 'boolean') ||
                (typeof content === 'number')) {
-      return this.visitPrimitive.apply(this, arguments);
+      return this.visitPrimitive.apply(this, args);
 
     } else if (typeof content === 'function') {
-      return this.visitFunction.apply(this, arguments);
+      return this.visitFunction.apply(this, args);
     }
 
-    throw new Error("Unexpected object in htmljs: " + content);
+    throw new Error(`Unexpected object in htmljs: ${content}`);
 
   },
   visitNull: function (nullOrUndefined/*, ...*/) {},
@@ -94,10 +95,10 @@ Visitor.def({
   visitRaw: function (raw/*, ...*/) {},
   visitTag: function (tag/*, ...*/) {},
   visitObject: function (obj/*, ...*/) {
-    throw new Error("Unexpected object in htmljs: " + obj);
+    throw new Error(`Unexpected object in htmljs: ${obj}`);
   },
   visitFunction: function (fn/*, ...*/) {
-    throw new Error("Unexpected function in htmljs: " + fn);
+    throw new Error(`Unexpected function in htmljs: ${fn}`);
   }
 });
 
@@ -106,10 +107,10 @@ TransformingVisitor.def({
   visitNull: IDENTITY,
   visitPrimitive: IDENTITY,
   visitArray: function (array, ...args) {
-    var result = array;
-    for (var i = 0; i < array.length; i++) {
-      var oldItem = array[i];
-      var newItem = this.visit(oldItem, ...args);
+    let result = array;
+    for (let i = 0; i < array.length; i++) {
+      const oldItem = array[i];
+      const newItem = this.visit(oldItem, ...args);
       if (newItem !== oldItem) {
         // copy `array` on write
         if (result === array)
@@ -137,16 +138,16 @@ TransformingVisitor.def({
   },
   visitFunction: IDENTITY,
   visitTag: function (tag, ...args) {
-    var oldChildren = tag.children;
-    var newChildren = this.visitChildren(oldChildren, ...args);
+    const oldChildren = tag.children;
+    const newChildren = this.visitChildren(oldChildren, ...args);
 
-    var oldAttrs = tag.attrs;
-    var newAttrs = this.visitAttributes(oldAttrs, ...args);
+    const oldAttrs = tag.attrs;
+    const newAttrs = this.visitAttributes(oldAttrs, ...args);
 
     if (newAttrs === oldAttrs && newChildren === oldChildren)
       return tag;
 
-    var newTag = getTag(tag.tagName).apply(null, newChildren);
+    const newTag = getTag(tag.tagName)(...newChildren);
     newTag.attrs = newAttrs;
     return newTag;
   },
@@ -156,17 +157,18 @@ TransformingVisitor.def({
   // Transform the `.attrs` property of a tag, which may be a dictionary,
   // an array, or in some uses, a foreign object (such as
   // a template tag).
-  visitAttributes: function (attrs, ...args) {
+  visitAttributes: function (...all) {
+    const [attrs, ...args] = all;
     // Allow Promise-like values here; these will be handled in materializer.
     if (isPromiseLike(attrs)) {
       return attrs;
     }
 
     if (isArray(attrs)) {
-      var result = attrs;
-      for (var i = 0; i < attrs.length; i++) {
-        var oldItem = attrs[i];
-        var newItem = this.visitAttributes(oldItem, ...args);
+      let result = attrs;
+      for (let i = 0; i < attrs.length; i++) {
+        const oldItem = attrs[i];
+        const newItem = this.visitAttributes(oldItem, ...args);
         if (newItem !== oldItem) {
           // copy on write
           if (result === attrs)
@@ -178,21 +180,19 @@ TransformingVisitor.def({
     }
 
     if (attrs && isConstructedObject(attrs)) {
-      throw new Error("The basic TransformingVisitor does not support " +
-                      "foreign objects in attributes.  Define a custom " +
-                      "visitAttributes for this case.");
+      throw new Error("The basic TransformingVisitor does not support foreign objects in attributes.  Define a custom visitAttributes for this case.");
     }
 
-    var oldAttrs = attrs;
-    var newAttrs = oldAttrs;
+    const oldAttrs = attrs;
+    let newAttrs = oldAttrs;
     if (oldAttrs) {
-      var attrArgs = [null, null];
-      attrArgs.push.apply(attrArgs, arguments);
-      for (var k in oldAttrs) {
-        var oldValue = oldAttrs[k];
+      const attrArgs = [null, null];
+      attrArgs.push(...all);
+      for (const k in oldAttrs) {
+        const oldValue = oldAttrs[k];
         attrArgs[0] = k;
         attrArgs[1] = oldValue;
-        var newValue = this.visitAttribute.apply(this, attrArgs);
+        const newValue = this.visitAttribute.apply(this, attrArgs);
         if (newValue !== oldValue) {
           // copy on write
           if (newAttrs === oldAttrs)
@@ -218,7 +218,7 @@ ToTextVisitor.def({
     return '';
   },
   visitPrimitive: function (stringBooleanOrNumber) {
-    var str = String(stringBooleanOrNumber);
+    const str = String(stringBooleanOrNumber);
     if (this.textMode === TEXTMODE.RCDATA) {
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;');
     } else if (this.textMode === TEXTMODE.ATTRIBUTE) {
@@ -229,8 +229,8 @@ ToTextVisitor.def({
     }
   },
   visitArray: function (array) {
-    var parts = [];
-    for (var i = 0; i < array.length; i++)
+    const parts = [];
+    for (let i = 0; i < array.length; i++)
       parts.push(this.visit(array[i]));
     return parts.join('');
   },
@@ -259,7 +259,7 @@ ToTextVisitor.def({
     return this.visit(this.toHTML(tag));
   },
   visitObject: function (x) {
-    throw new Error("Unexpected object in htmljs in toText: " + x);
+    throw new Error(`Unexpected object in htmljs in toText: ${x}`);
   },
   toHTML: function (node) {
     return toHTML(node);
@@ -274,17 +274,17 @@ ToHTMLVisitor.def({
     return '';
   },
   visitPrimitive: function (stringBooleanOrNumber) {
-    var str = String(stringBooleanOrNumber);
+    const str = String(stringBooleanOrNumber);
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;');
   },
   visitArray: function (array) {
-    var parts = [];
-    for (var i = 0; i < array.length; i++)
+    const parts = [];
+    for (let i = 0; i < array.length; i++)
       parts.push(this.visit(array[i]));
     return parts.join('');
   },
   visitComment: function (comment) {
-    return '<!--' + comment.sanitizedValue + '-->';
+    return `<!--${comment.sanitizedValue}-->`;
   },
   visitCharRef: function (charRef) {
     return charRef.html;
@@ -293,59 +293,59 @@ ToHTMLVisitor.def({
     return raw.value;
   },
   visitTag: function (tag) {
-    var attrStrs = [];
+    const attrStrs = [];
 
-    var tagName = tag.tagName;
-    var children = tag.children;
+    const tagName = tag.tagName;
+    let children = tag.children;
 
-    var attrs = tag.attrs;
+    let attrs = tag.attrs;
     if (attrs) {
       attrs = flattenAttributes(attrs);
-      for (var k in attrs) {
+      for (const k in attrs) {
         if (k === 'value' && tagName === 'textarea') {
           children = [attrs[k], children];
         } else {
-          var v = this.toText(attrs[k], TEXTMODE.ATTRIBUTE);
-          attrStrs.push(' ' + k + '="' + v + '"');
+          const v = this.toText(attrs[k], TEXTMODE.ATTRIBUTE);
+          attrStrs.push(` ${k}="${v}"`);
         }
       }
     }
 
-    var startTag = '<' + tagName + attrStrs.join('') + '>';
+    const startTag = `<${tagName}${attrStrs.join('')}>`;
 
-    var childStrs = [];
-    var content;
+    const childStrs = [];
+    let content;
     if (tagName === 'textarea') {
 
-      for (var i = 0; i < children.length; i++)
+      for (let i = 0; i < children.length; i++)
         childStrs.push(this.toText(children[i], TEXTMODE.RCDATA));
 
       content = childStrs.join('');
-      if (content.slice(0, 1) === '\n')
+      if (content.startsWith('\n'))
         // TEXTAREA will absorb a newline, so if we see one, add
         // another one.
-        content = '\n' + content;
+        content = `\n${content}`;
 
     } else {
-      for (var i = 0; i < children.length; i++)
+      for (let i = 0; i < children.length; i++)
         childStrs.push(this.visit(children[i]));
 
       content = childStrs.join('');
     }
 
-    var result = startTag + content;
+    let result = `${startTag}${content}`;
 
     if (children.length || ! isVoidElement(tagName)) {
       // "Void" elements like BR are the only ones that don't get a close
       // tag in HTML5.  They shouldn't have contents, either, so we could
       // throw an error upon seeing contents here.
-      result += '</' + tagName + '>';
+      result += `</${tagName}>`;
     }
 
     return result;
   },
   visitObject: function (x) {
-    throw new Error("Unexpected object in htmljs in toHTML: " + x);
+    throw new Error(`Unexpected object in htmljs in toHTML: ${x}`);
   },
   toText: function (node, textMode) {
     return toText(node, textMode);
@@ -374,8 +374,8 @@ export function toText(content, textMode) {
   if (! (textMode === TEXTMODE.STRING ||
          textMode === TEXTMODE.RCDATA ||
          textMode === TEXTMODE.ATTRIBUTE))
-    throw new Error("Unknown textMode: " + textMode);
+    throw new Error(`Unknown textMode: ${textMode}`);
 
-  var visitor = new ToTextVisitor({textMode: textMode});
+  const visitor = new ToTextVisitor({textMode: textMode});
   return visitor.visit(content);
 }

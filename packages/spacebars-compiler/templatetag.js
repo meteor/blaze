@@ -43,16 +43,16 @@ import { BlazeTools } from 'meteor/blaze-tools';
 //   parsed, they are put here.  `elseContent` will only be present if
 //   an `{{else}}` was found.
 
-var TEMPLATE_TAG_POSITION = HTMLTools.TEMPLATE_TAG_POSITION;
+const TEMPLATE_TAG_POSITION = HTMLTools.TEMPLATE_TAG_POSITION;
 
-export function TemplateTag () {
-  HTMLTools.TemplateTag.apply(this, arguments);
+export function TemplateTag (...args) {
+  HTMLTools.TemplateTag.apply(this, args);
 }
 
 TemplateTag.prototype = new HTMLTools.TemplateTag;
 TemplateTag.prototype.constructorName = 'SpacebarsCompiler.TemplateTag';
 
-var makeStacheTagStartRegex = function (r) {
+const makeStacheTagStartRegex = (r) => {
   return new RegExp(r.source + /(?![{>!#/])/.source,
                     r.ignoreCase ? 'i' : '');
 };
@@ -60,7 +60,7 @@ var makeStacheTagStartRegex = function (r) {
 // "starts" regexes are used to see what type of template
 // tag the parser is looking at.  They must match a non-empty
 // result, but not the interesting part of the tag.
-var starts = {
+const starts = {
   ESCAPE: /^\{\{(?=\{*\|)/,
   ELSE: makeStacheTagStartRegex(/^\{\{\s*else(\s+(?!\s)|(?=[}]))/i),
   DOUBLE: makeStacheTagStartRegex(/^\{\{\s*(?!\s)/),
@@ -72,13 +72,13 @@ var starts = {
   BLOCKCLOSE: makeStacheTagStartRegex(/^\{\{\s*\/\s*(?!\s)/)
 };
 
-var ends = {
+const ends = {
   DOUBLE: /^\s*\}\}/,
   TRIPLE: /^\s*\}\}\}/,
   EXPR: /^\s*\)/
 };
 
-var endsString = {
+const endsString = {
   DOUBLE: '}}',
   TRIPLE: '}}}',
   EXPR: ')'
@@ -89,7 +89,7 @@ var endsString = {
 // and returns a SpacebarsCompiler.TemplateTag, or throws an error (using
 // `scanner.fatal` if a scanner is provided).
 TemplateTag.parse = function (scannerOrString) {
-  var scanner = scannerOrString;
+  let scanner = scannerOrString;
   if (typeof scanner === 'string')
     scanner = new HTMLTools.Scanner(scannerOrString);
 
@@ -97,22 +97,22 @@ TemplateTag.parse = function (scannerOrString) {
          (scanner.rest()).slice(0, 2) === '{{'))
     return null;
 
-  var run = function (regex) {
+  const run = (regex) => {
     // regex is assumed to start with `^`
-    var result = regex.exec(scanner.rest());
+    const result = regex.exec(scanner.rest());
     if (! result)
       return null;
-    var ret = result[0];
+    const ret = result[0];
     scanner.pos += ret.length;
     return ret;
   };
 
-  var advance = function (amount) {
+  const advance = function (amount) {
     scanner.pos += amount;
   };
 
-  var scanIdentifier = function (isFirstInPath) {
-    var id = BlazeTools.parseExtendedIdentifierName(scanner);
+  const scanIdentifier = function (isFirstInPath) {
+    const id = BlazeTools.parseExtendedIdentifierName(scanner);
     if (! id) {
       expected('IDENTIFIER');
     }
@@ -123,14 +123,14 @@ TemplateTag.parse = function (scannerOrString) {
     return id;
   };
 
-  var scanPath = function () {
-    var segments = [];
+  const scanPath = function () {
+    const segments = [];
 
     // handle initial `.`, `..`, `./`, `../`, `../..`, `../../`, etc
-    var dots;
+    let dots;
     if ((dots = run(/^[\.\/]+/))) {
-      var ancestorStr = '.'; // eg `../../..` maps to `....`
-      var endsWithSlash = /\/$/.test(dots);
+      let ancestorStr = '.'; // eg `../../..` maps to `....`
+      const endsWithSlash = /\/$/.test(dots);
 
       if (endsWithSlash)
         dots = dots.slice(0, -1);
@@ -158,7 +158,7 @@ TemplateTag.parse = function (scannerOrString) {
       // scan a path segment
 
       if (run(/^\[/)) {
-        var seg = run(/^[\s\S]*?\]/);
+        let seg = run(/^[\s\S]*?\]/);
         if (! seg)
           error("Unterminated path segment");
         seg = seg.slice(0, -1);
@@ -166,7 +166,7 @@ TemplateTag.parse = function (scannerOrString) {
           error("Path can't start with empty string");
         segments.push(seg);
       } else {
-        var id = scanIdentifier(! segments.length);
+        const id = scanIdentifier(! segments.length);
         if (id === 'this') {
           if (! segments.length) {
             // initial `this`
@@ -179,7 +179,7 @@ TemplateTag.parse = function (scannerOrString) {
         }
       }
 
-      var sep = run(/^[\.\/]/);
+      const sep = run(/^[\.\/]/);
       if (! sep)
         break;
     }
@@ -191,8 +191,8 @@ TemplateTag.parse = function (scannerOrString) {
   // (the "foo" portion in "foo=bar").
   // Result is either the keyword matched, or null
   // if we're not at a keyword argument position.
-  var scanArgKeyword = function () {
-    var match = /^([^\{\}\(\)\>#=\s"'\[\]]+)\s*=\s*/.exec(scanner.rest());
+  const scanArgKeyword = function () {
+    const match = /^([^\{\}\(\)\>#=\s"'\[\]]+)\s*=\s*/.exec(scanner.rest());
     if (match) {
       scanner.pos += match[0].length;
       return match[1];
@@ -205,17 +205,17 @@ TemplateTag.parse = function (scannerOrString) {
   // Result is an array of two or three items:
   // type , value, and (indicating a keyword argument)
   // keyword name.
-  var scanArg = function () {
-    var keyword = scanArgKeyword(); // null if not parsing a kwarg
-    var value = scanArgValue();
+  const scanArg = function () {
+    const keyword = scanArgKeyword(); // null if not parsing a kwarg
+    const value = scanArgValue();
     return keyword ? value.concat(keyword) : value;
   };
 
   // scan an argument value (for keyword or positional arguments);
   // succeeds or errors.  Result is an array of type, value.
-  var scanArgValue = function () {
-    var startPos = scanner.pos;
-    var result;
+  const scanArgValue = function () {
+    const startPos = scanner.pos;
+    let result;
     if ((result = BlazeTools.parseNumber(scanner))) {
       return ['NUMBER', result.value];
     } else if ((result = BlazeTools.parseStringLiteral(scanner))) {
@@ -225,7 +225,7 @@ TemplateTag.parse = function (scannerOrString) {
     } else if (run(/^\(/)) {
       return ['EXPR', scanExpr('EXPR')];
     } else if ((result = BlazeTools.parseExtendedIdentifierName(scanner))) {
-      var id = result;
+      const id = result;
       if (id === 'null') {
         return ['NULL', null];
       } else if (id === 'true' || id === 'false') {
@@ -239,24 +239,24 @@ TemplateTag.parse = function (scannerOrString) {
     }
   };
 
-  var scanExpr = function (type) {
-    var endType = type;
+  const scanExpr = function (type) {
+    let endType = type;
     if (type === 'INCLUSION' || type === 'BLOCKOPEN' || type === 'ELSE')
       endType = 'DOUBLE';
 
-    var tag = new TemplateTag;
+    const tag = new TemplateTag;
     tag.type = type;
     tag.path = scanPath();
     tag.args = [];
-    var foundKwArg = false;
+    let foundKwArg = false;
     while (true) {
       run(/^\s*/);
       if (run(ends[endType]))
         break;
       else if (/^[})]/.test(scanner.peek())) {
-        expected('`' + endsString[endType] + '`');
+        expected(`\`${endsString[endType]}\``);
       }
-      var newArg = scanArg();
+      const newArg = scanArg();
       if (newArg.length === 3) {
         foundKwArg = true;
       } else {
@@ -273,14 +273,14 @@ TemplateTag.parse = function (scannerOrString) {
     return tag;
   };
 
-  var type;
+  let type;
 
-  var error = function (msg) {
+  const error = function (msg) {
     scanner.fatal(msg);
   };
 
-  var expected = function (what) {
-    error('Expected ' + what);
+  const expected = function (what) {
+    error(`Expected ${what}`);
   };
 
   // must do ESCAPE first, immediately followed by ELSE
@@ -297,16 +297,16 @@ TemplateTag.parse = function (scannerOrString) {
   else
     error('Unknown stache tag');
 
-  var tag = new TemplateTag;
+  let tag = new TemplateTag;
   tag.type = type;
 
   if (type === 'BLOCKCOMMENT') {
-    var result = run(/^[\s\S]*?--\s*?\}\}/);
+    const result = run(/^[\s\S]*?--\s*?\}\}/);
     if (! result)
       error("Unclosed block comment");
     tag.value = result.slice(0, result.lastIndexOf('--'));
   } else if (type === 'COMMENT') {
-    var result = run(/^[\s\S]*?\}\}/);
+    const result = run(/^[\s\S]*?\}\}/);
     if (! result)
       error("Unclosed comment");
     tag.value = result.slice(0, -2);
@@ -319,8 +319,8 @@ TemplateTag.parse = function (scannerOrString) {
       tag = scanExpr(type);
     }
   } else if (type === 'ESCAPE') {
-    var result = run(/^\{*\|/);
-    tag.value = '{{' + result.slice(0, -1);
+    const result = run(/^\{*\|/);
+    tag.value = `{{${result.slice(0, -1)}`;
   } else {
     // DOUBLE, TRIPLE, BLOCKOPEN, INCLUSION
     tag = scanExpr(type);
@@ -335,8 +335,8 @@ TemplateTag.parse = function (scannerOrString) {
 // An error will still be thrown if there is not a valid template tag at
 // the current position.
 TemplateTag.peek = function (scanner) {
-  var startPos = scanner.pos;
-  var result = TemplateTag.parse(scanner);
+  const startPos = scanner.pos;
+  const result = TemplateTag.parse(scanner);
   scanner.pos = startPos;
   return result;
 };
@@ -357,12 +357,12 @@ TemplateTag.peek = function (scanner) {
 //
 // - Validates the tag's well-formedness and legality at in its position.
 TemplateTag.parseCompleteTag = function (scannerOrString, position) {
-  var scanner = scannerOrString;
+  let scanner = scannerOrString;
   if (typeof scanner === 'string')
     scanner = new HTMLTools.Scanner(scannerOrString);
 
-  var startPos = scanner.pos; // for error messages
-  var result = TemplateTag.parse(scannerOrString);
+  const startPos = scanner.pos; // for error messages
+  const result = TemplateTag.parse(scannerOrString);
   if (! result)
     return result;
 
@@ -389,9 +389,9 @@ TemplateTag.parseCompleteTag = function (scannerOrString, position) {
     // end tags.  For example, `foo/[0]` was parsed into `["foo", "0"]`
     // and now becomes `foo,0`.  This form may also show up in error
     // messages.
-    var blockName = result.path.join(',');
+    const blockName = result.path.join(',');
 
-    var textMode = null;
+    let textMode = null;
       if (blockName === 'markdown' ||
           position === TEMPLATE_TAG_POSITION.IN_RAWTEXT) {
         textMode = HTML.TEXTMODE.STRING;
@@ -399,7 +399,7 @@ TemplateTag.parseCompleteTag = function (scannerOrString, position) {
                  position === TEMPLATE_TAG_POSITION.IN_ATTRIBUTE) {
         textMode = HTML.TEXTMODE.RCDATA;
       }
-      var parserOptions = {
+      const parserOptions = {
         getTemplateTag: TemplateTag.parseCompleteTag,
         shouldStop: isAtBlockCloseOrElse,
         textMode: textMode
@@ -408,12 +408,12 @@ TemplateTag.parseCompleteTag = function (scannerOrString, position) {
     result.content = HTMLTools.parseFragment(scanner, parserOptions);
 
     if (scanner.rest().slice(0, 2) !== '{{')
-      scanner.fatal("Expected {{else}} or block close for " + blockName);
+      scanner.fatal(`Expected {{else}} or block close for ${blockName}`);
 
-    var lastPos = scanner.pos; // save for error messages
-    var tmplTag = TemplateTag.parse(scanner); // {{else}} or {{/foo}}
+    let lastPos = scanner.pos; // save for error messages
+    let tmplTag = TemplateTag.parse(scanner); // {{else}} or {{/foo}}
 
-    var lastElseContentTag = result;
+    let lastElseContentTag = result;
     while (tmplTag.type === 'ELSE') {
       if (lastElseContentTag === null) {
         scanner.fatal("Unexpected else after {{else}}");
@@ -437,27 +437,25 @@ TemplateTag.parseCompleteTag = function (scannerOrString, position) {
       }
 
       if (scanner.rest().slice(0, 2) !== '{{')
-        scanner.fatal("Expected block close for " + blockName);
+        scanner.fatal(`Expected block close for ${blockName}`);
 
       lastPos = scanner.pos;
       tmplTag = TemplateTag.parse(scanner);
     }
 
     if (tmplTag.type === 'BLOCKCLOSE') {
-      var blockName2 = tmplTag.path.join(',');
+      const blockName2 = tmplTag.path.join(',');
       if (blockName !== blockName2) {
         scanner.pos = lastPos;
-        scanner.fatal('Expected tag to close ' + blockName + ', found ' +
-                      blockName2);
+        scanner.fatal(`Expected tag to close ${blockName}, found ${blockName2}`);
       }
     } else {
       scanner.pos = lastPos;
-      scanner.fatal('Expected tag to close ' + blockName + ', found ' +
-                    tmplTag.type);
+      scanner.fatal(`Expected tag to close ${blockName}, found ${tmplTag.type}`);
     }
   }
 
-  var finalPos = scanner.pos;
+  const finalPos = scanner.pos;
   scanner.pos = startPos;
   validateTag(result, scanner);
   scanner.pos = finalPos;
@@ -465,14 +463,14 @@ TemplateTag.parseCompleteTag = function (scannerOrString, position) {
   return result;
 };
 
-var isAtBlockCloseOrElse = function (scanner) {
+const isAtBlockCloseOrElse = function (scanner) {
   // Detect `{{else}}` or `{{/foo}}`.
   //
   // We do as much work ourselves before deferring to `TemplateTag.peek`,
   // for efficiency (we're called for every input token) and to be
   // less obtrusive, because `TemplateTag.peek` will throw an error if it
   // sees `{{` followed by a malformed tag.
-  var rest, type;
+  let rest, type;
   return (scanner.peek() === '{' &&
           (rest = scanner.rest()).slice(0, 2) === '{{' &&
           /^\{\{\s*(\/|else\b)/.test(rest) &&
@@ -483,10 +481,10 @@ var isAtBlockCloseOrElse = function (scanner) {
 // Validate that `templateTag` is correctly formed and legal for its
 // HTML position.  Use `scanner` to report errors. On success, does
 // nothing.
-var validateTag = function (ttag, scanner) {
+const validateTag = function (ttag, scanner) {
 
   if (ttag.type === 'INCLUSION' || ttag.type === 'BLOCKOPEN') {
-    var args = ttag.args;
+    const args = ttag.args;
     if (ttag.path[0] === 'each' && args[1] && args[1][0] === 'PATH' &&
         args[1][1][0] === 'in') {
       // For slightly better error messages, we detect the each-in case
@@ -497,18 +495,18 @@ var validateTag = function (ttag, scanner) {
         // we have a positional argument that is not a PATH followed by
         // other arguments
         scanner.fatal("First argument must be a function, to be called on " +
-                      "the rest of the arguments; found " + args[0][0]);
+                      `the rest of the arguments; found ${args[0][0]}`);
       }
     }
   }
 
-  var position = ttag.position || TEMPLATE_TAG_POSITION.ELEMENT;
+  const position = ttag.position || TEMPLATE_TAG_POSITION.ELEMENT;
   if (position === TEMPLATE_TAG_POSITION.IN_ATTRIBUTE) {
     if (ttag.type === 'DOUBLE' || ttag.type === 'ESCAPE') {
       return;
     } else if (ttag.type === 'BLOCKOPEN') {
-      var path = ttag.path;
-      var path0 = path[0];
+      const path = ttag.path;
+      const path0 = path[0];
       if (! (path.length === 1 && (path0 === 'if' ||
                                    path0 === 'unless' ||
                                    path0 === 'with' ||
@@ -516,11 +514,11 @@ var validateTag = function (ttag, scanner) {
         scanner.fatal("Custom block helpers are not allowed in an HTML attribute, only built-in ones like #each and #if");
       }
     } else {
-      scanner.fatal(ttag.type + " template tag is not allowed in an HTML attribute");
+      scanner.fatal(`${ttag.type} template tag is not allowed in an HTML attribute`);
     }
   } else if (position === TEMPLATE_TAG_POSITION.IN_START_TAG) {
     if (! (ttag.type === 'DOUBLE')) {
-      scanner.fatal("Reactive HTML attributes must either have a constant name or consist of a single {{helper}} providing a dictionary of names and values.  A template tag of type " + ttag.type + " is not allowed here.");
+      scanner.fatal(`Reactive HTML attributes must either have a constant name or consist of a single {{helper}} providing a dictionary of names and values.  A template tag of type ${ttag.type} is not allowed here.`);
     }
     if (scanner.peek() === '=') {
       scanner.fatal("Template tags are not allowed in attribute names, only in attribute values or in the form of a single {{helper}} that evaluates to a dictionary of name=value pairs.");
