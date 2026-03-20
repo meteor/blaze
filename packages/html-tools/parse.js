@@ -6,7 +6,7 @@ import { getHTMLToken, isLookingAtEndTag } from './tokenize';
 // Parse a "fragment" of HTML, up to the end of the input or a particular
 // template tag (using the "shouldStop" option).
 export function parseFragment(input, options) {
-  var scanner;
+  let scanner;
   if (typeof input === 'string')
     scanner = new Scanner(input);
   else
@@ -25,16 +25,16 @@ export function parseFragment(input, options) {
     scanner.getTemplateTag = options.getTemplateTag;
 
   // function (scanner) -> boolean
-  var shouldStop = options && options.shouldStop;
+  const shouldStop = options && options.shouldStop;
 
-  var result;
+  let result;
   if (options && options.textMode) {
     if (options.textMode === HTML.TEXTMODE.STRING) {
       result = getRawText(scanner, null, shouldStop);
     } else if (options.textMode === HTML.TEXTMODE.RCDATA) {
       result = getRCData(scanner, null, shouldStop);
     } else {
-      throw new Error("Unsupported textMode: " + options.textMode);
+      throw new Error(`Unsupported textMode: ${options.textMode}`);
     }
   } else {
     result = getContent(scanner, shouldStop);
@@ -45,7 +45,7 @@ export function parseFragment(input, options) {
     // Detect the former case (stopped at an HTML end tag) and throw a good
     // error.
 
-    var posBefore = scanner.pos;
+    const posBefore = scanner.pos;
 
     var endTag;
     var parseError;
@@ -60,11 +60,9 @@ export function parseFragment(input, options) {
     // won't tell us to stop at an HTML end tag.  Should refactor
     // `shouldStop` into something more suitable.
     if (endTag && endTag.t === 'Tag' && endTag.isEnd) {
-      var closeTag = endTag.n;
-      var isVoidElement = HTML.isVoidElement(closeTag);
-      scanner.fatal("Unexpected HTML close tag" +
-                    (isVoidElement ?
-                     '.  <' + endTag.n + '> should have no close tag.' : ''));
+      const closeTag = endTag.n;
+      const isVoidElement = HTML.isVoidElement(closeTag);
+      scanner.fatal(`Unexpected HTML close tag${isVoidElement ? `.  <${endTag.n}> should have no close tag.` : ''}`);
     }
 
     scanner.pos = posBefore; // rewind, we'll continue parsing as usual
@@ -98,11 +96,11 @@ export function codePointToString(cp) {
 
     // we add 0xD800 to the number formed by the first 10 bits
     // to give the first byte
-    var first = ((0xffc00 & cp) >> 10) + 0xD800;
+    const first = ((0xffc00 & cp) >> 10) + 0xD800;
 
     // we add 0xDC00 to the number formed by the low 10 bits
     // to give the second byte
-    var second = (0x3ff & cp) + 0xDC00;
+    const second = (0x3ff & cp) + 0xDC00;
 
     return String.fromCharCode(first) + String.fromCharCode(second);
   } else {
@@ -111,14 +109,14 @@ export function codePointToString(cp) {
 }
 
 export function getContent (scanner, shouldStopFunc) {
-  var items = [];
+  const items = [];
 
   while (! scanner.isEOF()) {
     if (shouldStopFunc && shouldStopFunc(scanner))
       break;
 
-    var posBefore = scanner.pos;
-    var token = getHTMLToken(scanner);
+    const posBefore = scanner.pos;
+    const token = getHTMLToken(scanner);
     if (! token)
       // tokenizer reached EOF on its own, e.g. while scanning
       // template comments like `{{! foo}}`.
@@ -142,40 +140,39 @@ export function getContent (scanner, shouldStopFunc) {
         break;
       }
 
-      var tagName = token.n;
+      const tagName = token.n;
       // is this an element with no close tag (a BR, HR, IMG, etc.) based
       // on its name?
-      var isVoid = HTML.isVoidElement(tagName);
+      const isVoid = HTML.isVoidElement(tagName);
       if (token.isSelfClosing) {
-        if (! (isVoid || HTML.isKnownSVGElement(tagName) || tagName.indexOf(':') >= 0))
+        if (! (isVoid || HTML.isKnownSVGElement(tagName) || tagName.includes(':')))
           scanner.fatal('Only certain elements like BR, HR, IMG, etc. (and foreign elements like SVG) are allowed to self-close');
       }
 
       // result of parseAttrs may be null
-      var attrs = parseAttrs(token.attrs);
+      let attrs = parseAttrs(token.attrs);
       // arrays need to be wrapped in HTML.Attrs(...)
       // when used to construct tags
       if (HTML.isArray(attrs))
-        attrs = HTML.Attrs.apply(null, attrs);
+        attrs = HTML.Attrs(...attrs);
 
-      var tagFunc = HTML.getTag(tagName);
+      const tagFunc = HTML.getTag(tagName);
       if (isVoid || token.isSelfClosing) {
         items.push(attrs ? tagFunc(attrs) : tagFunc());
       } else {
         // parse HTML tag contents.
 
         // HTML treats a final `/` in a tag as part of an attribute, as in `<a href=/foo/>`, but the template author who writes `<circle r={{r}}/>`, say, may not be thinking about that, so generate a good error message in the "looks like self-close" case.
-        var looksLikeSelfClose = (scanner.input.substr(scanner.pos - 2, 2) === '/>');
+        const looksLikeSelfClose = (scanner.input.substr(scanner.pos - 2, 2) === '/>');
 
-        var content = null;
+        let content = null;
         if (token.n === 'textarea') {
           if (scanner.peek() === '\n')
             scanner.pos++;
-          var textareaValue = getRCData(scanner, token.n, shouldStopFunc);
+          const textareaValue = getRCData(scanner, token.n, shouldStopFunc);
           if (textareaValue) {
             if (attrs instanceof HTML.Attrs) {
-              attrs = HTML.Attrs.apply(
-                null, attrs.value.concat([{value: textareaValue}]));
+              attrs = HTML.Attrs(...attrs.value, {value: textareaValue});
             } else {
               attrs = (attrs || {});
               attrs.value = textareaValue;
@@ -187,10 +184,10 @@ export function getContent (scanner, shouldStopFunc) {
           content = getContent(scanner, shouldStopFunc);
         }
 
-        var endTag = getHTMLToken(scanner);
+        const endTag = getHTMLToken(scanner);
 
         if (! (endTag && endTag.t === 'Tag' && endTag.isEnd && endTag.n === tagName))
-          scanner.fatal('Expected "' + tagName + '" end tag' + (looksLikeSelfClose ? ' -- if the "<' + token.n + ' />" tag was supposed to self-close, try adding a space before the "/"' : ''));
+          scanner.fatal(`Expected "${tagName}" end tag${looksLikeSelfClose ? ` -- if the "<${token.n} />" tag was supposed to self-close, try adding a space before the "/"` : ''}`);
 
         // XXX support implied end tags in cases allowed by the spec
 
@@ -201,11 +198,10 @@ export function getContent (scanner, shouldStopFunc) {
         else if (! HTML.isArray(content))
           content = [content];
 
-        items.push(HTML.getTag(tagName).apply(
-          null, (attrs ? [attrs] : []).concat(content)));
+        items.push(HTML.getTag(tagName)(...(attrs ? [attrs] : []), ...content));
       }
     } else {
-      scanner.fatal("Unknown token type: " + token.t);
+      scanner.fatal(`Unknown token type: ${token.t}`);
     }
   }
 
@@ -217,7 +213,7 @@ export function getContent (scanner, shouldStopFunc) {
     return items;
 }
 
-var pushOrAppendString = function (items, string) {
+const pushOrAppendString = (items, string) => {
   if (items.length &&
       typeof items[items.length - 1] === 'string')
     items[items.length - 1] += string;
@@ -227,7 +223,7 @@ var pushOrAppendString = function (items, string) {
 
 // get RCDATA to go in the lowercase (or camel case) tagName (e.g. "textarea")
 export function getRCData(scanner, tagName, shouldStopFunc) {
-  var items = [];
+  const items = [];
 
   while (! scanner.isEOF()) {
     // break at appropriate end tag
@@ -237,7 +233,7 @@ export function getRCData(scanner, tagName, shouldStopFunc) {
     if (shouldStopFunc && shouldStopFunc(scanner))
       break;
 
-    var token = getHTMLToken(scanner, 'rcdata');
+    const token = getHTMLToken(scanner, 'rcdata');
     if (! token)
       // tokenizer reached EOF on its own, e.g. while scanning
       // template comments like `{{! foo}}`.
@@ -251,7 +247,7 @@ export function getRCData(scanner, tagName, shouldStopFunc) {
       items.push(token.v);
     } else {
       // (can't happen)
-      scanner.fatal("Unknown or unexpected token type: " + token.t);
+      scanner.fatal(`Unknown or unexpected token type: ${token.t}`);
     }
   }
 
@@ -263,8 +259,8 @@ export function getRCData(scanner, tagName, shouldStopFunc) {
     return items;
 }
 
-var getRawText = function (scanner, tagName, shouldStopFunc) {
-  var items = [];
+const getRawText = (scanner, tagName, shouldStopFunc) => {
+  const items = [];
 
   while (! scanner.isEOF()) {
     // break at appropriate end tag
@@ -274,7 +270,7 @@ var getRawText = function (scanner, tagName, shouldStopFunc) {
     if (shouldStopFunc && shouldStopFunc(scanner))
       break;
 
-    var token = getHTMLToken(scanner, 'rawtext');
+    const token = getHTMLToken(scanner, 'rawtext');
     if (! token)
       // tokenizer reached EOF on its own, e.g. while scanning
       // template comments like `{{! foo}}`.
@@ -286,7 +282,7 @@ var getRawText = function (scanner, tagName, shouldStopFunc) {
       items.push(token.v);
     } else {
       // (can't happen)
-      scanner.fatal("Unknown or unexpected token type: " + token.t);
+      scanner.fatal(`Unknown or unexpected token type: ${token.t}`);
     }
   }
 
@@ -301,10 +297,10 @@ var getRawText = function (scanner, tagName, shouldStopFunc) {
 // Input: A token like `{ t: 'CharRef', v: '&amp;', cp: [38] }`.
 //
 // Output: A tag like `HTML.CharRef({ html: '&amp;', str: '&' })`.
-var convertCharRef = function (token) {
-  var codePoints = token.cp;
-  var str = '';
-  for (var i = 0; i < codePoints.length; i++)
+const convertCharRef = (token) => {
+  const codePoints = token.cp;
+  let str = '';
+  for (let i = 0; i < codePoints.length; i++)
     str += codePointToString(codePoints[i]);
   return HTML.CharRef({ html: token.v, str: str });
 };
@@ -322,18 +318,18 @@ var convertCharRef = function (token) {
 // An attribute value with no input tokens is represented as "",
 // not an empty array, in order to prop open empty attributes
 // with no template tags.
-var parseAttrs = function (attrs) {
-  var result = null;
+const parseAttrs = (attrs) => {
+  let result = null;
 
   if (HTML.isArray(attrs)) {
     // first element is nondynamic attrs, rest are template tags
-    var nondynamicAttrs = parseAttrs(attrs[0]);
+    const nondynamicAttrs = parseAttrs(attrs[0]);
     if (nondynamicAttrs) {
       result = (result || []);
       result.push(nondynamicAttrs);
     }
-    for (var i = 1; i < attrs.length; i++) {
-      var token = attrs[i];
+    for (let i = 1; i < attrs.length; i++) {
+      const token = attrs[i];
       if (token.t !== 'TemplateTag')
         throw new Error("Expected TemplateTag token");
       result = (result || []);
@@ -342,14 +338,14 @@ var parseAttrs = function (attrs) {
     return result;
   }
 
-  for (var k in attrs) {
+  for (const k in attrs) {
     if (! result)
       result = {};
 
-    var inValue = attrs[k];
-    var outParts = [];
-    for (var i = 0; i < inValue.length; i++) {
-      var token = inValue[i];
+    const inValue = attrs[k];
+    const outParts = [];
+    for (let i = 0; i < inValue.length; i++) {
+      const token = inValue[i];
       if (token.t === 'CharRef') {
         outParts.push(convertCharRef(token));
       } else if (token.t === 'TemplateTag') {
@@ -359,9 +355,9 @@ var parseAttrs = function (attrs) {
       }
     }
 
-    var outValue = (inValue.length === 0 ? '' :
+    const outValue = (inValue.length === 0 ? '' :
                     (outParts.length === 1 ? outParts[0] : outParts));
-    var properKey = properCaseAttributeName(k);
+    const properKey = properCaseAttributeName(k);
     result[properKey] = outValue;
   }
 

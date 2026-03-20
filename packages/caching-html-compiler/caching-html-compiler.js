@@ -1,6 +1,4 @@
 /* global TemplatingTools CachingCompiler */
-// eslint-disable-next-line import/no-unresolved
-import isEmpty from 'lodash.isempty';
 
 const { path } = Plugin;
 
@@ -124,7 +122,7 @@ Meteor.startup(function() {
       allJavaScript += compileResult.js;
     }
 
-    if (!isEmpty(compileResult.bodyAttrs)) {
+    if (Object.keys(compileResult.bodyAttrs).length > 0) {
       Object.keys(compileResult.bodyAttrs).forEach((attr) => {
         const value = compileResult.bodyAttrs[attr];
         if (Object.prototype.hasOwnProperty.call(this._bodyAttrInfo, attr) &&

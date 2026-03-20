@@ -1,4 +1,4 @@
-import has from 'lodash.has';
+import { hasOwn } from './utils';
 
 /** @param {function(Binding): boolean} fn */
 function _createBindingsHelper(fn) {
@@ -88,9 +88,7 @@ Blaze._getTemplateHelper = function (template, name, tmplInstanceFunc) {
     if (! isKnownOldStyleHelper) {
       template.__helpers.set(name, Blaze._OLDSTYLE_HELPER);
       if (! template._NOWARN_OLDSTYLE_HELPERS) {
-        Blaze._warn('Assigning helper with `' + template.viewName + '.' +
-                    name + ' = ...` is deprecated.  Use `' + template.viewName +
-                    '.helpers(...)` instead.');
+        Blaze._warn(`Assigning helper with \`${template.viewName}.${name} = ...\` is deprecated.  Use \`${template.viewName}.helpers(...)\` instead.`);
       }
     }
     if (template[name] != null) {
@@ -107,10 +105,8 @@ const wrapHelper = function (f, templateFunc, name = 'template helper') {
   }
 
   return function (...args) {
-    const self = this;
-
-    return Blaze.Template._withTemplateInstanceFunc(templateFunc, function () {
-      return Blaze._wrapCatchingExceptions(f, name).apply(self, args);
+    return Blaze.Template._withTemplateInstanceFunc(templateFunc, () => {
+      return Blaze._wrapCatchingExceptions(f, name).apply(this, args);
     });
   };
 };
@@ -142,7 +138,7 @@ function _lexicalBindingLookup(view, name) {
   do {
     // skip block helpers views
     // if we found the binding on the scope, return it
-    if (has(currentView._scopeBindings, name)) {
+    if (hasOwn(currentView._scopeBindings, name)) {
       return currentView._scopeBindings[name];
     }
   } while (currentView = _lexicalKeepGoing(currentView));
@@ -238,12 +234,12 @@ Blaze.View.prototype.lookup = function (name, _options) {
     const x = data && data[name];
     if (! x) {
       if (lookupTemplate) {
-        const error = new Error("No such template: " + name);
+        const error = new Error(`No such template: ${name}`);
         Blaze._reportException(error, 'Template lookup error:');
         // Return an error placeholder template instead of throwing
         return Blaze._errorPlaceholder(name, error);
       } else if (isCalledAsFunction) {
-        const error = new Error("No such function: " + name);
+        const error = new Error(`No such function: ${name}`);
         Blaze._reportException(error, 'Function lookup error:');
         return null; // Return null instead of throwing for missing functions
       } else if (name.charAt(0) === '@' && ((x === null) ||
@@ -254,7 +250,7 @@ Blaze.View.prototype.lookup = function (name, _options) {
         // if we fail silently.  On the other hand, we want to
         // throw late in case some app or package wants to provide
         // a missing directive.
-        const error = new Error("Unsupported directive: " + name);
+        const error = new Error(`Unsupported directive: ${name}`);
         Blaze._reportException(error, 'Directive lookup error:');
         throw error;
       }
@@ -264,7 +260,7 @@ Blaze.View.prototype.lookup = function (name, _options) {
     }
     if (typeof x !== 'function') {
       if (isCalledAsFunction) {
-        const error = new Error("Can't call non-function: " + x);
+        const error = new Error(`Can't call non-function: ${x}`);
         Blaze._reportException(error, 'Function call error:');
         throw error;
       }
@@ -289,7 +285,7 @@ Blaze._parentData = function (height, _functionWrapped) {
   if (! theWith)
     return null;
   if (_functionWrapped)
-    return function () { return theWith.dataVar.get()?.value; };
+    return () => theWith.dataVar.get()?.value;
   return theWith.dataVar.get()?.value;
 };
 
