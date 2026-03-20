@@ -6,23 +6,23 @@ Tag.prototype.children = Object.freeze ? Object.freeze([]) : [];
 Tag.prototype.htmljsType = Tag.htmljsType = ['Tag'];
 
 // Given "p" create the function `HTML.P`.
-var makeTagConstructor = function (tagName) {
+const makeTagConstructor = function (tagName) {
   // Tag is the per-tagName constructor of a HTML.Tag subclass
-  var HTMLTag = function (...args) {
+  const HTMLTag = function (...args) {
     // Work with or without `new`.  If not called with `new`,
     // perform instantiation by recursively calling this constructor.
     // We can't pass varargs, so pass no args.
-    var instance = (this instanceof Tag) ? this : new HTMLTag;
+    const instance = (this instanceof Tag) ? this : new HTMLTag;
 
-    var i = 0;
-    var attrs = args.length && args[0];
+    let i = 0;
+    const attrs = args.length && args[0];
     if (attrs && (typeof attrs === 'object')) {
       // Treat vanilla JS object as an attributes dictionary.
       if (! isConstructedObject(attrs)) {
         instance.attrs = attrs;
         i++;
       } else if (attrs instanceof Attrs) {
-        var array = attrs.value;
+        const array = attrs.value;
         if (array.length === 1) {
           instance.attrs = array[0];
         } else if (array.length > 1) {
@@ -55,7 +55,7 @@ export function Attrs(...args) {
   // Work with or without `new`.  If not called with `new`,
   // perform instantiation by recursively calling this constructor.
   // We can't pass varargs, so pass no args.
-  var instance = (this instanceof Attrs) ? this : new Attrs;
+  const instance = (this instanceof Attrs) ? this : new Attrs;
 
   instance.value = args;
 
@@ -66,9 +66,9 @@ export function Attrs(...args) {
 export const HTMLTags = {};
 
 export function getTag (tagName) {
-  var symbolName = getSymbolName(tagName);
+  const symbolName = getSymbolName(tagName);
   if (symbolName === tagName) // all-caps tagName
-    throw new Error("Use the lowercase or camelCase form of '" + tagName + "' here");
+    throw new Error(`Use the lowercase or camelCase form of '${tagName}' here`);
 
   if (! HTMLTags[symbolName])
     HTMLTags[symbolName] = makeTagConstructor(tagName);
@@ -99,9 +99,9 @@ export const knownElementNames = knownHTMLElementNames.concat(knownSVGElementNam
 export const voidElementNames = 'area base br col command embed hr img input keygen link meta param source track wbr'.split(' ');
 
 
-var voidElementSet = new Set(voidElementNames);
-var knownElementSet = new Set(knownElementNames);
-var knownSVGElementSet = new Set(knownSVGElementNames);
+const voidElementSet = new Set(voidElementNames);
+const knownElementSet = new Set(knownElementNames);
+const knownSVGElementSet = new Set(knownSVGElementNames);
 
 export function isKnownElement(tagName) {
   return knownElementSet.has(tagName);
@@ -198,7 +198,7 @@ export function isNully (node) {
 
   if (isArray(node)) {
     // is it an empty array or an array of all nully items?
-    for (var i = 0; i < node.length; i++)
+    for (let i = 0; i < node.length; i++)
       if (! isNully(node[i]))
         return false;
     return true;
@@ -217,20 +217,20 @@ export function flattenAttributes (attrs) {
   if (! attrs)
     return attrs;
 
-  var isList = isArray(attrs);
+  const isList = isArray(attrs);
   if (isList && attrs.length === 0)
     return null;
 
-  var result = {};
-  for (var i = 0, N = (isList ? attrs.length : 1); i < N; i++) {
-    var oneAttrs = (isList ? attrs[i] : attrs);
+  const result = {};
+  for (let i = 0, N = (isList ? attrs.length : 1); i < N; i++) {
+    const oneAttrs = (isList ? attrs[i] : attrs);
     if ((typeof oneAttrs !== 'object') ||
         isConstructedObject(oneAttrs))
-      throw new Error("Expected plain JS object as attrs, found: " + oneAttrs);
-    for (var name in oneAttrs) {
+      throw new Error(`Expected plain JS object as attrs, found: ${oneAttrs}`);
+    for (const name in oneAttrs) {
       if (! isValidAttributeName(name))
-        throw new Error("Illegal HTML attribute name: " + name);
-      var value = oneAttrs[name];
+        throw new Error(`Illegal HTML attribute name: ${name}`);
+      const value = oneAttrs[name];
       if (! isNully(value))
         result[name] = value;
     }

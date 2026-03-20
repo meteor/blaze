@@ -1,7 +1,4 @@
-import isObject from 'lodash.isobject';
-import isFunction from 'lodash.isfunction';
-import has from 'lodash.has';
-import isEmpty from 'lodash.isempty';
+import { hasOwn, isObject } from './utils';
 
 // [new] Blaze.Template([viewName], renderFunction)
 //
@@ -47,16 +44,11 @@ Blaze.Template = function (viewName, renderFunction) {
 };
 const Template = Blaze.Template;
 
-const HelperMap = function () {};
-HelperMap.prototype.get = function (name) {
-  return this[' '+name];
-};
-HelperMap.prototype.set = function (name, helper) {
-  this[' '+name] = helper;
-};
-HelperMap.prototype.has = function (name) {
-  return (typeof this[' '+name] !== 'undefined');
-};
+class HelperMap {
+  get(name) { return this[' ' + name]; }
+  set(name, helper) { this[' ' + name] = helper; }
+  has(name) { return typeof this[' ' + name] !== 'undefined'; }
+}
 
 /**
  * @summary Returns true if `value` is a template object like `Template.myTemplate`.
@@ -107,18 +99,17 @@ Template.prototype.onDestroyed = function (cb) {
 };
 
 Template.prototype._getCallbacks = function (which) {
-  const self = this;
-  let callbacks = self[which] ? [self[which]] : [];
+  let callbacks = this[which] ? [this[which]] : [];
   // Fire all callbacks added with the new API (Template.onRendered())
   // as well as the old-style callback (e.g. Template.rendered) for
   // backwards-compatibility.
-  callbacks = callbacks.concat(self._callbacks[which]);
+  callbacks = callbacks.concat(this._callbacks[which]);
   return callbacks;
 };
 
 const fireCallbacks = function (callbacks, template) {
   Template._withTemplateInstanceFunc(
-    function () { return template; },
+    () => template,
     function () {
       for (let i = 0, N = callbacks.length; i < N; i++) {
         callbacks[i].call(template);
@@ -127,31 +118,30 @@ const fireCallbacks = function (callbacks, template) {
 };
 
 Template.prototype.constructView = function (contentFunc, elseFunc) {
-  const self = this;
-  const view = Blaze.View(self.viewName, self.renderFunction);
-  view.template = self;
+  const view = Blaze.View(this.viewName, this.renderFunction);
+  view.template = this;
 
   view.templateContentBlock = (
     contentFunc ? new Template('(contentBlock)', contentFunc) : null);
   view.templateElseBlock = (
     elseFunc ? new Template('(elseBlock)', elseFunc) : null);
 
-  if (self.__eventMaps || typeof self.events === 'object') {
-    view._onViewRendered(function () {
+  if (this.__eventMaps || typeof this.events === 'object') {
+    view._onViewRendered(() => {
       if (view.renderCount !== 1)
         return;
 
-      if (! self.__eventMaps.length && typeof self.events === "object") {
+      if (! this.__eventMaps.length && typeof this.events === "object") {
         // Provide limited back-compat support for `.events = {...}`
         // syntax.  Pass `template.events` to the original `.events(...)`
         // function.  This code must run only once per template, in
         // order to not bind the handlers more than once, which is
         // ensured by the fact that we only do this when `__eventMaps`
         // is falsy, and we cause it to be set now.
-        Template.prototype.events.call(self, self.events);
+        Template.prototype.events.call(this, this.events);
       }
 
-      self.__eventMaps.forEach(function (m) {
+      this.__eventMaps.forEach(function (m) {
         Blaze._addEventMap(view, m, view);
       });
     });
@@ -195,7 +185,7 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
   // To avoid situations when new callbacks are added in between view
   // instantiation and event being fired, decide on all callbacks to fire
   // immediately and then fire them on the event.
-  const createdCallbacks = self._getCallbacks('created');
+  const createdCallbacks = this._getCallbacks('created');
   view.onViewCreated(function () {
     fireCallbacks(createdCallbacks, view.templateInstance());
   });
@@ -208,7 +198,7 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
    * @locus Client
    * @deprecated in 1.1
    */
-  const renderedCallbacks = self._getCallbacks('rendered');
+  const renderedCallbacks = this._getCallbacks('rendered');
   view.onViewReady(function () {
     fireCallbacks(renderedCallbacks, view.templateInstance());
   });
@@ -221,7 +211,7 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
    * @locus Client
    * @deprecated in 1.1
    */
-  const destroyedCallbacks = self._getCallbacks('destroyed');
+  const destroyedCallbacks = this._getCallbacks('destroyed');
   view.onViewDestroyed(function () {
     fireCallbacks(destroyedCallbacks, view.templateInstance());
   });
@@ -350,9 +340,7 @@ Blaze.TemplateInstance.prototype.autorun = function (f) {
  * subscription.
  */
 Blaze.TemplateInstance.prototype.subscribe = function (...args) {
-  const self = this;
-
-  const subHandles = self._subscriptionHandles;
+  const subHandles = this._subscriptionHandles;
 
   // Duplicate logic from Meteor.subscribe
   let options = {};
@@ -369,16 +357,16 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
       connection: Match.Optional(Match.Any)
     };
 
-    if (isFunction(lastParam)) {
+    if (typeof lastParam === 'function') {
       options.onReady = args.pop();
-    } else if (lastParam && ! isEmpty(lastParam) && Match.test(lastParam, lastParamOptionsPattern)) {
+    } else if (lastParam && Object.keys(lastParam).length > 0 && Match.test(lastParam, lastParamOptionsPattern)) {
       options = args.pop();
     }
   }
 
   let subHandle;
   const oldStopped = options.onStop;
-  options.onStop = function (error) {
+  options.onStop = (error) => {
     // When the subscription is stopped, remove it from the set of tracked
     // subscriptions to avoid this list growing without bound
     delete subHandles[subHandle.subscriptionId];
@@ -386,8 +374,8 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
     // Removing a subscription can only change the result of subscriptionsReady
     // if we are not ready (that subscription could be the one blocking us being
     // ready).
-    if (! self._allSubsReady) {
-      self._allSubsReadyDep.changed();
+    if (! this._allSubsReady) {
+      this._allSubsReadyDep.changed();
     }
 
     if (oldStopped) {
@@ -404,18 +392,18 @@ Blaze.TemplateInstance.prototype.subscribe = function (...args) {
 
   // View#subscribe takes the connection as one of the options in the last
   // argument
-  subHandle = self.view.subscribe.call(self.view, args, {
+  subHandle = this.view.subscribe.call(this.view, args, {
     connection: connection
   });
 
-  if (!has(subHandles, subHandle.subscriptionId)) {
+  if (!hasOwn(subHandles, subHandle.subscriptionId)) {
     subHandles[subHandle.subscriptionId] = subHandle;
 
     // Adding a new subscription will always cause us to transition from ready
     // to not ready, but if we are already not ready then this can't make us
     // ready.
-    if (self._allSubsReady) {
-      self._allSubsReadyDep.changed();
+    if (this._allSubsReady) {
+      this._allSubsReadyDep.changed();
     }
   }
 
