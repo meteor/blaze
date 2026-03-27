@@ -15,7 +15,7 @@ Spacebars = {};
  * @param b
  * @return {boolean}
  */
-var tripleEquals = function (a, b) { return a === b; };
+const tripleEquals = (a, b) => a === b;
 
 /**
  * TODO: needs explanation
@@ -29,22 +29,22 @@ Spacebars.include = function (templateOrFunction, contentFunc, elseFunc) {
     return null;
 
   if (typeof templateOrFunction !== 'function') {
-    var template = templateOrFunction;
+    const template = templateOrFunction;
     if (! Blaze.isTemplate(template))
-      throw new Error("Expected template or null, found: " + template);
-    var view = templateOrFunction.constructView(contentFunc, elseFunc);
+      throw new Error(`Expected template or null, found: ${template}`);
+    const view = templateOrFunction.constructView(contentFunc, elseFunc);
     view.__startsNewLexicalScope = true;
     return view;
   }
 
-  var templateVar = Blaze.ReactiveVar(null, tripleEquals);
-  var view = Blaze.View('Spacebars.include', function () {
-    var template = templateVar.get();
+  const templateVar = Blaze.ReactiveVar(null, tripleEquals);
+  const view = Blaze.View('Spacebars.include', function () {
+    const template = templateVar.get();
     if (template === null)
       return null;
 
     if (! Blaze.isTemplate(template))
-      throw new Error("Expected template or null, found: " + template);
+      throw new Error(`Expected template or null, found: ${template}`);
 
     return template.constructView(contentFunc, elseFunc);
   });
@@ -75,22 +75,22 @@ Spacebars.mustacheImpl = function (...args) {
   // if we have any arguments (pos or kw), add an options argument
   // if there isn't one.
   if (args.length > 1) {
-    var kw = args[args.length - 1];
+    let kw = args[args.length - 1];
     if (! (kw instanceof Spacebars.kw)) {
       kw = Spacebars.kw();
       args.push(kw);
     } else {
       // For each keyword arg, call it if it's a function
-      var newHash = {};
-      for (var k in kw.hash) {
-        var v = kw.hash[k];
+      const newHash = {};
+      for (const k in kw.hash) {
+        const v = kw.hash[k];
         newHash[k] = (typeof v === 'function' ? v() : v);
       }
       args[args.length - 1] = Spacebars.kw(newHash);
     }
   }
 
-  return Spacebars.call.apply(null, args);
+  return Spacebars.call(...args);
 };
 
 /**
@@ -99,7 +99,7 @@ Spacebars.mustacheImpl = function (...args) {
  * @return {null|string|*|Raw}
  */
 Spacebars.mustache = function (...args) {
-  var result = Spacebars.mustacheImpl.apply(null, args);
+  const result = Spacebars.mustacheImpl(...args);
 
   if (result instanceof Spacebars.SafeString)
     return HTML.Raw(result.toString());
@@ -118,14 +118,14 @@ Spacebars.mustache = function (...args) {
  * @return {{}|Promise<*>|*|null}
  */
 Spacebars.attrMustache = function (...args) {
-  var result = Spacebars.mustacheImpl.apply(null, args);
+  const result = Spacebars.mustacheImpl(...args);
 
   if (result == null || result === '') {
     return null;
   } else if (typeof result === 'object') {
     return result;
   } else if (typeof result === 'string' && HTML.isValidAttributeName(result)) {
-    var obj = {};
+    const obj = {};
     obj[result] = '';
     return obj;
   } else {
@@ -139,7 +139,7 @@ Spacebars.attrMustache = function (...args) {
  * @return {Promise<*>|*}
  */
 Spacebars.dataMustache = function (...args) {
-  return Spacebars.mustacheImpl.apply(null, args);
+  return Spacebars.mustacheImpl(...args);
 };
 
 /**
@@ -202,22 +202,22 @@ Spacebars.call = function (...args) {
   const [value] = args;
   if (typeof value === 'function') {
     // Evaluate arguments by calling them if they are functions.
-    var newArgs = [];
+    const newArgs = [];
     let anyIsPromise = false;
-    for (var i = 1; i < args.length; i++) {
-      var arg = args[i];
+    for (let i = 1; i < args.length; i++) {
+      const arg = args[i];
       newArgs[i-1] = (typeof arg === 'function' ? arg() : arg);
       anyIsPromise = anyIsPromise || isPromiseLike(newArgs[i-1]);
     }
 
     if (anyIsPromise) {
-      return _thenWithContext(Promise.all(newArgs), newArgs => value.apply(null, newArgs));
+      return _thenWithContext(Promise.all(newArgs), newArgs => value(...newArgs));
     }
 
-    return value.apply(null, newArgs);
+    return value(...newArgs);
   } else {
     if (value != null && args.length > 1) {
-      throw new Error("Can't call non-function: " + value);
+      throw new Error(`Can't call non-function: ${value}`);
     }
     return value;
   }
@@ -294,10 +294,10 @@ Spacebars.dot = function (...args) {
   if (args.length > 2) {
     // Note: doing this recursively is probably less efficient than
     // doing it in an iterative loop.
-    var argsForRecurse = [];
+    const argsForRecurse = [];
     argsForRecurse.push(Spacebars.dot(value, id1));
-    argsForRecurse.push.apply(argsForRecurse, args.slice(2));
-    return Spacebars.dot.apply(null, argsForRecurse);
+    argsForRecurse.push(...args.slice(2));
+    return Spacebars.dot(...argsForRecurse);
   }
 
   while (typeof value === 'function')
@@ -309,14 +309,12 @@ Spacebars.dot = function (...args) {
   if (isPromiseLike(value))
     return _thenWithContext(value, value => Spacebars.dot(value, id1));
 
-  var result = value[id1];
+  const result = value[id1];
   if (typeof result !== 'function')
     return result;
   // `value[id1]` (or `value()[id1]`) is a function.
   // Bind it so that when called, `value` will be placed in `this`.
-  return function (...args1) {
-    return result.apply(value, args1);
-  };
+  return (...args1) => result.apply(value, args1);
 };
 
 /**
@@ -332,8 +330,8 @@ Spacebars.dot = function (...args) {
  * @constructor
  */
 Spacebars.With = function (argFunc, contentFunc, elseFunc) {
-  var argVar = new Blaze.ReactiveVar;
-  var view = Blaze.View('Spacebars_with', function () {
+  const argVar = new Blaze.ReactiveVar;
+  const view = Blaze.View('Spacebars_with', function () {
     return Blaze.If(function () { return argVar.get(); },
                     function () { return Blaze.With(function () {
                       return argVar.get(); }, contentFunc); },

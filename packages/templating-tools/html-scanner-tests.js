@@ -1,7 +1,7 @@
 import { TemplatingTools } from 'meteor/templating-tools';
 
 Tinytest.add("templating-tools - html scanner", function (test) {
-  var testInString = function(actualStr, wantedContents) {
+  const testInString = function(actualStr, wantedContents) {
     if (actualStr.indexOf(wantedContents) >= 0)
       test.ok();
     else
@@ -9,7 +9,7 @@ Tinytest.add("templating-tools - html scanner", function (test) {
                 " in "+JSON.stringify(actualStr));
   };
 
-  var checkError = function(f, msgText, lineNum) {
+  const checkError = function(f, msgText, lineNum) {
     try {
       f();
     } catch (e) {
@@ -36,16 +36,16 @@ Tinytest.add("templating-tools - html scanner", function (test) {
   };
 
   // arguments are quoted strings like '"hello"'
-  var simpleTemplate = function (templateName, content) {
+  const simpleTemplate = function (templateName, content) {
     // '"hello"' into '"Template.hello"'
-    var viewName = templateName.slice(0, 1) + 'Template.' + templateName.slice(1);
+    const viewName = templateName.slice(0, 1) + 'Template.' + templateName.slice(1);
 
     return '\nTemplate.__checkName(' + templateName + ');\nTemplate[' + templateName +
       '] = new Template(' + viewName +
       ', (function () { var view = this; return ' + content + '; }));\n';
   };
 
-  var checkResults = function(results, expectJs, expectHead, expectBodyAttrs) {
+  const checkResults = function(results, expectJs, expectHead, expectBodyAttrs) {
     test.equal(results.body, '');
     test.equal(results.js, expectJs || '');
     test.equal(results.head, expectHead || '');

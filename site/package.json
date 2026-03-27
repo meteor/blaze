@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "docs:init": "ln -sf ../*.md source/repo/",
+    "docs:init": "ln -f ../*.md source/repo/",
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
     "docs:preview": "vitepress preview",

@@ -22,7 +22,6 @@ export default defineConfig({
                     {text: 'Guide', link: '/guide/introduction'},
                     {text: 'API', link: '/api/templates'},
                     {text: 'Migrations', link: '/migrations'},
-
                 ]
             },
             {
@@ -104,14 +103,16 @@ export default defineConfig({
                     {text: 'Smart Components', link: '/guide/smart-components'},
                     {text: 'Reusing Code', link: '/guide/reusing-code'},
                     {text: 'Routing', link: '/guide/routing'},
+                    {text: 'React in Blaze', link: '/guide/react'},
                     {text: 'Testing', link: '/guide/testing'},
                     {text: 'Understanding Blaze', link: '/guide/understanding-blaze'},
                 ]
             },
+            {text: 'Migrations', link: '/migrations'},
             {
                 text: 'API',
                 items: [
-                    {text: 'Templates', link: '/api/templates_api'},
+                    {text: 'Templates', link: '/api/templates'},
                     {text: 'Blaze', link: '/api/blaze'},
                     {text: 'Spacebars', link: '/api/spacebars'},
                 ]
@@ -121,7 +122,8 @@ export default defineConfig({
                 items: [
                     {text: 'Contributing', link: '/repo/CONTRIBUTING'},
                     {text: 'Code of Conduct', link: '/repo/CODE_OF_CONDUCT'},
-                    {text: 'Security', link: '/repo/SECURITY'}
+                    {text: 'Security', link: '/repo/SECURITY'},
+                    {text: 'Blaze Architecture', link: '/dev/architecture'},
                 ]
             }
         ],

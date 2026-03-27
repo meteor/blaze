@@ -202,8 +202,8 @@ const materializeTag = function (tag, parentView, workStack) {
       updaterComputation =
         parentView.autorun(updateAttributes, undefined, 'updater');
     } else {
-      updaterComputation = Tracker.nonreactive(function () {
-        return Tracker.autorun(function () {
+      updaterComputation = Tracker.nonreactive(() => {
+        return Tracker.autorun(() => {
           Tracker._withCurrentView(parentView, updateAttributes);
         });
       });
@@ -216,7 +216,7 @@ const materializeTag = function (tag, parentView, workStack) {
   if (children.length) {
     const childNodesAndRanges = [];
     // push this function first so that it's done last
-    workStack.push(function () {
+    workStack.push(() => {
       for (let i = 0; i < childNodesAndRanges.length; i++) {
         const x = childNodesAndRanges[i];
         if (x instanceof Blaze._DOMRange)
