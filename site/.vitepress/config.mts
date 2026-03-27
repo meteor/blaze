@@ -112,7 +112,7 @@ export default defineConfig({
             {
                 text: 'API',
                 items: [
-                    {text: 'Templates', link: '/api/templates'},
+                    {text: 'Templates', link: '/api/templates_api'},
                     {text: 'Blaze', link: '/api/blaze'},
                     {text: 'Spacebars', link: '/api/spacebars'},
                 ]
