@@ -83,21 +83,11 @@ present on template objects:
 <a name="new_Blaze.Template_new"></a>
 
 #### new Blaze.Template([viewName], renderFunction)
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>[viewName]</td><td><code>String</code></td><td><p>Optional.  A name for Views constructed by this Template.  See <a href="#view_name"><code>view.name</code></a>.</p>
-</td>
-    </tr><tr>
-    <td>renderFunction</td><td><code>function</code></td><td><p>A function that returns <a href="#Renderable-Content"><em>renderable content</em></a>.  This function is used as the <code>renderFunction</code> for Views constructed by this Template.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [viewName] | <code>String</code> | Optional.  A name for Views constructed by this Template.  See [`view.name`](#view_name). |
+| renderFunction | <code>function</code> | A function that returns [*renderable content*](#Renderable-Content).  This function is used as the `renderFunction` for Views constructed by this Template. |
 
 <a name="Blaze.Template+viewName"></a>
 
@@ -134,17 +124,10 @@ Same as the constructor argument.
 <a name="new_Blaze.TemplateInstance_new"></a>
 
 #### new Blaze.TemplateInstance(view)
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>view</td><td><code><a href="#Blaze.View">View</a></code></td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type |
+| --- | --- |
+| view | [<code>View</code>](#Blaze.View) | 
 
 <a name="Blaze.TemplateInstance+data"></a>
 
@@ -176,18 +159,10 @@ Same as the constructor argument.
 **Kind**: instance method of [<code>TemplateInstance</code>](#Blaze.TemplateInstance)  
 **Summary**: Find all elements matching `selector` in this template instance, and return them as a JQuery object.  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>selector</td><td><code>String</code></td><td><p>The CSS selector to match, scoped to the template contents.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| selector | <code>String</code> | The CSS selector to match, scoped to the template contents. |
 
 <a name="Blaze.TemplateInstance+findAll"></a>
 
@@ -195,18 +170,10 @@ Same as the constructor argument.
 **Kind**: instance method of [<code>TemplateInstance</code>](#Blaze.TemplateInstance)  
 **Summary**: Find all elements matching `selector` in this template instance.  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>selector</td><td><code>String</code></td><td><p>The CSS selector to match, scoped to the template contents.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| selector | <code>String</code> | The CSS selector to match, scoped to the template contents. |
 
 <a name="Blaze.TemplateInstance+find"></a>
 
@@ -214,18 +181,10 @@ Same as the constructor argument.
 **Kind**: instance method of [<code>TemplateInstance</code>](#Blaze.TemplateInstance)  
 **Summary**: Find one element matching `selector` in this template instance.  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>selector</td><td><code>String</code></td><td><p>The CSS selector to match, scoped to the template contents.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| selector | <code>String</code> | The CSS selector to match, scoped to the template contents. |
 
 <a name="Blaze.TemplateInstance+autorun"></a>
 
@@ -233,18 +192,10 @@ Same as the constructor argument.
 **Kind**: instance method of [<code>TemplateInstance</code>](#Blaze.TemplateInstance)  
 **Summary**: A version of [Tracker.autorun](https://docs.meteor.com/api/tracker.html#Tracker-autorun) that is stopped when the template is destroyed.  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>runFunc</td><td><code>function</code></td><td><p>The function to run. It receives one argument: a Tracker.Computation object.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| runFunc | <code>function</code> | The function to run. It receives one argument: a Tracker.Computation object. |
 
 <a name="Blaze.TemplateInstance+subscribe"></a>
 
@@ -257,37 +208,15 @@ subscription. Call `handle.stop()` to manually stop the subscription, or
 `handle.ready()` to find out if this particular subscription has loaded all
 of its inital data.  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>name</td><td><code>String</code></td><td><p>Name of the subscription.  Matches the name of the
-server&#39;s <code>publish()</code> call.</p>
-</td>
-    </tr><tr>
-    <td>[arg1,arg2...]</td><td><code>Any</code></td><td><p>Optional arguments passed to publisher function
-on server.</p>
-</td>
-    </tr><tr>
-    <td>[options]</td><td><code>function</code> | <code>Object</code></td><td><p>If a function is passed instead of an
-object, it is interpreted as an <code>onReady</code> callback.</p>
-</td>
-    </tr><tr>
-    <td>[options.onReady]</td><td><code>function</code></td><td><p>Passed to <a href="https://docs.meteor.com/api/pubsub.html#Meteor-subscribe"><code>Meteor.subscribe</code></a>.</p>
-</td>
-    </tr><tr>
-    <td>[options.onStop]</td><td><code>function</code></td><td><p>Passed to <a href="https://docs.meteor.com/api/pubsub.html#Meteor-subscribe"><code>Meteor.subscribe</code></a>.</p>
-</td>
-    </tr><tr>
-    <td>[options.connection]</td><td><code>DDP.Connection</code></td><td><p>The connection on which to make the
-subscription.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>String</code> | Name of the subscription.  Matches the name of the server's `publish()` call. |
+| [arg1,arg2...] | <code>Any</code> | Optional arguments passed to publisher function on server. |
+| [options] | <code>function</code> \| <code>Object</code> | If a function is passed instead of an object, it is interpreted as an `onReady` callback. |
+| [options.onReady] | <code>function</code> | Passed to [`Meteor.subscribe`](https://docs.meteor.com/api/pubsub.html#Meteor-subscribe). |
+| [options.onStop] | <code>function</code> | Passed to [`Meteor.subscribe`](https://docs.meteor.com/api/pubsub.html#Meteor-subscribe). |
+| [options.connection] | <code>DDP.Connection</code> | The connection on which to make the subscription. |
 
 <a name="Blaze.TemplateInstance+subscriptionsReady"></a>
 
@@ -358,21 +287,11 @@ handlers.  It affects calls such as [`Template.currentData()`](../api/templates.
 <a name="new_Blaze.View_new"></a>
 
 #### new Blaze.View([name], renderFunction)
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>[name]</td><td><code>String</code></td><td><p>Optional.  A name for this type of View.  See <a href="#view_name"><code>view.name</code></a>.</p>
-</td>
-    </tr><tr>
-    <td>renderFunction</td><td><code>function</code></td><td><p>A function that returns <a href="#Renderable-Content"><em>renderable content</em></a>.  In this function, <code>this</code> is bound to the View.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [name] | <code>String</code> | Optional.  A name for this type of View.  See [`view.name`](#view_name). |
+| renderFunction | <code>function</code> | A function that returns [*renderable content*](#Renderable-Content).  In this function, `this` is bound to the View. |
 
 <a name="Blaze.View+name"></a>
 
@@ -438,17 +357,10 @@ If the View hasn't been created yet, calls `func` when the View
   template callback.
 
 **Kind**: instance method of [<code>View</code>](#Blaze.View)  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>cb</td><td><code>function</code></td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type |
+| --- | --- |
+| cb | <code>function</code> | 
 
 <a name="Blaze.View+onViewReady"></a>
 
@@ -464,17 +376,10 @@ Calls `func` when the View is rendered and inserted into the DOM,
   template callback.
 
 **Kind**: instance method of [<code>View</code>](#Blaze.View)  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>cb</td><td><code>function</code></td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type |
+| --- | --- |
+| cb | <code>function</code> | 
 
 <a name="Blaze.View+autorun"></a>
 
@@ -504,21 +409,12 @@ view._domrange), or onViewReady.
   cycle.  In `runFunc`, the View is bound to `this`.
 
 **Kind**: instance method of [<code>View</code>](#Blaze.View)  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>f</td>
-    </tr><tr>
-    <td>_inViewScope</td>
-    </tr><tr>
-    <td>displayName</td>
-    </tr>  </tbody>
-</table>
+
+| Param |
+| --- |
+| f | 
+| _inViewScope | 
+| displayName | 
 
 <a name="Blaze.View+subscribe"></a>
 
@@ -528,19 +424,11 @@ view._domrange), or onViewReady.
 Tracker.autorun. Stop the subscription when the view is destroyed.  
 **Returns**: <code>SubscriptionHandle</code> - A handle to the subscription so that you can
 see if it is ready, or stop it manually  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>...args</td><td><code>*</code></td>
-    </tr><tr>
-    <td>[options]</td><td><code>object</code></td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type |
+| --- | --- |
+| ...args | <code>\*</code> | 
+| [options] | <code>object</code> | 
 
 <a name="Blaze.View+firstNode"></a>
 
@@ -611,24 +499,12 @@ Handler Selection Logic:
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Returns**: <code>AttributeHandler</code> - Appropriate handler instance for this attribute  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>elem</td><td><code>Element</code></td><td><p>The DOM element that will have this attribute</p>
-</td>
-    </tr><tr>
-    <td>name</td><td><code>string</code></td><td><p>The attribute name (e.g., &#39;class&#39;, &#39;href&#39;)</p>
-</td>
-    </tr><tr>
-    <td>value</td><td><code>string</code> | <code>null</code></td><td><p>The initial attribute value</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| elem | <code>Element</code> | The DOM element that will have this attribute |
+| name | <code>string</code> | The attribute name (e.g., 'class', 'href') |
+| value | <code>string</code> \| <code>null</code> | The initial attribute value |
 
 <a name="Blaze.With"></a>
 
@@ -642,22 +518,11 @@ rendering.
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>data</td><td><code>Object</code> | <code>function</code></td><td><p>An object to use as the data context, or a function returning such an object.  If a
-  function is provided, it will be reactively re-run.</p>
-</td>
-    </tr><tr>
-    <td>contentFunc</td><td><code>function</code></td><td><p>A Function that returns <a href="#Renderable-Content"><em>renderable content</em></a>.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| data | <code>Object</code> \| <code>function</code> | An object to use as the data context, or a function returning such an object.  If a   function is provided, it will be reactively re-run. |
+| contentFunc | <code>function</code> | A Function that returns [*renderable content*](#Renderable-Content). |
 
 <a name="Blaze._attachBindingsToView"></a>
 
@@ -665,44 +530,22 @@ rendering.
 Attaches bindings to the instantiated view.
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>bindings</td><td><code>Object</code></td><td><p>A dictionary of bindings, each binding name
-corresponds to a value or a function that will be reactively re-run.</p>
-</td>
-    </tr><tr>
-    <td>view</td><td><code><a href="#Blaze.View">View</a></code></td><td><p>The target.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| bindings | <code>Object</code> | A dictionary of bindings, each binding name corresponds to a value or a function that will be reactively re-run. |
+| view | [<code>View</code>](#Blaze.View) | The target. |
 
 <a name="Blaze.Let"></a>
 
 ### Blaze.Let(bindings, contentFunc)
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Summary**: Constructs a View setting the local lexical scope in the block.  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>bindings</td><td><code>function</code></td><td><p>Dictionary mapping names of bindings to
-values or computations to reactively re-run.</p>
-</td>
-    </tr><tr>
-    <td>contentFunc</td><td><code>function</code></td><td><p>A Function that returns <a href="#Renderable-Content"><em>renderable content</em></a>.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| bindings | <code>function</code> | Dictionary mapping names of bindings to values or computations to reactively re-run. |
+| contentFunc | <code>function</code> | A Function that returns [*renderable content*](#Renderable-Content). |
 
 <a name="Blaze.If"></a>
 
@@ -713,26 +556,12 @@ Matches the behavior of <code v-pre>{{#if}}</code> in templates.
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>conditionFunc</td><td><code>function</code></td><td><p>A function to reactively re-run.  Whether the result is truthy or falsy determines
-  whether <code>contentFunc</code> or <code>elseFunc</code> is shown.  An empty array is considered falsy.</p>
-</td>
-    </tr><tr>
-    <td>contentFunc</td><td><code>function</code></td><td><p>A Function that returns <a href="#Renderable-Content"><em>renderable content</em></a>.</p>
-</td>
-    </tr><tr>
-    <td>[elseFunc]</td><td><code>function</code></td><td><p>Optional.  A Function that returns <a href="#Renderable-Content"><em>renderable content</em></a>.  If no
-  <code>elseFunc</code> is supplied, no content is shown in the &quot;else&quot; case.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| conditionFunc | <code>function</code> | A function to reactively re-run.  Whether the result is truthy or falsy determines   whether `contentFunc` or `elseFunc` is shown.  An empty array is considered falsy. |
+| contentFunc | <code>function</code> | A Function that returns [*renderable content*](#Renderable-Content). |
+| [elseFunc] | <code>function</code> | Optional.  A Function that returns [*renderable content*](#Renderable-Content).  If no   `elseFunc` is supplied, no content is shown in the "else" case. |
 
 <a name="Blaze.Unless"></a>
 
@@ -743,26 +572,12 @@ Matches the behavior of <code v-pre>{{#unless}}</code> in templates.
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>conditionFunc</td><td><code>function</code></td><td><p>A function to reactively re-run.  If the result is falsy, <code>contentFunc</code> is shown,
-  otherwise <code>elseFunc</code> is shown.  An empty array is considered falsy.</p>
-</td>
-    </tr><tr>
-    <td>contentFunc</td><td><code>function</code></td><td><p>A Function that returns <a href="#Renderable-Content"><em>renderable content</em></a>.</p>
-</td>
-    </tr><tr>
-    <td>[elseFunc]</td><td><code>function</code></td><td><p>Optional.  A Function that returns <a href="#Renderable-Content"><em>renderable content</em></a>.  If no
-  <code>elseFunc</code> is supplied, no content is shown in the &quot;else&quot; case.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| conditionFunc | <code>function</code> | A function to reactively re-run.  If the result is falsy, `contentFunc` is shown,   otherwise `elseFunc` is shown.  An empty array is considered falsy. |
+| contentFunc | <code>function</code> | A Function that returns [*renderable content*](#Renderable-Content). |
+| [elseFunc] | <code>function</code> | Optional.  A Function that returns [*renderable content*](#Renderable-Content).  If no   `elseFunc` is supplied, no content is shown in the "else" case. |
 
 <a name="Blaze.Each"></a>
 
@@ -773,39 +588,12 @@ Matches the behavior of <code v-pre>{{#each}}</code> in templates.
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>argFunc</td><td><code>function</code></td><td><p>A function to reactively re-run. The function can
-return one of two options:</p>
-<ol>
-<li><p>An object with two fields: &#39;_variable&#39; and &#39;_sequence&#39;. Each iterates over
-  &#39;_sequence&#39;, it may be a Cursor, an array, null, or undefined. Inside the
-  Each body you will be able to get the current item from the sequence using
-  the name specified in the &#39;_variable&#39; field.</p>
-</li>
-<li><p>Just a sequence (Cursor, array, null, or undefined) not wrapped into an
-  object. Inside the Each body, the current item will be set as the data
-  context.</p>
-</li>
-</ol>
-</td>
-    </tr><tr>
-    <td>contentFunc</td><td><code>function</code></td><td><p>A Function that returns  <a href="#Renderable-Content"><em>renderable
-content</em></a>.</p>
-</td>
-    </tr><tr>
-    <td>[elseFunc]</td><td><code>function</code></td><td><p>A Function that returns <a href="#Renderable-Content"><em>renderable
-content</em></a> to display in the case when there are no items
-in the sequence.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| argFunc | <code>function</code> | A function to reactively re-run. The function can return one of two options: 1. An object with two fields: '_variable' and '_sequence'. Each iterates over   '_sequence', it may be a Cursor, an array, null, or undefined. Inside the   Each body you will be able to get the current item from the sequence using   the name specified in the '_variable' field. 2. Just a sequence (Cursor, array, null, or undefined) not wrapped into an   object. Inside the Each body, the current item will be set as the data   context. |
+| contentFunc | <code>function</code> | A Function that returns  [*renderable content*](#Renderable-Content). |
+| [elseFunc] | <code>function</code> | A Function that returns [*renderable content*](#Renderable-Content) to display in the case when there are no items in the sequence. |
 
 <a name="Blaze._Await"></a>
 
@@ -813,17 +601,10 @@ in the sequence.</p>
 Create a new `Blaze.Let` view that unwraps the given value.
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>value</td><td><code>unknown</code></td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type |
+| --- | --- |
+| value | <code>unknown</code> | 
 
 <a name="Blaze.isTemplate"></a>
 
@@ -831,36 +612,20 @@ Create a new `Blaze.Let` view that unwraps the given value.
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Summary**: Returns true if `value` is a template object like `Template.myTemplate`.  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>value</td><td><code>Any</code></td><td><p>The value to test.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| value | <code>Any</code> | The value to test. |
 
 <a name="Blaze._withCurrentView"></a>
 
 ### Blaze.\_withCurrentView(view, func) ⇒ <code>T</code>
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>view</td><td><code><a href="#Blaze.View">View</a></code></td>
-    </tr><tr>
-    <td>func</td><td><code>function</code></td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type |
+| --- | --- |
+| view | [<code>View</code>](#Blaze.View) | 
+| func | <code>function</code> | 
 
 <a name="Blaze.render"></a>
 
@@ -887,27 +652,13 @@ no longer needed.
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>templateOrView</td><td><code>Template</code> | <code><a href="#Blaze.View">View</a></code></td><td><p>The template (e.g. <code>Template.myTemplate</code>) or View object to render.  If a template, a View object is <a href="#template_constructview">constructed</a>.  If a View, it must be an unrendered View, which becomes a rendered View and is returned.</p>
-</td>
-    </tr><tr>
-    <td>parentNode</td><td><code>DOMNode</code></td><td><p>The node that will be the parent of the rendered template.  It must be an Element node.</p>
-</td>
-    </tr><tr>
-    <td>[nextNode]</td><td><code>DOMNode</code></td><td><p>Optional. If provided, must be a child of <em>parentNode</em>; the template will be inserted before this node. If not provided, the template will be inserted as the last child of parentNode.</p>
-</td>
-    </tr><tr>
-    <td>[parentView]</td><td><code><a href="#Blaze.View">View</a></code></td><td><p>Optional. If provided, it will be set as the rendered View&#39;s <a href="#view_parentview"><code>parentView</code></a>.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| templateOrView | <code>Template</code> \| [<code>View</code>](#Blaze.View) | The template (e.g. `Template.myTemplate`) or View object to render.  If a template, a View object is [constructed](#template_constructview).  If a View, it must be an unrendered View, which becomes a rendered View and is returned. |
+| parentNode | <code>DOMNode</code> | The node that will be the parent of the rendered template.  It must be an Element node. |
+| [nextNode] | <code>DOMNode</code> | Optional. If provided, must be a child of <em>parentNode</em>; the template will be inserted before this node. If not provided, the template will be inserted as the last child of parentNode. |
+| [parentView] | [<code>View</code>](#Blaze.View) | Optional. If provided, it will be set as the rendered View's [`parentView`](#view_parentview). |
 
 <a name="Blaze.renderWithData"></a>
 
@@ -918,30 +669,14 @@ Renders a template or View to DOM nodes with a data context.  Otherwise identica
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>templateOrView</td><td><code>Template</code> | <code><a href="#Blaze.View">View</a></code></td><td><p>The template (e.g. <code>Template.myTemplate</code>) or View object to render.</p>
-</td>
-    </tr><tr>
-    <td>data</td><td><code>Object</code> | <code>function</code></td><td><p>The data context to use, or a function returning a data context.  If a function is provided, it will be reactively re-run.</p>
-</td>
-    </tr><tr>
-    <td>parentNode</td><td><code>DOMNode</code></td><td><p>The node that will be the parent of the rendered template.  It must be an Element node.</p>
-</td>
-    </tr><tr>
-    <td>[nextNode]</td><td><code>DOMNode</code></td><td><p>Optional. If provided, must be a child of <em>parentNode</em>; the template will be inserted before this node. If not provided, the template will be inserted as the last child of parentNode.</p>
-</td>
-    </tr><tr>
-    <td>[parentView]</td><td><code><a href="#Blaze.View">View</a></code></td><td><p>Optional. If provided, it will be set as the rendered View&#39;s <a href="#view_parentview"><code>parentView</code></a>.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| templateOrView | <code>Template</code> \| [<code>View</code>](#Blaze.View) | The template (e.g. `Template.myTemplate`) or View object to render. |
+| data | <code>Object</code> \| <code>function</code> | The data context to use, or a function returning a data context.  If a function is provided, it will be reactively re-run. |
+| parentNode | <code>DOMNode</code> | The node that will be the parent of the rendered template.  It must be an Element node. |
+| [nextNode] | <code>DOMNode</code> | Optional. If provided, must be a child of <em>parentNode</em>; the template will be inserted before this node. If not provided, the template will be inserted as the last child of parentNode. |
+| [parentView] | [<code>View</code>](#Blaze.View) | Optional. If provided, it will be set as the rendered View's [`parentView`](#view_parentview). |
 
 <a name="Blaze.remove"></a>
 
@@ -968,18 +703,10 @@ updating these nodes.
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>renderedView</td><td><code><a href="#Blaze.View">View</a></code></td><td><p>The return value from <code>Blaze.render</code> or <code>Blaze.renderWithData</code>, or the <code>view</code> property of a Blaze.Template instance. Calling <code>Blaze.remove(Template.instance().view)</code> from within a template event handler will destroy the view as well as that template and trigger the template&#39;s <code>onDestroyed</code> handlers.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| renderedView | [<code>View</code>](#Blaze.View) | The return value from `Blaze.render` or `Blaze.renderWithData`, or the `view` property of a Blaze.Template instance. Calling `Blaze.remove(Template.instance().view)` from within a template event handler will destroy the view as well as that template and trigger the template's `onDestroyed` handlers. |
 
 <a name="Blaze.toHTML"></a>
 
@@ -998,18 +725,10 @@ changes will invalidate the current Computation if there is one
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>templateOrView</td><td><code>Template</code> | <code><a href="#Blaze.View">View</a></code></td><td><p>The template (e.g. <code>Template.myTemplate</code>) or View object from which to generate HTML.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| templateOrView | <code>Template</code> \| [<code>View</code>](#Blaze.View) | The template (e.g. `Template.myTemplate`) or View object from which to generate HTML. |
 
 <a name="Blaze.toHTMLWithData"></a>
 
@@ -1017,21 +736,11 @@ changes will invalidate the current Computation if there is one
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Summary**: Renders a template or View to HTML with a data context.  Otherwise identical to `Blaze.toHTML`.  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>templateOrView</td><td><code>Template</code> | <code><a href="#Blaze.View">View</a></code></td><td><p>The template (e.g. <code>Template.myTemplate</code>) or View object from which to generate HTML.</p>
-</td>
-    </tr><tr>
-    <td>data</td><td><code>Object</code> | <code>function</code></td><td><p>The data context to use, or a function returning a data context.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| templateOrView | <code>Template</code> \| [<code>View</code>](#Blaze.View) | The template (e.g. `Template.myTemplate`) or View object from which to generate HTML. |
+| data | <code>Object</code> \| <code>function</code> | The data context to use, or a function returning a data context. |
 
 <a name="Blaze.getData"></a>
 
@@ -1039,18 +748,10 @@ changes will invalidate the current Computation if there is one
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Summary**: Returns the current data context, or the data context that was used when rendering a particular DOM element or View from a Meteor template.  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>[elementOrView]</td><td><code>DOMElement</code> | <code><a href="#Blaze.View">View</a></code></td><td><p>Optional.  An element that was rendered by a Meteor, or a View.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [elementOrView] | <code>DOMElement</code> \| [<code>View</code>](#Blaze.View) | Optional.  An element that was rendered by a Meteor, or a View. |
 
 <a name="Blaze.getView"></a>
 
@@ -1062,18 +763,10 @@ error will be thrown.  This is in contrast to
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>[element]</td><td><code>DOMElement</code></td><td><p>Optional.  If specified, the View enclosing <code>element</code> is returned.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [element] | <code>DOMElement</code> | Optional.  If specified, the View enclosing `element` is returned. |
 
 <a name="Blaze"></a>
 
@@ -1156,21 +849,11 @@ present on template objects:
 <a name="new_Blaze.Template_new"></a>
 
 #### new Blaze.Template([viewName], renderFunction)
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>[viewName]</td><td><code>String</code></td><td><p>Optional.  A name for Views constructed by this Template.  See <a href="#view_name"><code>view.name</code></a>.</p>
-</td>
-    </tr><tr>
-    <td>renderFunction</td><td><code>function</code></td><td><p>A function that returns <a href="#Renderable-Content"><em>renderable content</em></a>.  This function is used as the <code>renderFunction</code> for Views constructed by this Template.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [viewName] | <code>String</code> | Optional.  A name for Views constructed by this Template.  See [`view.name`](#view_name). |
+| renderFunction | <code>function</code> | A function that returns [*renderable content*](#Renderable-Content).  This function is used as the `renderFunction` for Views constructed by this Template. |
 
 <a name="Blaze.Template+viewName"></a>
 
@@ -1207,17 +890,10 @@ Same as the constructor argument.
 <a name="new_Blaze.TemplateInstance_new"></a>
 
 #### new Blaze.TemplateInstance(view)
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>view</td><td><code><a href="#Blaze.View">View</a></code></td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type |
+| --- | --- |
+| view | [<code>View</code>](#Blaze.View) | 
 
 <a name="Blaze.TemplateInstance+data"></a>
 
@@ -1249,18 +925,10 @@ Same as the constructor argument.
 **Kind**: instance method of [<code>TemplateInstance</code>](#Blaze.TemplateInstance)  
 **Summary**: Find all elements matching `selector` in this template instance, and return them as a JQuery object.  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>selector</td><td><code>String</code></td><td><p>The CSS selector to match, scoped to the template contents.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| selector | <code>String</code> | The CSS selector to match, scoped to the template contents. |
 
 <a name="Blaze.TemplateInstance+findAll"></a>
 
@@ -1268,18 +936,10 @@ Same as the constructor argument.
 **Kind**: instance method of [<code>TemplateInstance</code>](#Blaze.TemplateInstance)  
 **Summary**: Find all elements matching `selector` in this template instance.  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>selector</td><td><code>String</code></td><td><p>The CSS selector to match, scoped to the template contents.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| selector | <code>String</code> | The CSS selector to match, scoped to the template contents. |
 
 <a name="Blaze.TemplateInstance+find"></a>
 
@@ -1287,18 +947,10 @@ Same as the constructor argument.
 **Kind**: instance method of [<code>TemplateInstance</code>](#Blaze.TemplateInstance)  
 **Summary**: Find one element matching `selector` in this template instance.  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>selector</td><td><code>String</code></td><td><p>The CSS selector to match, scoped to the template contents.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| selector | <code>String</code> | The CSS selector to match, scoped to the template contents. |
 
 <a name="Blaze.TemplateInstance+autorun"></a>
 
@@ -1306,18 +958,10 @@ Same as the constructor argument.
 **Kind**: instance method of [<code>TemplateInstance</code>](#Blaze.TemplateInstance)  
 **Summary**: A version of [Tracker.autorun](https://docs.meteor.com/api/tracker.html#Tracker-autorun) that is stopped when the template is destroyed.  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>runFunc</td><td><code>function</code></td><td><p>The function to run. It receives one argument: a Tracker.Computation object.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| runFunc | <code>function</code> | The function to run. It receives one argument: a Tracker.Computation object. |
 
 <a name="Blaze.TemplateInstance+subscribe"></a>
 
@@ -1330,37 +974,15 @@ subscription. Call `handle.stop()` to manually stop the subscription, or
 `handle.ready()` to find out if this particular subscription has loaded all
 of its inital data.  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>name</td><td><code>String</code></td><td><p>Name of the subscription.  Matches the name of the
-server&#39;s <code>publish()</code> call.</p>
-</td>
-    </tr><tr>
-    <td>[arg1,arg2...]</td><td><code>Any</code></td><td><p>Optional arguments passed to publisher function
-on server.</p>
-</td>
-    </tr><tr>
-    <td>[options]</td><td><code>function</code> | <code>Object</code></td><td><p>If a function is passed instead of an
-object, it is interpreted as an <code>onReady</code> callback.</p>
-</td>
-    </tr><tr>
-    <td>[options.onReady]</td><td><code>function</code></td><td><p>Passed to <a href="https://docs.meteor.com/api/pubsub.html#Meteor-subscribe"><code>Meteor.subscribe</code></a>.</p>
-</td>
-    </tr><tr>
-    <td>[options.onStop]</td><td><code>function</code></td><td><p>Passed to <a href="https://docs.meteor.com/api/pubsub.html#Meteor-subscribe"><code>Meteor.subscribe</code></a>.</p>
-</td>
-    </tr><tr>
-    <td>[options.connection]</td><td><code>DDP.Connection</code></td><td><p>The connection on which to make the
-subscription.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>String</code> | Name of the subscription.  Matches the name of the server's `publish()` call. |
+| [arg1,arg2...] | <code>Any</code> | Optional arguments passed to publisher function on server. |
+| [options] | <code>function</code> \| <code>Object</code> | If a function is passed instead of an object, it is interpreted as an `onReady` callback. |
+| [options.onReady] | <code>function</code> | Passed to [`Meteor.subscribe`](https://docs.meteor.com/api/pubsub.html#Meteor-subscribe). |
+| [options.onStop] | <code>function</code> | Passed to [`Meteor.subscribe`](https://docs.meteor.com/api/pubsub.html#Meteor-subscribe). |
+| [options.connection] | <code>DDP.Connection</code> | The connection on which to make the subscription. |
 
 <a name="Blaze.TemplateInstance+subscriptionsReady"></a>
 
@@ -1431,21 +1053,11 @@ handlers.  It affects calls such as [`Template.currentData()`](../api/templates.
 <a name="new_Blaze.View_new"></a>
 
 #### new Blaze.View([name], renderFunction)
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>[name]</td><td><code>String</code></td><td><p>Optional.  A name for this type of View.  See <a href="#view_name"><code>view.name</code></a>.</p>
-</td>
-    </tr><tr>
-    <td>renderFunction</td><td><code>function</code></td><td><p>A function that returns <a href="#Renderable-Content"><em>renderable content</em></a>.  In this function, <code>this</code> is bound to the View.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [name] | <code>String</code> | Optional.  A name for this type of View.  See [`view.name`](#view_name). |
+| renderFunction | <code>function</code> | A function that returns [*renderable content*](#Renderable-Content).  In this function, `this` is bound to the View. |
 
 <a name="Blaze.View+name"></a>
 
@@ -1511,17 +1123,10 @@ If the View hasn't been created yet, calls `func` when the View
   template callback.
 
 **Kind**: instance method of [<code>View</code>](#Blaze.View)  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>cb</td><td><code>function</code></td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type |
+| --- | --- |
+| cb | <code>function</code> | 
 
 <a name="Blaze.View+onViewReady"></a>
 
@@ -1537,17 +1142,10 @@ Calls `func` when the View is rendered and inserted into the DOM,
   template callback.
 
 **Kind**: instance method of [<code>View</code>](#Blaze.View)  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>cb</td><td><code>function</code></td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type |
+| --- | --- |
+| cb | <code>function</code> | 
 
 <a name="Blaze.View+autorun"></a>
 
@@ -1577,21 +1175,12 @@ view._domrange), or onViewReady.
   cycle.  In `runFunc`, the View is bound to `this`.
 
 **Kind**: instance method of [<code>View</code>](#Blaze.View)  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>f</td>
-    </tr><tr>
-    <td>_inViewScope</td>
-    </tr><tr>
-    <td>displayName</td>
-    </tr>  </tbody>
-</table>
+
+| Param |
+| --- |
+| f | 
+| _inViewScope | 
+| displayName | 
 
 <a name="Blaze.View+subscribe"></a>
 
@@ -1601,19 +1190,11 @@ view._domrange), or onViewReady.
 Tracker.autorun. Stop the subscription when the view is destroyed.  
 **Returns**: <code>SubscriptionHandle</code> - A handle to the subscription so that you can
 see if it is ready, or stop it manually  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>...args</td><td><code>*</code></td>
-    </tr><tr>
-    <td>[options]</td><td><code>object</code></td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type |
+| --- | --- |
+| ...args | <code>\*</code> | 
+| [options] | <code>object</code> | 
 
 <a name="Blaze.View+firstNode"></a>
 
@@ -1684,24 +1265,12 @@ Handler Selection Logic:
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Returns**: <code>AttributeHandler</code> - Appropriate handler instance for this attribute  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>elem</td><td><code>Element</code></td><td><p>The DOM element that will have this attribute</p>
-</td>
-    </tr><tr>
-    <td>name</td><td><code>string</code></td><td><p>The attribute name (e.g., &#39;class&#39;, &#39;href&#39;)</p>
-</td>
-    </tr><tr>
-    <td>value</td><td><code>string</code> | <code>null</code></td><td><p>The initial attribute value</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| elem | <code>Element</code> | The DOM element that will have this attribute |
+| name | <code>string</code> | The attribute name (e.g., 'class', 'href') |
+| value | <code>string</code> \| <code>null</code> | The initial attribute value |
 
 <a name="Blaze.With"></a>
 
@@ -1715,22 +1284,11 @@ rendering.
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>data</td><td><code>Object</code> | <code>function</code></td><td><p>An object to use as the data context, or a function returning such an object.  If a
-  function is provided, it will be reactively re-run.</p>
-</td>
-    </tr><tr>
-    <td>contentFunc</td><td><code>function</code></td><td><p>A Function that returns <a href="#Renderable-Content"><em>renderable content</em></a>.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| data | <code>Object</code> \| <code>function</code> | An object to use as the data context, or a function returning such an object.  If a   function is provided, it will be reactively re-run. |
+| contentFunc | <code>function</code> | A Function that returns [*renderable content*](#Renderable-Content). |
 
 <a name="Blaze._attachBindingsToView"></a>
 
@@ -1738,44 +1296,22 @@ rendering.
 Attaches bindings to the instantiated view.
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>bindings</td><td><code>Object</code></td><td><p>A dictionary of bindings, each binding name
-corresponds to a value or a function that will be reactively re-run.</p>
-</td>
-    </tr><tr>
-    <td>view</td><td><code><a href="#Blaze.View">View</a></code></td><td><p>The target.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| bindings | <code>Object</code> | A dictionary of bindings, each binding name corresponds to a value or a function that will be reactively re-run. |
+| view | [<code>View</code>](#Blaze.View) | The target. |
 
 <a name="Blaze.Let"></a>
 
 ### Blaze.Let(bindings, contentFunc)
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Summary**: Constructs a View setting the local lexical scope in the block.  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>bindings</td><td><code>function</code></td><td><p>Dictionary mapping names of bindings to
-values or computations to reactively re-run.</p>
-</td>
-    </tr><tr>
-    <td>contentFunc</td><td><code>function</code></td><td><p>A Function that returns <a href="#Renderable-Content"><em>renderable content</em></a>.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| bindings | <code>function</code> | Dictionary mapping names of bindings to values or computations to reactively re-run. |
+| contentFunc | <code>function</code> | A Function that returns [*renderable content*](#Renderable-Content). |
 
 <a name="Blaze.If"></a>
 
@@ -1786,26 +1322,12 @@ Matches the behavior of <code v-pre>{{#if}}</code> in templates.
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>conditionFunc</td><td><code>function</code></td><td><p>A function to reactively re-run.  Whether the result is truthy or falsy determines
-  whether <code>contentFunc</code> or <code>elseFunc</code> is shown.  An empty array is considered falsy.</p>
-</td>
-    </tr><tr>
-    <td>contentFunc</td><td><code>function</code></td><td><p>A Function that returns <a href="#Renderable-Content"><em>renderable content</em></a>.</p>
-</td>
-    </tr><tr>
-    <td>[elseFunc]</td><td><code>function</code></td><td><p>Optional.  A Function that returns <a href="#Renderable-Content"><em>renderable content</em></a>.  If no
-  <code>elseFunc</code> is supplied, no content is shown in the &quot;else&quot; case.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| conditionFunc | <code>function</code> | A function to reactively re-run.  Whether the result is truthy or falsy determines   whether `contentFunc` or `elseFunc` is shown.  An empty array is considered falsy. |
+| contentFunc | <code>function</code> | A Function that returns [*renderable content*](#Renderable-Content). |
+| [elseFunc] | <code>function</code> | Optional.  A Function that returns [*renderable content*](#Renderable-Content).  If no   `elseFunc` is supplied, no content is shown in the "else" case. |
 
 <a name="Blaze.Unless"></a>
 
@@ -1816,26 +1338,12 @@ Matches the behavior of <code v-pre>{{#unless}}</code> in templates.
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>conditionFunc</td><td><code>function</code></td><td><p>A function to reactively re-run.  If the result is falsy, <code>contentFunc</code> is shown,
-  otherwise <code>elseFunc</code> is shown.  An empty array is considered falsy.</p>
-</td>
-    </tr><tr>
-    <td>contentFunc</td><td><code>function</code></td><td><p>A Function that returns <a href="#Renderable-Content"><em>renderable content</em></a>.</p>
-</td>
-    </tr><tr>
-    <td>[elseFunc]</td><td><code>function</code></td><td><p>Optional.  A Function that returns <a href="#Renderable-Content"><em>renderable content</em></a>.  If no
-  <code>elseFunc</code> is supplied, no content is shown in the &quot;else&quot; case.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| conditionFunc | <code>function</code> | A function to reactively re-run.  If the result is falsy, `contentFunc` is shown,   otherwise `elseFunc` is shown.  An empty array is considered falsy. |
+| contentFunc | <code>function</code> | A Function that returns [*renderable content*](#Renderable-Content). |
+| [elseFunc] | <code>function</code> | Optional.  A Function that returns [*renderable content*](#Renderable-Content).  If no   `elseFunc` is supplied, no content is shown in the "else" case. |
 
 <a name="Blaze.Each"></a>
 
@@ -1846,39 +1354,12 @@ Matches the behavior of <code v-pre>{{#each}}</code> in templates.
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>argFunc</td><td><code>function</code></td><td><p>A function to reactively re-run. The function can
-return one of two options:</p>
-<ol>
-<li><p>An object with two fields: &#39;_variable&#39; and &#39;_sequence&#39;. Each iterates over
-  &#39;_sequence&#39;, it may be a Cursor, an array, null, or undefined. Inside the
-  Each body you will be able to get the current item from the sequence using
-  the name specified in the &#39;_variable&#39; field.</p>
-</li>
-<li><p>Just a sequence (Cursor, array, null, or undefined) not wrapped into an
-  object. Inside the Each body, the current item will be set as the data
-  context.</p>
-</li>
-</ol>
-</td>
-    </tr><tr>
-    <td>contentFunc</td><td><code>function</code></td><td><p>A Function that returns  <a href="#Renderable-Content"><em>renderable
-content</em></a>.</p>
-</td>
-    </tr><tr>
-    <td>[elseFunc]</td><td><code>function</code></td><td><p>A Function that returns <a href="#Renderable-Content"><em>renderable
-content</em></a> to display in the case when there are no items
-in the sequence.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| argFunc | <code>function</code> | A function to reactively re-run. The function can return one of two options: 1. An object with two fields: '_variable' and '_sequence'. Each iterates over   '_sequence', it may be a Cursor, an array, null, or undefined. Inside the   Each body you will be able to get the current item from the sequence using   the name specified in the '_variable' field. 2. Just a sequence (Cursor, array, null, or undefined) not wrapped into an   object. Inside the Each body, the current item will be set as the data   context. |
+| contentFunc | <code>function</code> | A Function that returns  [*renderable content*](#Renderable-Content). |
+| [elseFunc] | <code>function</code> | A Function that returns [*renderable content*](#Renderable-Content) to display in the case when there are no items in the sequence. |
 
 <a name="Blaze._Await"></a>
 
@@ -1886,17 +1367,10 @@ in the sequence.</p>
 Create a new `Blaze.Let` view that unwraps the given value.
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>value</td><td><code>unknown</code></td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type |
+| --- | --- |
+| value | <code>unknown</code> | 
 
 <a name="Blaze.isTemplate"></a>
 
@@ -1904,36 +1378,20 @@ Create a new `Blaze.Let` view that unwraps the given value.
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Summary**: Returns true if `value` is a template object like `Template.myTemplate`.  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>value</td><td><code>Any</code></td><td><p>The value to test.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| value | <code>Any</code> | The value to test. |
 
 <a name="Blaze._withCurrentView"></a>
 
 ### Blaze.\_withCurrentView(view, func) ⇒ <code>T</code>
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>view</td><td><code><a href="#Blaze.View">View</a></code></td>
-    </tr><tr>
-    <td>func</td><td><code>function</code></td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type |
+| --- | --- |
+| view | [<code>View</code>](#Blaze.View) | 
+| func | <code>function</code> | 
 
 <a name="Blaze.render"></a>
 
@@ -1960,27 +1418,13 @@ no longer needed.
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>templateOrView</td><td><code>Template</code> | <code><a href="#Blaze.View">View</a></code></td><td><p>The template (e.g. <code>Template.myTemplate</code>) or View object to render.  If a template, a View object is <a href="#template_constructview">constructed</a>.  If a View, it must be an unrendered View, which becomes a rendered View and is returned.</p>
-</td>
-    </tr><tr>
-    <td>parentNode</td><td><code>DOMNode</code></td><td><p>The node that will be the parent of the rendered template.  It must be an Element node.</p>
-</td>
-    </tr><tr>
-    <td>[nextNode]</td><td><code>DOMNode</code></td><td><p>Optional. If provided, must be a child of <em>parentNode</em>; the template will be inserted before this node. If not provided, the template will be inserted as the last child of parentNode.</p>
-</td>
-    </tr><tr>
-    <td>[parentView]</td><td><code><a href="#Blaze.View">View</a></code></td><td><p>Optional. If provided, it will be set as the rendered View&#39;s <a href="#view_parentview"><code>parentView</code></a>.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| templateOrView | <code>Template</code> \| [<code>View</code>](#Blaze.View) | The template (e.g. `Template.myTemplate`) or View object to render.  If a template, a View object is [constructed](#template_constructview).  If a View, it must be an unrendered View, which becomes a rendered View and is returned. |
+| parentNode | <code>DOMNode</code> | The node that will be the parent of the rendered template.  It must be an Element node. |
+| [nextNode] | <code>DOMNode</code> | Optional. If provided, must be a child of <em>parentNode</em>; the template will be inserted before this node. If not provided, the template will be inserted as the last child of parentNode. |
+| [parentView] | [<code>View</code>](#Blaze.View) | Optional. If provided, it will be set as the rendered View's [`parentView`](#view_parentview). |
 
 <a name="Blaze.renderWithData"></a>
 
@@ -1991,30 +1435,14 @@ Renders a template or View to DOM nodes with a data context.  Otherwise identica
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>templateOrView</td><td><code>Template</code> | <code><a href="#Blaze.View">View</a></code></td><td><p>The template (e.g. <code>Template.myTemplate</code>) or View object to render.</p>
-</td>
-    </tr><tr>
-    <td>data</td><td><code>Object</code> | <code>function</code></td><td><p>The data context to use, or a function returning a data context.  If a function is provided, it will be reactively re-run.</p>
-</td>
-    </tr><tr>
-    <td>parentNode</td><td><code>DOMNode</code></td><td><p>The node that will be the parent of the rendered template.  It must be an Element node.</p>
-</td>
-    </tr><tr>
-    <td>[nextNode]</td><td><code>DOMNode</code></td><td><p>Optional. If provided, must be a child of <em>parentNode</em>; the template will be inserted before this node. If not provided, the template will be inserted as the last child of parentNode.</p>
-</td>
-    </tr><tr>
-    <td>[parentView]</td><td><code><a href="#Blaze.View">View</a></code></td><td><p>Optional. If provided, it will be set as the rendered View&#39;s <a href="#view_parentview"><code>parentView</code></a>.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| templateOrView | <code>Template</code> \| [<code>View</code>](#Blaze.View) | The template (e.g. `Template.myTemplate`) or View object to render. |
+| data | <code>Object</code> \| <code>function</code> | The data context to use, or a function returning a data context.  If a function is provided, it will be reactively re-run. |
+| parentNode | <code>DOMNode</code> | The node that will be the parent of the rendered template.  It must be an Element node. |
+| [nextNode] | <code>DOMNode</code> | Optional. If provided, must be a child of <em>parentNode</em>; the template will be inserted before this node. If not provided, the template will be inserted as the last child of parentNode. |
+| [parentView] | [<code>View</code>](#Blaze.View) | Optional. If provided, it will be set as the rendered View's [`parentView`](#view_parentview). |
 
 <a name="Blaze.remove"></a>
 
@@ -2041,18 +1469,10 @@ updating these nodes.
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>renderedView</td><td><code><a href="#Blaze.View">View</a></code></td><td><p>The return value from <code>Blaze.render</code> or <code>Blaze.renderWithData</code>, or the <code>view</code> property of a Blaze.Template instance. Calling <code>Blaze.remove(Template.instance().view)</code> from within a template event handler will destroy the view as well as that template and trigger the template&#39;s <code>onDestroyed</code> handlers.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| renderedView | [<code>View</code>](#Blaze.View) | The return value from `Blaze.render` or `Blaze.renderWithData`, or the `view` property of a Blaze.Template instance. Calling `Blaze.remove(Template.instance().view)` from within a template event handler will destroy the view as well as that template and trigger the template's `onDestroyed` handlers. |
 
 <a name="Blaze.toHTML"></a>
 
@@ -2071,18 +1491,10 @@ changes will invalidate the current Computation if there is one
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>templateOrView</td><td><code>Template</code> | <code><a href="#Blaze.View">View</a></code></td><td><p>The template (e.g. <code>Template.myTemplate</code>) or View object from which to generate HTML.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| templateOrView | <code>Template</code> \| [<code>View</code>](#Blaze.View) | The template (e.g. `Template.myTemplate`) or View object from which to generate HTML. |
 
 <a name="Blaze.toHTMLWithData"></a>
 
@@ -2090,21 +1502,11 @@ changes will invalidate the current Computation if there is one
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Summary**: Renders a template or View to HTML with a data context.  Otherwise identical to `Blaze.toHTML`.  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>templateOrView</td><td><code>Template</code> | <code><a href="#Blaze.View">View</a></code></td><td><p>The template (e.g. <code>Template.myTemplate</code>) or View object from which to generate HTML.</p>
-</td>
-    </tr><tr>
-    <td>data</td><td><code>Object</code> | <code>function</code></td><td><p>The data context to use, or a function returning a data context.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| templateOrView | <code>Template</code> \| [<code>View</code>](#Blaze.View) | The template (e.g. `Template.myTemplate`) or View object from which to generate HTML. |
+| data | <code>Object</code> \| <code>function</code> | The data context to use, or a function returning a data context. |
 
 <a name="Blaze.getData"></a>
 
@@ -2112,18 +1514,10 @@ changes will invalidate the current Computation if there is one
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Summary**: Returns the current data context, or the data context that was used when rendering a particular DOM element or View from a Meteor template.  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>[elementOrView]</td><td><code>DOMElement</code> | <code><a href="#Blaze.View">View</a></code></td><td><p>Optional.  An element that was rendered by a Meteor, or a View.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [elementOrView] | <code>DOMElement</code> \| [<code>View</code>](#Blaze.View) | Optional.  An element that was rendered by a Meteor, or a View. |
 
 <a name="Blaze.getView"></a>
 
@@ -2135,16 +1529,8 @@ error will be thrown.  This is in contrast to
 
 **Kind**: static method of [<code>Blaze</code>](#Blaze)  
 **Locus**: Client  
-<table>
-  <thead>
-    <tr>
-      <th>Param</th><th>Type</th><th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-<tr>
-    <td>[element]</td><td><code>DOMElement</code></td><td><p>Optional.  If specified, the View enclosing <code>element</code> is returned.</p>
-</td>
-    </tr>  </tbody>
-</table>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [element] | <code>DOMElement</code> | Optional.  If specified, the View enclosing `element` is returned. |
 

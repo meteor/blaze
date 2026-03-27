@@ -20,7 +20,7 @@ export default defineConfig({
             {
                 text: 'Docs', items: [
                     {text: 'Guide', link: '/guide/introduction'},
-                    {text: 'API', link: '/api/index'},
+                    {text: 'API', link: '/api/templates'},
                     {text: 'Migrations', link: '/migrations'},
 
                 ]
@@ -98,7 +98,8 @@ export default defineConfig({
                 text: 'Guide',
                 items: [
                     {text: 'Getting started', link: '/guide/introduction'},
-                    {text: 'Templates', link: '/guide/spacebars'},
+                    {text: 'Templates', link: '/guide/templates'},
+                    {text: 'Spacebars Syntax', link: '/guide/spacebars'},
                     {text: 'Reusable Components', link: '/guide/reusable-components'},
                     {text: 'Smart Components', link: '/guide/smart-components'},
                     {text: 'Reusing Code', link: '/guide/reusing-code'},
@@ -110,10 +111,9 @@ export default defineConfig({
             {
                 text: 'API',
                 items: [
-                    {text: 'Overview', link: '/api/index'},
+                    {text: 'Templates', link: '/api/templates_api'},
                     {text: 'Blaze', link: '/api/blaze'},
                     {text: 'Spacebars', link: '/api/spacebars'},
-                    {text: 'Templates', link: '/api/templates'},
                 ]
             },
             {

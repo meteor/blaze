@@ -7,7 +7,7 @@
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
     "docs:preview": "vitepress preview",
-    "docs:api": "jsdoc2md --no-gfm -m none -g none ../packages/blaze/*.js > source/api/blaze.md "
+    "docs:api": "jsdoc2md -m none -g none ../packages/blaze/*.js > source/api/blaze.md && jsdoc2md -m none -g none ../packages/spacebars/*.js > source/api/spacebars.md && jsdoc2md -m none -g none ../packages/templating-runtime/*.js > source/api/templates_api.md"
   },
   "devDependencies": {
     "jsdoc": "^4.0.5",
