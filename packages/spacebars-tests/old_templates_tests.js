@@ -575,7 +575,7 @@ Tinytest.add(
   }
 );
 
-Tinytest.add(
+Tinytest.addAsync(
   'spacebars-tests - old - template_tests - each on cursor',
   async function (test) {
     const tmpl = Template.old_spacebars_template_test_each;
@@ -680,7 +680,7 @@ Tinytest.add('spacebars-tests - old - template_tests - ..', function (test) {
   );
 });
 
-Tinytest.add(
+Tinytest.addAsync(
   'spacebars-tests - old - template_tests - select tags',
   async function (test) {
     const tmpl = Template.old_spacebars_template_test_select_tag;
@@ -2325,7 +2325,7 @@ Tinytest.add(
 );
 
 // https://github.com/meteor/meteor/issues/2156
-Tinytest.add(
+Tinytest.addAsync(
   'spacebars-tests - old - template_tests - each with inserts inside autorun',
   async function (test) {
     const tmpl = Template.old_spacebars_test_each_with_autorun_insert;
