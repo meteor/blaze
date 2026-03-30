@@ -1,3 +1,4 @@
+const hasJquery = Blaze._DOMBackend._hasJQuery;
 const divRendersTo = function (test, div, html) {
   Tracker.flush({ _throwFirstError: true });
   const actual = canonicalizeHtml(div.innerHTML);
@@ -1198,7 +1199,7 @@ Tinytest.add(
     divRendersTo(test, div, 'x');
 
     // trigger #each component destroyed
-    $(div).remove();
+    if (hasJquery) { $(div).remove() } else { div.remove() }
 
     // insert another document. cursor should no longer be observed so
     // should have no effect.
@@ -2309,7 +2310,7 @@ const runOneTwoTest = function (test, subTemplateName, optionsData) {
     test.equal(buf, '121');
 
     // clean up the div
-    $(div).remove();
+    if (hasJquery) { $(div).remove() } else { div.remove() }
     test.equal(showOne._numListeners(), 0);
     test.equal(dummy._numListeners(), 0);
   });
@@ -2404,7 +2405,7 @@ Tinytest.add(
     document.body.appendChild(div);
     clickElement(div.querySelector('button'));
     Tracker.flush(); // rendered gets called afterFlush
-    $(div).remove();
+    if (hasJquery) { $(div).remove() } else { div.remove() }
 
     test.isFalse(dataInHelper === window);
     test.equal(dataInHelper, {});
@@ -2473,7 +2474,8 @@ Tinytest.add(
 
     const div = renderToDiv(tmpl);
     document.body.appendChild(div);
-    clickIt(document.getElementById(elemId));
+    const target = document.getElementById(elemId);
+    clickIt(target);
     // NOTE: This failure can stick across test runs!  Try
     // removing '#bad-url' from the location bar and run
     // the tests again. :)
@@ -2501,6 +2503,7 @@ Tinytest.add(
     const div = renderToDiv(tmpl);
     document.body.appendChild(div);
     test.equal(buf.join(), '');
+
     clickIt(div.querySelector('.p1'));
     test.equal(buf.join(), '');
     clickIt(div.querySelector('.p2'));
@@ -2510,7 +2513,7 @@ Tinytest.add(
 );
 
 if (document.addEventListener) {
-  // see note about non-bubbling events in the "capuring events"
+  // see note about non-bubbling events in the "capturing events"
   // templating test for why we use the VIDEO tag.  (It would be
   // nice to get rid of the network dependency, though.)
   // We skip this test in IE 8.
@@ -2529,18 +2532,16 @@ if (document.addEventListener) {
       const div = renderToDiv(tmpl);
       document.body.appendChild(div);
       test.equal(buf.join(), '');
-      simulateEvent(
+      trigger(
         div.querySelector('.video1'),
         'play',
-        {},
-        { bubbles: false }
+        false
       );
       test.equal(buf.join(), '');
-      simulateEvent(
+      trigger(
         div.querySelector('.video2'),
         'play',
-        {},
-        { bubbles: false }
+        false
       );
       test.equal(buf.join(), 'video2');
       document.body.removeChild(div);
@@ -2568,6 +2569,7 @@ Tinytest.add('spacebars-tests - template_tests - tables', function (test) {
   divRendersTo(test, div, '<table><tr><td>Foo</td></tr></table>');
 });
 
+if (hasJquery){
 Tinytest.add(
   'spacebars-tests - template_tests - jQuery.trigger extraParameters are passed to the event callback',
   function (test) {
@@ -2595,6 +2597,7 @@ Tinytest.add(
     test.equal(captured, true);
   }
 );
+}
 
 Tinytest.add('spacebars-tests - template_tests - toHTML', function (test) {
   // run once, verifying that autoruns are stopped
@@ -3039,7 +3042,11 @@ Tinytest.add(
     test.equal(helperCalled, true);
 
     helperCalled = false;
-    $(div).find('.test-with-cleanup').remove();
+    if (hasJquery) {
+      $(div).find('.test-with-cleanup').remove();
+    } else {
+      div.querySelector('.test-with-cleanup').remove();
+    }
 
     rv.set('second');
     Tracker.flush();
@@ -3152,7 +3159,7 @@ Tinytest.add(
     divRendersTo(test, div, '<div>C</div>');
     test.equal(buf, 'CaRaDaCbRbDbCcRc');
 
-    $(div).remove();
+    if (hasJquery) { $(div).remove() } else { div.remove() }
     test.equal(buf, 'CaRaDaCbRbDbCcRcDc');
   }
 );
@@ -3309,10 +3316,19 @@ Tinytest.add(
 
     // Now see that removing the DOM with jQuery, below
     // the level of the entire template, stops everything.
-    $(div.querySelector('.toremove')).remove();
+    if (hasJquery) {
+      $(div.querySelector('.toremove')).remove();
+    } else {
+      div.querySelector('.toremove').remove();
+    }
     assertCallsAndListeners(0, 0, 0, 0);
   }
 );
+
+const trigger = (el, eventType, bubbles = true) => {
+  const event = new Event(eventType, { bubbles: bubbles, cancelable: true });
+  el.dispatchEvent(event);
+}
 
 Tinytest.add(
   'spacebars-tests - template_tests - focus/blur with clean-up',
@@ -3360,11 +3376,21 @@ Tinytest.add(
           'You might need to defocus the Chrome Dev Tools to get a more accurate run of this test!',
       });
       borken = true;
-      $(input).trigger('focus');
+      if (hasJquery) {
+        $(input).trigger('focus');
+      } else {
+        trigger(input, 'focusin', true);
+      }
     }
     test.equal(buf.join(), 'FOCUS');
     blurElement(div.querySelector('input'));
-    if (buf.length === 1) $(input).trigger('blur');
+    if (buf.length === 1) {
+      if (hasJquery) {
+        $(input).trigger('blur');
+      } else {
+        trigger(input, 'focusout', true);
+      }
+    }
     test.equal(buf.join(), 'FOCUS,BLUR');
 
     // now switch the IF and check again.  The failure mode
@@ -3379,7 +3405,13 @@ Tinytest.add(
     Tracker.flush();
     test.equal(div.querySelectorAll('input').length, 1);
     focusElement((input = div.querySelector('input')));
-    if (borken) $(input).trigger('focus');
+    if (borken) {
+      if (hasJquery) {
+        $(input).trigger('focus');
+      } else {
+        trigger(input, 'focusin', true);
+      }
+    }
     test.equal(buf.join(), 'FOCUS');
     blurElement(div.querySelector('input'));
     if (!borken) test.equal(buf.join(), 'FOCUS,BLUR');
@@ -3478,7 +3510,7 @@ Tinytest.add(
     test.equal(canonicalizeHtml(div.innerHTML), '<span>blah</span>');
     document.body.appendChild(div);
     clickElement(div.querySelector('span'));
-    $(div).remove();
+    if (hasJquery) { $(div).remove() } else { div.remove() }
 
     test.isTrue(currentView);
     test.equal(currentData, 'blah');

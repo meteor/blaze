@@ -15,7 +15,6 @@
   "license": "MIT",
   "dependencies": {
     "@babel/runtime": "^7.29.2",
-    "jquery": "^4.0.0",
     "meteor-node-stubs": "^1.2.27",
     "puppeteer": "^24.40.0"
   },

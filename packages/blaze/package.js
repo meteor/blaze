@@ -6,7 +6,6 @@ Package.describe({
 });
 
 Package.onUse(function (api) {
-  api.use('jquery@1.11.9 || 3.0.0', { weak: true }); // should be a weak dep, by having multiple "DOM backends"
   api.use('tracker@1.3.2');
   api.use('check@1.0.12');
   api.use('observe-sequence@2.0.0');
@@ -53,8 +52,7 @@ Package.onTest(function (api) {
   api.use('ecmascript@0.16.9');
   api.use('tinytest');
   api.use('test-helpers');
-  api.use('jquery@1.11.9 || 3.0.0'); // strong dependency, for testing jQuery backend
-
+  api.use('jquery')
   api.use('reactive-var@1.0.12');
   api.use('tracker@1.3.2');
 

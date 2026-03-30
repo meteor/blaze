@@ -1,12 +1,17 @@
 const DOMBackend = {};
 Blaze._DOMBackend = DOMBackend;
 
-const $jq = (typeof jQuery !== 'undefined' ? jQuery :
-           (typeof Package !== 'undefined' && Package.jquery ?
-            (Package.jquery.jQuery || Package.jquery.$) : null));
+let $jq;
+
+if (typeof jQuery !== 'undefined') {
+  $jq = jQuery;
+}
+
+if (!$jq && typeof Package !== 'undefined' && Package.jquery) {
+  $jq = Package.jquery.jQuery ?? Package.jquery.$ ?? null;
+}
 
 const _hasJQuery = !!$jq;
-
 if (_hasJQuery && typeof console !== 'undefined') {
   console.info(
     '[Blaze] jQuery detected as DOM backend. Native DOM backend is available — ' +
@@ -37,7 +42,7 @@ DOMBackend.parseHTML = function (html) {
   if (_hasJQuery) {
     return $jq.parseHTML(html, DOMBackend.getContext()) || [];
   }
-  const template = document.createElement('template');
+  const template = DOMBackend.getContext().createElement('template');
   template.innerHTML = html;
   return Array.from(template.content.childNodes);
 };
@@ -63,19 +68,7 @@ DOMBackend.Events = {
     // Alias non-bubbling events to their bubbling equivalents
     eventType = _delegateEventAlias[eventType] || eventType;
 
-    const wrapper = (event) => {
-      // event.target can be a text node (nodeType 3) — walk to parent element first
-      const origin = event.target;
-      const target = origin.nodeType === 1 ? origin.closest(selector) : origin.parentElement?.closest(selector);
-      if (target && elem.contains(target)) {
-        // Mimic jQuery's delegated event behavior
-        Object.defineProperty(event, 'currentTarget', {
-          value: target,
-          configurable: true,
-        });
-        handler.call(target, event);
-      }
-    };
+    const wrapper = createWrapper(elem, type, selector, handler);
 
     if (!_delegateMap.has(elem)) {
       _delegateMap.set(elem, new Map());
@@ -123,20 +116,7 @@ DOMBackend.Events = {
 
       handler._meteorui_wrapper = wrapper;
     } else {
-      const wrapper = (event) => {
-        // event.target can be a text node — walk to parent element first
-        const origin = event.target;
-        const matched = origin.nodeType === 1 ? origin.closest(selector) : origin.parentElement?.closest(selector);
-        if (matched && elem.contains(matched)) {
-          Object.defineProperty(event, 'currentTarget', {
-            value: matched,
-            configurable: true,
-          });
-          handler.call(elem, event);
-        }
-      };
-
-      handler._meteorui_wrapper = wrapper;
+      handler._meteorui_wrapper = createWrapper(elem, type, selector, handler);
     }
 
     type = DOMBackend.Events.parseEventType(type);
@@ -158,6 +138,46 @@ DOMBackend.Events = {
   }
 };
 
+const createWrapper = (elem, type, selector, handler) => {
+    return (event) => {
+        // event.target can be a text node (nodeType 3) — walk to parent element first
+        const origin = event.target;
+        const target = origin.nodeType === 1 ? origin.closest(selector) : origin.parentElement?.closest(selector);
+
+        // we need to manually check, if a selector left the template scope
+        // which jQuery would do automatically for us.
+        // for this we traverse nodes that still match the selector
+        // and compare the final to see, if the event bubbled up to
+        // a parent view that is out of scope
+        let node = origin;
+        while (node && node !== elem && node instanceof Element && node.matches(selector)) {
+            node = node.parentElement;
+        }
+
+        const root = elem?.['$blaze_range']?.view?.name;
+        const scope = node?.['$blaze_range']?.view?.name;
+
+        let inScope = true;
+        if (root && scope && root === scope) {
+            inScope = false;
+        }
+
+        if (target && elem.contains(target) && inScope) {
+            // Mimic jQuery's delegated event behavior
+            Object.defineProperty(event, 'currentTarget', {
+                value: target,
+                configurable: true,
+            });
+            // mimic jQuery event return false behavior
+            const value = handler.call(target, event);
+            if (value === false) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+            }
+        }
+    };
+}
 
 ///// Removal detection and interoperability.
 
@@ -274,6 +294,20 @@ if (_hasJQuery) {
       _executeTeardownCallbacks(this);
     }
   };
+} else {
+    // in native DOM Backend we need to extend the native remove function
+    // to call the TearDown callbacks, registered during materializing
+    // for the element and its children.
+    (function(removeFn) {
+        HTMLElement.prototype.remove = function () {
+            _executeTeardownCallbacks(this);
+            for (const child of this.children) {
+                _executeTeardownCallbacks(child);
+            }
+            return removeFn.apply(this, arguments);
+        };
+    })(HTMLElement.prototype.remove);
+
 }
 
 
