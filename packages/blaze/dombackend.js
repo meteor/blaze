@@ -2,26 +2,40 @@ const DOMBackend = {};
 Blaze._DOMBackend = DOMBackend;
 
 let $jq;
+let $jqSource;
 
-if (typeof jQuery !== 'undefined') {
+try {
+  const p = require.resolve('jquery');
+  if (typeof p === 'string') {
+    $jq = require('jquery');
+    $jqSource = `npm dependency (${p})`;
+  }
+} catch {}
+
+if (!$jq && typeof jQuery !== 'undefined') {
   $jq = jQuery;
+  $jqSource = 'global scope';
 }
 
 if (!$jq && typeof Package !== 'undefined' && Package.jquery) {
   $jq = Package.jquery.jQuery ?? Package.jquery.$ ?? null;
+  $jqSource = 'Meteor packages';
 }
 
 const _hasJQuery = !!$jq;
 if (_hasJQuery && typeof console !== 'undefined') {
+  const version = jQuery.fn?.jquery ?? ' ';
   console.info(
-    '[Blaze] jQuery detected as DOM backend. Native DOM backend is available — ' +
-    'remove the jquery package to enable it. jQuery support will be removed in Blaze 4.0.'
+    `[Blaze] jQuery${version} detected as DOM backend. Native DOM backend is available — ` +
+    'remove jquery to enable native DOM backend. jQuery support will be removed in Blaze 4.0.'
+  );
+  console.info(
+    `[Blaze] jQuery was loaded via ${$jqSource}`
   );
 }
 
 DOMBackend._$jq = $jq; // null when absent
 DOMBackend._hasJQuery = _hasJQuery;
-
 
 DOMBackend.getContext = function () {
   if (DOMBackend._context) return DOMBackend._context;

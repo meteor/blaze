@@ -12,7 +12,7 @@ Package.onUse(function (api) {
   api.use('reactive-var@1.0.12');
   api.use('ordered-dict@1.2.0');
   api.use('ecmascript@0.16.9');
-
+  api.use('jquery@3.0.0', { weak: true });
   api.export([
     'Blaze',
     'UI',
@@ -52,9 +52,12 @@ Package.onTest(function (api) {
   api.use('ecmascript@0.16.9');
   api.use('tinytest');
   api.use('test-helpers');
-  api.use('jquery')
   api.use('reactive-var@1.0.12');
   api.use('tracker@1.3.2');
+
+  if (process.env.TEST_USE_JQUERY) {
+    api.use('jquery@3.0.0');
+  }
 
   api.use('blaze');
   api.use('blaze-tools@2.0.0'); // for BlazeTools.toJS
