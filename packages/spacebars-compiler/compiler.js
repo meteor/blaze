@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor';
 import { HTMLTools } from 'meteor/html-tools';
 import { HTML } from 'meteor/htmljs';
 import { BlazeTools } from 'meteor/blaze-tools';
@@ -8,11 +7,6 @@ import { ReactComponentSiblingForbidder} from './react';
 import { TemplateTag } from './templatetag';
 import { removeWhitespace } from './whitespace';
 
-var UglifyJSMinify = null;
-if (Meteor.isServer) {
-  UglifyJSMinify = Npm.require('uglify-js').minify;
-}
-
 export function parse(input) {
   return HTMLTools.parseFragment(
     input,
@@ -20,7 +14,7 @@ export function parse(input) {
 }
 
 export function compile(input, options) {
-  var tree = parse(input);
+  const tree = parse(input);
   return codeGen(tree, options);
 }
 
@@ -52,7 +46,7 @@ TemplateTagReplacer.def({
   },
   visitAttribute: function (name, value, tag) {
     this.inAttributeValue = true;
-    var result = this.visit(value);
+    const result = this.visit(value);
     this.inAttributeValue = false;
 
     if (result !== value) {
@@ -71,12 +65,12 @@ TemplateTagReplacer.def({
 export function codeGen (parseTree, options) {
   // is this a template, rather than a block passed to
   // a block helper, say
-  var isTemplate = (options && options.isTemplate);
-  var isBody = (options && options.isBody);
-  var whitespace = (options && options.whitespace)
-  var sourceName = (options && options.sourceName);
+  const isTemplate = (options && options.isTemplate);
+  const isBody = (options && options.isBody);
+  const whitespace = (options && options.whitespace)
+  const sourceName = (options && options.sourceName);
 
-  var tree = parseTree;
+  let tree = parseTree;
 
   // The flags `isTemplate` and `isBody` are kind of a hack.
   if (isTemplate || isBody) {
@@ -92,17 +86,11 @@ export function codeGen (parseTree, options) {
   new ReactComponentSiblingForbidder({sourceName: sourceName})
     .visit(tree);
 
-  var codegen = new CodeGen;
+  const codegen = new CodeGen;
   tree = (new TemplateTagReplacer(
     {codegen: codegen})).visit(tree);
 
-  var code = '(function () { ';
-  if (isTemplate || isBody) {
-    code += 'var view = this; ';
-  }
-  code += 'return ';
-  code += BlazeTools.toJS(tree);
-  code += '; })';
+  let code = `(function () { ${isTemplate || isBody ? 'var view = this; ' : ''}return ${BlazeTools.toJS(tree)}; })`;
 
   code = beautify(code);
 
@@ -110,23 +98,15 @@ export function codeGen (parseTree, options) {
 }
 
 export function beautify (code) {
-  if (!UglifyJSMinify) {
-    return code;
-  }
-
-  var result = UglifyJSMinify(code, {
-    mangle: false,
-    compress: false,
-    output: {
-      beautify: true,
-      indent_level: 2,
-      width: 80
+  // Validate syntax of generated code at compile time.
+  // new Function() parses without executing.
+  try {
+    new Function(code);
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      throw new Error(`Internal error: generated code has a syntax error: ${e.message}\n${code}`);
     }
-  });
-
-  var output = result.code;
-  // Uglify interprets our expression as a statement and may add a semicolon.
-  // Strip trailing semicolon.
-  output = output.replace(/;$/, '');
-  return output;
+    throw e;
+  }
+  return code;
 }
