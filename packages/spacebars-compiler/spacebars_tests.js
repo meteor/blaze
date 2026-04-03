@@ -283,4 +283,192 @@ Tinytest.add("spacebars-compiler - parse", function (test) {
   test.equal(BlazeTools.toJS(SpacebarsCompiler.parse('<input selected={{!--foo--}}{{!--bar--}}>')),
     'HTML.INPUT({selected: ""})');
 
+  // ============================================================
+  // Inline expressions
+  // ============================================================
+
+  // --- Basic arithmetic ---
+  let tag;
+  tag = SpacebarsCompiler.parse('{{a + b}}');
+  test.isTrue(tag.expr);
+  test.equal(tag.expr.type, 'BinaryExpression');
+  test.equal(tag.expr.operator, '+');
+  test.equal(tag.expr.left.type, 'PathExpression');
+  test.equal(tag.expr.left.path, ['a']);
+  test.equal(tag.expr.right.type, 'PathExpression');
+  test.equal(tag.expr.right.path, ['b']);
+
+  tag = SpacebarsCompiler.parse('{{a * b}}');
+  test.equal(tag.expr.operator, '*');
+
+  tag = SpacebarsCompiler.parse('{{a - b}}');
+  test.equal(tag.expr.operator, '-');
+
+  tag = SpacebarsCompiler.parse('{{a / b}}');
+  test.equal(tag.expr.operator, '/');
+
+  tag = SpacebarsCompiler.parse('{{a % b}}');
+  test.equal(tag.expr.operator, '%');
+
+  // --- Operator precedence ---
+  // a + b * c → a + (b * c)
+  tag = SpacebarsCompiler.parse('{{a + b * c}}');
+  test.equal(tag.expr.operator, '+');
+  test.equal(tag.expr.right.operator, '*');
+
+  // (a + b) * c → (a + b) * c
+  tag = SpacebarsCompiler.parse('{{(a + b) * c}}');
+  test.equal(tag.expr.operator, '*');
+  test.equal(tag.expr.left.operator, '+');
+
+  // --- Left associativity ---
+  // a - b - c → (a - b) - c
+  tag = SpacebarsCompiler.parse('{{a - b - c}}');
+  test.equal(tag.expr.operator, '-');
+  test.equal(tag.expr.left.operator, '-');
+  test.equal(tag.expr.left.left.path, ['a']);
+
+  // --- Comparison operators ---
+  tag = SpacebarsCompiler.parse('{{a === b}}');
+  test.equal(tag.expr.operator, '===');
+
+  tag = SpacebarsCompiler.parse('{{a !== b}}');
+  test.equal(tag.expr.operator, '!==');
+
+  tag = SpacebarsCompiler.parse('{{a > b}}');
+  test.equal(tag.expr.operator, '>');
+
+  tag = SpacebarsCompiler.parse('{{a >= b}}');
+  test.equal(tag.expr.operator, '>=');
+
+  tag = SpacebarsCompiler.parse('{{a < b}}');
+  test.equal(tag.expr.operator, '<');
+
+  tag = SpacebarsCompiler.parse('{{a <= b}}');
+  test.equal(tag.expr.operator, '<=');
+
+  // --- Logical operators ---
+  tag = SpacebarsCompiler.parse('{{a && b}}');
+  test.equal(tag.expr.operator, '&&');
+
+  tag = SpacebarsCompiler.parse('{{a || b}}');
+  test.equal(tag.expr.operator, '||');
+
+  // --- Ternary ---
+  tag = SpacebarsCompiler.parse('{{a ? b : c}}');
+  test.equal(tag.expr.type, 'ConditionalExpression');
+  test.equal(tag.expr.test.path, ['a']);
+  test.equal(tag.expr.consequent.path, ['b']);
+  test.equal(tag.expr.alternate.path, ['c']);
+
+  // Nested ternary (right-associative): a ? b : c ? d : e → a ? b : (c ? d : e)
+  tag = SpacebarsCompiler.parse('{{a ? b : c ? d : e}}');
+  test.equal(tag.expr.type, 'ConditionalExpression');
+  test.equal(tag.expr.alternate.type, 'ConditionalExpression');
+
+  // --- Unary operators ---
+  tag = SpacebarsCompiler.parse('{{-a}}');
+  test.equal(tag.expr.type, 'UnaryExpression');
+  test.equal(tag.expr.operator, '-');
+  test.equal(tag.expr.argument.path, ['a']);
+
+  // !a inside expression (not at tag start)
+  tag = SpacebarsCompiler.parse('{{a && !b}}');
+  test.equal(tag.expr.operator, '&&');
+  test.equal(tag.expr.right.type, 'UnaryExpression');
+  test.equal(tag.expr.right.operator, '!');
+
+  // --- Literals in expressions ---
+  tag = SpacebarsCompiler.parse('{{a + 1}}');
+  test.equal(tag.expr.right.type, 'LiteralExpression');
+  test.equal(tag.expr.right.value, 1);
+
+  tag = SpacebarsCompiler.parse('{{a === "hello"}}');
+  test.equal(tag.expr.right.type, 'LiteralExpression');
+  test.equal(tag.expr.right.value, 'hello');
+
+  tag = SpacebarsCompiler.parse('{{a === true}}');
+  test.equal(tag.expr.right.value, true);
+
+  tag = SpacebarsCompiler.parse('{{a === false}}');
+  test.equal(tag.expr.right.value, false);
+
+  tag = SpacebarsCompiler.parse('{{a === null}}');
+  test.equal(tag.expr.right.value, null);
+
+  // Literal-only expression
+  tag = SpacebarsCompiler.parse('{{0 + 1}}');
+  test.equal(tag.expr.left.value, 0);
+  test.equal(tag.expr.right.value, 1);
+
+  tag = SpacebarsCompiler.parse('{{"a" === "b"}}');
+  test.equal(tag.expr.left.value, 'a');
+  test.equal(tag.expr.right.value, 'b');
+
+  // --- Dot paths in expressions ---
+  tag = SpacebarsCompiler.parse('{{foo.bar + baz.qux}}');
+  test.equal(tag.expr.left.path, ['foo', 'bar']);
+  test.equal(tag.expr.right.path, ['baz', 'qux']);
+
+  // --- Whitespace variations ---
+  tag = SpacebarsCompiler.parse('{{a+b}}');
+  test.equal(tag.expr.operator, '+');
+
+  tag = SpacebarsCompiler.parse('{{  a  +  b  }}');
+  test.equal(tag.expr.operator, '+');
+
+  // --- Backward compatibility (must NOT trigger expression mode) ---
+  // Simple path
+  tag = SpacebarsCompiler.parse('{{foo}}');
+  test.isFalse(tag.expr);
+  test.equal(tag.path, ['foo']);
+
+  // Dot path
+  tag = SpacebarsCompiler.parse('{{foo.bar}}');
+  test.isFalse(tag.expr);
+  test.equal(tag.path, ['foo', 'bar']);
+
+  // Helper call with args
+  tag = SpacebarsCompiler.parse('{{foo bar baz}}');
+  test.isFalse(tag.expr);
+  test.equal(tag.path, ['foo']);
+  test.equal(tag.args.length, 2);
+
+  // Helper call with negative number arg (NOT subtraction)
+  tag = SpacebarsCompiler.parse('{{foo -1}}');
+  test.isFalse(tag.expr);
+  test.equal(tag.path, ['foo']);
+  test.equal(tag.args[0][0], 'NUMBER');
+  test.equal(tag.args[0][1], -1);
+
+  // Sub-expression
+  tag = SpacebarsCompiler.parse('{{foo (bar baz)}}');
+  test.isFalse(tag.expr);
+  test.equal(tag.path, ['foo']);
+
+  // Keyword args
+  tag = SpacebarsCompiler.parse('{{foo x=1}}');
+  test.isFalse(tag.expr);
+
+  // --- Forbidden operators produce errors ---
+  test.throws(function () {
+    SpacebarsCompiler.parse('{{a = b}}');
+  }, 'Assignment');
+
+  test.throws(function () {
+    SpacebarsCompiler.parse('{{a += 1}}');
+  }, 'Compound assignment');
+
+  test.throws(function () {
+    SpacebarsCompiler.parse('{{a | b}}');
+  }, 'pipe');
+
+  test.throws(function () {
+    SpacebarsCompiler.parse('{{a & b}}');
+  }, 'bitwise AND');
+
+  test.throws(function () {
+    SpacebarsCompiler.parse('{{a ? b}}');
+  }, 'Expected `:`');
+
 });
