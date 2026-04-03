@@ -471,6 +471,9 @@ TemplateTag.parse = function (scannerOrString) {
     // Check for binary operator
     const match = operatorRegex.exec(rest);
     if (!match) {
+      // Check for forbidden operators — give a clear error instead of
+      // falling through to the classic parser's generic error
+      checkForbiddenOperator();
       scanner.pos = savedPos;
       return false;
     }
@@ -504,29 +507,54 @@ TemplateTag.parse = function (scannerOrString) {
     scanner.pos = preCheckPos;
 
     // Unary `-` at start (but not `--`): always an inline expression.
-    // `(` at start: grouped expression.
-    // Digit or `"` or `'` at start: literal value (e.g. {{0}}, {{"hello"}}).
     // Note: `!` at start is NOT handled here because `{{!...}}` is comment syntax
     //       (filtered earlier by the COMMENT regex). If we reach here with `!`,
     //       it would be inside a sub-expression like `(!foo)`.
-    const isLiteralStart = (firstChar >= '0' && firstChar <= '9') ||
-                           firstChar === '"' || firstChar === "'";
-    if (firstChar === '-' || firstChar === '!' || firstChar === '(' || isLiteralStart) {
-      // This must be an inline expression starting with unary op or grouped expr
+    //
+    // We do NOT enter expression mode for `(`, digits, or strings here because:
+    //   - `{{(helper arg)}}` is a valid sub-expression, not a grouped expression
+    //   - `{{0 0}}` should produce the classic error, not an expression parse error
+    // Instead, those are handled by trying inline expression mode speculatively.
+    if (firstChar === '-' || firstChar === '!') {
+      // This must be an inline expression starting with unary op
       const expr = scanInlineExpr(0);
       const tag = new TemplateTag;
       tag.type = type;
       tag.expr = expr;
-      // We need a path for compatibility — use a sentinel
       tag.path = ['__expr__'];
       tag.args = [];
       run(/^\s*/);
       if (!run(ends[endType])) {
-        // Check if there's trailing content that shouldn't be there
         checkForbiddenOperator();
         expected(`\`${endsString[endType]}\``);
       }
       return tag;
+    }
+
+    // For expressions starting with literals ({{0 + 1}}, {{"a" === "b"}}) or
+    // grouped expressions ({{(a + b) * c}}), try inline expression mode
+    // speculatively. If it doesn't consume everything up to }}, backtrack
+    // and fall through to classic parsing.
+    const isLiteralOrParenStart = (firstChar >= '0' && firstChar <= '9') ||
+                                   firstChar === '"' || firstChar === "'" ||
+                                   firstChar === '(';
+    if (isLiteralOrParenStart) {
+      const savedPos = scanner.pos;
+      try {
+        const expr = scanInlineExpr(0);
+        run(/^\s*/);
+        if (run(ends[endType])) {
+          const tag = new TemplateTag;
+          tag.type = type;
+          tag.expr = expr;
+          tag.path = ['__expr__'];
+          tag.args = [];
+          return tag;
+        }
+      } catch (e) {
+        // Fall through to classic parsing
+      }
+      scanner.pos = savedPos;
     }
 
     const tag = new TemplateTag;
