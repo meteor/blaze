@@ -4350,3 +4350,110 @@ Tinytest.add(
     );
   }
 );
+
+// #468 — #each stale data context
+// When the parent data context changes and the #each sequence returns
+// different items, item views should NOT re-render with stale data
+// before being removed.
+Tinytest.add(
+  'spacebars-tests - template_tests - #each no stale render on different IDs',
+  function (test) {
+    const parentTmpl = Template.spacebars_template_test_each_stale_parent1;
+    const childTmpl = Template.spacebars_template_test_each_stale_child1;
+
+    const mode = new ReactiveVar('foo');
+    const renderLog = [];
+
+    parentTmpl.helpers({
+      mode: function () { return mode.get(); },
+    });
+
+    childTmpl.helpers({
+      getItems: function () {
+        const foo = Template.currentData().foo;
+        if (foo === 'foo') {
+          return [{ _id: '1', msg: 'foo-item' }];
+        }
+        return [{ _id: '2', msg: 'bar-item' }];
+      },
+      logRender: function (msg) {
+        const dataFoo = Template.instance().data.foo;
+        renderLog.push({ msg, dataFoo });
+        return '';
+      },
+    });
+
+    const div = renderToDiv(parentTmpl);
+
+    // Initial render
+    test.equal(renderLog.length, 1);
+    test.equal(renderLog[0].msg, 'foo-item');
+    test.equal(renderLog[0].dataFoo, 'foo');
+
+    // Switch — should NOT produce a stale render where msg="foo-item" with dataFoo="bar"
+    renderLog.length = 0;
+    mode.set('bar');
+    Tracker.flush();
+
+    // Every render should have consistent msg and dataFoo
+    renderLog.forEach(function (entry) {
+      if (entry.msg === 'foo-item') {
+        test.equal(entry.dataFoo, 'foo', 'stale: foo-item rendered with dataFoo=bar');
+      }
+      if (entry.msg === 'bar-item') {
+        test.equal(entry.dataFoo, 'bar', 'stale: bar-item rendered with dataFoo=foo');
+      }
+    });
+
+    // Final render should be bar-item
+    const last = renderLog[renderLog.length - 1];
+    test.equal(last.msg, 'bar-item');
+    test.equal(last.dataFoo, 'bar');
+  }
+);
+
+
+Tinytest.add(
+  'spacebars-tests - template_tests - #each no stale render with each-in syntax',
+  function (test) {
+    const parentTmpl = Template.spacebars_template_test_each_stale_parent3;
+    const childTmpl = Template.spacebars_template_test_each_stale_child3;
+
+    const mode = new ReactiveVar('foo');
+    const renderLog = [];
+
+    parentTmpl.helpers({
+      mode: function () { return mode.get(); },
+    });
+
+    childTmpl.helpers({
+      getItems: function () {
+        const foo = Template.currentData().foo;
+        if (foo === 'foo') {
+          return [{ _id: '1', msg: 'foo-item' }];
+        }
+        return [{ _id: '2', msg: 'bar-item' }];
+      },
+      logRenderItem: function (item) {
+        const dataFoo = Template.instance().data.foo;
+        renderLog.push({ msg: item.msg, dataFoo });
+        return '';
+      },
+    });
+
+    const div = renderToDiv(parentTmpl);
+    renderLog.length = 0;
+    mode.set('bar');
+    Tracker.flush();
+
+    renderLog.forEach(function (entry) {
+      if (entry.msg === 'foo-item') {
+        test.equal(entry.dataFoo, 'foo', 'stale: foo-item rendered with dataFoo=bar');
+      }
+    });
+
+    const last = renderLog[renderLog.length - 1];
+    test.equal(last.msg, 'bar-item');
+    test.equal(last.dataFoo, 'bar');
+  }
+);

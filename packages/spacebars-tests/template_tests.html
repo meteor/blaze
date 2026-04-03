@@ -1172,3 +1172,31 @@ Hi there!
     <div>{{item}}</div>
   {{/each}}
 </template>
+
+<!-- #468 stale data context tests -->
+<template name="spacebars_template_test_each_stale_parent1">
+  {{> spacebars_template_test_each_stale_child1 foo=mode}}
+</template>
+<template name="spacebars_template_test_each_stale_child1">
+  {{#each getItems}}
+    <span>{{msg}}-{{logRender msg}}</span>
+  {{/each}}
+</template>
+
+<template name="spacebars_template_test_each_stale_parent2">
+  {{> spacebars_template_test_each_stale_child2 foo=mode}}
+</template>
+<template name="spacebars_template_test_each_stale_child2">
+  {{#each getItems}}
+    <span>{{msg}}-{{logRender msg}}</span>
+  {{/each}}
+</template>
+
+<template name="spacebars_template_test_each_stale_parent3">
+  {{> spacebars_template_test_each_stale_child3 foo=mode}}
+</template>
+<template name="spacebars_template_test_each_stale_child3">
+  {{#each item in getItems}}
+    <span>{{item.msg}}-{{logRenderItem item}}</span>
+  {{/each}}
+</template>
