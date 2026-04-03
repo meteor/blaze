@@ -108,10 +108,7 @@ class SpacebarsTagCompiler {
 
         const fullError = `Compile error in ${sourceName} (${this.tag.sourceName}:${errorLine}): ${errorMessage}`;
         const renderFuncCode = `function () {
-  var view = this;
-  return HTML.SPAN({
-    "style": "display:block;padding:8px 12px;margin:4px 0;background-color:#fee;border:1px solid #fcc;border-left:4px solid #dc3545;color:#721c24;font-family:monospace;font-size:13px;border-radius:4px;white-space:pre-wrap"
-  }, "\u26A0 " + ${JSON.stringify(fullError)});
+  return Blaze._renderErrorPlaceholder(${JSON.stringify(fullError)});
 }`;
 
         if (this.tag.tagName === 'template') {

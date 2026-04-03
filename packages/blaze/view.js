@@ -349,24 +349,7 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
       view._isInRender = true;
       // Any dependencies that should invalidate this Computation come
       // from this line:
-      let htmljs;
-      try {
-        htmljs = view._render();
-      } catch (e) {
-        view._isInRender = false;
-        Blaze._reportException(e, 'Exception in template render:');
-        // Render an inline error placeholder instead of crashing
-        if (typeof Blaze._errorIndicator !== 'undefined' && Blaze._errorIndicator) {
-          htmljs = HTML.SPAN({
-            style: 'display:block;padding:8px 12px;margin:4px 0;' +
-              'background-color:#fee;border:1px solid #fcc;' +
-              'border-left:4px solid #dc3545;color:#721c24;' +
-              'font-family:monospace;font-size:13px;border-radius:4px'
-          }, '\u26A0 ' + (e.message || String(e)));
-        } else {
-          htmljs = null;
-        }
-      }
+      const htmljs = view._render();
       view._isInRender = false;
 
       if (! c.firstRun && ! Blaze._isContentEqual(lastHtmljs, htmljs)) {

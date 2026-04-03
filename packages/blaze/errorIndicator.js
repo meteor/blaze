@@ -60,6 +60,8 @@
   var isInitialized = false;
   var styleEl = null;
   var isEnabled = true;
+  var handleGlobalError = null;
+  var handleUnhandledRejection = null;
 
   // ============================================
   // Utility Functions
@@ -500,11 +502,7 @@
       };
     }
     if (clearBtn) {
-      clearBtn.onclick = function() {
-        errors = [];
-        isModalOpen = false;
-        render();
-      };
+      clearBtn.onclick = clearAll;
     }
   }
 
@@ -608,20 +606,22 @@
     document.addEventListener('keydown', handleKeydown);
 
     // Listen for global errors that might be Blaze-related
-    window.addEventListener('error', function(event) {
+    handleGlobalError = function(event) {
       if (isBlazeRelatedError(event.message, event.error)) {
         addError(event.error || new Error(event.message), 'Uncaught template error:');
       }
-    });
+    };
+    window.addEventListener('error', handleGlobalError);
 
-    window.addEventListener('unhandledrejection', function(event) {
+    handleUnhandledRejection = function(event) {
       var errorMsg = (event.reason && event.reason.message) 
         ? event.reason.message 
         : String(event.reason);
       if (isBlazeRelatedError(errorMsg, event.reason)) {
         addError(event.reason, 'Unhandled template promise rejection:');
       }
-    });
+    };
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
   }
 
   /**
@@ -629,6 +629,14 @@
    */
   function destroy() {
     document.removeEventListener('keydown', handleKeydown);
+    if (handleGlobalError) {
+      window.removeEventListener('error', handleGlobalError);
+      handleGlobalError = null;
+    }
+    if (handleUnhandledRejection) {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      handleUnhandledRejection = null;
+    }
     removeContainer();
     removeStyles();
     errors = [];

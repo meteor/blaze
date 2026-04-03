@@ -24,12 +24,7 @@ Spacebars.include = function (templateOrFunction, contentFunc, elseFunc) {
     // Error state: render inline error placeholder instead of crashing
     if (template instanceof Error) {
       if (typeof Blaze._errorIndicator !== 'undefined' && Blaze._errorIndicator) {
-        return HTML.SPAN({
-          style: 'display: block; padding: 8px 12px; margin: 4px 0; ' +
-            'background-color: #fee; border: 1px solid #fcc; ' +
-            'border-left: 4px solid #dc3545; color: #721c24; ' +
-            'font-family: monospace; font-size: 13px; border-radius: 4px;'
-        }, '\u26A0 ' + template.message);
+        return Blaze._renderErrorPlaceholder(template.message);
       }
       return null;
     }
@@ -45,6 +40,11 @@ Spacebars.include = function (templateOrFunction, contentFunc, elseFunc) {
       try {
         templateVar.set(templateOrFunction());
       } catch (e) {
+        // If _throwNextException is set (e.g., in tests), let the error
+        // propagate normally so test assertions work
+        if (Blaze._throwNextException) {
+          throw e;
+        }
         templateVar.set(e);
         Blaze._reportException(e, 'Exception in template inclusion:');
       }

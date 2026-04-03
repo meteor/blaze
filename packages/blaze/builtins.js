@@ -77,13 +77,7 @@ function _createBinding(view, binding, displayName, mapper) {
   const reactiveVar = new ReactiveVar(undefined, _isEqualBinding);
   if (typeof binding === 'function') {
     view.autorun(
-      () => {
-        try {
-          _setBindingValue(reactiveVar, binding(), mapper);
-        } catch (e) {
-          Blaze._reportException(e, 'Exception in template binding:');
-        }
-      },
+      () => _setBindingValue(reactiveVar, binding(), mapper),
       view.parentView,
       displayName,
     );
