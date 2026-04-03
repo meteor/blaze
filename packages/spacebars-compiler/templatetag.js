@@ -282,6 +282,20 @@ TemplateTag.parse = function (scannerOrString) {
   // Returns the operator string or null.
   const peekOperator = function () {
     const rest = scanner.rest();
+
+    // Check for forbidden operators first — these would be partially
+    // matched by operatorRegex as single +, -, etc.
+    if (/^\+\+/.test(rest)) {
+      error("The `++` (increment) operator is not supported in Spacebars expressions");
+    }
+    if (/^--/.test(rest)) {
+      error("The `--` (decrement) operator is not supported in Spacebars expressions");
+    }
+    if (/^[+\-*\/%]=/.test(rest)) {
+      const op = rest.slice(0, 2);
+      error(`Compound assignment (\`${op}\`) is not allowed in Spacebars expressions`);
+    }
+
     const match = operatorRegex.exec(rest);
     if (!match) return null;
     const op = match[1];
@@ -304,12 +318,7 @@ TemplateTag.parse = function (scannerOrString) {
       error("The `&` (bitwise AND) operator is not supported in Spacebars expressions. " +
             "Use `&&` for logical AND");
     }
-    if (/^\+\+/.test(rest)) {
-      error("The `++` (increment) operator is not supported in Spacebars expressions");
-    }
-    if (/^--/.test(rest)) {
-      error("The `--` (decrement) operator is not supported in Spacebars expressions");
-    }
+    // Note: ++ and -- are caught earlier in peekOperator()
     // Check for assignment operators: =, +=, -=, *=, /=, %=
     // But NOT ==, ===, !=, !==
     if (/^=(?!=)/.test(rest)) {
