@@ -84,8 +84,47 @@ class SpacebarsTagCompiler {
       }
     } catch (e) {
       if (e.scanner) {
-        // The error came from Spacebars
-        this.throwCompileError(e.message, this.tag.contentsStartIndex + e.offset);
+        // Instead of crashing the build, generate fallback code that
+        // shows the compile error in the client-side error indicator
+        const errorMessage = e.message;
+        const errorOffset = this.tag.contentsStartIndex + e.offset;
+        const errorLine = this.tag.fileContents
+          .substring(0, errorOffset).split('\n').length;
+
+        const sourceName = this.tag.tagName === 'template'
+          ? `Template "${this.tag.attribs.name}"`
+          : '<body>';
+
+        console.warn(
+          `Warning: Compile error in ${this.tag.sourceName}:${errorLine}: ${errorMessage}\n` +
+          `The app will still run, but the affected template will show an error placeholder.`
+        );
+
+        const fullError = `Compile error in ${sourceName} (${this.tag.sourceName}:${errorLine}): ${errorMessage}`;
+        const renderFuncCode = `function () {
+  var view = this;
+  return HTML.SPAN({
+    "style": "display:block;padding:8px 12px;margin:4px 0;background-color:#fee;border:1px solid #fcc;border-left:4px solid #dc3545;color:#721c24;font-family:monospace;font-size:13px;border-radius:4px;white-space:pre-wrap"
+  }, "\u26A0 " + ${JSON.stringify(fullError)});
+}`;
+
+        if (this.tag.tagName === 'template') {
+          const name = this.tag.attribs.name;
+          if (name) {
+            this.results.js += generateTemplateJS(
+              name, renderFuncCode, hmrAvailable);
+          }
+        } else if (this.tag.tagName === 'body') {
+          this.results.js += generateBodyJS(renderFuncCode, hmrAvailable);
+        }
+
+        // Report to error indicator at runtime
+        this.results.js += `\nif (typeof Blaze !== "undefined" && Blaze._errorIndicator) {\n` +
+          `  Blaze._errorIndicator.addError(\n` +
+          `    new Error(${JSON.stringify(fullError)}),\n` +
+          `    "Template compile error:"\n` +
+          `  );\n` +
+          `}\n`;
       } else {
         throw e;
       }
