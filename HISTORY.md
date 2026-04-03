@@ -1,3 +1,8 @@
+## vNEXT
+
+### Highlights
+* Inline expressions in Spacebars: use arithmetic (`{{a + b}}`), comparison (`{{a > b}}`), logical (`{{a && b}}`), and ternary (`{{a ? "yes" : "no"}}`) operators directly in templates without helper functions. Fully backward compatible.
+
 ## v3.0.2, 2025-02-04
 
 ### Highlights
