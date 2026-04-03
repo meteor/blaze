@@ -517,8 +517,35 @@ const validateTag = function (ttag, scanner) {
       scanner.fatal(`${ttag.type} template tag is not allowed in an HTML attribute`);
     }
   } else if (position === TEMPLATE_TAG_POSITION.IN_START_TAG) {
-    if (! (ttag.type === 'DOUBLE')) {
-      scanner.fatal(`Reactive HTML attributes must either have a constant name or consist of a single {{helper}} providing a dictionary of names and values.  A template tag of type ${ttag.type} is not allowed here.`);
+    if (ttag.type === 'BLOCKOPEN') {
+      const path0 = ttag.path[0];
+      const isBuiltIn = ttag.path.length === 1 && (path0 === 'if' || path0 === 'unless' || path0 === 'with' || path0 === 'each');
+      if (isBuiltIn) {
+        scanner.fatal(
+          `{{#${path0}}} is not allowed in an HTML start tag. ` +
+          'To conditionally add a boolean attribute like "disabled", "checked", or "selected", ' +
+          'use the attribute="{{helper}}" syntax instead.\n' +
+          '  Bad syntax:  <input {{#if isDisabled}}disabled{{/if}}>\n' +
+          '  Good syntax: <input disabled="{{isDisabled}}">'
+        );
+      } else {
+        scanner.fatal(
+          `{{#${path0}}} is not allowed in an HTML start tag. ` +
+          'Only a single {{helper}} returning a dictionary of attribute name=value pairs is allowed here.'
+        );
+      }
+    } else if (ttag.type === 'TRIPLE') {
+      scanner.fatal(
+        'Triple-stache {{{...}}} is not allowed in an HTML start tag because it outputs raw HTML. ' +
+        'Use a double-stache {{helper}} that returns a dictionary of attribute name=value pairs instead.'
+      );
+    } else if (ttag.type === 'INCLUSION') {
+      scanner.fatal(
+        `{{> ...}} template inclusions are not allowed in an HTML start tag. ` +
+        'Only a single {{helper}} returning a dictionary of attribute name=value pairs is allowed here.'
+      );
+    } else if (ttag.type !== 'DOUBLE') {
+      scanner.fatal(`A template tag of type "${ttag.type}" is not allowed in an HTML start tag.`);
     }
     if (scanner.peek() === '=') {
       scanner.fatal("Template tags are not allowed in attribute names, only in attribute values or in the form of a single {{helper}} that evaluates to a dictionary of name=value pairs.");

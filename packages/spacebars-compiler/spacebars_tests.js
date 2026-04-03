@@ -246,12 +246,29 @@ Tinytest.add("spacebars-compiler - parse", function (test) {
   test.equal(BlazeTools.toJS(SpacebarsCompiler.parse('{{#foo}}x{{else bar}}{{#baz}}z{{/baz}}{{/foo}}')),
              'SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["foo"], content: "x", elseContent: SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["bar"], content: SpacebarsCompiler.TemplateTag({type: "BLOCKOPEN", path: ["baz"], content: "z"})})})');
 
+  // Triple-stache in start tag — should mention raw HTML
   test.throws(function () {
     SpacebarsCompiler.parse('<a {{{x}}}></a>');
-  });
+  }, /Triple-stache.*raw HTML/);
+
+  // Block helper in start tag — should suggest attribute="{{helper}}" pattern
   test.throws(function () {
     SpacebarsCompiler.parse('<a {{#if x}}{{/if}}></a>');
-  });
+  }, /not allowed in an HTML start tag/);
+
+  // Common real-world patterns that trigger this error
+  test.throws(function () {
+    SpacebarsCompiler.parse('<input {{#if isDisabled}}disabled{{/if}}>');
+  }, /Bad syntax.*Good syntax/);
+  test.throws(function () {
+    SpacebarsCompiler.parse('<option {{#unless isActive}}selected{{/unless}}>');
+  }, /not allowed in an HTML start tag/);
+
+  // Custom block helper in start tag
+  test.throws(function () {
+    SpacebarsCompiler.parse('<a {{#myHelper}}class="foo"{{/myHelper}}></a>');
+  }, /not allowed in an HTML start tag/);
+
   test.throws(function () {
     SpacebarsCompiler.parse('<a {{k}}={[v}}></a>');
   });
@@ -261,9 +278,11 @@ Tinytest.add("spacebars-compiler - parse", function (test) {
   test.throws(function () {
     SpacebarsCompiler.parse('<a x{{y}}=z></a>');
   });
+
+  // Template inclusion in start tag — should mention it's not allowed
   test.throws(function () {
     SpacebarsCompiler.parse('<a {{> x}}></a>');
-  });
+  }, /template inclusions are not allowed/);
 
   test.equal(BlazeTools.toJS(SpacebarsCompiler.parse('<a {{! x--}} b=c{{! x}} {{! x}}></a>')),
              'HTML.A({b: "c"})');
