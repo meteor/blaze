@@ -21,6 +21,19 @@ Spacebars.include = function (templateOrFunction, contentFunc, elseFunc) {
     if (template === null)
       return null;
 
+    // Error state: render inline error placeholder instead of crashing
+    if (template instanceof Error) {
+      if (typeof Blaze._errorIndicator !== 'undefined' && Blaze._errorIndicator) {
+        return HTML.SPAN({
+          style: 'display: block; padding: 8px 12px; margin: 4px 0; ' +
+            'background-color: #fee; border: 1px solid #fcc; ' +
+            'border-left: 4px solid #dc3545; color: #721c24; ' +
+            'font-family: monospace; font-size: 13px; border-radius: 4px;'
+        }, '\u26A0 ' + template.message);
+      }
+      return null;
+    }
+
     if (! Blaze.isTemplate(template))
       throw new Error(`Expected template or null, found: ${template}`);
 
@@ -29,7 +42,12 @@ Spacebars.include = function (templateOrFunction, contentFunc, elseFunc) {
   view.__templateVar = templateVar;
   view.onViewCreated(function () {
     this.autorun(function () {
-      templateVar.set(templateOrFunction());
+      try {
+        templateVar.set(templateOrFunction());
+      } catch (e) {
+        templateVar.set(e);
+        Blaze._reportException(e, 'Exception in template inclusion:');
+      }
     });
   });
   view.__startsNewLexicalScope = true;
