@@ -234,6 +234,19 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
     eachView.stopHandle = ObserveSequence.observe(function () {
       return eachView.argVar.get()?.value;
     }, {
+      // Called immediately when the sequence source is invalidated,
+      // BEFORE the Tracker flush re-runs other autoruns. This freezes
+      // item views so their helpers don't re-run with stale data.
+      // See meteor/blaze#468.
+      onInvalidate: function () {
+        if (!eachView._domrange) return;
+        const members = eachView._domrange.members;
+        for (let i = 0; i < members.length; i++) {
+          if (members[i] && members[i].view) {
+            members[i].view._eachItemPendingUpdate = true;
+          }
+        }
+      },
       addedAt: function (id, item, index) {
         Tracker.nonreactive(function () {
           let newItemView;
@@ -324,6 +337,17 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
             subviews.splice(toIndex, 0, itemView);
           }
         });
+      },
+      // Called after the diff is applied. Clear the pending flag on
+      // surviving item views so they can re-render normally again.
+      afterDiff: function () {
+        if (!eachView._domrange) return;
+        const members = eachView._domrange.members;
+        for (let i = 0; i < members.length; i++) {
+          if (members[i] && members[i].view) {
+            delete members[i].view._eachItemPendingUpdate;
+          }
+        }
       }
     });
 

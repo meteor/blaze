@@ -112,8 +112,15 @@ ObserveSequence = {
     // general 'key' argument which could be a function, a dotted
     // field name, or the special @index value.
     let lastSeqArray = []; // elements are objects of form {_id, item}
-    const computation = Tracker.autorun(function () {
+    const computation = Tracker.autorun(function (c) {
       const seq = sequenceFunc();
+
+      // When this computation is invalidated (sequence source changed),
+      // immediately notify callers so they can freeze item views BEFORE
+      // the flush re-runs other autoruns. See meteor/blaze#468.
+      if (callbacks.onInvalidate) {
+        c.onInvalidate(() => callbacks.onInvalidate());
+      }
 
       Tracker.nonreactive(function () {
         let seqArray; // same structure as `lastSeqArray` above.
@@ -142,7 +149,18 @@ ObserveSequence = {
           throw badSequenceError(seq);
         }
 
+        // Allow callers to prepare for the diff (e.g., freeze item views
+        // that are about to be removed). See meteor/blaze#468.
+        if (callbacks.beforeDiff) {
+          callbacks.beforeDiff(lastSeqArray, seqArray);
+        }
+
         diffArray(lastSeqArray, seqArray, callbacks);
+
+        if (callbacks.afterDiff) {
+          callbacks.afterDiff();
+        }
+
         lastSeq = seq;
         lastSeqArray = seqArray;
       });
