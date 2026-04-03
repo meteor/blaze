@@ -471,4 +471,92 @@ Tinytest.add("spacebars-compiler - parse", function (test) {
     SpacebarsCompiler.parse('{{a ? b}}');
   }, 'Expected `:`');
 
+  test.throws(function () {
+    SpacebarsCompiler.parse('{{a--}}');
+  }, 'decrement');
+
+  // --- Triple-stache with expression ---
+  tag = SpacebarsCompiler.parse('{{{a + b}}}');
+  test.isTrue(tag.expr);
+  test.equal(tag.type, 'TRIPLE');
+  test.equal(tag.expr.operator, '+');
+
+  // --- BLOCKOPEN with inline expression ---
+  tag = SpacebarsCompiler.parse('{{#if a > b}}yes{{/if}}');
+  test.isTrue(tag.expr);
+  test.equal(tag.type, 'BLOCKOPEN');
+  test.equal(tag.path, ['if']);
+  test.equal(tag.expr.operator, '>');
+
+  tag = SpacebarsCompiler.parse('{{#unless a === b}}no{{/unless}}');
+  test.isTrue(tag.expr);
+  test.equal(tag.path, ['unless']);
+  test.equal(tag.expr.operator, '===');
+
+  tag = SpacebarsCompiler.parse('{{#if a + b > 10}}yes{{/if}}');
+  test.isTrue(tag.expr);
+  test.equal(tag.expr.operator, '>');
+  test.equal(tag.expr.left.operator, '+');
+
+  // BLOCKOPEN without expression still works
+  tag = SpacebarsCompiler.parse('{{#if cond}}yes{{/if}}');
+  test.isFalse(tag.expr);
+  test.equal(tag.path, ['if']);
+  test.equal(tag.args.length, 1);
+
+  // --- Sub-expression with inline expression ---
+  tag = SpacebarsCompiler.parse('{{helper (a + b)}}');
+  test.isFalse(tag.expr); // outer tag is NOT an expression
+  test.equal(tag.path, ['helper']);
+  test.equal(tag.args.length, 1);
+  test.equal(tag.args[0][0], 'EXPR');
+  test.isTrue(tag.args[0][1].expr); // inner sub-expression IS an expression
+  test.equal(tag.args[0][1].expr.operator, '+');
+
+  // Classic sub-expression still works
+  tag = SpacebarsCompiler.parse('{{helper (foo bar)}}');
+  test.isFalse(tag.expr);
+  test.equal(tag.args[0][0], 'EXPR');
+  test.isFalse(tag.args[0][1].expr);
+  test.equal(tag.args[0][1].path, ['foo']);
+
+  // --- Special identifiers in expressions ---
+  // @index
+  tag = SpacebarsCompiler.parse('{{@index + 1}}');
+  test.isTrue(tag.expr);
+  test.equal(tag.expr.left.path, ['@index']);
+  test.equal(tag.expr.right.value, 1);
+
+  // this.x
+  tag = SpacebarsCompiler.parse('{{this.x + 1}}');
+  test.isTrue(tag.expr);
+  test.equal(tag.expr.left.path, ['.', 'x']);
+
+  // ../parent paths
+  tag = SpacebarsCompiler.parse('{{../count + 1}}');
+  test.isTrue(tag.expr);
+  test.equal(tag.expr.left.path[0], '..');
+
+  // --- Complex combined expressions ---
+  // Comparison then ternary
+  tag = SpacebarsCompiler.parse('{{a === b ? "yes" : "no"}}');
+  test.equal(tag.expr.type, 'ConditionalExpression');
+  test.equal(tag.expr.test.operator, '===');
+  test.equal(tag.expr.consequent.value, 'yes');
+
+  // Multiple operators
+  tag = SpacebarsCompiler.parse('{{a + b * c - d}}');
+  test.equal(tag.expr.operator, '-');
+  test.equal(tag.expr.left.operator, '+');
+  test.equal(tag.expr.left.right.operator, '*');
+
+  // Path + string literal
+  tag = SpacebarsCompiler.parse('{{name + " suffix"}}');
+  test.equal(tag.expr.right.value, ' suffix');
+
+  // Two literals
+  tag = SpacebarsCompiler.parse('{{1 + 2}}');
+  test.equal(tag.expr.left.value, 1);
+  test.equal(tag.expr.right.value, 2);
+
 });
