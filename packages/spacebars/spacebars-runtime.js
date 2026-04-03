@@ -100,6 +100,18 @@ Spacebars.dataMustache = function (...args) {
   return Spacebars.mustacheImpl(...args);
 };
 
+// Post-process an inline expression result.
+// Same as Spacebars.mustache but without the helper-calling semantics.
+// Used by the code generated for inline expressions like {{a + b}}.
+Spacebars.expr = function (value) {
+  if (value instanceof Spacebars.SafeString)
+    return HTML.Raw(value.toString());
+  else if (isPromiseLike(value))
+    return value;
+  else
+    return (value == null || value === false) ? null : String(value);
+};
+
 // Idempotently wrap in `HTML.Raw`.
 //
 // Called on the return value from `Spacebars.mustache` in case the

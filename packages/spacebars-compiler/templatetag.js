@@ -239,15 +239,362 @@ TemplateTag.parse = function (scannerOrString) {
     }
   };
 
+  // ============================================================
+  // Inline Expression support (Pratt parser)
+  //
+  // Allows expressions like {{a + b}}, {{a > b}}, {{a ? b : c}}
+  // inside {{ }} tags. Backward-compatible: if no operator is found
+  // after the first path, falls through to the classic helper-call
+  // argument loop.
+
+  // Operator precedence table (higher = tighter binding)
+  const PREC_TERNARY   = 1;
+  const PREC_OR        = 2;
+  const PREC_AND       = 3;
+  const PREC_EQUALITY  = 4;
+  const PREC_COMPARE   = 5;
+  const PREC_ADD       = 6;
+  const PREC_MULTIPLY  = 7;
+  const PREC_UNARY     = 8;
+
+  // Binary operators and their precedence
+  const binaryOps = {
+    '||':  PREC_OR,
+    '&&':  PREC_AND,
+    '===': PREC_EQUALITY,
+    '!==': PREC_EQUALITY,
+    '>':   PREC_COMPARE,
+    '>=':  PREC_COMPARE,
+    '<':   PREC_COMPARE,
+    '<=':  PREC_COMPARE,
+    '+':   PREC_ADD,
+    '-':   PREC_ADD,
+    '*':   PREC_MULTIPLY,
+    '/':   PREC_MULTIPLY,
+    '%':   PREC_MULTIPLY,
+  };
+
+  // Regex to detect and consume a binary operator at current position.
+  // Order matters: longer operators first (=== before =, >= before >, etc.)
+  const operatorRegex = /^(===|!==|&&|\|\||>=|<=|[+\-*\/%]|>(?![}])|<|[?:])/;
+
+  // Peek at the next operator without consuming it.
+  // Returns the operator string or null.
+  const peekOperator = function () {
+    const rest = scanner.rest();
+    const match = operatorRegex.exec(rest);
+    if (!match) return null;
+    const op = match[1];
+    // Reject operators that aren't in our set (`:` is only valid as
+    // part of ternary, handled specially)
+    if (op === ':') return ':';
+    if (op === '?') return '?';
+    if (binaryOps.hasOwnProperty(op)) return op;
+    return null;
+  };
+
+  // Check for forbidden operators and give clear error messages
+  const checkForbiddenOperator = function () {
+    const rest = scanner.rest();
+    if (/^\|(?!\|)/.test(rest)) {
+      error("The `|` (pipe/bitwise OR) operator is not supported in Spacebars expressions. " +
+            "Use `||` for logical OR");
+    }
+    if (/^&(?!&)/.test(rest)) {
+      error("The `&` (bitwise AND) operator is not supported in Spacebars expressions. " +
+            "Use `&&` for logical AND");
+    }
+    if (/^\+\+/.test(rest)) {
+      error("The `++` (increment) operator is not supported in Spacebars expressions");
+    }
+    if (/^--/.test(rest)) {
+      error("The `--` (decrement) operator is not supported in Spacebars expressions");
+    }
+    // Check for assignment operators: =, +=, -=, *=, /=, %=
+    // But NOT ==, ===, !=, !==
+    if (/^=(?!=)/.test(rest)) {
+      error("Assignment (`=`) is not allowed in Spacebars expressions");
+    }
+    if (/^[+\-*\/%]=/.test(rest)) {
+      const op = rest.slice(0, 2);
+      error(`Compound assignment (\`${op}\`) is not allowed in Spacebars expressions`);
+    }
+  };
+
+  // Scan a primary expression (the atomic unit of an expression).
+  // Returns an inline expression AST node.
+  const scanPrimary = function () {
+    run(/^\s*/);
+
+    // Unary `!`
+    if (run(/^!/)) {
+      const argument = scanPrimary();
+      return { type: 'UnaryExpression', operator: '!', argument };
+    }
+
+    // Unary `-` (but not `--`)
+    if (/^-(?!-)/.test(scanner.rest())) {
+      advance(1);
+      const argument = scanPrimary();
+      return { type: 'UnaryExpression', operator: '-', argument };
+    }
+
+    // Parenthesized expression or sub-expression
+    if (run(/^\(/)) {
+      // First, try to determine if this is a grouped expression or a
+      // Handlebars sub-expression like (helper arg1 arg2).
+      // Strategy: scan the first value, then check what follows.
+      const savedPos = scanner.pos;
+      run(/^\s*/);
+
+      // Try to parse as inline expression first
+      const expr = scanInlineExpr(0);
+      run(/^\s*/);
+
+      if (run(/^\)/)) {
+        // Successfully parsed as a grouped expression
+        return expr;
+      }
+
+      // If we didn't find `)`, it might be a sub-expression with
+      // helper args. Backtrack and parse as sub-expression.
+      scanner.pos = savedPos;
+      const subExpr = scanExpr('EXPR');
+      return {
+        type: 'SubExpression',
+        path: subExpr.path,
+        args: subExpr.args,
+      };
+    }
+
+    // Number literal
+    let result;
+    if ((result = BlazeTools.parseNumber(scanner))) {
+      return { type: 'LiteralExpression', value: result.value };
+    }
+
+    // String literal
+    if ((result = BlazeTools.parseStringLiteral(scanner))) {
+      return { type: 'LiteralExpression', value: result.value };
+    }
+
+    // Dot-leading paths (./foo, ../foo)
+    if (/^[\.\[]/.test(scanner.peek())) {
+      return { type: 'PathExpression', path: scanPath() };
+    }
+
+    // Identifiers: null, true, false, or path
+    if ((result = BlazeTools.parseExtendedIdentifierName(scanner))) {
+      const id = result;
+      if (id === 'null') {
+        return { type: 'LiteralExpression', value: null };
+      } else if (id === 'true') {
+        return { type: 'LiteralExpression', value: true };
+      } else if (id === 'false') {
+        return { type: 'LiteralExpression', value: false };
+      } else {
+        // It's a path start — unconsume and use scanPath
+        scanner.pos -= id.length;
+        return { type: 'PathExpression', path: scanPath() };
+      }
+    }
+
+    // If nothing matched, check for forbidden operators for better errors
+    checkForbiddenOperator();
+    expected('expression');
+  };
+
+  // Pratt parser: scan an inline expression with minimum precedence `minPrec`.
+  // If `initialLeft` is provided, use it as the left operand instead of
+  // scanning a new primary (used when the caller already scanned a path).
+  const scanInlineExpr = function (minPrec, initialLeft) {
+    let left = initialLeft || scanPrimary();
+
+    while (true) {
+      run(/^\s*/);
+      const op = peekOperator();
+      if (op === null) break;
+
+      // Ternary operator: `?`
+      if (op === '?') {
+        if (PREC_TERNARY < minPrec) break;
+        advance(1); // consume `?`
+        run(/^\s*/);
+        const consequent = scanInlineExpr(0); // any expression
+        run(/^\s*/);
+        if (!run(/^:/)) {
+          error("Expected `:` in ternary expression (`a ? b : c`). " +
+                "If you meant to use `?` differently, ternary expressions require both `?` and `:`");
+        }
+        run(/^\s*/);
+        const alternate = scanInlineExpr(PREC_TERNARY); // right-associative
+        left = { type: 'ConditionalExpression', test: left, consequent, alternate };
+        continue;
+      }
+
+      // `:` outside of a ternary — stop (let the caller handle it)
+      if (op === ':') break;
+
+      const prec = binaryOps[op];
+      if (prec === undefined || prec < minPrec) break;
+
+      // Consume the operator
+      advance(op.length);
+
+      // Check for forbidden patterns after consuming operator
+      run(/^\s*/);
+      checkForbiddenOperator();
+
+      // Right operand: parse with prec+1 for left-associativity
+      const right = scanInlineExpr(prec + 1);
+      left = { type: 'BinaryExpression', operator: op, left, right };
+    }
+
+    return left;
+  };
+
+  // Detect if we should enter inline expression mode.
+  // Called after scanning the first path in scanExpr.
+  // Returns true if the next non-whitespace token is a binary operator
+  // (not a `-` followed by a digit, which is a negative number arg).
+  const shouldEnterExprMode = function (endType) {
+    const savedPos = scanner.pos;
+    run(/^\s*/);
+    const rest = scanner.rest();
+
+    // Check for end of tag first
+    if (ends[endType].test(rest) || /^[})]/.test(scanner.peek())) {
+      scanner.pos = savedPos;
+      return false;
+    }
+
+    // Check for binary operator
+    const match = operatorRegex.exec(rest);
+    if (!match) {
+      scanner.pos = savedPos;
+      return false;
+    }
+
+    const op = match[1];
+
+    // `-` followed by a digit is a negative number argument, not subtraction
+    // (preserves `{{foo -1}}` as helper call)
+    if (op === '-' && /^-\d/.test(rest)) {
+      scanner.pos = savedPos;
+      return false;
+    }
+
+    // `+` followed by a digit could be ambiguous but we treat it as addition
+    // since `{{foo +1}}` is not valid Handlebars anyway
+
+    scanner.pos = savedPos;
+    return true;
+  };
+
   const scanExpr = function (type) {
     let endType = type;
     if (type === 'INCLUSION' || type === 'BLOCKOPEN' || type === 'ELSE')
       endType = 'DOUBLE';
 
+    // Check if the expression starts with a unary operator (`-` or `!`).
+    // If so, go directly into inline expression mode.
+    const preCheckPos = scanner.pos;
+    run(/^\s*/);
+    const firstChar = scanner.peek();
+    scanner.pos = preCheckPos;
+
+    // Unary `-` at start (but not `--`): always an inline expression.
+    // `(` at start: grouped expression.
+    // Digit or `"` or `'` at start: literal value (e.g. {{0}}, {{"hello"}}).
+    // Note: `!` at start is NOT handled here because `{{!...}}` is comment syntax
+    //       (filtered earlier by the COMMENT regex). If we reach here with `!`,
+    //       it would be inside a sub-expression like `(!foo)`.
+    const isLiteralStart = (firstChar >= '0' && firstChar <= '9') ||
+                           firstChar === '"' || firstChar === "'";
+    if (firstChar === '-' || firstChar === '!' || firstChar === '(' || isLiteralStart) {
+      // This must be an inline expression starting with unary op or grouped expr
+      const expr = scanInlineExpr(0);
+      const tag = new TemplateTag;
+      tag.type = type;
+      tag.expr = expr;
+      // We need a path for compatibility — use a sentinel
+      tag.path = ['__expr__'];
+      tag.args = [];
+      run(/^\s*/);
+      if (!run(ends[endType])) {
+        // Check if there's trailing content that shouldn't be there
+        checkForbiddenOperator();
+        expected(`\`${endsString[endType]}\``);
+      }
+      return tag;
+    }
+
     const tag = new TemplateTag;
     tag.type = type;
     tag.path = scanPath();
     tag.args = [];
+
+    // After the first path, check if an operator follows.
+    // If so, switch to inline expression mode.
+    if (shouldEnterExprMode(endType)) {
+      // Re-wrap the already-scanned path as an expression AST node
+      // and continue parsing as an inline expression.
+      const leftExpr = { type: 'PathExpression', path: tag.path };
+      tag.expr = scanInlineExpr(0, leftExpr);
+      tag.path = ['__expr__'];
+      tag.args = [];
+
+      run(/^\s*/);
+      if (!run(ends[endType])) {
+        checkForbiddenOperator();
+        expected(`\`${endsString[endType]}\``);
+      }
+      return tag;
+    }
+
+    // No operator found directly after the first path.
+    // For BLOCKOPEN with built-in helpers (if, unless, with, each),
+    // the arguments themselves may form an expression:
+    //   {{#if score >= 90}} — `score >= 90` is an expression
+    // Strategy: scan the first arg value, then peek for an operator.
+    // If found, backtrack and re-parse all args as a single inline expression.
+    if (type === 'BLOCKOPEN' || type === 'ELSE') {
+      const argsStartPos = scanner.pos;
+      run(/^\s*/);
+
+      // Don't try this if we're at the end already
+      if (!ends[endType].test(scanner.rest()) && !/^[})]/.test(scanner.peek())) {
+        // Save position, scan one arg value, then check for operator
+        const beforeFirstArg = scanner.pos;
+        try {
+          const firstArgVal = scanArgValue();
+          // Check if an operator follows this first arg
+          if (shouldEnterExprMode(endType)) {
+            // This is an expression! Backtrack to before first arg and
+            // parse everything as a single inline expression.
+            scanner.pos = beforeFirstArg;
+            tag.expr = scanInlineExpr(0);
+            tag.args = [];
+
+            run(/^\s*/);
+            if (!run(ends[endType])) {
+              checkForbiddenOperator();
+              expected(`\`${endsString[endType]}\``);
+            }
+            return tag;
+          }
+          // No operator — backtrack to re-parse args in classic mode
+          scanner.pos = argsStartPos;
+        } catch (e) {
+          // If scanning failed, backtrack and let classic loop handle it
+          scanner.pos = argsStartPos;
+        }
+      } else {
+        scanner.pos = argsStartPos;
+      }
+    }
+
+    // Classic Handlebars argument loop
     let foundKwArg = false;
     while (true) {
       run(/^\s*/);
