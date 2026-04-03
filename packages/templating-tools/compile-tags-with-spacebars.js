@@ -84,7 +84,13 @@ class SpacebarsTagCompiler {
       }
     } catch (e) {
       if (e.scanner) {
-        // Instead of crashing the build, generate fallback code that
+        // In production builds (no HMR), throw a proper compile error
+        // so the build fails with a clear error message as expected
+        if (!hmrAvailable) {
+          this.throwCompileError(e.message, this.tag.contentsStartIndex + e.offset);
+        }
+
+        // In development (HMR available), generate fallback code that
         // shows the compile error in the client-side error indicator
         const errorMessage = e.message;
         const errorOffset = this.tag.contentsStartIndex + e.offset;
