@@ -310,7 +310,12 @@ Object.assign(CodeGen.prototype, {
       break;
     case 'EXPR':
       // The format of EXPR is ['EXPR', { type: 'EXPR', path: [...], args: { ... } }]
-      argCode = this.codeGenMustache(argValue.path, argValue.args, 'dataMustache');
+      if (argValue.expr) {
+        // Inline expression inside sub-expression: {{helper (a + b)}}
+        argCode = this.codeGenInlineExpr(argValue.expr);
+      } else {
+        argCode = this.codeGenMustache(argValue.path, argValue.args, 'dataMustache');
+      }
       break;
     default:
       // can't get here
