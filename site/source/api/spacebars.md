@@ -132,6 +132,139 @@ all of the arguments will resolve. That is, `{% raw %}{{foo x y z}}{% endraw %}`
 will evaluate to `Promise.all([x, y, z]).then(args => foo(...args))`. Both
 pending and rejected states will result in `undefined`.
 
+## Inline Expressions
+
+Spacebars supports inline expressions with arithmetic, comparison, logical,
+and ternary operators directly inside template tags. This eliminates the need
+for helper functions in many common cases.
+
+### Arithmetic
+
+```html
+<span>Total: {{price + tax}}</span>
+<span>Discount: {{price * 0.9}}</span>
+<span>Remaining: {{total - used}}</span>
+```
+
+Supported operators: `+`, `-`, `*`, `/`, `%`
+
+### Comparison
+
+```html
+{{#if score >= 90}}
+  <span class="pass">Passed!</span>
+{{/if}}
+```
+
+Supported operators: `===`, `!==`, `>`, `>=`, `<`, `<=`
+
+### Logical
+
+```html
+{{#if isLoggedIn && isAdmin}}
+  <a href="/admin">Admin panel</a>
+{{/if}}
+
+{{#unless isActive || isAdmin}}
+  <span>Restricted</span>
+{{/unless}}
+```
+
+Supported operators: `&&`, `||`, `!` (as prefix, see note below)
+
+### Ternary
+
+```html
+<div class="{{isActive ? 'active' : 'inactive'}}">
+  {{status === "open" ? "Open" : "Closed"}}
+</div>
+```
+
+### Grouping
+
+Parentheses can be used to control evaluation order:
+
+```html
+<span>{{(price + tax) * quantity}}</span>
+```
+
+Without parentheses, standard JavaScript operator precedence applies
+(`*` and `/` bind tighter than `+` and `-`, etc.).
+
+### Unary Operators
+
+```html
+<span>{{-amount}}</span>
+<span>{{a + -b}}</span>
+```
+
+### Expressions in Block Helpers
+
+Inline expressions work as arguments to `#if`, `#unless`, and `#with`:
+
+```html
+{{#if items.length > 0}}
+  Showing {{items.length}} items
+{{/if}}
+
+{{#if score >= 90 && !disqualified}}
+  Winner!
+{{/if}}
+```
+
+### Expressions in Attribute Values
+
+```html
+<div class="{{isActive ? 'on' : 'off'}}">
+<input value="{{price * quantity}}">
+<div data-total="{{a + b}}">
+```
+
+### Backward Compatibility
+
+Inline expressions are fully backward compatible. The classic helper call
+syntax is unchanged:
+
+```html
+{{! These still work exactly as before }}
+{{helper arg1 arg2}}
+{{helper arg1 key=value}}
+{{helper (subhelper arg)}}
+{{helper -1}}  {{! negative number argument, NOT subtraction }}
+```
+
+The parser only switches to expression mode when it detects an operator
+after the first path. Since operators like `+`, `*`, `===`, `&&` never
+appear in valid Handlebars expressions, there is no ambiguity.
+
+### Unsupported Operators
+
+The following operators are intentionally not supported and will produce
+clear error messages:
+
+* `|` — reserved for future pipe/filter syntax. Use `||` for logical OR.
+* `&` — not supported. Use `&&` for logical AND.
+* `++`, `--` — increment/decrement not allowed.
+* `=`, `+=`, `-=` — assignment not allowed in expressions.
+
+### Limitation: `!` at Start of Tag
+
+Because `{% raw %}{{!{% endraw %}` is Spacebars comment syntax, you cannot start an expression
+with the `!` operator. For example, `{% raw %}{{!isAdmin}}{% endraw %}` is parsed as a comment,
+not as a negation.
+
+**Workaround:** wrap the negation in parentheses:
+
+```html
+{{! ❌ This is a comment, not a negation }}
+{{!isAdmin}}
+
+{{! ✅ These work correctly }}
+{{(!isAdmin)}}
+{{isActive && !isAdmin}}
+{{#if (!isAdmin)}}...{{/if}}
+```
+
 ## Inclusion and Block Arguments
 
 Inclusion tags (`{% raw %}{{> foo}}{% endraw %}`) and block tags (`{% raw %}{{#foo}}{% endraw %}`) take a single

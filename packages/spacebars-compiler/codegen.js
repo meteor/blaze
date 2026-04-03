@@ -67,6 +67,28 @@ const makeObjectLiteral = (obj) => {
 };
 
 Object.assign(CodeGen.prototype, {
+  // Generate JavaScript code for an inline expression AST node.
+  // Each PathExpression is resolved via view.lookup() and unwrapped
+  // via Spacebars.call() so that reactive helpers are evaluated.
+  codeGenInlineExpr: function (node) {
+    switch (node.type) {
+    case 'BinaryExpression':
+      return `(${this.codeGenInlineExpr(node.left)} ${node.operator} ${this.codeGenInlineExpr(node.right)})`;
+    case 'UnaryExpression':
+      return `(${node.operator}${this.codeGenInlineExpr(node.argument)})`;
+    case 'ConditionalExpression':
+      return `(${this.codeGenInlineExpr(node.test)} ? ${this.codeGenInlineExpr(node.consequent)} : ${this.codeGenInlineExpr(node.alternate)})`;
+    case 'PathExpression':
+      return `Spacebars.call(${this.codeGenPath(node.path)})`;
+    case 'LiteralExpression':
+      return BlazeTools.toJSLiteral(node.value);
+    case 'SubExpression':
+      return this.codeGenMustache(node.path, node.args, 'dataMustache');
+    default:
+      throw new Error(`Unknown inline expression node type: ${node.type}`);
+    }
+  },
+
   codeGenTemplateTag: function (tag) {
     if (tag.position === HTMLTools.TEMPLATE_TAG_POSITION.IN_START_TAG) {
       // Special dynamic attributes: `<div {{attrs}}>...`
@@ -74,7 +96,13 @@ Object.assign(CodeGen.prototype, {
       return BlazeTools.EmitCode(`function () { return ${this.codeGenMustache(tag.path, tag.args, 'attrMustache')}; }`);
     } else {
       if (tag.type === 'DOUBLE' || tag.type === 'TRIPLE') {
-        let code = this.codeGenMustache(tag.path, tag.args);
+        let code;
+        if (tag.expr) {
+          // Inline expression: {{a + b}}, {{x ? y : z}}, etc.
+          code = `Spacebars.expr(${this.codeGenInlineExpr(tag.expr)})`;
+        } else {
+          code = this.codeGenMustache(tag.path, tag.args);
+        }
         if (tag.type === 'TRIPLE') {
           code = `Spacebars.makeRaw(${code})`;
         }
@@ -82,7 +110,8 @@ Object.assign(CodeGen.prototype, {
           // Reactive attributes are already wrapped in a function,
           // and there's no fine-grained reactivity.
           // Anywhere else, we need to create a View.
-          code = `Blaze.View(${BlazeTools.toJSLiteral(`lookup:${tag.path.join('.')}`)}, function () { return ${code}; })`;
+          const label = tag.expr ? '"expr"' : BlazeTools.toJSLiteral(`lookup:${tag.path.join('.')}`);
+          code = `Blaze.View(${label}, function () { return ${code}; })`;
         }
         return BlazeTools.EmitCode(code);
       } else if (tag.type === 'INCLUSION' || tag.type === 'BLOCKOPEN') {
@@ -100,7 +129,7 @@ Object.assign(CodeGen.prototype, {
           // provide nice line numbers.
           if (path.length > 1)
             throw new Error(`Unexpected dotted path beginning with ${path[0]}`);
-          if (! args.length)
+          if (! args.length && !tag.expr)
             throw new Error(`#${path[0]} requires an argument`);
 
           let dataCode = null;
@@ -141,8 +170,13 @@ Object.assign(CodeGen.prototype, {
           }
 
           if (! dataCode) {
-            // `args` must exist (tag.args.length > 0)
-            dataCode = this.codeGenInclusionDataFunc(args) || 'null';
+            if (tag.expr) {
+              // Inline expression in block helper: {{#if a > b}}
+              dataCode = `function () { return ${this.codeGenInlineExpr(tag.expr)}; }`;
+            } else {
+              // `args` must exist (tag.args.length > 0)
+              dataCode = this.codeGenInclusionDataFunc(args) || 'null';
+            }
           }
 
           // `content` must exist
@@ -276,7 +310,12 @@ Object.assign(CodeGen.prototype, {
       break;
     case 'EXPR':
       // The format of EXPR is ['EXPR', { type: 'EXPR', path: [...], args: { ... } }]
-      argCode = this.codeGenMustache(argValue.path, argValue.args, 'dataMustache');
+      if (argValue.expr) {
+        // Inline expression inside sub-expression: {{helper (a + b)}}
+        argCode = this.codeGenInlineExpr(argValue.expr);
+      } else {
+        argCode = this.codeGenMustache(argValue.path, argValue.args, 'dataMustache');
+      }
       break;
     default:
       // can't get here
