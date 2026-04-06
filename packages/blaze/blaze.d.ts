@@ -28,7 +28,7 @@ declare module 'meteor/blaze' {
     }
     var currentView: View;
 
-    function isTemplate(value: any): boolean;
+    function isTemplate(value: unknown): boolean;
 
     interface HelpersMap {
       [key: string]: Function;
