@@ -190,8 +190,8 @@ Tinytest.add(
       },
     });
     const div = renderToDiv(tmpl);
-
-    test.equal($(div).find('div')[0].className, 'aaa124zzz');
+    
+    test.equal(div.querySelector('div').className, 'aaa124zzz');
   }
 );
 
@@ -212,7 +212,7 @@ Tinytest.add(
     });
 
     const div = renderToDiv(tmpl);
-    const span = $(div).find('span')[0];
+    const span = div.querySelector('span');
     test.equal(span.innerHTML, 'hi');
     test.isTrue(span.hasAttribute('selected'));
     test.equal(span.getAttribute('x'), 'X');
@@ -239,7 +239,7 @@ Tinytest.add('spacebars-tests - template_tests - triple', function (test) {
   });
 
   let div = renderToDiv(tmpl);
-  let elems = $(div).find('> *');
+  let elems = div.querySelectorAll(':scope > *');
   test.equal(elems.length, 1);
   test.equal(elems[0].nodeName, 'SPAN');
   let span = elems[0];
@@ -248,13 +248,13 @@ Tinytest.add('spacebars-tests - template_tests - triple', function (test) {
 
   R.set('asdf');
   Tracker.flush();
-  elems = $(div).find('> *');
+  elems = div.querySelectorAll(':scope > *');
   test.equal(elems.length, 0);
   test.equal(canonicalizeHtml(div.innerHTML), 'asdf');
 
   R.set('<span class="hi">blah</span>');
   Tracker.flush();
-  elems = $(div).find('> *');
+  elems = div.querySelectorAll(':scope > *');
   test.equal(elems.length, 1);
   test.equal(elems[0].nodeName, 'SPAN');
   span = elems[0];
@@ -818,7 +818,7 @@ Tinytest.addAsync('spacebars-tests - template_tests - select tags', async functi
   });
 
   const div = renderToDiv(tmpl);
-  const selectEl = $(div).find('select')[0];
+  const selectEl = div.querySelector('select');
 
   // returns canonicalized contents of `div` in the form eg
   // ["<select>", "</select>"]. strip out selected attributes -- we
@@ -867,8 +867,8 @@ Tinytest.addAsync('spacebars-tests - template_tests - select tags', async functi
     '</select>',
   ]);
   test.equal(selectEl.value, 'value2');
-  test.equal($(selectEl).find('option')[0].selected, false);
-  test.equal($(selectEl).find('option')[1].selected, true);
+  test.equal(selectEl.querySelectorAll('option')[0].selected, false);
+  test.equal(selectEl.querySelectorAll('option')[1].selected, true);
 
   // swap selection
   await options.updateAsync({ value: 'value2' }, { $set: { selected: false } });
@@ -886,8 +886,8 @@ Tinytest.addAsync('spacebars-tests - template_tests - select tags', async functi
     '</select>',
   ]);
   test.equal(selectEl.value, 'value1');
-  test.equal($(selectEl).find('option')[0].selected, true);
-  test.equal($(selectEl).find('option')[1].selected, false);
+  test.equal(selectEl.querySelectorAll('option')[0].selected, true);
+  test.equal(selectEl.querySelectorAll('option')[1].selected, false);
 
   // change value and label
   await options.updateAsync({ value: 'value1' }, { $set: { value: 'value1.0' } });
@@ -905,8 +905,8 @@ Tinytest.addAsync('spacebars-tests - template_tests - select tags', async functi
     '</select>',
   ]);
   test.equal(selectEl.value, 'value1.0');
-  test.equal($(selectEl).find('option')[0].selected, true);
-  test.equal($(selectEl).find('option')[1].selected, false);
+  test.equal(selectEl.querySelectorAll('option')[0].selected, true);
+  test.equal(selectEl.querySelectorAll('option')[1].selected, false);
 
   // unselect and then select both options. normally, the second is
   // selected (since it got selected later). then switch to <select
@@ -915,16 +915,16 @@ Tinytest.addAsync('spacebars-tests - template_tests - select tags', async functi
   Tracker.flush();
   await options.updateAsync({}, { $set: { selected: true } }, { multi: true });
   Tracker.flush();
-  test.equal($(selectEl).find('option')[0].selected, false);
-  test.equal($(selectEl).find('option')[1].selected, true);
+  test.equal(selectEl.querySelectorAll('option')[0].selected, false);
+  test.equal(selectEl.querySelectorAll('option')[1].selected, true);
 
   selectEl.multiple = true; // allow multiple selection
   await options.updateAsync({}, { $set: { selected: false } }, { multi: true });
   Tracker.flush();
   await options.updateAsync({}, { $set: { selected: true } }, { multi: true });
   Tracker.flush();
-  test.equal($(selectEl).find('option')[0].selected, true);
-  test.equal($(selectEl).find('option')[1].selected, true);
+  test.equal(selectEl.querySelectorAll('option')[0].selected, true);
+  test.equal(selectEl.querySelectorAll('option')[1].selected, true);
 });
 
 Tinytest.add(
@@ -2532,17 +2532,17 @@ if (document.addEventListener) {
       const div = renderToDiv(tmpl);
       document.body.appendChild(div);
       test.equal(buf.join(), '');
-      trigger(
-        div.querySelector('.video1'),
-        'play',
-        false
-      );
+      trigger({
+        el: div.querySelector('.video1'),
+        eventType: 'play',
+        bubbles: false
+      });
       test.equal(buf.join(), '');
-      trigger(
-        div.querySelector('.video2'),
-        'play',
-        false
-      );
+      trigger({
+        el: div.querySelector('.video2'),
+        eventType: 'play',
+        bubbles: false
+      });
       test.equal(buf.join(), 'video2');
       document.body.removeChild(div);
     }
@@ -2589,7 +2589,11 @@ Tinytest.add(
     });
 
     tmpl.rendered = function () {
-      $(this.find('button')).trigger('someCustomEvent', args);
+      if (hasJquery) {
+        $(this.find('button')).trigger('someCustomEvent', args);
+      } else {
+        trigger({ el: this.closest('button'), eventType: 'someCustomEvent', options: args });
+      }
     };
 
     renderToDiv(tmpl);
@@ -3114,8 +3118,7 @@ Tinytest.add('spacebars - SVG <a> elements', function (test) {
 
   const tmpl = Template.spacebars_test_svg_anchor;
   const div = renderToDiv(tmpl);
-
-  const anchNamespace = $(div).find('a').get(0).namespaceURI;
+  const anchNamespace = div.querySelector('a').namespaceURI;
   test.equal(anchNamespace, 'http://www.w3.org/2000/svg');
 });
 
@@ -3232,18 +3235,20 @@ Tinytest.add(
   }
 );
 
-Tinytest.add(
-  'spacebars-tests - template_tests - Blaze.render fails on jQuery objects',
-  function (test) {
-    const tmpl = Template.spacebars_test_ui_render;
-    test.throws(function () {
-      Blaze.render(tmpl, $('body'));
-    }, /'parentElement' must be a DOM node/);
-    test.throws(function () {
-      Blaze.render(tmpl, document.body, $('body'));
-    }, /'nextNode' must be a DOM node/);
-  }
-);
+if (hasJquery) {
+  Tinytest.add(
+    'spacebars-tests - template_tests - Blaze.render fails on jQuery objects',
+    function (test) {
+      const tmpl = Template.spacebars_test_ui_render;
+      test.throws(function () {
+        Blaze.render(tmpl, $('body'));
+      }, /'parentElement' must be a DOM node/);
+      test.throws(function () {
+        Blaze.render(tmpl, document.body, $('body'));
+      }, /'nextNode' must be a DOM node/);
+    }
+  );
+}
 
 Tinytest.add(
   'spacebars-tests - template_tests - UI.getElementData',
@@ -3325,8 +3330,9 @@ Tinytest.add(
   }
 );
 
-const trigger = (el, eventType, bubbles = true) => {
+const trigger = ({ el, eventType, bubbles = true, options }) => {
   const event = new Event(eventType, { bubbles: bubbles, cancelable: true });
+  if (options) Object.assign(event, options);
   el.dispatchEvent(event);
 }
 
@@ -3379,7 +3385,7 @@ Tinytest.add(
       if (hasJquery) {
         $(input).trigger('focus');
       } else {
-        trigger(input, 'focusin', true);
+        trigger({ el: input, eventType: 'focusin',bubbles:  true });
       }
     }
     test.equal(buf.join(), 'FOCUS');
@@ -3388,7 +3394,7 @@ Tinytest.add(
       if (hasJquery) {
         $(input).trigger('blur');
       } else {
-        trigger(input, 'focusout', true);
+        trigger({ el: input, eventType: 'focusout', bubbles: true });
       }
     }
     test.equal(buf.join(), 'FOCUS,BLUR');
@@ -3409,7 +3415,7 @@ Tinytest.add(
       if (hasJquery) {
         $(input).trigger('focus');
       } else {
-        trigger(input, 'focusin', true);
+        trigger({ el: input, eventType: 'focusin', bubbles: true });
       }
     }
     test.equal(buf.join(), 'FOCUS');
@@ -3589,7 +3595,7 @@ Tinytest.add(
         // One of the templates has a separate attribute in addition to
         // an attributes dictionary.
         if (tmplInfo === tmplWithContentsAndMoreAttrs) {
-          test.equal($(textarea).attr('class'), 'bar');
+          test.equal(textarea.getAttribute('class'), 'bar');
         }
 
         // Change the id, check that the attribute updates reactively.
@@ -3607,7 +3613,7 @@ Tinytest.add(
         );
 
         if (tmplInfo === tmplWithContentsAndMoreAttrs) {
-          test.equal($(textarea).attr('class'), 'bar');
+          test.equal(textarea.getAttribute('class'), 'bar');
         }
       }
     );

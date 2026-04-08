@@ -4,14 +4,6 @@ Blaze._DOMBackend = DOMBackend;
 let $jq;
 let $jqSource;
 
-try {
-  const p = require.resolve('jquery');
-  if (typeof p === 'string') {
-    $jq = require('jquery');
-    $jqSource = `npm dependency (${p})`;
-  }
-} catch {}
-
 if (!$jq && typeof jQuery !== 'undefined') {
   $jq = jQuery;
   $jqSource = 'global scope';
@@ -24,9 +16,9 @@ if (!$jq && typeof Package !== 'undefined' && Package.jquery) {
 
 const _hasJQuery = !!$jq;
 if (_hasJQuery && typeof console !== 'undefined') {
-  const version = jQuery.fn?.jquery ?? ' ';
+  const version = $jq.fn?.jquery ?? ' ';
   console.info(
-    `[Blaze] jQuery${version} detected as DOM backend. Native DOM backend is available — ` +
+    `[Blaze] jQuery ${version} detected as DOM backend. Native DOM backend is available — ` +
     'remove jquery to enable native DOM backend. jQuery support will be removed in Blaze 4.0.'
   );
   console.info(
