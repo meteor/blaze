@@ -303,13 +303,10 @@ if (_hasJQuery) {
 } else {
     // in native DOM Backend we need to extend the native remove function
     // to call the TearDown callbacks, registered during materializing
-    // for the element and its children.
+    // for the element and its full descendant subtree.
     (function(removeFn) {
         HTMLElement.prototype.remove = function () {
-            _executeTeardownCallbacks(this);
-            for (const child of this.children) {
-                _executeTeardownCallbacks(child);
-            }
+            DOMBackend.Teardown.tearDownElement(this);
             return removeFn.apply(this, arguments);
         };
     })(HTMLElement.prototype.remove);
