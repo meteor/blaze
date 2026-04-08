@@ -5,10 +5,6 @@ Package.describe({
   git: 'https://github.com/meteor/blaze.git'
 });
 
-Npm.depends({
-  'uglify-js': '3.16.1'
-});
-
 Package.onUse(function (api) {
   api.use('ecmascript@0.16.9');
 
