@@ -14,9 +14,6 @@ Package.onUse(function (api) {
   // XXX this should go away, and there should be a clean interface
   // that tinytest and the driver both implement?
 
-  if (process.env.TESTS_USE_JQUERY) {
-    api.use('jquery@3.0.0', 'client');
-  }
   api.use('tinytest');
   api.use('session');
   api.use('reload');

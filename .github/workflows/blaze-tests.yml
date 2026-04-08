@@ -116,7 +116,7 @@ jobs:
       - name: Start meteor test-packages (background)
         run: |
           export URL='http://localhost:4096/'
-          TESTS_USE_JQUERY=1 meteor test-packages --driver-package test-in-console -p 4096 --exclude "${TEST_PACKAGES_EXCLUDE:-}" > /tmp/meteor_test_output.log 2>&1 &
+          meteor test-packages --driver-package test-in-console -p 4096 --extra-packages=jquery --exclude "${TEST_PACKAGES_EXCLUDE:-}" > /tmp/meteor_test_output.log 2>&1 &
           echo $! > /tmp/meteor_test_pid
         working-directory: test-app
 
