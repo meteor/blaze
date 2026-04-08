@@ -82,7 +82,7 @@ jobs:
         working-directory: test-app
 
   # this re-runs the app tests with the test-in-console driver
-  # but in this case we run the tests with the TESTS_USE_JQUERY environment variable set to true,
+  # but in this case we include jQuery via --extra-packages=jquery,
   # which causes the tests to run with jQuery back-compatibility mode.
   # This should be removed, once we fully dropped jQuery support in Blaze 4.x
   test-app-jquery:
