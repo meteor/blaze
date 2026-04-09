@@ -10,7 +10,14 @@ import { hasOwn, isObject } from './utils';
 
 /**
  * @class
- * @summary Constructor for a Template, which is used to construct Views with particular name and content.
+ * Constructor for a Template, which is used to construct Views with particular name and content.
+ * Templates defined by the template compiler, such as `Template.myTemplate`,
+ * are objects of type `Blaze.Template` (aliased as `Template`).
+ *
+ * In addition to methods like `events` and `helpers`, documented as part of
+ * the [Template API](../api/templates.html), the following fields and methods are
+ * present on template objects:
+ *
  * @locus Client
  * @param {String} [viewName] Optional.  A name for Views constructed by this Template.  See [`view.name`](#view_name).
  * @param {Function} renderFunction A function that returns [*renderable content*](#Renderable-Content).  This function is used as the `renderFunction` for Views constructed by this Template.
@@ -30,7 +37,15 @@ Blaze.Template = function (viewName, renderFunction) {
   if (typeof renderFunction !== 'function')
     throw new Error("renderFunction must be a function");
 
+    /**
+     * Same as the constructor argument.
+     * @type {String}
+     */
   this.viewName = viewName;
+    /**
+     * Same as the constructor argument.
+     * @type {Function}
+     */
   this.renderFunction = renderFunction;
 
   this.__helpers = new HelperMap;
@@ -117,6 +132,18 @@ const fireCallbacks = function (callbacks, template) {
     });
 };
 
+/**
+ * Constructs and returns an unrendered View object.  This method is invoked
+ *   by Meteor whenever the template is used, such as by `Blaze.render` or by
+ *   <code v-pre>{{> foo}}</code> where `foo` resolves to a Template object.
+ *
+ *   `constructView()` constructs a View using `viewName` and `renderFunction`
+ *   as constructor arguments, and then configures it as a template
+ *   View, setting up `view.template`, `view.templateInstance()`, event maps, and so on.
+ * @param contentFunc
+ * @param elseFunc
+ * @return {*}
+ */
 Template.prototype.constructView = function (contentFunc, elseFunc) {
   const view = Blaze.View(this.viewName, this.renderFunction);
   view.template = this;
@@ -148,6 +175,19 @@ Template.prototype.constructView = function (contentFunc, elseFunc) {
   }
 
   view._templateInstance = new Blaze.TemplateInstance(view);
+
+    /**
+     * For Views created by invoking templates,
+     * returns the [template instance](../api/templates.html#Template-instances) object for this
+     * particular View.  For example, in a [`created`](../api/templates.html#Template-onCreated)
+     * callback, `this.view.templateInstance() === this`.
+     *
+     * Template instance objects have fields like `data`, `firstNode`, and
+     * `lastNode` which are not reactive and which are also not automatically
+     * kept up to date.  Calling `templateInstance()` causes these fields to
+     * be updated.
+     * @return {*}
+     */
   view.templateInstance = function () {
     // Update data, firstNode, and lastNode, and return the TemplateInstance
     // object.

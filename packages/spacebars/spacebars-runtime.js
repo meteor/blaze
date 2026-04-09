@@ -1,7 +1,29 @@
+/**
+ * @namespace Spacebars
+ */
+
+/**
+ * This is the Spacebars runtime API which should not be confused with
+ * the Spacebars compiler.
+ * @type {{}}
+ */
 Spacebars = {};
 
+/**
+ * @private
+ * @param a
+ * @param b
+ * @return {boolean}
+ */
 const tripleEquals = (a, b) => a === b;
 
+/**
+ * TODO: needs explanation
+ * @param templateOrFunction {Template|function}
+ * @param contentFunc {function}
+ * @param elseFunc {function=}
+ * @return {Blaze.View|null}
+ */
 Spacebars.include = function (templateOrFunction, contentFunc, elseFunc) {
   if (! templateOrFunction)
     return null;
@@ -55,13 +77,18 @@ Spacebars.include = function (templateOrFunction, contentFunc, elseFunc) {
   return view;
 };
 
-// Executes `{{foo bar baz}}` when called on `(foo, bar, baz)`.
-// If `bar` and `baz` are functions, they are called before
-// `foo` is called on them.
-//
-// This is the shared part of Spacebars.mustache and
-// Spacebars.attrMustache, which differ in how they post-process the
-// result.
+
+/**
+ * Executes <code v-pre>{{foo bar baz}}</code> when called on `(foo, bar, baz)`.
+ * If `bar` and `baz` are functions, they are called before
+ * `foo` is called on them.
+ *
+ * This is the shared part of Spacebars.mustache and
+ * Spacebars.attrMustache, which differ in how they post-process the
+ * result.
+ * @param args
+ * @return {Promise<*>|*}
+ */
 Spacebars.mustacheImpl = function (...args) {
   // if we have any arguments (pos or kw), add an options argument
   // if there isn't one.
@@ -84,6 +111,11 @@ Spacebars.mustacheImpl = function (...args) {
   return Spacebars.call(...args);
 };
 
+/**
+ * TODO: needs explanation
+ * @param args
+ * @return {null|string|*|Raw}
+ */
 Spacebars.mustache = function (...args) {
   const result = Spacebars.mustacheImpl(...args);
 
@@ -98,6 +130,11 @@ Spacebars.mustache = function (...args) {
     return (result == null || result === false) ? null : String(result);
 };
 
+/**
+ * TODO: needs explanation
+ * @param args
+ * @return {{}|Promise<*>|*|null}
+ */
 Spacebars.attrMustache = function (...args) {
   const result = Spacebars.mustacheImpl(...args);
 
@@ -114,14 +151,22 @@ Spacebars.attrMustache = function (...args) {
   }
 };
 
+/**
+ *
+ * @param args
+ * @return {Promise<*>|*}
+ */
 Spacebars.dataMustache = function (...args) {
   return Spacebars.mustacheImpl(...args);
 };
 
-// Idempotently wrap in `HTML.Raw`.
-//
-// Called on the return value from `Spacebars.mustache` in case the
-// template uses triple-stache (`{{{foo bar baz}}}`).
+/**
+ * Idempotently wrap in `HTML.Raw`.
+ * Called on the return value from `Spacebars.mustache` in case the
+ * template uses triple-stache (<code v-pre>{{{foo bar baz}}}</code>).
+ * @param value
+ * @return {HTML.Raw|Raw|null}
+ */
 Spacebars.makeRaw = function (value) {
   if (value == null) // null or undefined
     return null;
@@ -139,6 +184,7 @@ Spacebars.makeRaw = function (value) {
  * @param {Promise<T>} promise
  * @param {(x: T) => U} fn
  * @returns {Promise<U>}
+ * @private
  */
 function _thenWithContext(promise, fn) {
   const computation = Tracker.currentComputation;
@@ -154,17 +200,22 @@ function _thenWithContext(promise, fn) {
   );
 }
 
-// If `value` is a function, evaluate its `args` (by calling them, if they
-// are functions), and then call it on them. Otherwise, return `value`.
-//
-// If any of the arguments is a `Promise` or a function returning one, then the
-// `value` will be called once all of the arguments resolve. If any of them
-// rejects, so will the call.
-//
-// If `value` is not a function and is not null, then this method will assert
-// that there are no args. We check for null before asserting because a user
-// may write a template like {{user.fullNameWithPrefix 'Mr.'}}, where the
-// function will be null until data is ready.
+
+/**
+ * If `value` is a function, evaluate its `args` (by calling them, if they
+ * are functions), and then call it on them. Otherwise, return `value`.
+ *
+ * If any of the arguments is a `Promise` or a function returning one, then the
+ * `value` will be called once all the arguments resolve. If any of them
+ * rejects, so will the call.
+ *
+ * If `value` is not a function and is not null, then this method will assert
+ * that there are no args. We check for null before asserting because a user
+ * may write a template like <code v-pre>{{user.fullNameWithPrefix 'Mr.'}}</code>, where the
+ * function will be null until data is ready.
+ * @param args
+ * @return {*|Promise<*>}
+ */
 Spacebars.call = function (...args) {
   const [value] = args;
   if (typeof value === 'function') {
@@ -190,10 +241,20 @@ Spacebars.call = function (...args) {
   }
 };
 
+/**
+ * detect if something is very likely a Promis
+ * @private
+ * @param x
+ * @return {boolean}
+ */
 const isPromiseLike = x => !!x && typeof x.then === 'function';
 
-// Call this as `Spacebars.kw({ ... })`.  The return value
-// is `instanceof Spacebars.kw`.
+/**
+ * Call this as `Spacebars.kw({ ... })`.  The return value
+ * is `instanceof Spacebars.kw`.
+ * @param hash
+ * @return {Spacebars.kw|*}
+ */
 Spacebars.kw = function (hash) {
   if (! (this instanceof Spacebars.kw))
     // called without new; call with new
@@ -202,8 +263,13 @@ Spacebars.kw = function (hash) {
   this.hash = hash || {};
 };
 
-// Call this as `Spacebars.SafeString("some HTML")`.  The return value
-// is `instanceof Spacebars.SafeString` (and `instanceof Handlebars.SafeString).
+/**
+ * Call this as `Spacebars.SafeString("some HTML")`.  The return value
+ * is `instanceof Spacebars.SafeString` (and `instanceof Handlebars.SafeString).
+ * @param html
+ * @return {*|Handlebars.SafeString}
+ * @constructor
+ */
 Spacebars.SafeString = function (html) {
   if (! (this instanceof Spacebars.SafeString))
     // called without new; call with new
@@ -213,30 +279,34 @@ Spacebars.SafeString = function (html) {
 };
 Spacebars.SafeString.prototype = Handlebars.SafeString.prototype;
 
-// `Spacebars.dot(foo, "bar", "baz")` performs a special kind
-// of `foo.bar.baz` that allows safe indexing of `null` and
-// indexing of functions (which calls the function).  If the
-// result is a function, it is always a bound function (e.g.
-// a wrapped version of `baz` that always uses `foo.bar` as
-// `this`).
-//
-// If any of the intermediate values is a `Promise`, the result will be one as
-// well, i.e., accessing a field of a `Promise` results in a `Promise` of the
-// accessed field. Rejections are passed-through.
-//
-// In `Spacebars.dot(foo, "bar")`, `foo` is assumed to be either
-// a non-function value or a "fully-bound" function wrapping a value,
-// where fully-bound means it takes no arguments and ignores `this`.
-//
-// `Spacebars.dot(foo, "bar")` performs the following steps:
-//
-// * If `foo` is falsy, return `foo`.
-//
-// * If `foo` is a function, call it (set `foo` to `foo()`).
-//
-// * If `foo` is falsy now, return `foo`.
-//
-// * Return `foo.bar`, binding it to `foo` if it's a function.
+/**
+ * `Spacebars.dot(foo, "bar", "baz")` performs a special kind
+ * of `foo.bar.baz` that allows safe indexing of `null` and
+ * indexing of functions (which calls the function).  If the
+ * result is a function, it is always a bound function (e.g.
+ * a wrapped version of `baz` that always uses `foo.bar` as
+ * `this`).
+ *
+ * If any of the intermediate values is a `Promise`, the result will be one as
+ * well, i.e., accessing a field of a `Promise` results in a `Promise` of the
+ * accessed field. Rejections are passed-through.
+ *
+ * In `Spacebars.dot(foo, "bar")`, `foo` is assumed to be either
+ * a non-function value or a "fully-bound" function wrapping a value,
+ * where fully-bound means it takes no arguments and ignores `this`.
+ *
+ * `Spacebars.dot(foo, "bar")` performs the following steps:
+ *
+ * * If `foo` is falsy, return `foo`.
+ *
+ * * If `foo` is a function, call it (set `foo` to `foo()`).
+ *
+ * * If `foo` is falsy now, return `foo`.
+ *
+ * * Return `foo.bar`, binding it to `foo` if it's a function.
+ * @param args
+ * @return {*|Promise.<*>}
+ */
 Spacebars.dot = function (...args) {
   let [value, id1 /*, id2, ...*/] = args;
   if (args.length > 2) {
@@ -265,11 +335,18 @@ Spacebars.dot = function (...args) {
   return (...args1) => result.apply(value, args1);
 };
 
-// Spacebars.With implements the conditional logic of rendering
-// the `{{else}}` block if the argument is falsy.  It combines
-// a Blaze.If with a Blaze.With (the latter only in the truthy
-// case, since the else block is evaluated without entering
-// a new data context).
+/**
+ * Spacebars.With implements the conditional logic of rendering
+ * the <code v-pre>{{else}}</code> block if the argument is falsy.  It combines
+ * a Blaze.If with a Blaze.With (the latter only in the truthy
+ * case, since the else block is evaluated without entering
+ * a new data context).
+ * @param argFunc
+ * @param contentFunc
+ * @param elseFunc
+ * @return {*}
+ * @constructor
+ */
 Spacebars.With = function (argFunc, contentFunc, elseFunc) {
   const argVar = new Blaze.ReactiveVar;
   const view = Blaze.View('Spacebars_with', function () {
