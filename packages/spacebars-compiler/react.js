@@ -21,7 +21,7 @@ ReactComponentSiblingForbidder.def({
     if (obj.type === "INCLUSION" && obj.path.length === 1 && obj.path[0] === "React") {
       if (!parentTag) {
         throw new Error(
-          `{{> React}} must be used in a container element${this.sourceName ? ` in ${this.sourceName}` : ""}. Learn more at https://github.com/meteor/meteor/wiki/React-components-must-be-the-only-thing-in-their-wrapper-element`);
+          `{{> React}} must be used in a container element${this.sourceName ? ` in ${this.sourceName}` : ""}. Learn more at https://blazejs.org/guide/react`);
       }
 
       let numSiblings = 0;
@@ -34,7 +34,7 @@ ReactComponentSiblingForbidder.def({
 
       if (numSiblings > 0) {
         throw new Error(
-          `{{> React}} must be used as the only child in a container element${this.sourceName ? ` in ${this.sourceName}` : ""}. Learn more at https://github.com/meteor/meteor/wiki/React-components-must-be-the-only-thing-in-their-wrapper-element`);
+          `{{> React}} must be used as the only child in a container element${this.sourceName ? ` in ${this.sourceName}` : ""}. Learn more at https://blazejs.org/guide/react`);
       }
     }
   },

@@ -1,6 +1,9 @@
 import { hasOwn } from './utils';
 
-/** @param {function(Binding): boolean} fn */
+/**
+ * @param {function(Binding): boolean} fn
+ * @private
+ * */
 function _createBindingsHelper(fn) {
   /** @param {string[]} names */
   return (...names) => {
