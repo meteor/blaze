@@ -40,11 +40,47 @@ import { HTML } from 'meteor/htmljs';
  * `{ value }` is used). The other states are reserved for asynchronous bindings
  * (i.e., values wrapped with `Promise`s).
  * @typedef {{ error: unknown } | { value: unknown } | undefined} Binding
+ * @private
  */
 
 /**
  * @class
- * @summary Constructor for a View, which represents a reactive region of DOM.
+ * Constructor for a View, which represents a reactive region of DOM.
+ * Behind every template or part of a template &mdash; a template tag, say, like <code v-pre>{{foo}}</code> or <code v-pre>{{#if}}</code> &mdash; is
+ * a View object, which is a reactively updating region of DOM.
+ *
+ * Most applications do not need to be aware of these Views, but they offer a
+ * way to understand and customize Meteor's rendering behavior for more
+ * advanced applications and packages.
+ *
+ * You can obtain a View object by calling [`Blaze.render`](#Blaze-render) on a
+ * template, or by accessing [`template.view`](../api/templates.html#Blaze-TemplateInstance-view) on a template
+ * instance.
+ *
+ * At the heart of a View is an [autorun](https://docs.meteor.com/api/tracker.html#Tracker-autorun) that calls the View's
+ * `renderFunction`, uses the result to create DOM nodes, and replaces the
+ * contents of the View with these new DOM nodes.  A View's content may consist
+ * of any number of consecutive DOM nodes (though if it is zero, a placeholder
+ * node such as a comment or an empty text node is automatically supplied).  Any
+ * reactive dependency established by `renderFunction` causes a full recalculation
+ * of the View's contents when the dependency is invalidated.  Templates, however,
+ * are compiled in such a way that they do not have top-level dependencies and so
+ * will only ever render once, while their parts may re-render many times.
+ *
+ * When a `Blaze.View` is constructed by calling the constructor, no hooks
+ * are fired and no rendering is performed.  In particular, the View is
+ * not yet considered to be "created."  Only when the View is actually
+ * used, by a call to `Blaze.render` or `Blaze.toHTML` or by inclusion in
+ * another View, is it "created," right before it is rendered for the
+ * first time.  When a View is created, its `.parentView` is set if
+ * appropriate, and then the `onViewCreated` hook is fired.  The term
+ * "unrendered View" means a newly constructed View that has not been
+ * "created" or rendered.
+ *
+ * The "current View" is kept in [`Blaze.currentView`](#Blaze-currentView) and
+ * is set during View rendering, callbacks, autoruns, and template event
+ * handlers.  It affects calls such as [`Template.currentData()`](../api/templates.html#Template-currentData).
+ *
  * @locus Client
  * @param {String} [name] Optional.  A name for this type of View.  See [`view.name`](#view_name).
  * @param {Function} renderFunction A function that returns [*renderable content*](#Renderable-Content).  In this function, `this` is bound to the View.
@@ -59,6 +95,14 @@ Blaze.View = function (name, render) {
     render = name;
     name = '';
   }
+
+    /**
+     * The name of this type of View.  View names may be used to identify
+     * particular kinds of Views in code, but more often they simply aid in
+     * debugging and comprehensibility of the View tree.  Views generated
+     * by Meteor have names like "Template.foo" and "if".
+     * @type {String}
+     */
   this.name = name;
   this._render = render;
 
@@ -71,12 +115,41 @@ Blaze.View = function (name, render) {
   // Setting all properties here is good for readability,
   // and also may help Chrome optimize the code by keeping
   // the View object from changing shape too much.
+
+    /**
+     * True if this View has been called on to be rendered by `Blaze.render`
+     *   or `Blaze.toHTML` or another View.  Once it becomes true, never
+     *   becomes false again.  A "created" View's `.parentView` has been
+     *   set to its final value.  `isCreated` is set to true before
+     *   `onViewCreated` hooks are called.
+     * @type {boolean}
+     */
   this.isCreated = false;
   this._isCreatedForExpansion = false;
+
+    /**
+     *   True if this View has been rendered to DOM by `Blaze.render` or
+     *   by the rendering of an enclosing View.  Conversion to HTML by
+     *   `Blaze.toHTML` doesn't count.  Once true, never becomes false.
+     * @type {boolean}
+     */
   this.isRendered = false;
   this._isAttached = false;
+
+    /**
+     * True if this View has been destroyed, such as by `Blaze.remove()` or
+     *   by a reactive update that removes it.  A destroyed View's autoruns
+     *   have been stopped, and its DOM nodes have generally been cleaned
+     *   of all Meteor reactivity and possibly dismantled.
+     * @type {boolean}
+     */
   this.isDestroyed = false;
   this._isInRender = false;
+
+  /**
+   * The enclosing View that caused this View to be rendered, if any.
+   * @type {Blaze.View}
+   */
   this.parentView = null;
   this._domrange = null;
   // This flag is normally set to false except for the cases when view's parent
@@ -93,11 +166,25 @@ Blaze.View = function (name, render) {
   /** @type {Record<string, ReactiveVar<Binding>>} */
   this._scopeBindings = {};
 
+    /**
+     * The number of times the View has been rendered, including the
+     *   current time if the View is in the process of being rendered
+     *   or re-rendered.
+     * @type {number}
+     */
   this.renderCount = 0;
 };
 
 Blaze.View.prototype._render = function () { return null; };
 
+/**
+ *   If the View hasn't been created yet, calls `func` when the View
+ *   is created.  In `func`, the View is bound to `this`.
+ *
+ *   This hook is the basis for the [`created`](../api/templates.html#Template-onCreated)
+ *   template callback.
+ * @param cb {function}
+ */
 Blaze.View.prototype.onViewCreated = function (cb) {
   this._callbacks.created = this._callbacks.created || [];
   this._callbacks.created.push(cb);
@@ -108,6 +195,18 @@ Blaze.View.prototype._onViewRendered = function (cb) {
   this._callbacks.rendered.push(cb);
 };
 
+/**
+ *   Calls `func` when the View is rendered and inserted into the DOM,
+ *   after waiting for the end of
+ *   [flush time](https://docs.meteor.com/api/tracker.html#Tracker-afterFlush).  Does not fire if the View
+ *   is destroyed at any point before it would fire.
+ *   May fire multiple times (if the View re-renders).
+ *   In `func`, the View is bound to `this`.
+ *
+ *   This hook is the basis for the [`rendered`](../api/templates.html#Template-onRendered)
+ *   template callback.
+ * @param cb {function}
+ */
 Blaze.View.prototype.onViewReady = function (cb) {
   const fire = () => {
     Tracker.afterFlush(() => {
@@ -147,24 +246,35 @@ Blaze.View.prototype.removeViewDestroyedListener = function (cb) {
 };
 
 /// View#autorun(func)
-///
-/// Sets up a Tracker autorun that is "scoped" to this View in two
-/// important ways: 1) Blaze.currentView is automatically set
-/// on every re-run, and 2) the autorun is stopped when the
-/// View is destroyed.  As with Tracker.autorun, the first run of
-/// the function is immediate, and a Computation object that can
-/// be used to stop the autorun is returned.
-///
-/// View#autorun is meant to be called from View callbacks like
-/// onViewCreated, or from outside the rendering process.  It may not
-/// be called before the onViewCreated callbacks are fired (too early),
-/// or from a render() method (too confusing).
-///
-/// Typically, autoruns that update the state
-/// of the View (as in Blaze.With) should be started from an onViewCreated
-/// callback.  Autoruns that update the DOM should be started
-/// from either onViewCreated (guarded against the absence of
-/// view._domrange), or onViewReady.
+/**
+* Sets up a Tracker autorun that is "scoped" to this View in two
+* important ways: 1) Blaze.currentView is automatically set
+* on every re-run, and 2) the autorun is stopped when the
+* View is destroyed.  As with Tracker.autorun, the first run of
+* the function is immediate, and a Computation object that can
+* be used to stop the autorun is returned.
+*
+* View#autorun is meant to be called from View callbacks like
+* onViewCreated, or from outside the rendering process.  It may not
+* be called before the onViewCreated callbacks are fired (too early),
+* or from a render() method (too confusing).
+*
+* Typically, autoruns that update the state
+* of the View (as in Blaze.With) should be started from an onViewCreated
+* callback.  Autoruns that update the DOM should be started
+* from either onViewCreated (guarded against the absence of
+* view._domrange), or onViewReady.
+ *
+ *   Like [`Tracker.autorun`](https://docs.meteor.com/api/tracker.html#Tracker-autorun), except that the autorun is
+ *   automatically stopped when the View is destroyed, and the
+ *   [current View](#Blaze-currentView) is always set when running `runFunc`.
+ *   There is no relationship to the View's internal autorun or render
+ *   cycle.  In `runFunc`, the View is bound to `this`.
+ * @param f
+ * @param _inViewScope
+ * @param displayName
+ * @return {*}
+ */
 Blaze.View.prototype.autorun = function (f, _inViewScope, displayName) {
   // The restrictions on when View#autorun can be called are in order
   // to avoid bad patterns, like creating a Blaze.View and immediately
@@ -234,8 +344,10 @@ Blaze.View.prototype._errorIfShouldntCallSubscribe = function () {
 };
 
 /**
- * Just like Blaze.View#autorun, but with Meteor.subscribe instead of
+ * @summary Just like Blaze.View#autorun, but with Meteor.subscribe instead of
  * Tracker.autorun. Stop the subscription when the view is destroyed.
+ * @param args {...*}
+ * @param options {object=}
  * @return {SubscriptionHandle} A handle to the subscription so that you can
  * see if it is ready, or stop it manually
  */
@@ -258,6 +370,15 @@ Blaze.View.prototype.subscribe = function (args, options) {
   return subHandle;
 };
 
+/**
+ * The first node of the View's rendered content.  Note that this may
+ * be a text node.  Requires that the View be rendered.
+ * If the View rendered to zero DOM nodes, it may be a placeholder
+ * node (comment or text node).  The DOM extent of a View consists
+ * of the nodes between `view.firstNode()` and `view.lastNode()`,
+ * inclusive.
+ * @return {*}
+ */
 Blaze.View.prototype.firstNode = function () {
   if (! this._isAttached)
     throw new Error("View must be attached before accessing its DOM");
@@ -265,6 +386,11 @@ Blaze.View.prototype.firstNode = function () {
   return this._domrange.firstNode();
 };
 
+/**
+ * For Views created by invoking templates, the original Template
+ * object.  For example, `Blaze.render(Template.foo).template === Template.foo`.
+ * @return {*}
+ */
 Blaze.View.prototype.lastNode = function () {
   if (! this._isAttached)
     throw new Error("View must be attached before accessing its DOM");
@@ -543,7 +669,11 @@ Blaze._isContentEqual = function (a, b) {
 };
 
 /**
- * @summary The View corresponding to the current template helper, event handler, callback, or autorun.  If there isn't one, `null`.
+ * The View corresponding to the current template helper, event handler, callback, or autorun.  If there isn't one, `null`.
+ * The "current view" is used by [`Template.currentData()`](../api/templates.html#Template-currentData) and
+ * [`Template.instance()`](../api/templates.html#Template-instance) to determine
+ * the contextually relevant data context and template instance.
+ *
  * @locus Client
  * @type {Blaze.View}
  */
@@ -630,7 +760,26 @@ const contentAsFunc = function (content) {
 Blaze.__rootViews = [];
 
 /**
- * @summary Renders a template or View to DOM nodes and inserts it into the DOM, returning a rendered [View](#Blaze-View) which can be passed to [`Blaze.remove`](#Blaze-remove).
+ * Renders a template or View to DOM nodes and inserts it into the DOM, returning a rendered [View](#Blaze-View) which can be passed to [`Blaze.remove`](#Blaze-remove).
+ *
+ * When you render a template, the callbacks added with
+ * [`onCreated`](./templates#Template-onCreated) are invoked immediately, before evaluating
+ * the content of the template.  The callbacks added with
+ * [`onRendered`](../api/templates.html#Template-onRendered) are invoked after the View is rendered and
+ * inserted into the DOM.
+ *
+ * The rendered template
+ * will update reactively in response to data changes until the View is
+ * removed using [`Blaze.remove`](#Blaze-remove) or the View's
+ * parent element is removed by Meteor or jQuery.
+ *
+ * > If the View is removed by some other mechanism
+ * besides Meteor or jQuery (which Meteor integrates with by default),
+ * the View may continue to update indefinitely.  Most users will not need to
+ * manually render templates and insert them into the DOM, but if you do,
+ * be mindful to always call [`Blaze.remove`](#Blaze-remove) when the View is
+ * no longer needed.
+ *
  * @locus Client
  * @param {Template|Blaze.View} templateOrView The template (e.g. `Template.myTemplate`) or View object to render.  If a template, a View object is [constructed](#template_constructview).  If a View, it must be an unrendered View, which becomes a rendered View and is returned.
  * @param {DOMNode} parentNode The node that will be the parent of the rendered template.  It must be an Element node.
@@ -694,7 +843,10 @@ Blaze.insert = function (view, parentElement, nextNode) {
 };
 
 /**
- * @summary Renders a template or View to DOM nodes with a data context.  Otherwise identical to `Blaze.render`.
+ * Renders a template or View to DOM nodes with a data context.  Otherwise identical to `Blaze.render`.
+ * `Blaze.renderWithData(Template.myTemplate, data)` is essentially the same as
+ * `Blaze.render(Blaze.With(data, function () { return Template.myTemplate; }))`.
+ *
  * @locus Client
  * @param {Template|Blaze.View} templateOrView The template (e.g. `Template.myTemplate`) or View object to render.
  * @param {Object|Function} data The data context to use, or a function returning a data context.  If a function is provided, it will be reactively re-run.
@@ -710,7 +862,26 @@ Blaze.renderWithData = function (content, data, parentElement, nextNode, parentV
 };
 
 /**
- * @summary Removes a rendered View from the DOM, stopping all reactive updates and event listeners on it. Also destroys the Blaze.Template instance associated with the view.
+ * Removes a rendered View from the DOM, stopping all reactive updates and event listeners on it. Also destroys the Blaze.Template instance associated with the view.
+ *
+ *
+ * Use `Blaze.remove` to remove a template or View previously inserted with
+ * `Blaze.render`, in such a way that any behaviors attached to the DOM by
+ * Meteor are cleaned up.  The rendered template or View is now considered
+ * ["destroyed"](../api/templates.html#Template-onDestroyed), along with all nested templates and
+ * Views.  In addition, any data assigned via
+ * jQuery to the DOM nodes is removed, as if the nodes were passed to
+ * jQuery's `$(...).remove()`.
+ *
+ * As mentioned in [`Blaze.render`](#Blaze-render), it is important to "remove"
+ * all content rendered via `Blaze.render` using `Blaze.remove`, unless the
+ * parent node of `renderedView` is removed by a Meteor reactive
+ * update or with jQuery.
+ *
+ * `Blaze.remove` can be used even if the DOM nodes in question have already
+ * been removed from the document, to tell Blaze to stop tracking and
+ * updating these nodes.
+ *
  * @locus Client
  * @param {Blaze.View} renderedView The return value from `Blaze.render` or `Blaze.renderWithData`, or the `view` property of a Blaze.Template instance. Calling `Blaze.remove(Template.instance().view)` from within a template event handler will destroy the view as well as that template and trigger the template's `onDestroyed` handlers.
  */
@@ -733,7 +904,17 @@ Blaze.remove = function (view) {
 };
 
 /**
- * @summary Renders a template or View to a string of HTML.
+ * Renders a template or View to a string of HTML.
+ * Rendering a template to HTML loses all fine-grained reactivity.  The
+ * normal way to render a template is to either include it from another
+ * template (<code v-pre>{{> myTemplate}}</code>) or render and insert it
+ * programmatically using `Blaze.render`.  Only occasionally
+ * is generating HTML useful.
+ *
+ * Because `Blaze.toHTML` returns a string, it is not able to update the DOM
+ * in response to reactive data changes.  Instead, any reactive data
+ * changes will invalidate the current Computation if there is one
+ * (for example, an autorun that is the caller of `Blaze.toHTML`).
  * @locus Client
  * @param {Template|Blaze.View} templateOrView The template (e.g. `Template.myTemplate`) or View object from which to generate HTML.
  */
@@ -816,7 +997,11 @@ Blaze.getElementData = function (element) {
 // Both arguments are optional.
 
 /**
- * @summary Gets either the current View, or the View enclosing the given DOM element.
+ * Gets either the current View, or the View enclosing the given DOM element.
+ * If you don't specify an `element`, there must be a current View or an
+ * error will be thrown.  This is in contrast to
+ * [`Blaze.currentView`](#Blaze-currentView).
+ *
  * @locus Client
  * @param {DOMElement} [element] Optional.  If specified, the View enclosing `element` is returned.
  */

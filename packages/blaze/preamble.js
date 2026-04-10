@@ -1,6 +1,12 @@
 /**
  * @namespace Blaze
- * @summary The namespace for all Blaze-related methods and classes.
+ */
+
+/**
+ * Blaze is the package that makes reactive templates possible.
+ * You can use the Blaze API directly in order to render templates programmatically
+ * and manipulate "Views," the building blocks of reactive templates.
+ * @type {{}}
  */
 Blaze = {};
 
