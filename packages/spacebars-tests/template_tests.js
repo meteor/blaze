@@ -2570,37 +2570,33 @@ Tinytest.add('spacebars-tests - template_tests - tables', function (test) {
 });
 
 if (hasJquery){
-Tinytest.add(
-  'spacebars-tests - template_tests - jQuery.trigger extraParameters are passed to the event callback',
-  function (test) {
-    const tmpl = Template.spacebars_test_jquery_events;
-    let captured = false;
-    const args = ['param1', 'param2', { option: 1 }, 1, 2, 3];
+  Tinytest.add(
+    'spacebars-tests - template_tests - jQuery.trigger extraParameters are passed to the event callback',
+    function (test) {
+      const tmpl = Template.spacebars_test_jquery_events;
+      let captured = false;
+      const args = ['param1', 'param2', { option: 1 }, 1, 2, 3];
 
-    tmpl.events({
-      someCustomEvent: function (...args1) {
-        let i;
-        for (i = 0; i < args.length; i++) {
-          // expect the arguments to be just after template
-          test.equal(args1[i + 2], args[i]);
-        }
-        captured = true;
-      },
-    });
+      tmpl.events({
+        someCustomEvent: function (...args1) {
+          let i;
+          for (i = 0; i < args.length; i++) {
+            // expect the arguments to be just after template
+            test.equal(args1[i + 2], args[i]);
+          }
+          captured = true;
+        },
+      });
 
-    tmpl.rendered = function () {
-      if (hasJquery) {
+      tmpl.rendered = function () {
         $(this.find('button')).trigger('someCustomEvent', args);
-      } else {
-        trigger({ el: this.closest('button'), eventType: 'someCustomEvent', options: args });
-      }
-    };
+      };
 
-    renderToDiv(tmpl);
-    Tracker.flush();
-    test.equal(captured, true);
-  }
-);
+      renderToDiv(tmpl);
+      Tracker.flush();
+      test.equal(captured, true);
+    }
+  );
 }
 
 Tinytest.add('spacebars-tests - template_tests - toHTML', function (test) {
@@ -3334,7 +3330,7 @@ const trigger = ({ el, eventType, bubbles = true, options }) => {
   const event = new Event(eventType, { bubbles: bubbles, cancelable: true });
   if (options) Object.assign(event, options);
   el.dispatchEvent(event);
-}
+};
 
 Tinytest.add(
   'spacebars-tests - template_tests - focus/blur with clean-up',

@@ -176,7 +176,7 @@ Tinytest.add(
     Tracker.flush();
     elems = hasJquery
       ? $(div).find('> *')
-      :  div.querySelectorAll(':scope > *');
+      : div.querySelectorAll(':scope > *');
     test.equal(elems.length, 1);
     test.equal(elems[0].nodeName, 'SPAN');
     span = elems[0];
@@ -2166,33 +2166,33 @@ Tinytest.add(
 );
 
 if (hasJquery) {
-Tinytest.add(
-  'spacebars-tests - old - template_tests - jQuery.trigger extraParameters are passed to the event callback',
-  function (test) {
-    const tmpl = Template.old_spacebars_test_jquery_events;
-    let captured = false;
-    const args = ['param1', 'param2', { option: 1 }, 1, 2, 3];
+  Tinytest.add(
+    'spacebars-tests - old - template_tests - jQuery.trigger extraParameters are passed to the event callback',
+    function (test) {
+      const tmpl = Template.old_spacebars_test_jquery_events;
+      let captured = false;
+      const args = ['param1', 'param2', { option: 1 }, 1, 2, 3];
 
-    tmpl.events({
-      someCustomEvent: function (...args1) {
-        let i;
-        for (i = 0; i < args.length; i++) {
-          // expect the arguments to be just after template
-          test.equal(args1[i + 2], args[i]);
-        }
-        captured = true;
-      },
-    });
+      tmpl.events({
+        someCustomEvent: function (...args1) {
+          let i;
+          for (i = 0; i < args.length; i++) {
+            // expect the arguments to be just after template
+            test.equal(args1[i + 2], args[i]);
+          }
+          captured = true;
+        },
+      });
 
-    tmpl.rendered = function () {
-      $(this.find('button')).trigger('someCustomEvent', args);
-    };
+      tmpl.rendered = function () {
+        $(this.find('button')).trigger('someCustomEvent', args);
+      };
 
-    renderToDiv(tmpl);
-    Tracker.flush();
-    test.equal(captured, true);
-  }
-);
+      renderToDiv(tmpl);
+      Tracker.flush();
+      test.equal(captured, true);
+    }
+  );
 }
 
 Tinytest.add(
@@ -2812,10 +2812,11 @@ Tinytest.add(
 );
 
 
-const trigger = (el, eventType, bubbles = true) => {
-    const event = new Event(eventType, { bubbles: bubbles, cancelable: true });
-    el.dispatchEvent(event);
-}
+const trigger = ({ el, eventType, bubbles = true, options }) => {
+  const event = new Event(eventType, { bubbles: bubbles, cancelable: true });
+  if (options) Object.assign(event, options);
+  el.dispatchEvent(event);
+};
 
 Tinytest.add(
   'spacebars-tests - old - template_tests - focus/blur with clean-up',
@@ -2864,7 +2865,7 @@ Tinytest.add(
       if (hasJquery) {
         $(input).trigger('focus');
       } else {
-        trigger(input, 'focusin', true);
+        trigger({ el: input, eventName: 'focusin', bubbles: true });
       }
     }
     test.equal(buf.join(), 'FOCUS');
@@ -2873,7 +2874,7 @@ Tinytest.add(
       if (hasJquery) {
         $(input).trigger('blur');
       } else {
-        trigger(input, 'focusout', true);
+        trigger({ el: input, eventName: 'focusout', bubbles: true });
       }
     }
     test.equal(buf.join(), 'FOCUS,BLUR');
@@ -2894,7 +2895,7 @@ Tinytest.add(
       if (hasJquery) {
         $(input).trigger('focus');
       } else {
-        trigger(input, 'focusin', true);
+        trigger({ el: input, eventName: 'focusin', bubbles: true });
       }
     }
     test.equal(buf.join(), 'FOCUS');

@@ -11,9 +11,6 @@ Npm.depends({
 
 Package.onUse(function (api) {
   api.use('ecmascript');
-  // XXX this should go away, and there should be a clean interface
-  // that tinytest and the driver both implement?
-
   api.use('tinytest');
   api.use('session');
   api.use('reload');
