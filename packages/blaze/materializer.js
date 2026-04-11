@@ -97,7 +97,7 @@ const isPromiseLike = x => !!x && typeof x.then === 'function';
 
 function then(maybePromise, fn) {
   if (isPromiseLike(maybePromise)) {
-    maybePromise.then(fn).catch(Blaze._reportException);
+    maybePromise.then(fn, Blaze._reportException);
   } else {
     fn(maybePromise);
   }
