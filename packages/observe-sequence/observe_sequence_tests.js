@@ -145,23 +145,23 @@ function runInVM(code) {
     return res;
 }
 
-Tinytest.add('observe-sequence - initial data for all sequence types', function (test) {
-  runOneObserveSequenceTestCase(test, function () {
+Tinytest.addAsync('observe-sequence - initial data for all sequence types', async function (test) {
+  await runOneObserveSequenceTestCase(test, function () {
     return null;
   }, function () {}, []);
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     return [];
   }, function () {}, []);
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     return [{foo: 1}, {bar: 2}];
   }, function () {}, [
     {addedAt: [0, {foo: 1}, 0, null]},
     {addedAt: [1, {bar: 2}, 1, null]}
   ]);
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     return [{_id: "13", foo: 1}, {_id: "37", bar: 2}];
   }, function () {}, [
     {addedAt: ["13", {_id: "13", foo: 1}, 0, null]},
@@ -169,7 +169,7 @@ Tinytest.add('observe-sequence - initial data for all sequence types', function 
   ]);
 
   // sub-classed arrays
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     return new ArraySubclass({_id: "13", foo: 1}, {_id: "37", bar: 2});
   }, function () {}, [
     {addedAt: ["13", {_id: "13", foo: 1}, 0, null]},
@@ -177,14 +177,14 @@ Tinytest.add('observe-sequence - initial data for all sequence types', function 
   ]);
 
   // Execute in VM
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     return new runInVM('new Array({_id: "13", foo: 1}, {_id: "37", bar: 2})');
   }, function () {}, [
     {addedAt: ["13", {_id: "13", foo: 1}, 0, null]},
     {addedAt: ["37", {_id: "37", bar: 2}, 1, null]}
   ]);
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     const coll = new Mongo.Collection(null);
     coll.insert({_id: "13", foo: 1});
     coll.insert({_id: "37", bar: 2});
@@ -197,7 +197,7 @@ Tinytest.add('observe-sequence - initial data for all sequence types', function 
 
   // shouldn't break on array with duplicate _id's, and the ids sent
   // in the callbacks should be distinct
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     return [
       {_id: "13", foo: 1},
       {_id: "13", foo: 2}
@@ -208,12 +208,12 @@ Tinytest.add('observe-sequence - initial data for all sequence types', function 
   ], /*numExpectedWarnings = */1);
 
   // non-array iterable (empty)
-  if(typeof Map == 'function') runOneObserveSequenceTestCase(test, function () {
+  if(typeof Map == 'function') await runOneObserveSequenceTestCase(test, function () {
     return new Map();
   }, function () {}, []);
 
   // non-array iterable (non-empty)
-  if(typeof Set == 'function') runOneObserveSequenceTestCase(test, function () {
+  if(typeof Set == 'function') await runOneObserveSequenceTestCase(test, function () {
     return new Set([{foo: 1}, {bar: 2}]);
   }, function () {}, [
     {addedAt: [0, {foo: 1}, 0, null]},
@@ -221,11 +221,11 @@ Tinytest.add('observe-sequence - initial data for all sequence types', function 
   ]);
 });
 
-Tinytest.add('observe-sequence - array to other array', function (test) {
+Tinytest.addAsync('observe-sequence - array to other array', async function (test) {
   const dep = new Tracker.Dependency;
   let seq = [{_id: "13", foo: 1}, {_id: "37", bar: 2}];
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -240,11 +240,11 @@ Tinytest.add('observe-sequence - array to other array', function (test) {
   ]);
 });
 
-Tinytest.add('observe-sequence - array to other array, strings', function (test) {
+Tinytest.addAsync('observe-sequence - array to other array, strings', async function (test) {
   const dep = new Tracker.Dependency;
   let seq = ["A", "B"];
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -258,8 +258,8 @@ Tinytest.add('observe-sequence - array to other array, strings', function (test)
   ]);
 });
 
-Tinytest.add('observe-sequence - bug #7850 array with null values', function (test) {
-  runOneObserveSequenceTestCase(test, function () {
+Tinytest.addAsync('observe-sequence - bug #7850 array with null values', async function (test) {
+  await runOneObserveSequenceTestCase(test, function () {
     return [1, null];
   }, function () {}, [
     {addedAt: [1, 1, 0, null]},
@@ -267,11 +267,11 @@ Tinytest.add('observe-sequence - bug #7850 array with null values', function (te
   ]);
 });
 
-Tinytest.add('observe-sequence - array to other array, objects without ids', function (test) {
+Tinytest.addAsync('observe-sequence - array to other array, objects without ids', async function (test) {
   const dep = new Tracker.Dependency;
   let seq = [{foo: 1}, {bar: 2}];
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -285,11 +285,11 @@ Tinytest.add('observe-sequence - array to other array, objects without ids', fun
   ]);
 });
 
-Tinytest.add('observe-sequence - array to other array, changes', function (test) {
+Tinytest.addAsync('observe-sequence - array to other array, changes', async function (test) {
   const dep = new Tracker.Dependency;
   let seq = [{_id: "13", foo: 1}, {_id: "37", bar: 2}, {_id: "42", baz: 42}];
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -308,11 +308,11 @@ Tinytest.add('observe-sequence - array to other array, changes', function (test)
   ]);
 });
 
-Tinytest.add('observe-sequence - array to other array, movedTo', function (test) {
+Tinytest.addAsync('observe-sequence - array to other array, movedTo', async function (test) {
   const dep = new Tracker.Dependency;
   let seq = [{_id: "13", foo: 1}, {_id: "37", bar: 2}, {_id: "42", baz: 42}, {_id: "43", baz: 43}];
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -334,11 +334,11 @@ Tinytest.add('observe-sequence - array to other array, movedTo', function (test)
   ]);
 });
 
-Tinytest.add('observe-sequence - array to other array, movedTo the end', function (test) {
+Tinytest.addAsync('observe-sequence - array to other array, movedTo the end', async function (test) {
   const dep = new Tracker.Dependency;
   let seq = [{_id: "0"}, {_id: "1"}, {_id: "2"}, {_id: "3"}];
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -358,11 +358,11 @@ Tinytest.add('observe-sequence - array to other array, movedTo the end', functio
   ]);
 });
 
-Tinytest.add('observe-sequence - array to other array, movedTo later position but not the latest #2845', function (test) {
+Tinytest.addAsync('observe-sequence - array to other array, movedTo later position but not the latest #2845', async function (test) {
   const dep = new Tracker.Dependency;
   let seq = [{_id: "0"}, {_id: "1"}, {_id: "2"}, {_id: "3"}];
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -383,11 +383,11 @@ Tinytest.add('observe-sequence - array to other array, movedTo later position bu
   ]);
 });
 
-Tinytest.add('observe-sequence - array to other array, movedTo earlier position but not the first', function (test) {
+Tinytest.addAsync('observe-sequence - array to other array, movedTo earlier position but not the first', async function (test) {
   const dep = new Tracker.Dependency;
   let seq = [{_id: "0"}, {_id: "1"}, {_id: "2"}, {_id: "3"}, {_id: "4"}];
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -410,11 +410,11 @@ Tinytest.add('observe-sequence - array to other array, movedTo earlier position 
   ]);
 });
 
-Tinytest.add('observe-sequence - array to null', function (test) {
+Tinytest.addAsync('observe-sequence - array to null', async function (test) {
   const dep = new Tracker.Dependency;
   let seq = [{_id: "13", foo: 1}, {_id: "37", bar: 2}];
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -428,11 +428,11 @@ Tinytest.add('observe-sequence - array to null', function (test) {
   ]);
 });
 
-Tinytest.add('observe-sequence - array to cursor', function (test) {
+Tinytest.addAsync('observe-sequence - array to cursor', async function (test) {
   const dep = new Tracker.Dependency;
   let seq = [{_id: "13", foo: 1}, {_id: "37", bar: 2}];
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -452,7 +452,7 @@ Tinytest.add('observe-sequence - array to cursor', function (test) {
 });
 
 
-Tinytest.add('observe-sequence - cursor to null', function (test) {
+Tinytest.addAsync('observe-sequence - cursor to null', async function (test) {
   const dep = new Tracker.Dependency;
   const coll = new Mongo.Collection(null);
   coll.insert({_id: "13", foo: 1});
@@ -460,7 +460,7 @@ Tinytest.add('observe-sequence - cursor to null', function (test) {
   const cursor = coll.find({}, {sort: {_id: 1}});
   let seq = cursor;
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -474,14 +474,14 @@ Tinytest.add('observe-sequence - cursor to null', function (test) {
   ]);
 });
 
-Tinytest.add('observe-sequence - cursor to array', function (test) {
+Tinytest.addAsync('observe-sequence - cursor to array', async function (test) {
   const dep = new Tracker.Dependency;
   const coll = new Mongo.Collection(null);
   coll.insert({_id: "13.5", foo: 1});
   const cursor = coll.find({}, {sort: {_id: 1}});
   let seq = cursor;
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -497,13 +497,13 @@ Tinytest.add('observe-sequence - cursor to array', function (test) {
   ]);
 });
 
-Tinytest.add('observe-sequence - cursor', function (test) {
+Tinytest.addAsync('observe-sequence - cursor', async function (test) {
   const coll = new Mongo.Collection(null);
   coll.insert({_id: "13", rank: 1});
   const cursor = coll.find({}, {sort: {rank: 1}});
   const seq = cursor;
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     return seq;
   }, async function () {
     await coll.insertAsync({_id: "37", rank: 2});
@@ -527,14 +527,14 @@ Tinytest.add('observe-sequence - cursor', function (test) {
   ]);
 });
 
-Tinytest.add('observe-sequence - cursor to other cursor', function (test) {
+Tinytest.addAsync('observe-sequence - cursor to other cursor', async function (test) {
   const dep = new Tracker.Dependency;
   const coll = new Mongo.Collection(null);
   coll.insert({_id: "13", foo: 1});
   const cursor = coll.find({}, {sort: {_id: 1}});
   let seq = cursor;
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -555,7 +555,7 @@ Tinytest.add('observe-sequence - cursor to other cursor', function (test) {
   ]);
 });
 
-Tinytest.add('observe-sequence - cursor to other cursor with transform', function (test) {
+Tinytest.addAsync('observe-sequence - cursor to other cursor with transform', async function (test) {
   const dep = new Tracker.Dependency;
   const transform = function(doc) {
     return Object.assign({idCopy: doc._id}, doc);
@@ -566,7 +566,7 @@ Tinytest.add('observe-sequence - cursor to other cursor with transform', functio
   const cursor = coll.find({}, {sort: {_id: 1}});
   let seq = cursor;
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -587,14 +587,14 @@ Tinytest.add('observe-sequence - cursor to other cursor with transform', functio
   ]);
 });
 
-Tinytest.add('observe-sequence - cursor to same cursor', function (test) {
+Tinytest.addAsync('observe-sequence - cursor to same cursor', async function (test) {
   const coll = new Mongo.Collection(null);
   coll.insert({_id: "13", rank: 1});
   const cursor = coll.find({}, {sort: {rank: 1}});
   const seq = cursor;
   const dep = new Tracker.Dependency;
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -613,11 +613,11 @@ Tinytest.add('observe-sequence - cursor to same cursor', function (test) {
   ]);
 });
 
-Tinytest.add('observe-sequence - string arrays', function (test) {
+Tinytest.addAsync('observe-sequence - string arrays', async function (test) {
   let seq = ['A', 'B'];
   const dep = new Tracker.Dependency;
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -631,11 +631,11 @@ Tinytest.add('observe-sequence - string arrays', function (test) {
   ]);
 });
 
-Tinytest.add('observe-sequence - number arrays', function (test) {
+Tinytest.addAsync('observe-sequence - number arrays', async function (test) {
   let seq = [1, 1, 2];
   const dep = new Tracker.Dependency;
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -651,11 +651,11 @@ Tinytest.add('observe-sequence - number arrays', function (test) {
   ]);
 });
 
-Tinytest.add('observe-sequence - subclassed number arrays', function (test) {
+Tinytest.addAsync('observe-sequence - subclassed number arrays', async function (test) {
   let seq = new ArraySubclass(1, 1, 2);
   const dep = new Tracker.Dependency;
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -671,11 +671,11 @@ Tinytest.add('observe-sequence - subclassed number arrays', function (test) {
   ]);
 });
 
-Tinytest.add('observe-sequence - vm generated number arrays', function (test) {
+Tinytest.addAsync('observe-sequence - vm generated number arrays', async function (test) {
   let seq = runInVM('new Array(1, 1, 2)');
   const dep = new Tracker.Dependency;
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -691,11 +691,11 @@ Tinytest.add('observe-sequence - vm generated number arrays', function (test) {
   ]);
 });
 
-Tinytest.add('observe-sequence - number arrays, _id:0 correctly handled, no duplicate ids warning #4049', function (test) {
+Tinytest.addAsync('observe-sequence - number arrays, _id:0 correctly handled, no duplicate ids warning #4049', async function (test) {
   let seq = [...Array(3).keys()].map(function (i) { return { _id: i}; });
   const dep = new Tracker.Dependency;
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
@@ -716,7 +716,7 @@ Tinytest.add('observe-sequence - number arrays, _id:0 correctly handled, no dupl
   ]);
 });
 
-Tinytest.add('observe-sequence - cursor to other cursor, same collection', function (test) {
+Tinytest.addAsync('observe-sequence - cursor to other cursor, same collection', async function (test) {
   const dep = new Tracker.Dependency;
   const coll = new Mongo.Collection(null);
   coll.insert({_id: "13", foo: 1});
@@ -724,7 +724,7 @@ Tinytest.add('observe-sequence - cursor to other cursor, same collection', funct
   const cursor = coll.find({foo: 1});
   let seq = cursor;
 
-  runOneObserveSequenceTestCase(test, function () {
+  await runOneObserveSequenceTestCase(test, function () {
     dep.depend();
     return seq;
   }, function () {
