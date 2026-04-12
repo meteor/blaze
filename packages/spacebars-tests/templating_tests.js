@@ -1,4 +1,4 @@
-
+const hasJquery = Blaze._DOMBackend._hasJQuery;
 // for events to bubble an element needs to be in the DOM.
 // @return {Function} call this for cleanup
 const addToBody = function (el) {
@@ -188,16 +188,22 @@ if (document.addEventListener) {
       video2Played = 0;
     };
 
-    simulateEvent($(containerDiv).find(".video1").get(0),
-                  "play", {}, {bubbles: false});
+    let video1 = hasJquery
+      ? $(containerDiv).find(".video1").get(0)
+      : containerDiv.querySelector(".video1");
+    simulateEvent(video1, "play", {}, {bubbles: false});
     checkAndResetEvents(1, 0);
 
-    simulateEvent($(containerDiv).find(".video2").get(0),
-                  "play", {}, {bubbles: false});
+    let video2 = hasJquery
+      ? $(containerDiv).find(".video2").get(0)
+      : containerDiv.querySelector(".video2");
+    simulateEvent(video2, "play", {}, {bubbles: false});
     checkAndResetEvents(0, 1);
 
-    simulateEvent($(containerDiv).find(".video2").get(1),
-                  "play", {}, {bubbles: false});
+    video2 = hasJquery
+      ? $(containerDiv).find(".video2").get(1)
+      : containerDiv.querySelectorAll(".video2")[1];
+    simulateEvent(video2, "play", {}, {bubbles: false});
     checkAndResetEvents(0, 1);
 
     // clean up DOM
@@ -410,7 +416,10 @@ Tinytest.add("spacebars-tests - templating_tests - rendered template", function(
   });
 
   let div = renderToDiv(Template.test_render_a, {x: 123});
-  test.equal($(div).text().match(/\S+/)[0], "124");
+  let expectedText = hasJquery
+    ? $(div).text().match(/\S+/)[0]
+    : div.textContent.match(/\S+/)[0];
+  test.equal(expectedText, "124");
 
   let br1 = div.getElementsByTagName('br')[0];
   let hr1 = div.getElementsByTagName('hr')[0];
@@ -438,7 +447,10 @@ Tinytest.add("spacebars-tests - templating_tests - rendered template", function(
   }});
 
   div = renderToDiv(Template.test_render_b, {x: 123});
-  test.equal($(div).text().match(/\S+/)[0], "201");
+  expectedText = hasJquery
+    ? $(div).text().match(/\S+/)[0]
+    : div.textContent.match(/\S+/)[0];
+  test.equal(expectedText, "201");
 
   br1 = div.getElementsByTagName('br')[0];
   hr1 = div.getElementsByTagName('hr')[0];
@@ -498,9 +510,15 @@ Tinytest.add("spacebars-tests - templating_tests - template arg", function (test
   const div = renderToDiv(Template.test_template_arg_a, {food: "pie"});
   const cleanupDiv = addToBody(div);
   Tracker.flush(); // cause `rendered` to be called
-  test.equal($(div).text(), "Greetings 1-bold Line");
+  let text = hasJquery
+    ? $(div).text()
+    : div.textContent;
+  test.equal(text, "Greetings 1-bold Line");
   clickElement(div.querySelector('i'));
-  test.equal($(div).text(), "Hello 3-element World (the secret is strawberry pie)");
+  text = hasJquery
+    ? $(div).text()
+    : div.textContent;
+  test.equal(text, "Hello 3-element World (the secret is strawberry pie)");
 
   cleanupDiv();
   Tracker.flush();
@@ -516,7 +534,10 @@ Tinytest.add("spacebars-tests - templating_tests - helpers", function (test) {
   tmpl.helpers({foo: 'a', baz: function() { return 'c'; }});
 
   let div = renderToDiv(tmpl);
-  test.equal($(div).text().match(/\S+/)[0], 'abc');
+  let text = hasJquery
+    ? $(div).text().match(/\S+/)[0]
+    : div.textContent.match(/\S+/)[0];
+  test.equal(text, 'abc');
   Tracker.flush();
 
   tmpl = Template.test_template_helpers_b;
@@ -530,7 +551,9 @@ Tinytest.add("spacebars-tests - templating_tests - helpers", function (test) {
   });
 
   div = renderToDiv(tmpl);
-  let txt = $(div).text();
+  let txt = hasJquery
+    ? $(div).text()
+    : div.textContent;
   txt = txt.replace('[object Object]', 'X'); // IE 8
   txt = txt.match(/\S+/)[0];
   test.isTrue(txt.match(/^AB[CX]4D$/));
@@ -542,7 +565,10 @@ Tinytest.add("spacebars-tests - templating_tests - helpers", function (test) {
   // test that helpers don't "leak"
   tmpl = Template.test_template_helpers_c;
   div = renderToDiv(tmpl);
-  test.equal($(div).text(), 'x');
+  text = hasJquery
+    ? $(div).text()
+    : div.textContent;
+  test.equal(text, 'x');
   Tracker.flush();
 });
 
@@ -558,7 +584,10 @@ Tinytest.add("spacebars-tests - templating_tests - events", function (test) {
 
   let div = renderToDiv(tmpl);
   let cleanupDiv = addToBody(div);
-  clickElement($(div).find('b')[0]);
+  let el = hasJquery
+    ? $(div).find('b')[0]
+    : div.querySelector('b');
+  clickElement(el);
   test.equal(buf, ['b']);
   cleanupDiv();
   Tracker.flush();
@@ -577,8 +606,14 @@ Tinytest.add("spacebars-tests - templating_tests - events", function (test) {
 
   div = renderToDiv(tmpl);
   cleanupDiv = addToBody(div);
-  clickElement($(div).find('u')[0]);
-  clickElement($(div).find('i')[0]);
+  el = hasJquery
+    ? $(div).find('u')[0]
+    : div.querySelector('u');
+  clickElement(el);
+  el = hasJquery
+    ? $(div).find('i')[0]
+    : div.querySelector('i');
+  clickElement(el);
   test.equal(buf, ['u', 'i']);
   cleanupDiv();
   Tracker.flush();
@@ -595,7 +630,10 @@ Tinytest.add("spacebars-tests - templating_tests - events", function (test) {
 
   div = renderToDiv(tmpl);
   cleanupDiv = addToBody(div);
-  clickElement($(div).find('u')[0]);
+  el = hasJquery
+    ? $(div).find('u')[0]
+    : div.querySelector('u');
+  clickElement(el);
   test.equal(buf.length, 2);
   test.isTrue(buf.includes('a'));
   test.isTrue(buf.includes('b'));
