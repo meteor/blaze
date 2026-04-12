@@ -2,7 +2,7 @@
 // This file is used to ensure old built templates still work with the
 // new Blaze APIs. More in a comment at the top of old_templates.js
 //
-
+const hasJquery = Blaze._DOMBackend._hasJQuery;
 const divRendersTo = function (test, div, html) {
   Tracker.flush({ _throwFirstError: true });
   const actual = canonicalizeHtml(div.innerHTML);
@@ -107,7 +107,7 @@ Tinytest.add(
     };
     const div = renderToDiv(tmpl);
 
-    test.equal($(div).find('div')[0].className, 'aaa124zzz');
+    test.equal(div.querySelector('div').className, 'aaa124zzz');
   }
 );
 
@@ -126,7 +126,9 @@ Tinytest.add(
     };
 
     const div = renderToDiv(tmpl);
-    const span = $(div).find('span')[0];
+    const span = hasJquery
+      ? $(div).find('span')[0]
+      : div.querySelector('span');
     test.equal(span.innerHTML, 'hi');
     test.isTrue(span.hasAttribute('selected'));
     test.equal(span.getAttribute('x'), 'X');
@@ -153,7 +155,9 @@ Tinytest.add(
     };
 
     let div = renderToDiv(tmpl);
-    let elems = $(div).find('> *');
+    let elems = hasJquery
+      ? $(div).find('> *')
+      : div.querySelectorAll(':scope > *');
     test.equal(elems.length, 1);
     test.equal(elems[0].nodeName, 'SPAN');
     let span = elems[0];
@@ -162,13 +166,17 @@ Tinytest.add(
 
     R.set('asdf');
     Tracker.flush();
-    elems = $(div).find('> *');
+    elems = hasJquery
+      ? $(div).find('> *')
+      : div.querySelectorAll(':scope > *');
     test.equal(elems.length, 0);
     test.equal(canonicalizeHtml(div.innerHTML), 'asdf');
 
     R.set('<span class="hi">blah</span>');
     Tracker.flush();
-    elems = $(div).find('> *');
+    elems = hasJquery
+      ? $(div).find('> *')
+      : div.querySelectorAll(':scope > *');
     test.equal(elems.length, 1);
     test.equal(elems[0].nodeName, 'SPAN');
     span = elems[0];
@@ -575,7 +583,7 @@ Tinytest.add(
   }
 );
 
-Tinytest.add(
+Tinytest.addAsync(
   'spacebars-tests - old - template_tests - each on cursor',
   async function (test) {
     const tmpl = Template.old_spacebars_template_test_each;
@@ -680,7 +688,7 @@ Tinytest.add('spacebars-tests - old - template_tests - ..', function (test) {
   );
 });
 
-Tinytest.add(
+Tinytest.addAsync(
   'spacebars-tests - old - template_tests - select tags',
   async function (test) {
     const tmpl = Template.old_spacebars_template_test_select_tag;
@@ -702,7 +710,9 @@ Tinytest.add(
     };
 
     const div = renderToDiv(tmpl);
-    const selectEl = $(div).find('select')[0];
+    const selectEl = hasJquery
+      ? $(div).find('select')[0]
+      : div.querySelector('select');
 
     // returns canonicalized contents of `div` in the form eg
     // ["<select>", "</select>"]. strip out selected attributes -- we
@@ -751,8 +761,8 @@ Tinytest.add(
       '</select>',
     ]);
     test.equal(selectEl.value, 'value2');
-    test.equal($(selectEl).find('option')[0].selected, false);
-    test.equal($(selectEl).find('option')[1].selected, true);
+    test.equal(selectEl.querySelectorAll('option')[0].selected, false);
+    test.equal(selectEl.querySelectorAll('option')[1].selected, true);
 
     // swap selection
     await options.updateAsync({ value: 'value1' }, { $set: { selected: true } });
@@ -770,8 +780,8 @@ Tinytest.add(
       '</select>',
     ]);
     test.equal(selectEl.value, 'value1');
-    test.equal($(selectEl).find('option')[0].selected, true);
-    test.equal($(selectEl).find('option')[1].selected, false);
+    test.equal(selectEl.querySelectorAll('option')[0].selected, true);
+    test.equal(selectEl.querySelectorAll('option')[1].selected, false);
 
     // change value and label
     await options.updateAsync({ value: 'value1' }, { $set: { value: 'value1.0' } });
@@ -789,8 +799,8 @@ Tinytest.add(
       '</select>',
     ]);
     test.equal(selectEl.value, 'value1.0');
-    test.equal($(selectEl).find('option')[0].selected, true);
-    test.equal($(selectEl).find('option')[1].selected, false);
+    test.equal(selectEl.querySelectorAll('option')[0].selected, true);
+    test.equal(selectEl.querySelectorAll('option')[1].selected, false);
 
     // unselect and then select both options. normally, the second is
     // selected (since it got selected later). then switch to <select
@@ -799,8 +809,8 @@ Tinytest.add(
     Tracker.flush();
     await options.updateAsync({}, { $set: { selected: true } }, { multi: true });
     Tracker.flush();
-    test.equal($(selectEl).find('option')[0].selected, false);
-    test.equal($(selectEl).find('option')[1].selected, true);
+    test.equal(selectEl.querySelectorAll('option')[0].selected, false);
+    test.equal(selectEl.querySelectorAll('option')[1].selected, true);
 
     selectEl.multiple = true; // allow multiple selection
     await options.updateAsync({}, { $set: { selected: false } }, { multi: true });
@@ -808,8 +818,8 @@ Tinytest.add(
     await options.updateAsync({}, { $set: { selected: true } }, { multi: true });
     window.avital = true;
     Tracker.flush();
-    test.equal($(selectEl).find('option')[0].selected, true);
-    test.equal($(selectEl).find('option')[1].selected, true);
+    test.equal(selectEl.querySelectorAll('option')[0].selected, true);
+    test.equal(selectEl.querySelectorAll('option')[1].selected, true);
   }
 );
 
@@ -1031,7 +1041,7 @@ Tinytest.add(
     divRendersTo(test, div, 'x');
 
     // trigger #each component destroyed
-    $(div).remove();
+    if (hasJquery) { $(div).remove() } else { div.remove() }
 
     // insert another document. cursor should no longer be observed so
     // should have no effect.
@@ -1894,7 +1904,7 @@ const runOneTwoTest = function (test, subTemplateName, optionsData) {
     test.equal(buf, '121');
 
     // clean up the div
-    $(div).remove();
+    if (hasJquery) { $(div).remove() } else { div.remove() }
     test.equal(showOne._numListeners(), 0);
     test.equal(dummy._numListeners(), 0);
   });
@@ -1991,7 +2001,7 @@ Tinytest.add(
     document.body.appendChild(div);
     clickElement(div.querySelector('button'));
     Tracker.flush(); // rendered gets called afterFlush
-    $(div).remove();
+    if (hasJquery) { $(div).remove() } else { div.remove() }
 
     test.isFalse(dataInHelper === window);
     test.equal(dataInHelper, {});
@@ -2159,33 +2169,35 @@ Tinytest.add(
   }
 );
 
-Tinytest.add(
-  'spacebars-tests - old - template_tests - jQuery.trigger extraParameters are passed to the event callback',
-  function (test) {
-    const tmpl = Template.old_spacebars_test_jquery_events;
-    let captured = false;
-    const args = ['param1', 'param2', { option: 1 }, 1, 2, 3];
+if (hasJquery) {
+  Tinytest.add(
+    'spacebars-tests - old - template_tests - jQuery.trigger extraParameters are passed to the event callback',
+    function (test) {
+      const tmpl = Template.old_spacebars_test_jquery_events;
+      let captured = false;
+      const args = ['param1', 'param2', { option: 1 }, 1, 2, 3];
 
-    tmpl.events({
-      someCustomEvent: function (...args1) {
-        let i;
-        for (i = 0; i < args.length; i++) {
-          // expect the arguments to be just after template
-          test.equal(args1[i + 2], args[i]);
-        }
-        captured = true;
-      },
-    });
+      tmpl.events({
+        someCustomEvent: function (...args1) {
+          let i;
+          for (i = 0; i < args.length; i++) {
+            // expect the arguments to be just after template
+            test.equal(args1[i + 2], args[i]);
+          }
+          captured = true;
+        },
+      });
 
-    tmpl.rendered = function () {
-      $(this.find('button')).trigger('someCustomEvent', args);
-    };
+      tmpl.rendered = function () {
+        $(this.find('button')).trigger('someCustomEvent', args);
+      };
 
-    renderToDiv(tmpl);
-    Tracker.flush();
-    test.equal(captured, true);
-  }
-);
+      renderToDiv(tmpl);
+      Tracker.flush();
+      test.equal(captured, true);
+    }
+  );
+}
 
 Tinytest.add(
   'spacebars-tests - old - template_tests - toHTML',
@@ -2329,7 +2341,7 @@ Tinytest.add(
 );
 
 // https://github.com/meteor/meteor/issues/2156
-Tinytest.add(
+Tinytest.addAsync(
   'spacebars-tests - old - template_tests - each with inserts inside autorun',
   async function (test) {
     const tmpl = Template.old_spacebars_test_each_with_autorun_insert;
@@ -2532,7 +2544,11 @@ Tinytest.add(
     test.equal(helperCalled, true);
 
     helperCalled = false;
-    $(div).find('.test-with-cleanup').remove();
+    if (hasJquery) {
+      $(div).find('.test-with-cleanup').remove();
+    } else {
+      div.querySelector('.test-with-cleanup').remove();
+    }
 
     rv.set('second');
     Tracker.flush();
@@ -2595,7 +2611,7 @@ Tinytest.add('spacebars - old - SVG <a> elements', function (test) {
   const tmpl = Template.old_spacebars_test_svg_anchor;
   const div = renderToDiv(tmpl);
 
-  const anchNamespace = $(div).find('a').get(0).namespaceURI;
+  const anchNamespace = div.querySelector('a').namespaceURI;
   test.equal(anchNamespace, 'http://www.w3.org/2000/svg');
 });
 
@@ -2637,7 +2653,7 @@ Tinytest.add(
     divRendersTo(test, div, '<div>C</div>');
     test.equal(buf, 'CaRaDaCbRbDbCcRc');
 
-    $(div).remove();
+    if (hasJquery) { $(div).remove() } else { div.remove() }
     test.equal(buf, 'CaRaDaCbRbDbCcRcDc');
   }
 );
@@ -2708,6 +2724,7 @@ Tinytest.add(
   }
 );
 
+if (hasJquery) {
 Tinytest.add(
   'spacebars-tests - old - template_tests - UI.render fails on jQuery objects',
   function (test) {
@@ -2720,6 +2737,7 @@ Tinytest.add(
     }, /'nextNode' must be a DOM node/);
   }
 );
+}
 
 Tinytest.add(
   'spacebars-tests - old - template_tests - UI.getElementData',
@@ -2788,10 +2806,21 @@ Tinytest.add(
 
     // Now see that removing the DOM with jQuery, below
     // the level of the entire template, stops everything.
-    $(div.querySelector('.toremove')).remove();
+    if (hasJquery) {
+      $(div.querySelector('.toremove')).remove();
+    } else {
+      div.querySelector('.toremove').remove();
+    }
     assertCallsAndListeners(0, 0, 0, 0);
   }
 );
+
+
+const trigger = ({ el, eventType, bubbles = true, options }) => {
+  const event = new Event(eventType, { bubbles, cancelable: true });
+  if (options) Object.assign(event, options);
+  el.dispatchEvent(event);
+};
 
 Tinytest.add(
   'spacebars-tests - old - template_tests - focus/blur with clean-up',
@@ -2817,8 +2846,8 @@ Tinytest.add(
     // check basic focus and blur to make sure
     // everything is sane
     test.equal(div.querySelectorAll('input').length, 1);
-    let input;
-    focusElement((input = div.querySelector('input')));
+    let input = div.querySelector('input');
+    focusElement(input);
     // We don't get focus events when the Chrome Dev Tools are focused,
     // unfortunately, as of Chrome 35.  I think this is a regression in
     // Chrome 34.  So, the goal is to work whether or not focus is
@@ -2837,11 +2866,22 @@ Tinytest.add(
           'You might need to defocus the Chrome Dev Tools to get a more accurate run of this test!',
       });
       borken = true;
-      $(input).trigger('focus');
+      if (hasJquery) {
+        $(input).trigger('focus');
+      } else {
+        trigger({ el: input, eventType: 'focusin', bubbles: true });
+      }
     }
     test.equal(buf.join(), 'FOCUS');
-    blurElement(div.querySelector('input'));
-    if (buf.length === 1) $(input).trigger('blur');
+    input = div.querySelector('input')
+    blurElement(input);
+    if (buf.length === 1) {
+      if (hasJquery) {
+        $(input).trigger('blur');
+      } else {
+        trigger({ el: input, eventType: 'focusout', bubbles: true });
+      }
+    }
     test.equal(buf.join(), 'FOCUS,BLUR');
 
     // now switch the IF and check again.  The failure mode
@@ -2855,11 +2895,88 @@ Tinytest.add(
     buf.length = 0;
     Tracker.flush();
     test.equal(div.querySelectorAll('input').length, 1);
-    focusElement((input = div.querySelector('input')));
-    if (borken) $(input).trigger('focus');
+    input = div.querySelector('input')
+    focusElement(input);
+    if (borken) {
+      if (hasJquery) {
+        $(input).trigger('focus');
+      } else {
+        trigger({ el: input, eventType: 'focusin', bubbles: true });
+      }
+    }
     test.equal(buf.join(), 'FOCUS');
-    blurElement(div.querySelector('input'));
+    input = div.querySelector('input')
+    blurElement(input);
     if (!borken) test.equal(buf.join(), 'FOCUS,BLUR');
+
+    document.body.removeChild(div);
+  }
+);
+
+// this is an explicit additional test for manual event
+// dispatch of focus/blur, in case the previous test did not
+// branch into these cases
+Tinytest.add(
+  'spacebars-tests - old - template_tests - manual focus/blur with clean-up',
+  function (test) {
+    const tmpl = Template.old_spacebars_test_focus_blur_outer;
+    const cond = ReactiveVar(true);
+    tmpl.cond = function () {
+      return cond.get();
+    };
+    const buf = [];
+    Template.old_spacebars_test_focus_blur_inner.events({
+      'focus input': function () {
+        buf.push('FOCUS');
+      },
+      'blur input': function () {
+        buf.push('BLUR');
+      },
+    });
+
+
+    const div = renderToDiv(tmpl);
+    document.body.appendChild(div);
+
+    // check basic focus and blur to make sure
+    // everything is sane
+    test.equal(div.querySelectorAll('input').length, 1);
+
+    let input;
+
+    const focus = () => {
+      input = div.querySelector('input')
+      if (hasJquery) {
+        $(input).trigger('focus');
+      } else {
+        trigger({ el: input, eventType: 'focusin', bubbles: true });
+      }
+    };
+
+    const blur = () => {
+      input = div.querySelector('input')
+      if (hasJquery) {
+        $(input).trigger('blur');
+      } else {
+        trigger({ el: input, eventType: 'focusout', bubbles: true });
+      }
+    };
+
+    focus();
+    test.equal(buf.join(), 'FOCUS');
+
+    blur();
+    test.equal(buf.join(), 'FOCUS,BLUR');
+
+    // now switch the IF and check again.
+    cond.set(false);
+    buf.length = 0;
+    Tracker.flush();
+    test.equal(div.querySelectorAll('input').length, 1);
+    focus();
+    test.equal(buf.join(), 'FOCUS');
+    blur();
+    test.equal(buf.join(), 'FOCUS,BLUR');
 
     document.body.removeChild(div);
   }
@@ -2951,7 +3068,7 @@ Tinytest.add(
     test.equal(canonicalizeHtml(div.innerHTML), '<span>blah</span>');
     document.body.appendChild(div);
     clickElement(div.querySelector('span'));
-    $(div).remove();
+    if (hasJquery) { $(div).remove() } else { div.remove() }
 
     test.isTrue(currentView);
     test.equal(currentData, 'blah');
@@ -3003,7 +3120,10 @@ Tinytest.add(
         // One of the templates has a separate attribute in addition to
         // an attributes dictionary.
         if (tmplInfo === tmplWithContentsAndMoreAttrs) {
-          test.equal($(textarea).attr('class'), 'bar');
+          const att = hasJquery
+            ? $(textarea).attr('class')
+            : textarea.getAttribute('class');
+          test.equal(att, 'bar');
         }
 
         // Change the id, check that the attribute updates reactively.
@@ -3021,7 +3141,10 @@ Tinytest.add(
         );
 
         if (tmplInfo === tmplWithContentsAndMoreAttrs) {
-          test.equal($(textarea).attr('class'), 'bar');
+          const att = hasJquery
+            ? $(textarea).attr('class')
+            : textarea.getAttribute('class');
+          test.equal(att, 'bar');
         }
       }
     );

@@ -11,7 +11,6 @@ Package.onTest(function (api) {
   api.use([
     'es5-shim@4.8.0',
     'tinytest',
-    'jquery@1.11.9 || 3.0.0',
     'test-helpers',
     'reactive-var',
     'markdown@1.0.14 || 2.0.0 || 3.0.0-beta300.7',
