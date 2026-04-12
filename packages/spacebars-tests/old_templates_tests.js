@@ -2813,7 +2813,7 @@ Tinytest.add(
 
 
 const trigger = ({ el, eventType, bubbles = true, options }) => {
-  const event = new Event(eventType, { bubbles: bubbles, cancelable: true });
+  const event = new Event(eventType, { bubbles, cancelable: true });
   if (options) Object.assign(event, options);
   el.dispatchEvent(event);
 };
@@ -2842,8 +2842,8 @@ Tinytest.add(
     // check basic focus and blur to make sure
     // everything is sane
     test.equal(div.querySelectorAll('input').length, 1);
-    let input;
-    focusElement((input = div.querySelector('input')));
+    let input = div.querySelector('input');
+    focusElement(input);
     // We don't get focus events when the Chrome Dev Tools are focused,
     // unfortunately, as of Chrome 35.  I think this is a regression in
     // Chrome 34.  So, the goal is to work whether or not focus is
@@ -2865,16 +2865,17 @@ Tinytest.add(
       if (hasJquery) {
         $(input).trigger('focus');
       } else {
-        trigger({ el: input, eventName: 'focusin', bubbles: true });
+        trigger({ el: input, eventType: 'focusin', bubbles: true });
       }
     }
     test.equal(buf.join(), 'FOCUS');
-    blurElement(div.querySelector('input'));
+    input = div.querySelector('input')
+    blurElement(input);
     if (buf.length === 1) {
       if (hasJquery) {
         $(input).trigger('blur');
       } else {
-        trigger({ el: input, eventName: 'focusout', bubbles: true });
+        trigger({ el: input, eventType: 'focusout', bubbles: true });
       }
     }
     test.equal(buf.join(), 'FOCUS,BLUR');
@@ -2890,17 +2891,88 @@ Tinytest.add(
     buf.length = 0;
     Tracker.flush();
     test.equal(div.querySelectorAll('input').length, 1);
-    focusElement((input = div.querySelector('input')));
+    input = div.querySelector('input')
+    focusElement(input);
     if (borken) {
       if (hasJquery) {
         $(input).trigger('focus');
       } else {
-        trigger({ el: input, eventName: 'focusin', bubbles: true });
+        trigger({ el: input, eventType: 'focusin', bubbles: true });
       }
     }
     test.equal(buf.join(), 'FOCUS');
-    blurElement(div.querySelector('input'));
+    input = div.querySelector('input')
+    blurElement(input);
     if (!borken) test.equal(buf.join(), 'FOCUS,BLUR');
+
+    document.body.removeChild(div);
+  }
+);
+
+// this is an explicit additional test for manual event
+// dispatch of focus/blur, in case the previous test did not
+// branch into these cases
+Tinytest.add(
+  'spacebars-tests - old - template_tests - manual focus/blur with clean-up',
+  function (test) {
+    const tmpl = Template.old_spacebars_test_focus_blur_outer;
+    const cond = ReactiveVar(true);
+    tmpl.cond = function () {
+      return cond.get();
+    };
+    const buf = [];
+    Template.old_spacebars_test_focus_blur_inner.events({
+      'focus input': function () {
+        buf.push('FOCUS');
+      },
+      'blur input': function () {
+        buf.push('BLUR');
+      },
+    });
+
+
+    const div = renderToDiv(tmpl);
+    document.body.appendChild(div);
+
+    // check basic focus and blur to make sure
+    // everything is sane
+    test.equal(div.querySelectorAll('input').length, 1);
+
+    let input;
+
+    const focus = () => {
+      input = div.querySelector('input')
+      if (hasJquery) {
+        $(input).trigger('focus');
+      } else {
+        trigger({ el: input, eventType: 'focusin', bubbles: true });
+      }
+    };
+
+    const blur = () => {
+      input = div.querySelector('input')
+      if (hasJquery) {
+        $(input).trigger('blur');
+      } else {
+        trigger({ el: input, eventType: 'focusout', bubbles: true });
+      }
+    };
+
+    focus();
+    test.equal(buf.join(), 'FOCUS');
+
+    blur();
+    test.equal(buf.join(), 'FOCUS,BLUR');
+
+    // now switch the IF and check again.
+    cond.set(false);
+    buf.length = 0;
+    Tracker.flush();
+    test.equal(div.querySelectorAll('input').length, 1);
+    focus();
+    test.equal(buf.join(), 'FOCUS');
+    blur();
+    test.equal(buf.join(), 'FOCUS,BLUR');
 
     document.body.removeChild(div);
   }

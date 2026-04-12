@@ -3327,7 +3327,7 @@ Tinytest.add(
 );
 
 const trigger = ({ el, eventType, bubbles = true, options }) => {
-  const event = new Event(eventType, { bubbles: bubbles, cancelable: true });
+  const event = new Event(eventType, { bubbles, cancelable: true });
   if (options) Object.assign(event, options);
   el.dispatchEvent(event);
 };
@@ -3416,6 +3416,102 @@ Tinytest.add(
     }
     test.equal(buf.join(), 'FOCUS');
     blurElement(div.querySelector('input'));
+    if (!borken) test.equal(buf.join(), 'FOCUS,BLUR');
+
+    document.body.removeChild(div);
+  }
+);
+
+// this is an explicit additional test for manual event
+// dispatch of focus/blur, in case the previous test did not
+// branch into these cases
+Tinytest.add(
+  'spacebars-tests - template_tests - manual focus/blur with clean-up',
+  function (test) {
+    const tmpl = Template.spacebars_test_focus_blur_outer;
+    const cond = ReactiveVar(true);
+    tmpl.helpers({
+      cond: function () {
+        return cond.get();
+      },
+    });
+    const buf = [];
+    Template.spacebars_test_focus_blur_inner.events({
+      'focus input': function () {
+        buf.push('FOCUS');
+      },
+      'blur input': function () {
+        buf.push('BLUR');
+      },
+    });
+
+    const div = renderToDiv(tmpl);
+    document.body.appendChild(div);
+
+    // check basic focus and blur to make sure
+    // everything is sane
+    test.equal(div.querySelectorAll('input').length, 1);
+    let input = div.querySelector('input');
+    focusElement(input);
+    // We don't get focus events when the Chrome Dev Tools are focused,
+    // unfortunately, as of Chrome 35.  I think this is a regression in
+    // Chrome 34.  So, the goal is to work whether or not focus is
+    // "borken," where "working" means always failing if DOMBackend isn't
+    // correctly unbinding the old event handlers when we switch the IF,
+    // and always passing if it is.  To cause the problem in DOMBackend,
+    // delete the '**' argument to jQuery#off in
+    // DOMBackend.Events.undelegateEvents.  The only compromise we are
+    // making here is that if some unrelated bug in Blaze makes
+    // focus/blur not work, the failure might be masked while the Dev
+    // Tools are open.
+    let borken = false;
+    if (buf.length === 0 && document.activeElement === input) {
+      test.ok({
+        note:
+          'You might need to defocus the Chrome Dev Tools to get a more accurate run of this test!',
+      });
+      borken = true;
+      if (hasJquery) {
+        $(input).trigger('focus');
+      } else {
+        trigger({ el: input, eventType: 'focusin', bubbles: true });
+      }
+    }
+    test.equal(buf.join(), 'FOCUS');
+    input = div.querySelector('input')
+    blurElement(input);
+    if (buf.length === 1) {
+      if (hasJquery) {
+        $(input).trigger('blur');
+      } else {
+        trigger({ el: input, eventType: 'focusout', bubbles: true });
+      }
+    }
+    test.equal(buf.join(), 'FOCUS,BLUR');
+
+    // now switch the IF and check again.  The failure mode
+    // we observed was that DOMBackend would not correctly
+    // unbind the old event listener at the jQuery level,
+    // so the old event listener would fire and cause an
+    // exception inside Blaze ("Must be attached" in
+    // DOMRange#containsElement), which would show up in
+    // the console and cause our handler not to fire.
+    cond.set(false);
+    buf.length = 0;
+    Tracker.flush();
+    test.equal(div.querySelectorAll('input').length, 1);
+    input = div.querySelector('input')
+    focusElement(input);
+    if (borken) {
+      if (hasJquery) {
+        $(input).trigger('focus');
+      } else {
+        trigger({ el: input, eventType: 'focusin', bubbles: true });
+      }
+    }
+    test.equal(buf.join(), 'FOCUS');
+    input = div.querySelector('input')
+    blurElement(input);
     if (!borken) test.equal(buf.join(), 'FOCUS,BLUR');
 
     document.body.removeChild(div);
