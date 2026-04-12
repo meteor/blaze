@@ -43,6 +43,14 @@ Spacebars.include = function (templateOrFunction, contentFunc, elseFunc) {
     if (template === null)
       return null;
 
+    // Error state: render inline error placeholder instead of crashing
+    if (template instanceof Error) {
+      if (typeof Blaze._errorIndicator !== 'undefined' && Blaze._errorIndicator) {
+        return Blaze._renderErrorPlaceholder(template.message);
+      }
+      return null;
+    }
+
     if (! Blaze.isTemplate(template))
       throw new Error(`Expected template or null, found: ${template}`);
 
@@ -51,7 +59,17 @@ Spacebars.include = function (templateOrFunction, contentFunc, elseFunc) {
   view.__templateVar = templateVar;
   view.onViewCreated(function () {
     this.autorun(function () {
-      templateVar.set(templateOrFunction());
+      try {
+        templateVar.set(templateOrFunction());
+      } catch (e) {
+        // If _throwNextException is set (e.g., in tests), let the error
+        // propagate normally so test assertions work
+        if (Blaze._throwNextException) {
+          throw e;
+        }
+        templateVar.set(e);
+        Blaze._reportException(e, 'Exception in template inclusion:');
+      }
     });
   });
   view.__startsNewLexicalScope = true;

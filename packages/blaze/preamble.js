@@ -39,6 +39,30 @@ Blaze._warn = function (msg) {
   }
 };
 
+/**
+ * Shared inline style for error placeholders rendered when templates fail.
+ * Used by view.js, spacebars-runtime.js, and generated fallback code.
+ * @private
+ */
+Blaze._ERROR_PLACEHOLDER_STYLE = 'display:block;padding:8px 12px;margin:4px 0;' +
+  'background-color:#fee;border:1px solid #fcc;' +
+  'border-left:4px solid #dc3545;color:#721c24;' +
+  'font-family:monospace;font-size:13px;border-radius:4px;white-space:pre-wrap';
+
+/**
+ * Renders an inline error placeholder SPAN using htmljs.
+ * Used by the rendering pipeline to show errors without crashing the page.
+ * 
+ * @param {string} message - The error message to display
+ * @returns {Object} An htmljs SPAN node
+ * @private
+ */
+Blaze._renderErrorPlaceholder = function (message) {
+  return HTML.SPAN({
+    style: Blaze._ERROR_PLACEHOLDER_STYLE
+  }, '\u26A0 ' + message);
+};
+
 const nativeBind = Function.prototype.bind;
 
 // An implementation of _.bind which allows better optimization.

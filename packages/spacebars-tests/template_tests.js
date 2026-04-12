@@ -2193,9 +2193,13 @@ Tinytest.add('spacebars-tests - template_tests - attributes', function (test) {
 Tinytest.add(
   'spacebars-tests - template_tests - unfound template',
   function (test) {
-    test.throws(function () {
-      renderToDiv(Template.spacebars_test_nonexistent_template);
-    }, /No such template/);
+    // Missing templates now render gracefully with an error placeholder
+    // instead of throwing (see errorIndicator.js).
+    Blaze.clearErrors();
+    var div = renderToDiv(Template.spacebars_test_nonexistent_template);
+    var errors = Blaze.getErrors();
+    test.isTrue(errors.length > 0, 'Expected at least one error');
+    test.isTrue(/No such template/.test(errors[0].error), 'Expected "No such template" error');
   }
 );
 
