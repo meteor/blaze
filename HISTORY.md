@@ -1,3 +1,10 @@
+## v3.0.3, 2026-XX-XX
+
+### Highlights
+* [#480](https://github.com/meteor/blaze/pull/480) Fix SWC compatibility by transforming `arguments` to rest parameters (`...args`)
+* [#477](https://github.com/meteor/blaze/pull/477) Migrate CI from CircleCI to GitHub Actions
+* [#486](https://github.com/meteor/blaze/pull/486) Fix CI timeout in observe-sequence tests
+
 ## v3.0.2, 2025-02-04
 
 ### Highlights
