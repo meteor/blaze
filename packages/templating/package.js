@@ -11,7 +11,8 @@ Package.describe({
 // registry and a default templating system, ideally per-package.
 
 Package.onUse(function (api) {
-  api.export('Template', 'client');
+  // Export Template to both client and server for SSG rendering support
+  api.export('Template');
 
   api.use('templating-runtime@2.0.0');
   api.imply('templating-runtime');
