@@ -11,9 +11,10 @@ Package.onUse(function (api) {
   // XXX would like to do the following only when the first html file
   // is encountered
 
-  api.export('Template', 'client');
+  // Export Template to both client and server — server needs it for SSG rendering.
+  api.export('Template');
 
-  api.addFiles('templating.js', 'client');
+  api.addFiles('templating.js');
 
   // html_scanner.js emits client code that calls Meteor.startup and
   // Blaze, so anybody using templating (eg apps) need to implicitly use
@@ -27,13 +28,14 @@ Package.onUse(function (api) {
     'meteor',
     'blaze@3.0.0',
     'spacebars@2.0.0'
-  ], 'client');
+  ]);
 
   // to be able to compile dynamic.html. this compiler is used
   // only inside this package and it should not be implied to not
   // conflict with other packages providing .html compilers.
   api.use('templating-compiler@2.0.0');
 
+  // dynamic template support is client-only (requires DOM)
   api.addFiles([
     'dynamic.html',
     'dynamic.js'
