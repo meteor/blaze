@@ -51,6 +51,10 @@ Server-rendered templates should be written as pure render functions against exp
 
 The [`static-render` package](../packages/static-render) provides a higher-level API for pre-rendering routes at server startup (SSG) or at each request (SSR), integrating with `flow-router-extra` and the Meteor boilerplate pipeline.
 
+### SSG — Static Site Generation
+
+For pages whose content doesn't change without a server restart (about, contact, terms). The HTML is rendered once at startup and cached permanently in memory.
+
 ```js
 import { FlowRouter } from 'meteor/ostrio:flow-router-extra';
 
@@ -66,7 +70,36 @@ FlowRouter.route('/about', {
 });
 ```
 
-See the [static-render package docs](../packages/static-render) for full API reference.
+### SSR — Server-Side Rendering
+
+For pages whose data changes (products, articles, profiles). The HTML is rendered on each request with fresh MongoDB data.
+
+```js
+FlowRouter.route('/products/:slug', {
+  static: 'ssr',
+  template: 'productPage',
+  async staticData(params) {
+    return await Products.findOneAsync({ slug: params.slug });
+  },
+  async staticHead(params) {
+    const p = await Products.findOneAsync({ slug: params.slug });
+    return `<title>${p.title} — $${p.price} | MyShop</title>`;
+  },
+});
+```
+
+When a user edits the product description and saves it, refreshing the page shows the new data — because SSR queries MongoDB at each request.
+
+### SSG vs SSR — which to use?
+
+| | SSG | SSR |
+|---|---|---|
+| Data freshness | Frozen at startup | Fresh per request |
+| Serving cost | Instant (in-memory cache) | Query DB + render per request |
+| Use case | About, pricing, terms | Products, articles, profiles |
+| Data source | Hardcoded or DB at startup | MongoDB at request time |
+
+See the [static-render package docs](../packages/static-render) for full API reference including parameterized SSG routes (`staticPaths`), cache invalidation, and graceful error handling.
 
 ## Manual rendering (without static-render)
 
