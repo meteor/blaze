@@ -27,26 +27,32 @@ Template[${nameLiteral}] = new Template(${templateDotNameLiteral}, ${renderFuncC
 }
 
 export function generateBodyJS(renderFuncCode, useHMR) {
+  // Body rendering requires DOM (document.body) — guard with Meteor.isClient
+  // so that compiled templates can safely load on the server for SSG.
   if (useHMR) {
     return `
-(function () {
-  var renderFunc = ${renderFuncCode};
-  Template.body.addContent(renderFunc);
-  Meteor.startup(Template.body.renderToDocument);
-  if (typeof module === "object" && module.hot) {
-    module.hot.accept();
-    module.hot.dispose(function () {
-      var index = Template.body.contentRenderFuncs.indexOf(renderFunc)
-      Template.body.contentRenderFuncs.splice(index, 1);
-      Template._applyHmrChanges();
-    });
-  }
-})();
+if (Meteor.isClient) {
+  (function () {
+    var renderFunc = ${renderFuncCode};
+    Template.body.addContent(renderFunc);
+    Meteor.startup(Template.body.renderToDocument);
+    if (typeof module === "object" && module.hot) {
+      module.hot.accept();
+      module.hot.dispose(function () {
+        var index = Template.body.contentRenderFuncs.indexOf(renderFunc)
+        Template.body.contentRenderFuncs.splice(index, 1);
+        Template._applyHmrChanges();
+      });
+    }
+  })();
+}
 `
   }
 
   return `
-Template.body.addContent(${renderFuncCode});
-Meteor.startup(Template.body.renderToDocument);
+if (Meteor.isClient) {
+  Template.body.addContent(${renderFuncCode});
+  Meteor.startup(Template.body.renderToDocument);
+}
 `;
 }
