@@ -28,12 +28,12 @@ Blaze._reportException = function (e, msg) {
     throw e;
   }
 
-  if (! debugFunc)
+  if (!debugFunc)
     // adapted from Tracker
     debugFunc = function () {
       return (typeof Meteor !== "undefined" ? Meteor._debug :
-              ((typeof console !== "undefined") && console.log ? console.log :
-               function () {}));
+        ((typeof console !== "undefined") && console.log ? console.log :
+          function () { }));
     };
 
   // In Chrome, `e.stack` is a multiline string that starts with the message
