@@ -1,8 +1,8 @@
 babel-compiler@7.13.0
 babel-runtime@1.5.2
-blaze-tools@2.0.1-rc.0
+blaze-tools@2.0.1
 caching-compiler@2.0.1
-caching-html-compiler@2.0.1-rc.0
+caching-html-compiler@2.0.1
 core-runtime@1.0.0
 dynamic-import@0.7.4
 ecmascript@0.17.0
@@ -10,8 +10,8 @@ ecmascript-runtime@0.8.3
 ecmascript-runtime-client@0.12.3
 ecmascript-runtime-server@0.11.1
 fetch@0.1.6
-html-tools@2.0.1-rc.0
-htmljs@2.0.2-rc.0
+html-tools@2.0.1
+htmljs@2.0.2
 inter-process-messaging@0.1.2
 meteor@2.2.0
 modern-browsers@0.2.3
@@ -20,5 +20,5 @@ modules-runtime@0.13.2
 promise@1.0.0
 random@1.2.2
 react-fast-refresh@0.3.0
-spacebars-compiler@2.0.1-rc.0
-templating-tools@2.0.1-rc.0
+spacebars-compiler@2.0.1
+templating-tools@2.0.1
