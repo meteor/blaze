@@ -145,30 +145,34 @@ DOMBackend.Events = {
 };
 
 const createWrapper = (elem, type, selector, handler) => {
+    // jQuery delegation evaluates the selector rooted at the delegation
+    // element ($(elem).find(selector)): for 'div p', both the div and the p
+    // must live inside `elem`. A bare closest(selector) matches against the
+    // whole document, letting ancestors outside `elem` satisfy the selector.
+    const scopedSelector = selector
+        .split(',')
+        .map((part) => `:scope ${part}`)
+        .join(',');
+
     return (event) => {
         // event.target can be a text node (nodeType 3) — walk to parent element first
-        const origin = event.target;
-        const target = origin.nodeType === 1 ? origin.closest(selector) : origin.parentElement?.closest(selector);
+        const origin = event.target.nodeType === 1 ? event.target : event.target.parentElement;
+        if (!origin) return;
 
-        // we need to manually check, if a selector left the template scope
-        // which jQuery would do automatically for us.
-        // for this we traverse nodes that still match the selector
-        // and compare the final to see, if the event bubbled up to
-        // a parent view that is out of scope
-        let node = origin;
-        while (node && node !== elem && node instanceof Element && node.matches(selector)) {
-            node = node.parentElement;
+        const matches = new Set(elem.querySelectorAll(scopedSelector));
+
+        // closest ancestor-or-self of the target that the scoped selector
+        // matches — the element jQuery would pick as currentTarget. `elem`
+        // itself is excluded: delegated handlers only fire on descendants.
+        let target = null;
+        for (let node = origin; node && node !== elem; node = node.parentElement) {
+            if (matches.has(node)) {
+                target = node;
+                break;
+            }
         }
 
-        const root = elem?.['$blaze_range']?.view?.name;
-        const scope = node?.['$blaze_range']?.view?.name;
-
-        let inScope = true;
-        if (root && scope && root === scope) {
-            inScope = false;
-        }
-
-        if (target && elem.contains(target) && inScope) {
+        if (target) {
             // Mimic jQuery's delegated event behavior
             Object.defineProperty(event, 'currentTarget', {
                 value: target,

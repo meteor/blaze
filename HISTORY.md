@@ -1,3 +1,15 @@
+## v3.1.0-alpha.0, 2026-06-25
+
+### Highlights / Potentially breaking changes
+* [#493](https://github.com/meteor/blaze/pull/493) Made jQuery optional by adding a dual-mode jQuery/native DOM backend.
+* [#497](https://github.com/meteor/blaze/pull/497) Completed the native DOM backend follow-up with fixes and test coverage for both jQuery and non-jQuery setups.
+* [#489](https://github.com/meteor/blaze/pull/489) Removed external npm dependencies from Blaze packages.
+* [#478](https://github.com/meteor/blaze/pull/478) Improved attribute update performance in Blaze rendering.
+* [#488](https://github.com/meteor/blaze/pull/488) Modernized the codebase to ES2015+ syntax across Blaze packages.
+
+### Other changes
+* [#495](https://github.com/meteor/blaze/pull/495) Improved template exception reporting by using `console.error` in the fallback path.
+
 ## v3.0.2, 2025-02-04
 
 ### Highlights
