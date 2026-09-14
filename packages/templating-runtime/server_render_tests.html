@@ -1,0 +1,9 @@
+<template name="server_render_test_static"><p class="greeting">Hello</p></template>
+
+<template name="server_render_test_data"><h1 title="{{tip}}">{{title}}</h1><div>{{{raw}}}</div></template>
+
+<template name="server_render_test_flow">{{#if show}}<b>yes</b>{{else}}<b>no</b>{{/if}}{{#unless show}}<i>hidden</i>{{/unless}}<ul>{{#each items}}<li>{{name}}</li>{{/each}}</ul><ol>{{#each item in items}}<li>{{item.name}}</li>{{/each}}</ol>{{#with owner}}<span>{{name}}</span>{{/with}}</template>
+
+<template name="server_render_test_parent"><section>{{> server_render_test_child label=greeting}}</section></template>
+
+<template name="server_render_test_child"><span>{{label}}!</span></template>
