@@ -4480,3 +4480,50 @@ Tinytest.add(
     );
   }
 );
+
+// Regression tests for meteor/blaze#512 — the native (no-jQuery) backend's
+// delegation scope check compared `$blaze_range.view.name` strings, so a
+// delegated event was silently dropped whenever the delegation root's range
+// name matched the range name at the event's scope boundary.
+Tinytest.add(
+  'spacebars-tests - template_tests - delegated event fires in inclusion wrapped by an element inside {{#if}} (#512)',
+  function (test) {
+    const parent = Template.spacebars_test_event_scope_collision_parent;
+    const child = Template.spacebars_test_event_scope_collision_child;
+    parent.helpers({ show: () => true });
+    child.helpers({ show: () => true });
+    const buf = [];
+    child.events({
+      'click .hit': function (evt) {
+        buf.push(evt.currentTarget.className);
+      },
+    });
+
+    const div = renderToDiv(parent);
+    document.body.appendChild(div);
+    clickIt(div.querySelector('.hit'));
+    test.equal(buf.join(), 'hit');
+    document.body.removeChild(div);
+  }
+);
+
+Tinytest.add(
+  'spacebars-tests - template_tests - delegated event fires on direct child of a wrapper element (#512)',
+  function (test) {
+    const parent = Template.spacebars_test_event_scope_direct_parent;
+    const child = Template.spacebars_test_event_scope_direct_child;
+    child.helpers({ show: () => true });
+    const buf = [];
+    child.events({
+      'click .hit': function (evt) {
+        buf.push(evt.currentTarget.className);
+      },
+    });
+
+    const div = renderToDiv(parent);
+    document.body.appendChild(div);
+    clickIt(div.querySelector('.hit'));
+    test.equal(buf.join(), 'hit');
+    document.body.removeChild(div);
+  }
+);
