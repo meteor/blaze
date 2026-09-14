@@ -1172,3 +1172,25 @@ Hi there!
     <div>{{item}}</div>
   {{/each}}
 </template>
+
+<template name="spacebars_test_event_scope_collision_parent">
+  {{#if show}}
+    <div class="wrapper">{{> spacebars_test_event_scope_collision_child}}</div>
+  {{/if}}
+</template>
+
+<template name="spacebars_test_event_scope_collision_child">
+  {{#if show}}
+    <nav><button type="button" class="hit">go</button></nav>
+  {{/if}}
+</template>
+
+<template name="spacebars_test_event_scope_direct_parent">
+  <div class="wrapper">{{> spacebars_test_event_scope_direct_child}}</div>
+</template>
+
+<template name="spacebars_test_event_scope_direct_child">
+  {{#if show}}
+    <button type="button" class="hit">go</button>
+  {{/if}}
+</template>
