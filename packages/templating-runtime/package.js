@@ -59,4 +59,11 @@ Package.onTest(function (api) {
     'dynamic_tests.html',
     'dynamic_tests.js'
   ], 'client');
+
+  // Loaded on both architectures to compare server and client output.
+  api.addFiles([
+    'server_render_tests.html',
+    'server_render_tests.js'
+  ]);
+  api.addFiles('server_render_body_tests.html', 'server');
 });
