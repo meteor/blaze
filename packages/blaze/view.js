@@ -471,6 +471,28 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
   Tracker.nonreactive(function () {
     view.autorun(function doRender(c) {
       // `view.autorun` sets the current view.
+
+      // Skip re-render if this view or an ancestor is an #each item that
+      // is pending a sequence update. This prevents stale renders where an
+      // item's helpers re-run before ObserveSequence has had a chance to
+      // update or remove it. Instead of returning silently — which would
+      // leave this computation with zero reactive dependencies and thus
+      // permanently dead — we depend on the owning each view's revival
+      // dependency. ObserveSequence's `afterDiff` fires that dependency
+      // once the pending flag is cleared, so this computation re-runs and
+      // re-collects its real dependencies with fresh data. See
+      // meteor/blaze#468.
+      if (!c.firstRun) {
+        let v = view;
+        while (v) {
+          if (v._eachItemPendingUpdate) {
+            v._eachItemPendingUpdate.depend();
+            return;
+          }
+          v = v.parentView;
+        }
+      }
+
       view.renderCount = view.renderCount + 1;
       view._isInRender = true;
       // Any dependencies that should invalidate this Computation come
