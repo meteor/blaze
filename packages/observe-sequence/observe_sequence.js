@@ -71,6 +71,21 @@ ObserveSequence = {
   //     * removedAt(id, oldItem, atIndex)
   //     * movedTo(id, item, fromIndex, toIndex, beforeId)
   //
+  //     Two optional hooks run around each re-evaluation of `sequenceFunc`.
+  //     They are not called for the incremental changes a cursor reports
+  //     through its own observe between re-evaluations.
+  //
+  //     * onInvalidate() -- called synchronously when the computation
+  //       running `sequenceFunc` is invalidated, before Tracker re-runs it
+  //       at the next flush, so callers can act before other computations
+  //       re-run. Also called when the returned handle is stopped.
+  //       Blaze.Each uses it to mark its item views as pending.
+  //     * afterDiff() -- called once each time the new sequence has been
+  //       diffed and the callbacks above have run, including the first
+  //       run. It still runs if one of those callbacks throws; the previous
+  //       sequence is then kept as the baseline for the next diff.
+  //       Blaze.Each uses it to clear the pending state.
+  //
   // @returns {Object(stop: Function)} call 'stop' on the return value
   //     to stop observing this sequence function.
   //
@@ -147,12 +162,6 @@ ObserveSequence = {
           seqArray = seqChangedToArray(lastSeqArray, array, callbacks);
         } else {
           throw badSequenceError(seq);
-        }
-
-        // Allow callers to prepare for the diff (e.g., freeze item views
-        // that are about to be removed). See meteor/blaze#468.
-        if (callbacks.beforeDiff) {
-          callbacks.beforeDiff(lastSeqArray, seqArray);
         }
 
         try {

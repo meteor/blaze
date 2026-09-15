@@ -744,7 +744,7 @@ Tinytest.addAsync('observe-sequence - cursor to other cursor, same collection', 
 
 // #468 — `afterDiff` must always run, even if a diff callback (e.g. an
 // item view's first render in Blaze.Each) throws mid-diff. Otherwise
-// callers that freeze state in `onInvalidate`/`beforeDiff` and release it
+// callers that freeze state in `onInvalidate` and release it
 // in `afterDiff` would be left permanently frozen by a transient error.
 Tinytest.add(
   'observe-sequence - afterDiff runs even when a diff callback throws',
