@@ -10,6 +10,11 @@
 ### Other changes
 * [#495](https://github.com/meteor/blaze/pull/495) Improved template exception reporting by using `console.error` in the fallback path.
 
+## v3.0.3, 2026-XX-XX
+
+### Highlights
+* [#480](https://github.com/meteor/blaze/pull/480) Fix SWC compatibility by transforming `arguments` to rest parameters (`...args`)
+
 ## v3.0.2, 2025-02-04
 
 ### Highlights
