@@ -40,6 +40,11 @@ Blaze._reportException = function (e, msg) {
   // and contains a stack trace.  Furthermore, `console.error` (or `console.log`)
   // makes it clickable. Both provide space between the two arguments.
   debugFunc()(msg || 'Exception caught in template:', e.stack || e.message || e);
+
+  // Report to visual error indicator (client-side only)
+  if (typeof Blaze._errorIndicator !== 'undefined' && Blaze._errorIndicator) {
+    Blaze._errorIndicator.addError(e, msg);
+  }
 };
 
 // It's meant to be used in `Promise` chains to report the error while not
