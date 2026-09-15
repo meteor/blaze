@@ -27,25 +27,24 @@ Scanner.prototype.fatal = function (msg) {
   // despite this default, you should always provide a message!
   msg = (msg || "Parse error");
 
-  var CONTEXT_AMOUNT = 20;
+  const CONTEXT_AMOUNT = 20;
 
-  var input = this.input;
-  var pos = this.pos;
-  var pastInput = input.substring(pos - CONTEXT_AMOUNT - 1, pos);
+  const input = this.input;
+  const pos = this.pos;
+  let pastInput = input.substring(pos - CONTEXT_AMOUNT - 1, pos);
   if (pastInput.length > CONTEXT_AMOUNT)
-    pastInput = '...' + pastInput.substring(-CONTEXT_AMOUNT);
+    pastInput = `...${pastInput.substring(-CONTEXT_AMOUNT)}`;
 
-  var upcomingInput = input.substring(pos, pos + CONTEXT_AMOUNT + 1);
+  let upcomingInput = input.substring(pos, pos + CONTEXT_AMOUNT + 1);
   if (upcomingInput.length > CONTEXT_AMOUNT)
-    upcomingInput = upcomingInput.substring(0, CONTEXT_AMOUNT) + '...';
+    upcomingInput = `${upcomingInput.substring(0, CONTEXT_AMOUNT)}...`;
 
-  var positionDisplay = ((pastInput + upcomingInput).replace(/\n/g, ' ') + '\n' +
-                         (new Array(pastInput.length + 1).join(' ')) + "^");
+  const positionDisplay = `${(pastInput + upcomingInput).replace(/\n/g, ' ')}\n${(new Array(pastInput.length + 1).join(' '))}^`;
 
-  var e = new Error(msg + "\n" + positionDisplay);
+  const e = new Error(`${msg}\n${positionDisplay}`);
 
   e.offset = pos;
-  var allPastInput = input.substring(0, pos);
+  const allPastInput = input.substring(0, pos);
   e.line = (1 + (allPastInput.match(/\n/g) || []).length);
   e.col = (1 + pos - allPastInput.lastIndexOf('\n'));
   e.scanner = this;
@@ -71,7 +70,7 @@ Scanner.prototype.peek = function () {
 // is returned.
 export function makeRegexMatcher(regex) {
   return function (scanner) {
-    var match = regex.exec(scanner.rest());
+    const match = regex.exec(scanner.rest());
 
     if (! match)
       return null;

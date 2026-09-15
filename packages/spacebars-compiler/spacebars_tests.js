@@ -5,10 +5,10 @@ import { SpacebarsCompiler } from 'meteor/spacebars-compiler';
 
 Tinytest.add("spacebars-compiler - stache tags", function (test) {
 
-  var run = function (input, expected) {
+  const run = function (input, expected) {
     if (typeof expected === "string") {
       // test for error starting with string `expected`
-      var msg = '';
+      let msg = '';
       test.throws(function () {
         try {
           SpacebarsCompiler.TemplateTag.parse(input);
@@ -19,7 +19,7 @@ Tinytest.add("spacebars-compiler - stache tags", function (test) {
       });
       test.equal(msg.slice(0, expected.length), expected);
     } else {
-      var result = SpacebarsCompiler.TemplateTag.parse(input);
+      const result = SpacebarsCompiler.TemplateTag.parse(input);
       test.equal(result, expected);
     }
   };

@@ -112,9 +112,10 @@ class HtmlScan {
       }
 
       // find </tag>
-      const end = (new RegExp('</'+tagName+'\\s*>', 'i')).exec(this.rest);
+      const end = (new RegExp(`</${tagName}\\s*>`, 'i')).exec(this.rest);
       if (! end) {
-        this.throwCompileError("unclosed <"+tagName+">");
+        this.throwCompileError(`unclosed <${tagName}>`);
+
       }
 
       const tagContents = this.rest.slice(0, end.index);
@@ -122,7 +123,7 @@ class HtmlScan {
 
       // trim the tag contents.
       // this is a courtesy and is also relied on by some unit tests.
-      var m = tagContents.match(/^([ \t\r\n]*)([\s\S]*?)[ \t\r\n]*$/);
+      const m = tagContents.match(/^([ \t\r\n]*)([\s\S]*?)[ \t\r\n]*$/);
       const trimmedContentsStartIndex = contentsStartIndex + m[1].length;
       const trimmedTagContents = m[2];
 

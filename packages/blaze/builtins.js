@@ -1,5 +1,4 @@
-import has from 'lodash.has';
-import isObject from 'lodash.isobject';
+import { hasOwn, isObject } from './utils';
 
 Blaze._calculateCondition = function (cond) {
   if (HTML.isArray(cond) && cond.length === 0) return false;
@@ -7,7 +6,12 @@ Blaze._calculateCondition = function (cond) {
 };
 
 /**
- * @summary Constructs a View that renders content with a data context.
+ * Constructs a View that renders content with a data context.
+ * Returns an unrendered View object you can pass to `Blaze.render`.
+ *
+ * Unlike <code v-pre>{{#with}}</code> (as used in templates), `Blaze.With` has no "else" case, and
+ * a falsy value for the data context will not prevent the content from
+ * rendering.
  * @locus Client
  * @param {Object|Function} data An object to use as the data context, or a function returning such an object.  If a
  *   function is provided, it will be reactively re-run.
@@ -29,6 +33,7 @@ Blaze.With = function (data, contentFunc) {
  * @summary Shallow compare of two bindings.
  * @param {Binding} x
  * @param {Binding} y
+ * @private
  */
 function _isEqualBinding(x, y) {
   if (typeof x === 'object' && typeof y === 'object') {
@@ -43,6 +48,7 @@ function _isEqualBinding(x, y) {
  * @template T
  * @param {T} x
  * @returns {T}
+ * @private
  */
 function _identity(x) {
   return x;
@@ -54,6 +60,7 @@ function _identity(x) {
  * @param {ReactiveVar<U>} reactiveVar Target view.
  * @param {Promise<T> | T} value Bound value.
  * @param {function(T): U} [mapper] Maps the computed value before store.
+ * @private
  */
 function _setBindingValue(reactiveVar, value, mapper = _identity) {
   if (value && typeof value.then === 'function') {
@@ -73,6 +80,7 @@ function _setBindingValue(reactiveVar, value, mapper = _identity) {
  * @param {string} [displayName] Autorun's display name.
  * @param {function(T): U} [mapper] Maps the computed value before store.
  * @returns {ReactiveVar<U>}
+ * @private
  */
 function _createBinding(view, binding, displayName, mapper) {
   const reactiveVar = new ReactiveVar(undefined, _isEqualBinding);
@@ -97,7 +105,7 @@ function _createBinding(view, binding, displayName, mapper) {
  */
 Blaze._attachBindingsToView = function (bindings, view) {
   view.onViewCreated(function () {
-    Object.entries(bindings).forEach(function ([name, binding]) {
+    Object.entries(bindings).forEach(([name, binding]) => {
       view._scopeBindings[name] = _createBinding(view, binding);
     });
   });
@@ -110,14 +118,16 @@ Blaze._attachBindingsToView = function (bindings, view) {
  * @param {Function} contentFunc A Function that returns [*renderable content*](#Renderable-Content).
  */
 Blaze.Let = function (bindings, contentFunc) {
-  var view = Blaze.View('let', contentFunc);
+  const view = Blaze.View('let', contentFunc);
   Blaze._attachBindingsToView(bindings, view);
 
   return view;
 };
 
 /**
- * @summary Constructs a View that renders content conditionally.
+ * Constructs a View that renders content conditionally.
+ * Returns an unrendered View object you can pass to `Blaze.render`.
+ * Matches the behavior of <code v-pre>{{#if}}</code> in templates.
  * @locus Client
  * @param {Function} conditionFunc A function to reactively re-run.  Whether the result is truthy or falsy determines
  *   whether `contentFunc` or `elseFunc` is shown.  An empty array is considered falsy.
@@ -152,7 +162,9 @@ Blaze.If = function (conditionFunc, contentFunc, elseFunc, _not) {
 };
 
 /**
- * @summary An inverted [`Blaze.If`](#Blaze-If).
+ * An inverted [`Blaze.If`](#Blaze-If).
+ * Returns an unrendered View object you can pass to `Blaze.render`.
+ * Matches the behavior of <code v-pre>{{#unless}}</code> in templates.
  * @locus Client
  * @param {Function} conditionFunc A function to reactively re-run.  If the result is falsy, `contentFunc` is shown,
  *   otherwise `elseFunc` is shown.  An empty array is considered falsy.
@@ -165,7 +177,10 @@ Blaze.Unless = function (conditionFunc, contentFunc, elseFunc) {
 };
 
 /**
- * @summary Constructs a View that renders `contentFunc` for each item in a sequence.
+ * Constructs a View that renders `contentFunc` for each item in a sequence.
+ * Returns an unrendered View object you can pass to `Blaze.render`.
+ * Matches the behavior of <code v-pre>{{#each}}</code> in templates.
+ *
  * @locus Client
  * @param {Function} argFunc A function to reactively re-run. The function can
  * return one of two options:
@@ -223,7 +238,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
       // Unwrap a sequence reactively (`{{#each x in xs}}`).
       () => {
         let maybeSequence = argFunc();
-        if (isObject(maybeSequence) && has(maybeSequence, '_sequence')) {
+        if (isObject(maybeSequence) && hasOwn(maybeSequence, '_sequence')) {
           eachView.variableName = maybeSequence._variable || null;
           maybeSequence = maybeSequence._sequence;
         }

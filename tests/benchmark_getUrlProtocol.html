@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>getUrlProtocol Benchmark</title>
+<style>
+  body { font-family: sans-serif; padding: 20px; }
+  pre { background-color: #f4f4f4; padding: 10px; border: 1px solid #ccc; }
+  .result { margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<h1>getUrlProtocol Benchmark</h1>
+<p>Open your browser's developer console to see detailed timing. Results will also appear below.</p>
+<div id="results"></div>
+<div id="table-container"></div> <!-- Added for the results table -->
+
+<script>
+  // --- Setup (Mimic parts of attrs.js environment) ---
+  const Meteor = { isClient: true }; // Simulate Meteor environment
+
+  // --- Original getUrlProtocol (for 'before' test) ---
+  let anchorForNormalization_original;
+  if (Meteor.isClient) {
+    anchorForNormalization_original = document.createElement('A');
+  }
+  const getUrlProtocol_original = function (url) {
+    if (Meteor.isClient) {
+      anchorForNormalization_original.href = url; // Use its own anchor
+      return (anchorForNormalization_original.protocol || "").toLowerCase();
+    } else {
+      throw new Error('getUrlProtocol_original not implemented on the server');
+    }
+  };
+
+  // --- Patched getUrlProtocol (for 'after' test) ---
+  let anchorForNormalization_cached;
+  if (Meteor.isClient) {
+    anchorForNormalization_cached = document.createElement('A');
+  }
+  const _protocolCache = new Map(); // Cache for the patched version
+  const getUrlProtocol_cached = function (url) {
+    if (_protocolCache.has(url)) {
+      return _protocolCache.get(url);
+    }
+    if (Meteor.isClient) {
+      anchorForNormalization_cached.href = url; // Use its own anchor
+      const protocol = (anchorForNormalization_cached.protocol || "").toLowerCase();
+      _protocolCache.set(url, protocol);
+      return protocol;
+    } else {
+      throw new Error('getUrlProtocol_cached not implemented on the server');
+    }
+  };
+
+  // --- Benchmark Logic (Modified) ---
+  function runBenchmark(protocolGetterFn, description, resultsElement, suppressDOMOutput = false) {
+    // Clear cache for the cached version before its run
+    if (description.toLowerCase().includes('cached')) {
+        _protocolCache.clear(); // Ensure cache is clear at the start of a cached benchmark run
+    }
+
+    const urlsToTest = [
+      "http://example.com/page1",
+      "https://google.com/search",
+      "ftp://files.example.org/data.zip",
+      "http://example.com/page1", // Repeated
+      "https://google.com/search", // Repeated
+      "http://example.com/page2",
+      "https://anotherdomain.com",
+      "http://example.com/page1", // Repeated
+      "https://google.com/search", // Repeated
+      "ftp://files.example.org/data.zip", // Repeated
+      "http://example.com/unique1",
+      "https://example.com/unique2",
+      "mailto:test@example.com",
+      "tel:1234567890",
+      "http://example.com/unique1", // Repeated
+      "mailto:test@example.com" // Repeated
+    ];
+
+    const iterations = 10000; // Call the set of URLs many times
+    let totalProtocolsFound = 0; // To ensure the function is actually working
+
+    console.time(description);
+    const startTime = performance.now();
+
+    for (let i = 0; i < iterations; i++) {
+      for (const url of urlsToTest) {
+        if (protocolGetterFn(url)) { // Call the function
+          totalProtocolsFound++;
+        }
+      }
+    }
+
+    const endTime = performance.now();
+    console.timeEnd(description);
+    const duration = endTime - startTime;
+
+    if (!suppressDOMOutput) {
+        const resultText = `
+          <div class="result">
+            <strong>${description}:</strong><br>
+            Total protocols found: ${totalProtocolsFound}<br>
+            Execution time: ${duration.toFixed(3)} ms
+          </div>
+        `;
+        resultsElement.innerHTML += resultText;
+    }
+    console.log(`Total protocols found by ${description}: ${totalProtocolsFound}`);
+    console.log(`Execution time for ${description}: ${duration.toFixed(3)} ms`);
+    return duration;
+  }
+
+  // --- New Helper Functions ---
+  function generateResultsTable(results, container) {
+    let tableHTML = `
+        <h2>Benchmark Results (${results.length} Iterations)</h2>
+        <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; margin-top: 10px; width: 100%;">
+            <thead>
+                <tr>
+                    <th>Iteration</th>
+                    <th>Original Time (ms)</th>
+                    <th>Cached Time (ms)</th>
+                    <th>Improvement (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    results.forEach(res => {
+        tableHTML += `
+            <tr>
+                <td style="text-align: center;">${res.iteration}</td>
+                <td style="text-align: right;">${res.originalTime.toFixed(3)}</td>
+                <td style="text-align: right;">${res.cachedTime.toFixed(3)}</td>
+                <td style="text-align: right; color: ${res.improvement >= 0 ? 'green' : 'red'};">${res.improvement.toFixed(2)}%</td>
+            </tr>
+        `;
+    });
+    tableHTML += `
+            </tbody>
+        </table>
+    `;
+    container.innerHTML = tableHTML;
+  }
+
+  function displaySummary(results, summaryContainer) {
+    if (results.length === 0) {
+        summaryContainer.innerHTML += "<p>No results to summarize.</p>";
+        return;
+    }
+    const totalOriginalTime = results.reduce((sum, res) => sum + res.originalTime, 0);
+    const totalCachedTime = results.reduce((sum, res) => sum + res.cachedTime, 0);
+    const avgOriginalTime = totalOriginalTime / results.length;
+    const avgCachedTime = totalCachedTime / results.length;
+    let overallImprovement = 0;
+    if (totalOriginalTime > 0) { // Avoid division by zero if all original times were 0
+        overallImprovement = ((totalOriginalTime - totalCachedTime) / totalOriginalTime * 100);
+    } else if (totalCachedTime > 0) { // If original was 0 but cached took time
+        overallImprovement = -Infinity; // Indicates cached was slower than a zero-time original
+    }
+
+
+    const summaryHTML = `
+        <hr style="margin-top: 20px;">
+        <h3>Overall Summary (Average of ${results.length} iterations)</h3>
+        <p>Average Original Time: ${avgOriginalTime.toFixed(3)} ms</p>
+        <p>Average Cached Time: ${avgCachedTime.toFixed(3)} ms</p>
+        <p><strong>Overall Average Improvement: <span style="color: ${overallImprovement >= 0 ? 'green' : 'red'};">${overallImprovement.toFixed(2)}%</span></strong></p>
+        ${overallImprovement >= 0 ? "<p>(Cached version is faster on average)</p>" : "<p>(Cached version is slower or no improvement on average)</p>"}
+    `;
+    summaryContainer.innerHTML += summaryHTML;
+    console.log(`Average Original Time: ${avgOriginalTime.toFixed(3)} ms`);
+    console.log(`Average Cached Time: ${avgCachedTime.toFixed(3)} ms`);
+    console.log(`Overall Average Improvement: ${overallImprovement.toFixed(2)}%`);
+  }
+
+  // --- Run Benchmarks (Modified) ---
+  document.addEventListener('DOMContentLoaded', () => {
+    const resultsDiv = document.getElementById('results');
+    const tableContainerDiv = document.getElementById('table-container');
+    resultsDiv.innerHTML = '<p>Preparing benchmarks...</p>';
+
+    const numberOfBenchmarkIterations = 10;
+    const allIterationResults = [];
+
+    // Warm-up runs (suppress DOM output for these)
+    runBenchmark(getUrlProtocol_original, "Warm-up Original", resultsDiv, true);
+    // _protocolCache.clear(); // Already cleared at the start of runBenchmark for cached
+    runBenchmark(getUrlProtocol_cached, "Warm-up Cached", resultsDiv, true);
+
+    setTimeout(async () => { // Using async for potential await later if needed
+        resultsDiv.innerHTML = `<p>Running ${numberOfBenchmarkIterations} benchmark iterations...</p>`;
+
+        for (let i = 1; i <= numberOfBenchmarkIterations; i++) {
+            console.log(`Starting iteration ${i}...`);
+            resultsDiv.innerHTML = `<p>Running benchmark iteration ${i} of ${numberOfBenchmarkIterations}...</p>`; // Update status
+
+            // _protocolCache.clear(); // Cleared at start of runBenchmark for original too (no-op but consistent)
+            const timeBefore = runBenchmark(getUrlProtocol_original, `Original - Iteration ${i}`, resultsDiv, true);
+            
+            // _protocolCache.clear(); // Crucial: Cleared at start of runBenchmark for cached
+            const timeAfter = runBenchmark(getUrlProtocol_cached, `Cached - Iteration ${i}`, resultsDiv, true);
+
+            let improvement = 0;
+            if (timeBefore > 0) {
+                improvement = ((timeBefore - timeAfter) / timeBefore * 100);
+            } else if (timeAfter > 0) { // Original was 0, cached took time
+                improvement = -Infinity; 
+            }
+            allIterationResults.push({ iteration: i, originalTime: timeBefore, cachedTime: timeAfter, improvement: improvement });
+            
+            console.log(`Finished iteration ${i}: Original=${timeBefore.toFixed(3)}ms, Cached=${timeAfter.toFixed(3)}ms`);
+            // Optional: Brief pause to allow UI to update if many iterations and browser is struggling
+            // await new Promise(resolve => setTimeout(resolve, 10)); 
+        }
+        resultsDiv.innerHTML = '<p>Benchmark iterations complete. Generating results...</p>';
+        generateResultsTable(allIterationResults, tableContainerDiv);
+        displaySummary(allIterationResults, tableContainerDiv); // Append summary below the table
+        resultsDiv.innerHTML = '<p>Benchmark complete. Results below.</p>'; // Final status update
+
+    }, 100); // Small delay before starting the actual benchmark runs
+  });
+
+</script>
+
+</body>
+</html>
