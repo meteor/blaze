@@ -1,3 +1,8 @@
+## v3.1.0-beta.0, 2026-XX-XX
+
+### Highlights
+* [#501](https://github.com/meteor/blaze/pull/501) Fixed `{{#each}}` item views re-rendering with stale data while their sequence is being updated ([#468](https://github.com/meteor/blaze/issues/468)).
+
 ## v3.1.0-alpha.0, 2026-06-25
 
 ### Highlights / Potentially breaking changes
