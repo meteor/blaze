@@ -103,6 +103,7 @@ export default defineConfig({
                     {text: 'Smart Components', link: '/guide/smart-components'},
                     {text: 'Reusing Code', link: '/guide/reusing-code'},
                     {text: 'Routing', link: '/guide/routing'},
+                    {text: 'Server Rendering', link: '/guide/server-rendering'},
                     {text: 'React in Blaze', link: '/guide/react'},
                     {text: 'Testing', link: '/guide/testing'},
                     {text: 'Understanding Blaze', link: '/guide/understanding-blaze'},

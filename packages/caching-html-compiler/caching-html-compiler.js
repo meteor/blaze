@@ -115,14 +115,17 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
         }
       });
 
-      // Add JavaScript code to set attributes on body
+      // Add JavaScript code to set attributes on body.
+      // Guarded with Meteor.isClient because document.body doesn't exist on the server.
       allJavaScript +=
-`Meteor.startup(function() {
-  var attrs = ${JSON.stringify(compileResult.bodyAttrs)};
-  for (var prop in attrs) {
-    document.body.setAttribute(prop, attrs[prop]);
-  }
-});
+`if (Meteor.isClient) {
+  Meteor.startup(function() {
+    var attrs = ${JSON.stringify(compileResult.bodyAttrs)};
+    for (var prop in attrs) {
+      document.body.setAttribute(prop, attrs[prop]);
+    }
+  });
+}
 `;
     }
 
