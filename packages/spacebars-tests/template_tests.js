@@ -4527,3 +4527,175 @@ Tinytest.add(
     document.body.removeChild(div);
   }
 );
+
+// #468 — #each stale data context
+// When the parent data context changes and the #each sequence returns
+// different items, item views should NOT re-render with stale data
+// before being removed.
+Tinytest.add(
+  'spacebars-tests - template_tests - #each no stale render on different IDs',
+  function (test) {
+    const parentTmpl = Template.spacebars_template_test_each_stale_parent1;
+    const childTmpl = Template.spacebars_template_test_each_stale_child1;
+
+    const mode = new ReactiveVar('foo');
+    const renderLog = [];
+
+    parentTmpl.helpers({
+      mode: function () { return mode.get(); },
+    });
+
+    childTmpl.helpers({
+      getItems: function () {
+        const foo = Template.currentData().foo;
+        if (foo === 'foo') {
+          return [{ _id: '1', msg: 'foo-item' }];
+        }
+        return [{ _id: '2', msg: 'bar-item' }];
+      },
+      logRender: function (msg) {
+        const dataFoo = Template.instance().data.foo;
+        renderLog.push({ msg, dataFoo });
+        return '';
+      },
+    });
+
+    const div = renderToDiv(parentTmpl);
+
+    // Initial render
+    test.equal(renderLog.length, 1);
+    test.equal(renderLog[0].msg, 'foo-item');
+    test.equal(renderLog[0].dataFoo, 'foo');
+
+    // Switch — should NOT produce a stale render where msg="foo-item" with dataFoo="bar"
+    renderLog.length = 0;
+    mode.set('bar');
+    Tracker.flush();
+
+    // Every render should have consistent msg and dataFoo
+    renderLog.forEach(function (entry) {
+      if (entry.msg === 'foo-item') {
+        test.equal(entry.dataFoo, 'foo', 'stale: foo-item rendered with dataFoo=bar');
+      }
+      if (entry.msg === 'bar-item') {
+        test.equal(entry.dataFoo, 'bar', 'stale: bar-item rendered with dataFoo=foo');
+      }
+    });
+
+    // Final render should be bar-item
+    const last = renderLog[renderLog.length - 1];
+    test.equal(last.msg, 'bar-item');
+    test.equal(last.dataFoo, 'bar');
+  }
+);
+
+
+Tinytest.add(
+  'spacebars-tests - template_tests - #each no stale render with each-in syntax',
+  function (test) {
+    const parentTmpl = Template.spacebars_template_test_each_stale_parent3;
+    const childTmpl = Template.spacebars_template_test_each_stale_child3;
+
+    const mode = new ReactiveVar('foo');
+    const renderLog = [];
+
+    parentTmpl.helpers({
+      mode: function () { return mode.get(); },
+    });
+
+    childTmpl.helpers({
+      getItems: function () {
+        const foo = Template.currentData().foo;
+        if (foo === 'foo') {
+          return [{ _id: '1', msg: 'foo-item' }];
+        }
+        return [{ _id: '2', msg: 'bar-item' }];
+      },
+      logRenderItem: function (item) {
+        const dataFoo = Template.instance().data.foo;
+        renderLog.push({ msg: item.msg, dataFoo });
+        return '';
+      },
+    });
+
+    const div = renderToDiv(parentTmpl);
+    renderLog.length = 0;
+    mode.set('bar');
+    Tracker.flush();
+
+    renderLog.forEach(function (entry) {
+      if (entry.msg === 'foo-item') {
+        test.equal(entry.dataFoo, 'foo', 'stale: foo-item rendered with dataFoo=bar');
+      }
+    });
+
+    const last = renderLog[renderLog.length - 1];
+    test.equal(last.msg, 'bar-item');
+    test.equal(last.dataFoo, 'bar');
+  }
+);
+
+
+// #468 (parallel path) — a SURVIVING item view (same _id, changed inner
+// data) must still re-render to its new data after the sequence update,
+// and must never render a stale (msg, dataFoo) pair in between. This
+// guards against the freeze-on-pending logic stranding views that are
+// kept (changedAt) rather than removed.
+Tinytest.add(
+  'spacebars-tests - template_tests - #each surviving item re-renders after sequence update',
+  function (test) {
+    const parentTmpl = Template.spacebars_template_test_each_stale_parent2;
+    const childTmpl = Template.spacebars_template_test_each_stale_child2;
+
+    const mode = new ReactiveVar('foo');
+    const renderLog = [];
+
+    parentTmpl.helpers({
+      mode: function () { return mode.get(); },
+    });
+
+    childTmpl.helpers({
+      // Same _id across the flip => ObserveSequence reports changedAt
+      // (the item survives) rather than removedAt/addedAt.
+      getItems: function () {
+        const foo = Template.currentData().foo;
+        return [{ _id: '1', msg: foo === 'foo' ? 'foo-msg' : 'bar-msg' }];
+      },
+      logRender: function (msg) {
+        const dataFoo = Template.instance().data.foo;
+        renderLog.push({ msg, dataFoo });
+        return '';
+      },
+    });
+
+    const div = renderToDiv(parentTmpl);
+
+    test.equal(renderLog.length, 1);
+    test.equal(renderLog[0].msg, 'foo-msg');
+    test.equal(renderLog[0].dataFoo, 'foo');
+    test.matches(canonicalizeHtml(div.innerHTML), /foo-msg/);
+
+    renderLog.length = 0;
+    mode.set('bar');
+    Tracker.flush();
+
+    // No stale pairing during the transition.
+    renderLog.forEach(function (entry) {
+      if (entry.msg === 'foo-msg') {
+        test.equal(entry.dataFoo, 'foo', 'stale: foo-msg rendered with dataFoo=bar');
+      }
+      if (entry.msg === 'bar-msg') {
+        test.equal(entry.dataFoo, 'bar', 'stale: bar-msg rendered with dataFoo=foo');
+      }
+    });
+
+    // The surviving view must have re-rendered to the new data — both in
+    // the render log and in the live DOM (catches a frozen/stuck view).
+    const last = renderLog[renderLog.length - 1];
+    test.equal(last.msg, 'bar-msg');
+    test.equal(last.dataFoo, 'bar');
+    test.matches(canonicalizeHtml(div.innerHTML), /bar-msg/);
+    test.equal(/foo-msg/.test(canonicalizeHtml(div.innerHTML)), false,
+      'stale DOM: surviving view still shows old data after update');
+  }
+);

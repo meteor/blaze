@@ -742,3 +742,48 @@ Tinytest.addAsync('observe-sequence - cursor to other cursor, same collection', 
   ]);
 });
 
+// #468 — `afterDiff` must always run, even if a diff callback (e.g. an
+// item view's first render in Blaze.Each) throws mid-diff. Otherwise
+// callers that freeze state in `onInvalidate` and release it
+// in `afterDiff` would be left permanently frozen by a transient error.
+Tinytest.add(
+  'observe-sequence - afterDiff runs even when a diff callback throws',
+  function (test) {
+    const dep = new Tracker.Dependency();
+    let seq = [{ _id: '1' }];
+    let afterDiffCount = 0;
+
+    const handle = ObserveSequence.observe(function () {
+      dep.depend();
+      return seq;
+    }, {
+      addedAt: function (id) {
+        if (id === '2') {
+          throw new Error('intentional failure while adding item 2');
+        }
+      },
+      afterDiff: function () {
+        afterDiffCount++;
+      },
+    });
+
+    // Initial diff added item '1' and ran afterDiff once.
+    test.equal(afterDiffCount, 1);
+
+    // Re-run with a throwing addedAt. The error surfaces on the re-run
+    // (logged or rethrown by the flush); either way afterDiff must run.
+    seq = [{ _id: '1' }, { _id: '2' }];
+    dep.changed();
+    try {
+      Tracker.flush();
+    } catch (e) {
+      // Expected: the thrown diff callback may surface here.
+    }
+
+    test.equal(afterDiffCount, 2,
+      'afterDiff did not run after a diff callback threw');
+
+    handle.stop();
+  }
+);
+

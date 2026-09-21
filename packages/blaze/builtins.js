@@ -217,6 +217,9 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
   eachView.elseFunc = elseFunc;
   eachView.argVar = undefined;
   eachView.variableName = null;
+  // Fired by `afterDiff` to revive item view renders that were deferred
+  // while this each view was pending a sequence update. See meteor/blaze#468.
+  eachView._eachItemPendingDep = new Tracker.Dependency();
 
   // update the @index value in the scope of all subviews in the range
   const updateIndices = function (from, to) {
@@ -250,6 +253,19 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
     eachView.stopHandle = ObserveSequence.observe(function () {
       return eachView.argVar.get()?.value;
     }, {
+      // Called immediately when the sequence source is invalidated,
+      // BEFORE the Tracker flush re-runs other autoruns. This freezes
+      // item views so their helpers don't re-run with stale data.
+      // See meteor/blaze#468.
+      onInvalidate: function () {
+        if (!eachView._domrange) return;
+        const members = eachView._domrange.members;
+        for (let i = 0; i < members.length; i++) {
+          if (members[i] && members[i].view) {
+            members[i].view._eachItemPendingUpdate = eachView._eachItemPendingDep;
+          }
+        }
+      },
       addedAt: function (id, item, index) {
         Tracker.nonreactive(function () {
           let newItemView;
@@ -340,6 +356,20 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
             subviews.splice(toIndex, 0, itemView);
           }
         });
+      },
+      // Called after the diff is applied. Clear the pending flag on
+      // surviving item views, then fire the revival dependency so any item
+      // render that was deferred during the update re-runs with fresh data.
+      afterDiff: function () {
+        if (eachView._domrange) {
+          const members = eachView._domrange.members;
+          for (let i = 0; i < members.length; i++) {
+            if (members[i] && members[i].view) {
+              delete members[i].view._eachItemPendingUpdate;
+            }
+          }
+        }
+        eachView._eachItemPendingDep.changed();
       }
     });
 
