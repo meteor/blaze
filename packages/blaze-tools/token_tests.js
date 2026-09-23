@@ -3,11 +3,11 @@ import { HTMLTools } from 'meteor/html-tools';
 
 Tinytest.add("blaze-tools - token parsers", function (test) {
 
-  var run = function (func, input, expected) {
-    var scanner = new HTMLTools.Scanner('z' + input);
+  const run = function (func, input, expected) {
+    const scanner = new HTMLTools.Scanner('z' + input);
     // make sure the parse function respects `scanner.pos`
     scanner.pos = 1;
-    var result = func(scanner);
+    const result = func(scanner);
     if (expected === null) {
       test.equal(scanner.pos, 1);
       test.equal(result, null);
@@ -17,8 +17,8 @@ Tinytest.add("blaze-tools - token parsers", function (test) {
     }
   };
 
-  var runValue = function (func, input, expectedValue) {
-    var expected;
+  const runValue = function (func, input, expectedValue) {
+    let expected;
     if (expectedValue === null)
       expected = null;
     else
@@ -26,10 +26,10 @@ Tinytest.add("blaze-tools - token parsers", function (test) {
     run(func, input, expected);
   };
 
-  var parseNumber = BlazeTools.parseNumber;
-  var parseIdentifierName = BlazeTools.parseIdentifierName;
-  var parseExtendedIdentifierName = BlazeTools.parseExtendedIdentifierName;
-  var parseStringLiteral = BlazeTools.parseStringLiteral;
+  const parseNumber = BlazeTools.parseNumber;
+  const parseIdentifierName = BlazeTools.parseIdentifierName;
+  const parseExtendedIdentifierName = BlazeTools.parseExtendedIdentifierName;
+  const parseStringLiteral = BlazeTools.parseStringLiteral;
 
   runValue(parseNumber, "0", 0);
   runValue(parseNumber, "-0", 0);

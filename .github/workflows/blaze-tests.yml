@@ -80,3 +80,79 @@ jobs:
           fi
         shell: bash
         working-directory: test-app
+
+  # this re-runs the app tests with the test-in-console driver
+  # but in this case we include jQuery via --extra-packages=jquery,
+  # which causes the tests to run with jQuery back-compatibility mode.
+  # This should be removed, once we fully dropped jQuery support in Blaze 4.x
+  test-app-jquery:
+    needs: test-app
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install Meteor
+        run: |
+          npx meteor@latest
+          echo "$HOME/.meteor" >> $GITHUB_PATH
+
+      - name: Link packages directory
+        run: ln -sfn ../packages ./packages
+        working-directory: test-app
+
+      - name: Meteor npm install
+        run: meteor npm install
+        working-directory: test-app
+
+      - name: Start meteor test-packages (background)
+        run: |
+          export URL='http://localhost:4096/'
+          meteor test-packages --driver-package test-in-console -p 4096 --extra-packages=jquery --exclude "${TEST_PACKAGES_EXCLUDE:-}" > /tmp/meteor_test_output.log 2>&1 &
+          echo $! > /tmp/meteor_test_pid
+        working-directory: test-app
+
+      # Wait for test-in-console to be ready for up to 6 minutes
+      # in order to accommodate slower CI environments
+      - name: Wait for test-in-console to be ready
+        run: |
+
+          for i in {1..360}; do
+            if grep -q 'test-in-console listening' /tmp/meteor_test_output.log; then
+              echo "test-in-console is ready."
+              break
+            fi
+            echo "Waiting for test-in-console... attempt $i"
+            sleep 1
+          done
+          # Fail if the service didn't start
+          if ! grep -q 'test-in-console listening' /tmp/meteor_test_output.log; then
+            echo "test-in-console did not start in time."
+            cat /tmp/meteor_test_output.log # Print the log for debugging
+            exit 1
+          fi
+        shell: bash
+        working-directory: test-app
+
+      - name: Run puppeteerRunner.js
+        run: meteor node puppeteerRunner.js
+        env:
+          URL: http://localhost:4096/
+        working-directory: test-app
+
+      - name: Kill meteor test-packages process
+        if: always()
+        run: |
+          if [ -f /tmp/meteor_test_pid ]; then
+            pkill -TERM -P $(cat /tmp/meteor_test_pid)
+          fi
+        shell: bash
+        working-directory: test-app
