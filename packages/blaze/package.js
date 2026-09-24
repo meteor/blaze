@@ -44,6 +44,13 @@ Package.onUse(function (api) {
     'template.js',
     'backcompat.js'
   ]);
+
+  // Error indicator for development - provides visual error feedback
+  // with inline placeholders for missing templates. Client-only and
+  // automatically disabled in production. See errorIndicator.js for details.
+  api.addFiles([
+    'errorIndicator.js'
+  ], 'client');
   // Maybe in order to work properly user will need to have Jquery typedefs
   api.addAssets('blaze.d.ts', 'server');
 });
