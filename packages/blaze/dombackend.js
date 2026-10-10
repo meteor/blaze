@@ -53,12 +53,20 @@ DOMBackend.parseHTML = function (html) {
   return Array.from(template.content.childNodes);
 };
 
-// WeakMap for native event delegation: elem -> Map<handler, Array<{wrapper, eventType}>>
+// Native event delegation, mirroring jQuery's: one listener per element and
+// event type, dispatching to every delegated handler bound there.
+// elem -> Map<eventType, {listener, delegates: Array<{selector, scopedSelector, handler}>}>
 const _delegateMap = new WeakMap();
 
 // focus/blur don't bubble — use focusin/focusout for native delegation
 // (jQuery does this automatically in .on() delegation)
 const _delegateEventAlias = { focus: 'focusin', blur: 'focusout' };
+
+const delegatedEventType = (type) => {
+  const eventType = DOMBackend.Events.parseEventType(type);
+  // Alias non-bubbling events to their bubbling equivalents
+  return _delegateEventAlias[eventType] || eventType;
+};
 
 DOMBackend.Events = {
   // `selector` is non-null.  `type` is one type (but
@@ -70,24 +78,29 @@ DOMBackend.Events = {
       return;
     }
 
-    let eventType = DOMBackend.Events.parseEventType(type);
-    // Alias non-bubbling events to their bubbling equivalents
-    eventType = _delegateEventAlias[eventType] || eventType;
-
-    const wrapper = createWrapper(elem, type, selector, handler);
+    const eventType = delegatedEventType(type);
 
     if (!_delegateMap.has(elem)) {
       _delegateMap.set(elem, new Map());
     }
-    const handlerMap = _delegateMap.get(elem);
-    // Store wrapper keyed by handler for later removal (eventType stored in the entry)
-    const key = handler;
-    if (!handlerMap.has(key)) {
-      handlerMap.set(key, []);
+    const typeMap = _delegateMap.get(elem);
+    let delegation = typeMap.get(eventType);
+    if (!delegation) {
+      delegation = { delegates: [] };
+      delegation.listener = (event) => {
+        dispatchDelegatedEvent(elem, delegation.delegates, event);
+      };
+      typeMap.set(eventType, delegation);
+      elem.addEventListener(eventType, delegation.listener);
     }
-    handlerMap.get(key).push({ wrapper, eventType });
-
-    elem.addEventListener(eventType, wrapper);
+    // Replace rather than mutate the array, so that binding or unbinding
+    // from inside a handler doesn't change the dispatch in progress
+    // (jQuery also snapshots its handler queue before running it).
+    delegation.delegates = delegation.delegates.concat({
+      selector,
+      scopedSelector: scopeSelector(selector),
+      handler,
+    });
   },
 
   undelegateEvents(elem, type, handler) {
@@ -96,16 +109,19 @@ DOMBackend.Events = {
       return;
     }
 
-    const handlerMap = _delegateMap.get(elem);
-    if (!handlerMap) return;
+    const typeMap = _delegateMap.get(elem);
+    if (!typeMap) return;
 
-    const entries = handlerMap.get(handler);
-    if (!entries) return;
+    const eventType = delegatedEventType(type);
+    const delegation = typeMap.get(eventType);
+    if (!delegation) return;
 
-    for (const entry of entries) {
-      elem.removeEventListener(entry.eventType, entry.wrapper);
+    delegation.delegates = delegation.delegates.filter(
+      (delegate) => delegate.handler !== handler);
+    if (delegation.delegates.length === 0) {
+      elem.removeEventListener(eventType, delegation.listener);
+      typeMap.delete(eventType);
     }
-    handlerMap.delete(handler);
   },
 
   bindEventCapturer(elem, type, selector, handler) {
@@ -144,15 +160,99 @@ DOMBackend.Events = {
   }
 };
 
+// jQuery delegation evaluates the selector rooted at the delegation
+// element ($(elem).find(selector)): for 'div p', both the div and the p
+// must live inside `elem`. A bare closest(selector) matches against the
+// whole document, letting ancestors outside `elem` satisfy the selector.
+const scopeSelector = (selector) => selector
+    .split(',')
+    .map((part) => `:scope ${part}`)
+    .join(',');
+
+// Native counterpart of jQuery.event.dispatch for delegated handlers. Like
+// jQuery, it walks from event.target up to (excluding) `elem` and, at every
+// element on the way, runs each handler whose selector matches it, in the
+// order the handlers were bound, with currentTarget set to that element.
+// Innermost elements run first. A handler that stops propagation (or returns
+// false) lets the remaining handlers at its own level run but stops the
+// climb; stopImmediatePropagation stops everything.
+const dispatchDelegatedEvent = (elem, delegates, event) => {
+    // event.target can be a text node (nodeType 3) — walk to parent element first
+    const origin = event.target.nodeType === 1 ? event.target : event.target.parentElement;
+
+    // Build the whole queue before running any handler, as jQuery does, so
+    // DOM changes made by a handler don't change which handlers run.
+    const queue = [];
+    const scopedMatches = new Map();
+    const matchesScoped = (delegate, node) => {
+        // The unscoped matches() is a cheap prefilter: anything the scoped
+        // selector finds also matches the bare selector.
+        if (!node.matches(delegate.selector)) return false;
+        let matches = scopedMatches.get(delegate.scopedSelector);
+        if (!matches) {
+            matches = new Set(elem.querySelectorAll(delegate.scopedSelector));
+            scopedMatches.set(delegate.scopedSelector, matches);
+        }
+        return matches.has(node);
+    };
+    // `elem` itself is excluded: delegated handlers only fire on descendants.
+    for (let node = origin; node && node !== elem; node = node.parentElement) {
+        const handlers = delegates
+            .filter((delegate) => matchesScoped(delegate, node))
+            .map((delegate) => delegate.handler);
+        if (handlers.length) queue.push({ node, handlers });
+    }
+    if (!queue.length) return;
+
+    // The native event only exposes stopPropagation() through cancelBubble,
+    // which may already be set by another listener on `elem`, and doesn't
+    // expose stopImmediatePropagation() at all. Track both calls for the
+    // duration of this dispatch, the way jQuery's event object does.
+    let propagationStopped = false;
+    let immediatePropagationStopped = false;
+    const stopPropagation = event.stopPropagation;
+    const stopImmediatePropagation = event.stopImmediatePropagation;
+    Object.defineProperty(event, 'stopPropagation', {
+        value() {
+            propagationStopped = true;
+            return stopPropagation.call(event);
+        },
+        configurable: true,
+    });
+    Object.defineProperty(event, 'stopImmediatePropagation', {
+        value() {
+            propagationStopped = true;
+            immediatePropagationStopped = true;
+            return stopImmediatePropagation.call(event);
+        },
+        configurable: true,
+    });
+
+    try {
+        for (const { node, handlers } of queue) {
+            if (propagationStopped) break;
+            // Mimic jQuery's delegated event behavior
+            Object.defineProperty(event, 'currentTarget', {
+                value: node,
+                configurable: true,
+            });
+            for (const handler of handlers) {
+                if (immediatePropagationStopped) break;
+                // mimic jQuery event return false behavior
+                if (handler.call(node, event) === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }
+        }
+    } finally {
+        delete event.stopPropagation;
+        delete event.stopImmediatePropagation;
+    }
+};
+
 const createWrapper = (elem, type, selector, handler) => {
-    // jQuery delegation evaluates the selector rooted at the delegation
-    // element ($(elem).find(selector)): for 'div p', both the div and the p
-    // must live inside `elem`. A bare closest(selector) matches against the
-    // whole document, letting ancestors outside `elem` satisfy the selector.
-    const scopedSelector = selector
-        .split(',')
-        .map((part) => `:scope ${part}`)
-        .join(',');
+    const scopedSelector = scopeSelector(selector);
 
     return (event) => {
         // event.target can be a text node (nodeType 3) — walk to parent element first

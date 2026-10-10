@@ -4699,3 +4699,117 @@ Tinytest.add(
       'stale DOM: surviving view still shows old data after update');
   }
 );
+
+// Delegated handlers run once for every element between event.target and the
+// delegation root that matches their selector, innermost first, as in jQuery
+// mode. Handlers bound on the same element run level by level: all handlers
+// matching the inner element (in bind order) before any matching an outer one.
+const dispatchClick = function (elem) {
+  const evt = new MouseEvent('click', { bubbles: true, cancelable: true });
+  elem.dispatchEvent(evt);
+  return evt;
+};
+
+// Each test gets a fresh copy of the template, since events() accumulates.
+const renderNestedMatches = function (source, events) {
+  const tmpl = new Template(source.viewName, source.renderFunction);
+  tmpl.events(events);
+  const div = renderToDiv(tmpl);
+  document.body.appendChild(div);
+  return div;
+};
+
+Tinytest.add(
+  'spacebars-tests - template_tests - delegated event fires for every nested match, innermost first',
+  function (test) {
+    const buf = [];
+    const div = renderNestedMatches(Template.spacebars_test_event_nested_matches, {
+      'click .item': function (evt) {
+        buf.push(evt.currentTarget.className);
+      },
+    });
+    dispatchClick(div.querySelector('.hit'));
+    test.equal(buf, ['item inner', 'item outer']);
+    document.body.removeChild(div);
+  }
+);
+
+Tinytest.add(
+  'spacebars-tests - template_tests - delegated event stopPropagation stops nested matches',
+  function (test) {
+    const buf = [];
+    const div = renderNestedMatches(Template.spacebars_test_event_nested_matches, {
+      'click .item': function (evt) {
+        buf.push(evt.currentTarget.className);
+        evt.stopPropagation();
+      },
+    });
+    dispatchClick(div.querySelector('.hit'));
+    test.equal(buf, ['item inner']);
+    document.body.removeChild(div);
+  }
+);
+
+Tinytest.add(
+  'spacebars-tests - template_tests - delegated event return false stops nested matches but not handlers at the same element',
+  function (test) {
+    const buf = [];
+    const div = renderNestedMatches(Template.spacebars_test_event_nested_matches, {
+      'click .inner': function (evt) {
+        buf.push(`inner ${evt.currentTarget.className}`);
+        return false;
+      },
+      'click .item': function (evt) {
+        buf.push(`item ${evt.currentTarget.className}`);
+      },
+    });
+    const evt = dispatchClick(div.querySelector('.hit'));
+    test.equal(buf, ['inner item inner', 'item item inner']);
+    test.isTrue(evt.defaultPrevented);
+    document.body.removeChild(div);
+  }
+);
+
+Tinytest.add(
+  'spacebars-tests - template_tests - delegated event stopImmediatePropagation stops all remaining handlers',
+  function (test) {
+    const buf = [];
+    const div = renderNestedMatches(Template.spacebars_test_event_nested_matches, {
+      'click .inner': function (evt) {
+        buf.push('inner');
+        evt.stopImmediatePropagation();
+      },
+      'click .item': function (evt) {
+        buf.push(`item ${evt.currentTarget.className}`);
+      },
+    });
+    dispatchClick(div.querySelector('.hit'));
+    test.equal(buf, ['inner']);
+    document.body.removeChild(div);
+  }
+);
+
+Tinytest.add(
+  'spacebars-tests - template_tests - delegated handlers run innermost element first regardless of bind order',
+  function (test) {
+    const buf = [];
+    const div = renderNestedMatches(Template.spacebars_test_event_nested_row, {
+      'click .row': function () {
+        buf.push('row');
+      },
+      'click .del': function (evt) {
+        buf.push('del');
+        if (stopAtDel) evt.stopPropagation();
+      },
+    });
+    let stopAtDel = false;
+    dispatchClick(div.querySelector('.del'));
+    test.equal(buf, ['del', 'row']);
+
+    buf.length = 0;
+    stopAtDel = true;
+    dispatchClick(div.querySelector('.del'));
+    test.equal(buf, ['del']);
+    document.body.removeChild(div);
+  }
+);
