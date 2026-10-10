@@ -122,7 +122,7 @@ DOMBackend.Events = {
 
       handler._meteorui_wrapper = wrapper;
     } else {
-      handler._meteorui_wrapper = createWrapper(elem, type, selector, handler);
+      handler._meteorui_wrapper = createCaptureWrapper(elem, selector, handler);
     }
 
     type = DOMBackend.Events.parseEventType(type);
@@ -144,15 +144,17 @@ DOMBackend.Events = {
   }
 };
 
+// jQuery delegation evaluates the selector rooted at the delegation
+// element ($(elem).find(selector)): for 'div p', both the div and the p
+// must live inside `elem`. A bare closest(selector) matches against the
+// whole document, letting ancestors outside `elem` satisfy the selector.
+const scopeSelector = (selector) => selector
+    .split(',')
+    .map((part) => `:scope ${part}`)
+    .join(',');
+
 const createWrapper = (elem, type, selector, handler) => {
-    // jQuery delegation evaluates the selector rooted at the delegation
-    // element ($(elem).find(selector)): for 'div p', both the div and the p
-    // must live inside `elem`. A bare closest(selector) matches against the
-    // whole document, letting ancestors outside `elem` satisfy the selector.
-    const scopedSelector = selector
-        .split(',')
-        .map((part) => `:scope ${part}`)
-        .join(',');
+    const scopedSelector = scopeSelector(selector);
 
     return (event) => {
         // event.target can be a text node (nodeType 3) — walk to parent element first
@@ -188,6 +190,29 @@ const createWrapper = (elem, type, selector, handler) => {
         }
     };
 }
+
+// Capture-mode counterpart of createWrapper, matching the jQuery branch of
+// bindEventCapturer: the handler fires only when event.target itself is one
+// of $(elem).find(selector). Capturing is used for non-bubbling events such
+// as mouseenter/mouseleave, which the browser dispatches to every element
+// the pointer crosses; walking up from the target to the closest match would
+// fire a 'mouseleave .card' handler when the pointer merely leaves a child
+// of .card.
+const createCaptureWrapper = (elem, selector, handler) => {
+    const scopedSelector = scopeSelector(selector);
+
+    return (event) => {
+        // querySelectorAll never returns `elem` itself or a text node
+        const matches = elem.querySelectorAll(scopedSelector);
+        if (!Array.prototype.includes.call(matches, event.target)) return;
+
+        Object.defineProperty(event, 'currentTarget', {
+            value: event.target,
+            configurable: true,
+        });
+        handler.call(elem, event);
+    };
+};
 
 ///// Removal detection and interoperability.
 
