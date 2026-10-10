@@ -4699,3 +4699,58 @@ Tinytest.add(
       'stale DOM: surviving view still shows old data after update');
   }
 );
+
+// Event handlers see the matched element as currentTarget, but the event must
+// not keep it: in jQuery mode handlers get a jQuery event object and the
+// native event is untouched, so later listeners of the same dispatch see
+// their own currentTarget, and it is null once the dispatch is over.
+Tinytest.add(
+  'spacebars-tests - template_tests - delegated event restores currentTarget for later listeners',
+  function (test) {
+    const tmpl = Template.spacebars_test_event_current_target;
+    const seen = [];
+    tmpl.events({
+      'click .card': function (evt) {
+        seen.push(evt.currentTarget.className);
+      },
+    });
+    const div = renderToDiv(tmpl);
+    document.body.appendChild(div);
+    const onDocument = function (evt) {
+      seen.push(evt.currentTarget === document ? 'document' : evt.currentTarget.className);
+    };
+    document.addEventListener('click', onDocument);
+
+    const evt = new MouseEvent('click', { bubbles: true, cancelable: true });
+    div.querySelector('.title').dispatchEvent(evt);
+    document.removeEventListener('click', onDocument);
+
+    test.equal(seen, ['card', 'document']);
+    test.isTrue(evt.currentTarget === null);
+    document.body.removeChild(div);
+  }
+);
+
+Tinytest.add(
+  'spacebars-tests - template_tests - capturing event restores currentTarget',
+  function (test) {
+    const tmpl = new Template(
+      Template.spacebars_test_event_current_target.viewName,
+      Template.spacebars_test_event_current_target.renderFunction);
+    const seen = [];
+    tmpl.events({
+      'mouseenter .card': function (evt) {
+        seen.push(evt.currentTarget.className);
+      },
+    });
+    const div = renderToDiv(tmpl);
+    document.body.appendChild(div);
+
+    const evt = new MouseEvent('mouseenter', { bubbles: false });
+    div.querySelector('.card').dispatchEvent(evt);
+
+    test.equal(seen, ['card']);
+    test.isTrue(evt.currentTarget === null);
+    document.body.removeChild(div);
+  }
+);

@@ -144,6 +144,24 @@ DOMBackend.Events = {
   }
 };
 
+// Mimic jQuery's delegated event behavior: handlers see the matched element
+// as currentTarget. jQuery set it on its own event object; here it is an own
+// property shadowing the native getter on the native event, so remove it
+// again once the handler returns. Otherwise every later listener of the same
+// dispatch (e.g. on document) and any code holding on to the event would read
+// the stale element instead of its own currentTarget.
+const withCurrentTarget = (event, currentTarget, callback) => {
+    Object.defineProperty(event, 'currentTarget', {
+        value: currentTarget,
+        configurable: true,
+    });
+    try {
+        return callback();
+    } finally {
+        delete event.currentTarget;
+    }
+};
+
 const createWrapper = (elem, type, selector, handler) => {
     // jQuery delegation evaluates the selector rooted at the delegation
     // element ($(elem).find(selector)): for 'div p', both the div and the p
@@ -173,13 +191,9 @@ const createWrapper = (elem, type, selector, handler) => {
         }
 
         if (target) {
-            // Mimic jQuery's delegated event behavior
-            Object.defineProperty(event, 'currentTarget', {
-                value: target,
-                configurable: true,
-            });
             // mimic jQuery event return false behavior
-            const value = handler.call(target, event);
+            const value = withCurrentTarget(event, target,
+                () => handler.call(target, event));
             if (value === false) {
                 event.preventDefault();
                 event.stopPropagation();
