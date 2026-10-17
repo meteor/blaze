@@ -55,7 +55,7 @@ DOMBackend.parseHTML = function (html) {
 
 // Native event delegation, mirroring jQuery's: one listener per element and
 // event type, dispatching to every delegated handler bound there.
-// elem -> Map<eventType, {listener, delegates: Array<{selector, scopedSelector, handler}>}>
+// elem -> Map<eventType, {listener, delegates: Array<{scopedSelector, handler}>}>
 const _delegateMap = new WeakMap();
 
 // focus/blur don't bubble — use focusin/focusout for native delegation
@@ -97,7 +97,6 @@ DOMBackend.Events = {
     // from inside a handler doesn't change the dispatch in progress
     // (jQuery also snapshots its handler queue before running it).
     delegation.delegates = delegation.delegates.concat({
-      selector,
       scopedSelector: scopeSelector(selector),
       handler,
     });
@@ -184,10 +183,10 @@ const dispatchDelegatedEvent = (elem, delegates, event) => {
     // DOM changes made by a handler don't change which handlers run.
     const queue = [];
     const scopedMatches = new Map();
+    // Only the scoped selector is valid on its own: a jQuery delegation
+    // selector may start with a combinator ('> .card'), which matches()
+    // rejects. Each selector's match set is computed once per dispatch.
     const matchesScoped = (delegate, node) => {
-        // The unscoped matches() is a cheap prefilter: anything the scoped
-        // selector finds also matches the bare selector.
-        if (!node.matches(delegate.selector)) return false;
         let matches = scopedMatches.get(delegate.scopedSelector);
         if (!matches) {
             matches = new Set(elem.querySelectorAll(delegate.scopedSelector));

@@ -4813,3 +4813,24 @@ Tinytest.add(
     document.body.removeChild(div);
   }
 );
+
+Tinytest.add(
+  'spacebars-tests - template_tests - delegated event selector may start with a combinator',
+  function (test) {
+    // As in jQuery mode, '> .card' is rooted at the delegation element:
+    // only a .card that is its direct child matches.
+    const buf = [];
+    const div = renderNestedMatches(Template.spacebars_test_event_child_combinator, {
+      'click > .card': function (evt) {
+        buf.push(evt.currentTarget.className);
+      },
+    });
+    dispatchClick(div.querySelector('.top .hit'));
+    test.equal(buf, ['card top']);
+
+    buf.length = 0;
+    dispatchClick(div.querySelector('.nested .hit'));
+    test.equal(buf, []);
+    document.body.removeChild(div);
+  }
+);
