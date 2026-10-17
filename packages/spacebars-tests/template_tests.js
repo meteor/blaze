@@ -4699,3 +4699,91 @@ Tinytest.add(
       'stale DOM: surviving view still shows old data after update');
   }
 );
+
+// Event handlers see the matched element as currentTarget, but the other
+// listeners of the same dispatch must see their own: in jQuery mode handlers
+// get a jQuery event object and the native event is untouched. Like that
+// jQuery event, the event the handler received still reports the matched
+// element once the dispatch is over, so async handlers can read it after an
+// `await`. (In jQuery mode that is the jQuery event; the native one is null.)
+Tinytest.add(
+  'spacebars-tests - template_tests - delegated event shows later listeners their own currentTarget',
+  function (test) {
+    const tmpl = Template.spacebars_test_event_current_target;
+    const seen = [];
+    let handlerEvent;
+    tmpl.events({
+      'click .card': function (evt) {
+        handlerEvent = evt;
+        seen.push(evt.currentTarget.className);
+      },
+    });
+    const div = renderToDiv(tmpl);
+    document.body.appendChild(div);
+    const onDocument = function (evt) {
+      seen.push(evt.currentTarget === document ? 'document' : evt.currentTarget.className);
+    };
+    document.addEventListener('click', onDocument);
+
+    const evt = new MouseEvent('click', { bubbles: true, cancelable: true });
+    div.querySelector('.title').dispatchEvent(evt);
+    document.removeEventListener('click', onDocument);
+
+    test.equal(seen, ['card', 'document']);
+    test.equal(handlerEvent.currentTarget.className, 'card');
+    document.body.removeChild(div);
+  }
+);
+
+Tinytest.add(
+  'spacebars-tests - template_tests - capturing event keeps currentTarget after the dispatch',
+  function (test) {
+    const tmpl = new Template(
+      Template.spacebars_test_event_current_target.viewName,
+      Template.spacebars_test_event_current_target.renderFunction);
+    const seen = [];
+    let handlerEvent;
+    tmpl.events({
+      'mouseenter .card': function (evt) {
+        handlerEvent = evt;
+        seen.push(evt.currentTarget.className);
+      },
+    });
+    const div = renderToDiv(tmpl);
+    document.body.appendChild(div);
+
+    const evt = new MouseEvent('mouseenter', { bubbles: false });
+    div.querySelector('.card').dispatchEvent(evt);
+
+    test.equal(seen, ['card']);
+    test.equal(handlerEvent.currentTarget.className, 'card');
+    document.body.removeChild(div);
+  }
+);
+
+Tinytest.addAsync(
+  'spacebars-tests - template_tests - async event handler sees currentTarget after an await',
+  async function (test) {
+    const tmpl = new Template(
+      Template.spacebars_test_event_current_target.viewName,
+      Template.spacebars_test_event_current_target.renderFunction);
+    let resume;
+    const resumed = new Promise((resolve) => { resume = resolve; });
+    tmpl.events({
+      async 'click .card'(evt) {
+        // A timer resolves only after the synchronous dispatch is over.
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        resume(evt.currentTarget);
+      },
+    });
+    const div = renderToDiv(tmpl);
+    document.body.appendChild(div);
+
+    div.querySelector('.title').dispatchEvent(
+      new MouseEvent('click', { bubbles: true, cancelable: true }));
+    const currentTarget = await resumed;
+
+    test.isTrue(currentTarget === div.querySelector('.card'));
+    document.body.removeChild(div);
+  }
+);

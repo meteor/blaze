@@ -144,6 +144,32 @@ DOMBackend.Events = {
   }
 };
 
+// Mimic jQuery's delegated event behavior: handlers see the matched element
+// as currentTarget. jQuery sets it on its own event object, which nothing
+// else sees and which keeps it, so an async handler can still read it after
+// an `await`. Here the handlers get the native event itself, so currentTarget
+// is shadowed by an own getter instead: it returns the matched element while
+// the handler runs and once the dispatch is over, and the native value in
+// between, so later listeners of the same dispatch (e.g. on document) see
+// their own currentTarget.
+const withCurrentTarget = (event, currentTarget, callback) => {
+    let inHandler = true;
+    Object.defineProperty(event, 'currentTarget', {
+        configurable: true,
+        get() {
+            if (inHandler || this.eventPhase === Event.NONE) return currentTarget;
+            // The native getter, from the event's own prototype chain (an
+            // event from an iframe has that realm's Event.prototype).
+            return Reflect.get(Object.getPrototypeOf(this), 'currentTarget', this);
+        },
+    });
+    try {
+        return callback();
+    } finally {
+        inHandler = false;
+    }
+};
+
 const createWrapper = (elem, type, selector, handler) => {
     // jQuery delegation evaluates the selector rooted at the delegation
     // element ($(elem).find(selector)): for 'div p', both the div and the p
@@ -173,13 +199,9 @@ const createWrapper = (elem, type, selector, handler) => {
         }
 
         if (target) {
-            // Mimic jQuery's delegated event behavior
-            Object.defineProperty(event, 'currentTarget', {
-                value: target,
-                configurable: true,
-            });
             // mimic jQuery event return false behavior
-            const value = handler.call(target, event);
+            const value = withCurrentTarget(event, target,
+                () => handler.call(target, event));
             if (value === false) {
                 event.preventDefault();
                 event.stopPropagation();
