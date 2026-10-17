@@ -145,20 +145,28 @@ DOMBackend.Events = {
 };
 
 // Mimic jQuery's delegated event behavior: handlers see the matched element
-// as currentTarget. jQuery set it on its own event object; here it is an own
-// property shadowing the native getter on the native event, so remove it
-// again once the handler returns. Otherwise every later listener of the same
-// dispatch (e.g. on document) and any code holding on to the event would read
-// the stale element instead of its own currentTarget.
+// as currentTarget. jQuery sets it on its own event object, which nothing
+// else sees and which keeps it, so an async handler can still read it after
+// an `await`. Here the handlers get the native event itself, so currentTarget
+// is shadowed by an own getter instead: it returns the matched element while
+// the handler runs and once the dispatch is over, and the native value in
+// between, so later listeners of the same dispatch (e.g. on document) see
+// their own currentTarget.
 const withCurrentTarget = (event, currentTarget, callback) => {
+    let inHandler = true;
     Object.defineProperty(event, 'currentTarget', {
-        value: currentTarget,
         configurable: true,
+        get() {
+            if (inHandler || this.eventPhase === Event.NONE) return currentTarget;
+            // The native getter, from the event's own prototype chain (an
+            // event from an iframe has that realm's Event.prototype).
+            return Reflect.get(Object.getPrototypeOf(this), 'currentTarget', this);
+        },
     });
     try {
         return callback();
     } finally {
-        delete event.currentTarget;
+        inHandler = false;
     }
 };
 
