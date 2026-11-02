@@ -787,3 +787,31 @@ Tinytest.add(
   }
 );
 
+
+// Moving an element forward to just before an anchor shifts every element
+// between its old and new positions back by one, including the one that was
+// standing at the target position. The previous bookkeeping skipped that last
+// element, so a later callback for it (here, moving D to the end) reported a
+// stale index, and Blaze.Each moved the wrong DOM node.
+Tinytest.addAsync('observe-sequence - array to other array, movedTo past the element at the target position', async function (test) {
+  const dep = new Tracker.Dependency;
+  let seq = ["A", "B", "C", "D", "E", "F"];
+
+  await runOneObserveSequenceTestCase(test, function () {
+    dep.depend();
+    return seq;
+  }, function () {
+    seq = ["B", "C", "A", "E", "F", "D"];
+    dep.changed();
+  }, [
+    {addedAt: ["-A", "A", 0, null]},
+    {addedAt: ["-B", "B", 1, null]},
+    {addedAt: ["-C", "C", 2, null]},
+    {addedAt: ["-D", "D", 3, null]},
+    {addedAt: ["-E", "E", 4, null]},
+    {addedAt: ["-F", "F", 5, null]},
+
+    {movedTo: ["-A", "A", 0, 3, "-E"]},
+    {movedTo: ["-D", "D", 2, 5, null]}
+  ]);
+});
