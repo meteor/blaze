@@ -277,8 +277,8 @@ const diffArray = (lastSeqArray, seqArray, callbacks) => {
   const newIdObjects = [];
   const posOld = {}; // maps from idStringify'd ids
   const posNew = {}; // ditto
-  const posCur = {};
-  let lengthCur = lastSeqArray.length;
+  const lengthOld = lastSeqArray.length;
+  let lengthCur = lengthOld;
 
   seqArray.forEach((doc, i) => {
     newIdObjects.push({_id: doc._id});
@@ -287,8 +287,29 @@ const diffArray = (lastSeqArray, seqArray, callbacks) => {
   lastSeqArray.forEach((doc, i) => {
     oldIdObjects.push({_id: doc._id});
     posOld[idStringify(doc._id)] = i;
-    posCur[idStringify(doc._id)] = i;
   });
+
+  // Current positions are derived from a Fenwick tree counting, for each
+  // "slot" (a position in `lastSeqArray`), how many elements currently sit
+  // in it. This relies on how `diffQueryOrderedChanges` emits its callbacks:
+  // every `before` is an unmoved element (a member of the longest common
+  // subsequence) or null, removals come first, and each element is added or
+  // moved at most once. So positions are only ever asked for elements still
+  // in their own slot, and every moved or added element is parked right
+  // before an anchor, i.e. in that anchor's slot. The position of an element
+  // still in its slot is then the number of elements in the slots up to and
+  // including its own, minus one. Each query and update is O(log n), instead
+  // of rescanning every position after each callback.
+  const slots = new Int32Array(lengthOld + 1); // 1-based Fenwick nodes
+  for (let i = 1; i <= lengthOld; i++) slots[i] = i & -i; // one element per slot
+  const adjustSlot = (slot, delta) => {
+    for (let i = slot + 1; i <= lengthOld; i += i & -i) slots[i] += delta;
+  };
+  const positionOf = (idString) => {
+    let count = 0;
+    for (let i = posOld[idString] + 1; i > 0; i -= i & -i) count += slots[i];
+    return count - 1;
+  };
 
   // Arrays can contain arbitrary objects. We don't diff the
   // objects. Instead we always fire 'changedAt' callback on every
@@ -296,19 +317,13 @@ const diffArray = (lastSeqArray, seqArray, callbacks) => {
   // it appropriately.
   diffFn(oldIdObjects, newIdObjects, {
     addedBefore: function (id, doc, before) {
-      const position = before ? posCur[idStringify(before)] : lengthCur;
+      const position = before ? positionOf(idStringify(before)) : lengthCur;
 
+      // The new element sits right before `before`, in its slot.
       if (before) {
-        // If not adding at the end, we need to update indexes.
-        // XXX this can still be improved greatly!
-        Object.entries(posCur).forEach(([id, pos]) => {
-          if (pos >= position)
-            posCur[id]++;
-        });
+        adjustSlot(posOld[idStringify(before)], 1);
       }
-
       lengthCur++;
-      posCur[idStringify(id)] = position;
 
       callbacks.addedAt(
         id,
@@ -320,8 +335,9 @@ const diffArray = (lastSeqArray, seqArray, callbacks) => {
       if (id === before)
         return;
 
-      const oldPosition = posCur[idStringify(id)];
-      let newPosition = before ? posCur[idStringify(before)] : lengthCur;
+      const idString = idStringify(id);
+      const oldPosition = positionOf(idString);
+      let newPosition = before ? positionOf(idStringify(before)) : lengthCur;
 
       // Moving the item forward. The new element is losing one position as it
       // was removed from the old position before being inserted at the new
@@ -335,50 +351,33 @@ const diffArray = (lastSeqArray, seqArray, callbacks) => {
         newPosition--;
       }
 
-      // Fix up the positions of elements between the old and the new positions
-      // of the moved element.
-      //
-      // There are two cases:
-      //   1. The element is moved forward. Then all the positions in between
-      //   are moved back.
-      //   2. The element is moved back. Then the positions in between *and* the
-      //   element that is currently standing on the moved element's future
-      //   position are moved forward.
-      Object.entries(posCur).forEach(([id, elCurPosition]) => {
-        if (oldPosition < elCurPosition && elCurPosition <= newPosition)
-          posCur[id]--;
-        else if (newPosition <= elCurPosition && elCurPosition < oldPosition)
-          posCur[id]++;
-      });
-
-      // Finally, update the position of the moved element.
-      posCur[idStringify(id)] = newPosition;
+      // The element leaves its own slot and sits right before `before`.
+      adjustSlot(posOld[idString], -1);
+      if (before) {
+        adjustSlot(posOld[idStringify(before)], 1);
+      }
 
       callbacks.movedTo(
         id,
-        seqArray[posNew[idStringify(id)]].item,
+        seqArray[posNew[idString]].item,
         oldPosition,
         newPosition,
         before);
     },
     removed: function (id) {
-      const prevPosition = posCur[idStringify(id)];
+      const idString = idStringify(id);
+      const prevPosition = positionOf(idString);
 
-      Object.entries(posCur).forEach(([id, pos]) => {
-        if (pos >= prevPosition)
-          posCur[id]--;
-      });
-
-      delete posCur[idStringify(id)];
+      adjustSlot(posOld[idString], -1);
       lengthCur--;
 
       callbacks.removedAt(
         id,
-        lastSeqArray[posOld[idStringify(id)]].item,
+        lastSeqArray[posOld[idString]].item,
         prevPosition);
     }
   });
-  
+
   Object.entries(posNew).forEach(([idString, pos]) => {
 
     const id = idParse(idString);
