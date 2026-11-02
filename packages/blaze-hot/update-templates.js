@@ -45,6 +45,24 @@ let templateViewPrefix = 'Template.';
 // Overrides the default _applyHmrChanges with one that updates the specific
 // views for modified templates instead of updating everything.
 Template._applyHmrChanges = function (templateName = UpdateAll) {
+  // Integration with Blaze Error Indicator:
+  // When templates are updated via HMR, clear any related errors.
+  // This provides a better developer experience by automatically
+  // clearing "No such template" errors when the missing template is added.
+  if (typeof Blaze !== 'undefined' && Blaze._errorIndicator) {
+    if (templateName === UpdateAll) {
+      // Full update: clear all errors since the entire view tree is refreshed
+      if (typeof Blaze._errorIndicator.clearAll === 'function') {
+        Blaze._errorIndicator.clearAll();
+      }
+    } else {
+      // Targeted update: only clear errors related to this specific template
+      if (typeof Blaze._errorIndicator.removeTemplateError === 'function') {
+        Blaze._errorIndicator.removeTemplateError(templateName);
+      }
+    }
+  }
+
   if (templateName === UpdateAll || lastUpdateFailed) {
     lastUpdateFailed = false;
     clearTimeout(timeout);

@@ -13,7 +13,7 @@ Tinytest.add("templating-tools - html scanner", function (test) {
     try {
       f();
     } catch (e) {
-      if (! e instanceof TemplatingTools.CompileError) {
+      if (!(e instanceof TemplatingTools.CompileError)) {
         throw e;
       }
 
