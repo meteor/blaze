@@ -1,10 +1,10 @@
 # Blaze
 
-Reactive templating library for Meteor. Spacebars templates are compiled to JavaScript at build time and kept up to date by Tracker at runtime. Shipped as Atmosphere packages with no npm dependencies.
+Reactive templating library for Meteor. Spacebars templates are compiled to JavaScript at build time and kept up to date by [Tracker](https://docs.meteor.com/api/tracker.html) at runtime. Shipped as [Atmosphere packages](#packages) with no npm dependencies; apps usually depend on `blaze-html-templates`.
 
 ## Commands
 
-All commands run from `test-app/` and need the Meteor CLI (`npx meteor@latest` installs it).
+All commands run from `test-app/` and need the Meteor CLI (`npx meteor@latest` installs the CLI).
 
 ```bash
 meteor npm install                                  # once: test and lint dependencies
@@ -54,6 +54,18 @@ HISTORY.md           # Changelog, one section per published version
 | Tests only | `spacebars-tests` | Integration tests of compiled templates (`template_tests.js`, `async_tests.js`, `old_templates_tests.js`) |
 | | `test-in-browser` | Local copy of Meteor's browser test driver without `jquery`, so `test:watch` really runs the native backend; not published |
 
+## Dependencies
+
+Meteor core packages Blaze builds on. Tracker is the reactivity backbone: views render inside Tracker computations, and most design choices follow from how computations, dependencies and `Tracker.afterFlush` work.
+
+| Package | Used for |
+|---------|----------|
+| [`tracker`](https://docs.meteor.com/api/tracker.html) | Computations and dependencies behind every reactive update |
+| `reactive-var`, `check`, `ordered-dict` | Reactive state, argument checks and ordered maps in the `blaze` runtime |
+| `diff-sequence`, `mongo-id`, `random` | Diffing arrays and cursors in `observe-sequence` |
+| `caching-compiler`, `isobuild:compiler-plugin` | Base class and registration of the `.html` build plugin |
+| `jquery` | Weak dependency: used as the DOM backend only when the app includes it |
+
 ## Key entry points
 
 | Task | Location |
@@ -68,7 +80,7 @@ HISTORY.md           # Changelog, one section per published version
 
 ## Branches and releases
 
-- `master` holds the latest published version. Work for the next version happens on `release-<version>` (currently `release-3.1.0`): open PRs against that branch.
+- `master` holds the latest published version. Work for the next version happens on the `release-<version>` branch: open PRs against that branch.
 - Package versions in `package.js` and the `.versions` files are bumped by the core team in the release commit, not in feature or fix PRs. `DEPLOYMENT.md` describes publishing.
 - User-visible changes get a line in `HISTORY.md` under the upcoming version heading: `* [#NNN](PR link) Past-tense summary ([#issue](issue link))`.
 
@@ -90,3 +102,4 @@ This file is about contributing to Blaze itself. For writing Blaze apps (Spaceba
 
 - `site/` is the public documentation, not agent context, except `site/source/dev/architecture.md`.
 - `CONTRIBUTING.md` explains how to run an existing app against this checkout (`METEOR_PACKAGE_DIRS`).
+- Changes to the release branch naming or to the Meteor version of the test app (`test-app/.meteor/release`) imply updating the versions mentioned in this file.
