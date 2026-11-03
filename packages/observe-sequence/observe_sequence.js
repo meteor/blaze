@@ -345,7 +345,7 @@ const diffArray = (lastSeqArray, seqArray, callbacks) => {
       //   element that is currently standing on the moved element's future
       //   position are moved forward.
       Object.entries(posCur).forEach(([id, elCurPosition]) => {
-        if (oldPosition < elCurPosition && elCurPosition < newPosition)
+        if (oldPosition < elCurPosition && elCurPosition <= newPosition)
           posCur[id]--;
         else if (newPosition <= elCurPosition && elCurPosition < oldPosition)
           posCur[id]++;
