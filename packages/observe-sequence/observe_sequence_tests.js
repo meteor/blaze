@@ -787,3 +787,107 @@ Tinytest.add(
   }
 );
 
+
+// Moving an element forward to just before an anchor shifts every element
+// between its old and new positions back by one, including the one that was
+// standing at the target position. The previous bookkeeping skipped that last
+// element, so a later callback for it (here, moving D to the end) reported a
+// stale index, and Blaze.Each moved the wrong DOM node.
+Tinytest.addAsync('observe-sequence - array to other array, movedTo past the element at the target position', async function (test) {
+  const dep = new Tracker.Dependency;
+  let seq = ["A", "B", "C", "D", "E", "F"];
+
+  await runOneObserveSequenceTestCase(test, function () {
+    dep.depend();
+    return seq;
+  }, function () {
+    seq = ["B", "C", "A", "E", "F", "D"];
+    dep.changed();
+  }, [
+    {addedAt: ["-A", "A", 0, null]},
+    {addedAt: ["-B", "B", 1, null]},
+    {addedAt: ["-C", "C", 2, null]},
+    {addedAt: ["-D", "D", 3, null]},
+    {addedAt: ["-E", "E", 4, null]},
+    {addedAt: ["-F", "F", 5, null]},
+
+    {movedTo: ["-A", "A", 0, 3, "-E"]},
+    {movedTo: ["-D", "D", 2, 5, null]}
+  ]);
+});
+
+// Replays the addedAt/movedTo/removedAt callbacks of random array-to-array
+// transitions onto a shadow array and checks that every index and `before`
+// argument is consistent, and that the shadow array ends up equal to the new
+// sequence. Guards the position bookkeeping of `diffArray` against
+// off-by-one errors on removals, insertions and moves in the same batch.
+Tinytest.addAsync('observe-sequence - array to other array, random transitions replay consistently', async function (test) {
+  let seed = 20260917;
+  const random = (n) => {
+    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+    return Math.floor((seed / 0x80000000) * n); // high bits: the low bits of an LCG cycle quickly
+  };
+  const shadow = [];
+  const dep = new Tracker.Dependency;
+  let seq = [];
+  let generation = 0;
+
+  const handle = ObserveSequence.observe(() => {
+    dep.depend();
+    return seq;
+  }, {
+    addedAt(id, item, index, before) {
+      test.isTrue(index >= 0 && index <= shadow.length, `addedAt index ${index} out of range`);
+      shadow.splice(index, 0, id);
+      test.equal(shadow[index + 1] === undefined ? null : shadow[index + 1], before, 'addedAt before');
+    },
+    movedTo(id, item, fromIndex, toIndex, before) {
+      test.equal(shadow[fromIndex], id, 'movedTo fromIndex');
+      shadow.splice(fromIndex, 1);
+      shadow.splice(toIndex, 0, id);
+      test.equal(shadow[toIndex + 1] === undefined ? null : shadow[toIndex + 1], before, 'movedTo before');
+    },
+    removedAt(id, item, index) {
+      test.equal(shadow[index], id, 'removedAt index');
+      shadow.splice(index, 1);
+    },
+    changedAt() {}
+  });
+
+  const transition = (nextIds) => {
+    seq = nextIds.map((_id) => ({ _id }));
+    dep.changed();
+    Tracker.flush();
+    test.equal(shadow, nextIds);
+  };
+
+  const randomTransition = (ids, maxAdds) => {
+    const kept = ids.filter(() => random(4) !== 0);
+    for (let i = kept.length - 1; i > 0; i--) {
+      const j = random(i + 1);
+      [kept[i], kept[j]] = [kept[j], kept[i]];
+    }
+    const adds = random(maxAdds + 1);
+    for (let a = 0; a < adds; a++) {
+      kept.splice(random(kept.length + 1), 0, `g${generation}-${a}`);
+    }
+    generation++;
+    return kept;
+  };
+
+  let ids = [];
+  for (let round = 0; round < 300; round++) {
+    ids = randomTransition(ids, 12);
+    transition(ids);
+  }
+
+  ids = Array.from({ length: 400 }, (_, i) => `big${i}`);
+  transition(ids);
+  transition(ids.slice().reverse());
+  transition(ids.filter((_, i) => i % 2));
+  transition(ids.slice(0, 200));
+  transition(ids.slice(100, 300).concat(ids.slice(0, 100)));
+  transition([]);
+
+  handle.stop();
+});
