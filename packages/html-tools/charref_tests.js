@@ -1,10 +1,10 @@
 import { HTMLTools } from 'meteor/html-tools';
 
-var Scanner = HTMLTools.Scanner;
-var getCharacterReference = HTMLTools.Parse.getCharacterReference;
+const Scanner = HTMLTools.Scanner;
+const getCharacterReference = HTMLTools.Parse.getCharacterReference;
 
 Tinytest.add("html-tools - entities", function (test) {
-  var succeed = function (input, match, codepoints) {
+  const succeed = function (input, match, codepoints) {
     if (typeof input === 'string')
       input = {input: input};
 
@@ -14,8 +14,8 @@ Tinytest.add("html-tools - entities", function (test) {
       match = input.input;
     }
 
-    var scanner = new Scanner(input.input);
-    var result = getCharacterReference(scanner, input.inAttribute, input.allowedChar);
+    const scanner = new Scanner(input.input);
+    const result = getCharacterReference(scanner, input.inAttribute, input.allowedChar);
     test.isTrue(result);
     test.equal(scanner.pos, match.length);
     test.equal(result, {
@@ -27,22 +27,22 @@ Tinytest.add("html-tools - entities", function (test) {
     });
   };
 
-  var ignore = function (input) {
+  const ignore = function (input) {
     if (typeof input === 'string')
       input = {input: input};
 
-    var scanner = new Scanner(input.input);
-    var result = getCharacterReference(scanner, input.inAttribute, input.allowedChar);
+    const scanner = new Scanner(input.input);
+    const result = getCharacterReference(scanner, input.inAttribute, input.allowedChar);
     test.isFalse(result);
     test.equal(scanner.pos, 0);
   };
 
-  var fatal = function (input, messageContains) {
+  const fatal = function (input, messageContains) {
     if (typeof input === 'string')
       input = {input: input};
 
-    var scanner = new Scanner(input.input);
-    var error;
+    const scanner = new Scanner(input.input);
+    let error;
     try {
       getCharacterReference(scanner, input.inAttribute, input.allowedChar);
     } catch (e) {

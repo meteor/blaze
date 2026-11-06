@@ -5,11 +5,11 @@ import { SpacebarsCompiler } from 'meteor/spacebars-compiler';
 import { runCompilerOutputTests } from './compiler_output_tests';
 
 Tinytest.add("spacebars-compiler - compiler output", function (test) {
-  var run = function (input, expected, whitespace = '') {
+  const run = function (input, expected, whitespace = '') {
     if (expected.fail) {
-      var expectedMessage = expected.fail;
+      const expectedMessage = expected.fail;
       // test for error starting with expectedMessage
-      var msg = '';
+      let msg = '';
       test.throws(function () {
         try {
           SpacebarsCompiler.compile(input, {isTemplate: true, whitespace});
@@ -21,24 +21,13 @@ Tinytest.add("spacebars-compiler - compiler output", function (test) {
       test.equal(msg.slice(0, expectedMessage.length),
                  expectedMessage);
     } else {
-      var output = SpacebarsCompiler.compile(input, {isTemplate: true, whitespace});
-      var postProcess = function (string) {
+      const output = SpacebarsCompiler.compile(input, {isTemplate: true, whitespace});
+      const postProcess = function (string) {
         // remove initial and trailing parens
         string = string.replace(/^\(([\S\s]*)\)$/, '$1');
-        if (! (Package['minifier-js'] && Package['minifier-js'].UglifyJSMinify)) {
-          // these tests work a lot better with access to beautification,
-          // but let's at least do some sort of test without it.
-          // These regexes may have to be adjusted if new tests are added.
-
-          // ======================== !!NOTE!! =================================
-          // Since we are bringing uglify-js in from NPM, this code should no
-          // longer ever be needed. Leaving it just in case.
-          // ==================================+================================
-
-          // Remove single-line comments, including line nums from build system.
-          string = string.replace(/\/\/.*$/mg, '');
-          string = string.replace(/\s+/g, ''); // kill whitespace
-        }
+        // Remove single-line comments, including line nums from build system.
+        string = string.replace(/\/\/.*$/mg, '');
+        string = string.replace(/\s+/g, ''); // kill whitespace
         return string;
       };
       // compare using Function .toString()!
@@ -54,7 +43,7 @@ Tinytest.add("spacebars-compiler - compiler output", function (test) {
 });
 
 Tinytest.add("spacebars-compiler - compiler errors", function (test) {
-  var getError = function (input) {
+  const getError = function (input) {
     try {
       SpacebarsCompiler.compile(input);
     } catch (e) {
@@ -64,11 +53,11 @@ Tinytest.add("spacebars-compiler - compiler errors", function (test) {
     return '';
   };
 
-  var assertStartsWith = function (a, b) {
+  const assertStartsWith = function (a, b) {
     test.equal(a.substring(0, b.length), b);
   };
 
-  var isError = function (input, errorStart) {
+  const isError = function (input, errorStart) {
     assertStartsWith(getError(input), errorStart);
   };
 

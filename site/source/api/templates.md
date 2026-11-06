@@ -3,6 +3,8 @@ title: Templates
 description: Documentation of Meteor's template API.
 ---
 
+# Template API
+
 When you write a template as `<template name="foo"> ... </template>` in an HTML file in your app, Meteor generates a
 "template object" named `Template.foo`. Note that template name cannot
 contain hyphens and other special characters.
@@ -16,7 +18,7 @@ or replaced and should be cleaned up.  You can associate data with a
 template instance, and you can access its DOM nodes when it is in the
 document.
 
-Read more about templates and how to use them in the [Spacebars](../api/spacebars.html) and [Blaze](../guide/introduction.html) article in the Guide.
+Read more about templates and how to use them in the [Spacebars](./spacebars) and [Blaze](../guide/introduction) article in the Guide.
 
 ## Template Declarations
 
@@ -43,7 +45,7 @@ Template.myTemplate.helpers({
 });
 ```
 
-Now you can invoke this helper with `{% raw %}{{foo}}{% endraw %}` in the template defined
+Now you can invoke this helper with <code v-pre>{{foo}}</code> in the template defined
 with `<template name="myTemplate">`.
 
 Helpers can accept positional and keyword arguments:
@@ -59,7 +61,7 @@ Template.myTemplate.helpers({
 
 Then you can call this helper from template like this:
 
-```
+```handlebars
 {{displayName "John" "Doe" title="President"}}
 ```
 
@@ -92,7 +94,7 @@ Because your template has been rendered, you can use functions like
 This can be a good place to apply any DOM manipulations you want, after the
 template is rendered for the first time.
 
-```html
+```handlebars
 <template name="myPictures">
   <div class="container">
     {{#each pictures}}
@@ -247,7 +249,7 @@ Template.notifications.onCreated(function () {
 });
 ```
 
-```html
+```handlebars
 <template name="notifications">
   {{#if Template.subscriptionsReady}}
     <!-- This is displayed when all data is ready. -->
@@ -272,7 +274,7 @@ Template.comments.onCreated(function () {
 });
 ```
 
-```html
+```handlebars
 {{#with post}}
   {{> comments postId=_id}}
 {{/with}}
@@ -307,7 +309,7 @@ Template.listing.onRendered(function () {
 {% apibox "Template.parentData" %}
 
 For example, `Template.parentData(0)` is equivalent to `Template.currentData()`.  `Template.parentData(2)`
-is equivalent to `{% raw %}{{../..}}{% endraw %}` in a template.
+is equivalent to <code v-pre>{{../..}}</code> in a template.
 
 {% apibox "Template.body" %}
 
@@ -328,12 +330,12 @@ or the DOM API.
 may be calculated by a helper and may change reactively.  The `data`
 argument is optional, and if it is omitted, the current data context
 is used. It's also possible, to use `Template.dynamic` as a block helper
-(`{% raw %}{{#Template.dynamic}} ... {{/Template.dynamic}}{% endraw %}`)
+(<code v-pre>{{#Template.dynamic}} ... {{/Template.dynamic}}</code>)
 
-For example, if there is a template named "foo", `{% raw %}{{> Template.dynamic
-template="foo"}}{% endraw %}` is equivalent to `{% raw %}{{> foo}}{% endraw %}` and
-`{% raw %}{{#Template.dynamic template="foo"}} ... {{/Template.dynamic}}{% endraw %}`
-is equivalent to `{% raw %}{{#foo}} ... {{/foo}}{% endraw %}`.
+For example, if there is a template named "foo", <code v-pre>{{> Template.dynamic
+template="foo"}}</code> is equivalent to <code v-pre>{{> foo}}</code> and
+<code v-pre>{{#Template.dynamic template="foo"}} ... {{/Template.dynamic}}</code>
+is equivalent to <code v-pre>{{#foo}} ... {{/foo}}</code>.
 
 ## Event Maps
 
