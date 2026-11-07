@@ -97,7 +97,9 @@ const isPromiseLike = x => !!x && typeof x.then === 'function';
 
 function then(maybePromise, fn) {
   if (isPromiseLike(maybePromise)) {
-    maybePromise.then(fn, Blaze._reportException)
+    // A rejection was already reported where it happened, in
+    // `waitForAllAttributes`; this only keeps it from going unhandled.
+    maybePromise.then(fn, () => {});
   } else {
     fn(maybePromise);
   }
@@ -140,7 +142,7 @@ function waitForAllAttributes(attrs) {
 
   // If any of the properties were async, lift the `Promise`.
   return promises.length
-    ? Promise.all(promises).then(() => attrs, Blaze._reportExceptionAndThrow)
+    ? Promise.all(promises).then(() => attrs)
     : attrs;
 }
 
