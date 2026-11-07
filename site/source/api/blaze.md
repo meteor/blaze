@@ -51,6 +51,7 @@ and manipulate "Views," the building blocks of reactive templates.
     * [.Unless(conditionFunc, contentFunc, [elseFunc])](#Blaze.Unless)
     * [.Each(argFunc, contentFunc, [elseFunc])](#Blaze.Each)
     * [._Await(value)](#Blaze._Await) ⇒ [<code>View</code>](#Blaze.View)
+    * [.setExceptionLogLevel(level)](#Blaze.setExceptionLogLevel)
     * [.isTemplate(value)](#Blaze.isTemplate)
     * [._withCurrentView(view, func)](#Blaze._withCurrentView) ⇒ <code>T</code>
     * [.render(templateOrView, parentNode, [nextNode], [parentView])](#Blaze.render)
@@ -606,6 +607,30 @@ Create a new `Blaze.Let` view that unwraps the given value.
 | --- | --- |
 | value | <code>unknown</code> | 
 
+<a name="Blaze.setExceptionLogLevel"></a>
+
+### Blaze.setExceptionLogLevel(level)
+**Kind**: static method of [<code>Blaze</code>](#Blaze)  
+**Summary**: Chooses how Blaze reports the exceptions it catches: errors thrown
+by template helpers, and rejected promises in attributes. With the default,
+`'log'`, they go through `Meteor._debug`, which tools such as Monti APM hook
+into. With `'warn'` or `'error'`, they go straight to `console.warn` or
+`console.error` along with the error object, which error trackers such as
+Sentry record as an exception, and no longer through `Meteor._debug`.
+Errors thrown by event handlers and lifecycle callbacks are not caught by
+Blaze, and a rejected promise rendered as content is exposed through
+`@rejected` instead of being reported: neither is affected. Call it on the
+client, and on the server as well if you render templates there.  
+**Locus**: Anywhere  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| level | <code>String</code> | `'log'`, `'warn'` or `'error'`. |
+
+**Example**  
+```js
+Blaze.setExceptionLogLevel('error');
+```
 <a name="Blaze.isTemplate"></a>
 
 ### Blaze.isTemplate(value)
@@ -817,6 +842,7 @@ error will be thrown.  This is in contrast to
     * [.Unless(conditionFunc, contentFunc, [elseFunc])](#Blaze.Unless)
     * [.Each(argFunc, contentFunc, [elseFunc])](#Blaze.Each)
     * [._Await(value)](#Blaze._Await) ⇒ [<code>View</code>](#Blaze.View)
+    * [.setExceptionLogLevel(level)](#Blaze.setExceptionLogLevel)
     * [.isTemplate(value)](#Blaze.isTemplate)
     * [._withCurrentView(view, func)](#Blaze._withCurrentView) ⇒ <code>T</code>
     * [.render(templateOrView, parentNode, [nextNode], [parentView])](#Blaze.render)
@@ -1372,6 +1398,30 @@ Create a new `Blaze.Let` view that unwraps the given value.
 | --- | --- |
 | value | <code>unknown</code> | 
 
+<a name="Blaze.setExceptionLogLevel"></a>
+
+### Blaze.setExceptionLogLevel(level)
+**Kind**: static method of [<code>Blaze</code>](#Blaze)  
+**Summary**: Chooses how Blaze reports the exceptions it catches: errors thrown
+by template helpers, and rejected promises in attributes. With the default,
+`'log'`, they go through `Meteor._debug`, which tools such as Monti APM hook
+into. With `'warn'` or `'error'`, they go straight to `console.warn` or
+`console.error` along with the error object, which error trackers such as
+Sentry record as an exception, and no longer through `Meteor._debug`.
+Errors thrown by event handlers and lifecycle callbacks are not caught by
+Blaze, and a rejected promise rendered as content is exposed through
+`@rejected` instead of being reported: neither is affected. Call it on the
+client, and on the server as well if you render templates there.  
+**Locus**: Anywhere  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| level | <code>String</code> | `'log'`, `'warn'` or `'error'`. |
+
+**Example**  
+```js
+Blaze.setExceptionLogLevel('error');
+```
 <a name="Blaze.isTemplate"></a>
 
 ### Blaze.isTemplate(value)

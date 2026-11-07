@@ -61,5 +61,6 @@ Package.onTest(function (api) {
   api.use('templating');
 
   api.addFiles('view_tests.js');
+  api.addFiles('exceptions_tests.js');
   api.addFiles('render_tests.js', 'client');
 });

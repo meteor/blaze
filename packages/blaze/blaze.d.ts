@@ -121,5 +121,7 @@ declare module 'meteor/blaze' {
     function toHTML(templateOrView: Template | View): string;
 
     function toHTMLWithData(templateOrView: Template | View, data: Object | Function): string;
+
+    function setExceptionLogLevel(level: 'log' | 'warn' | 'error'): void;
   }
 }

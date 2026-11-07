@@ -24,18 +24,26 @@ let _exceptionLogLevel = 'log';
 // useful in unit tests that test error messages.
 Blaze._throwNextException = false;
 
-// Configure the console method used when reporting template exceptions.
-// Defaults to 'log' for backward compatibility.
-// Set to 'error' or 'warn' to make exceptions appear in the appropriate console channel,
-// which integrates properly with error trackers like Sentry.
-//
-// Example: Blaze.setExceptionLogLevel('error');
+/**
+ * @summary Chooses how Blaze reports the exceptions it catches: errors thrown
+ * by template helpers, and rejected promises in attributes. With the default,
+ * `'log'`, they go through `Meteor._debug`, which tools such as Monti APM hook
+ * into. With `'warn'` or `'error'`, they go straight to `console.warn` or
+ * `console.error` along with the error object, which error trackers such as
+ * Sentry record as an exception, and no longer through `Meteor._debug`.
+ * Errors thrown by event handlers and lifecycle callbacks are not caught by
+ * Blaze, and a rejected promise rendered as content is exposed through
+ * `@rejected` instead of being reported: neither is affected. Call it on the
+ * client, and on the server as well if you render templates there.
+ * @locus Anywhere
+ * @param {String} level `'log'`, `'warn'` or `'error'`.
+ * @example Blaze.setExceptionLogLevel('error');
+ */
 Blaze.setExceptionLogLevel = function (level) {
   if (['log', 'warn', 'error'].indexOf(level) === -1) {
     throw new Error('Invalid log level: ' + level + '. Allowed: log, warn, error.');
   }
   _exceptionLogLevel = level;
-  debugFunc = null; // reset so it picks up new level on next call
 };
 
 Blaze._reportException = function (e, msg) {
@@ -46,22 +54,25 @@ Blaze._reportException = function (e, msg) {
 
   if (! debugFunc)
     // adapted from Tracker
-    debugFunc = function () {
-      var level = _exceptionLogLevel;
-      if (typeof Meteor !== "undefined" && Meteor._debug) {
-        return Meteor._debug;
-      }
-      var consoleMethod = (typeof console !== "undefined") && (console[level] || console.log);
-      return consoleMethod || function () {};
+    debugFunc = () => {
+      return (typeof Meteor !== "undefined" ? Meteor._debug :
+              ((typeof console !== "undefined") && (console.error || console.log) ? (console.error || console.log) :
+               function () {}));
     };
 
-  // In Chrome, `e.stack` is a multiline string that starts with the message
-  // and contains a stack trace.  Furthermore, `console.log` makes it clickable.
-  // `console.log` supplies the space between the two arguments.
-  // When using `console.error` or `console.warn`, the console still displays
-  // the full stack trace — it simply marks it as a higher-severity level,
-  // which is the correct semantic for exceptions.
-  debugFunc()(msg || 'Exception caught in template:', e.stack || e.message || e);
+  // A level other than 'log' reports straight to that console method, also
+  // inside a Meteor app, with the error itself so that error trackers record
+  // its stack. A pending `Meteor._suppress_log` still goes through
+  // `Meteor._debug`, which consumes it silently.
+  if (_exceptionLogLevel !== 'log' && (typeof console !== "undefined") &&
+      ! (typeof Meteor !== "undefined" && Meteor._suppressed_log_expected())) {
+    console[_exceptionLogLevel](msg || 'Exception caught in template:', e);
+  } else {
+    // In Chrome, `e.stack` is a multiline string that starts with the message
+    // and contains a stack trace.  Furthermore, `console.error` (or `console.log`)
+    // makes it clickable. Both provide space between the two arguments.
+    debugFunc()(msg || 'Exception caught in template:', e.stack || e.message || e);
+  }
 };
 
 // It's meant to be used in `Promise` chains to report the error while not
