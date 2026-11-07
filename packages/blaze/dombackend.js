@@ -166,6 +166,7 @@ DOMBackend.Events = {
  * document, letting ancestors outside `elem` satisfy the selector.
  * @param {String} selector Delegation selector, possibly a comma-separated list
  * @returns {String} The selector with every part prefixed by `:scope`
+ * @private
  */
 const scopeSelector = (selector) => selector
     .split(',')
@@ -185,6 +186,7 @@ const scopeSelector = (selector) => selector
  * @param {Element} currentTarget The element the handler was matched on
  * @param {Function} callback Runs the handler; its return value is passed through
  * @returns {*} The return value of `callback`
+ * @private
  */
 const withCurrentTarget = (event, currentTarget, callback) => {
     let inHandler = true;
@@ -215,6 +217,7 @@ const withCurrentTarget = (event, currentTarget, callback) => {
  * @param {Element} elem The delegation root the listener is bound on
  * @param {Array<Object>} delegates Entries of `{scopedSelector, handler}` bound on `elem` for this event type
  * @param {Event} event The native event being dispatched
+ * @private
  */
 const dispatchDelegatedEvent = (elem, delegates, event) => {
     // event.target can be a text node (nodeType 3) — walk to parent element first
@@ -302,6 +305,7 @@ const dispatchDelegatedEvent = (elem, delegates, event) => {
  * @param {String} selector Delegation selector from the event map
  * @param {Function} handler The event map handler, called with `elem` as `this`
  * @returns {Function} The listener to register in capture phase
+ * @private
  */
 const createCaptureWrapper = (elem, selector, handler) => {
     const scopedSelector = scopeSelector(selector);
