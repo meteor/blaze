@@ -19,7 +19,7 @@
     "hexo-renderer-marked": "^2.0.0",
     "hexo-renderer-stylus": "^0.3.3",
     "hexo-server": "^1.0.0",
-    "jsdoc": "3.6.10",
+    "jsdoc": "4.0.5",
     "meteor-hexo-config": "1.0.12",
     "showdown": "^1.9.1",
     "underscore": "^1.13.6"
