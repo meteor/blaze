@@ -8,3 +8,4 @@ node_modules/
 data
 .vitepress/cache/
 source/repo/*.md
+.vitepress/dist/

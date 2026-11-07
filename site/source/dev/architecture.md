@@ -223,11 +223,11 @@ During the build stage, template files are processed and compiled into executabl
 5. **Compiled code is bundled** - The generated JavaScript is included in the application bundle for runtime execution
 
 **Key packages in build stage:**
-- [`templating-compiler`](./packages/templating-compiler) - Build plugin that orchestrates the compilation process
-- [`caching-html-compiler`](./packages/caching-html-compiler) - Provides caching infrastructure for efficient compilation
-- [`templating-tools`](./packages/templating-tools) - Utility functions for scanning and processing HTML files
-- [`spacebars-compiler`](./packages/spacebars-compiler) - Compiles Spacebars template syntax into JavaScript
-- [`html-tools`](./packages/html-tools) - Tokenizes and parses HTML with support for template extensions
+- [`templating-compiler`](https://github.com/meteor/blaze/tree/master/packages/templating-compiler) - Build plugin that orchestrates the compilation process
+- [`caching-html-compiler`](https://github.com/meteor/blaze/tree/master/packages/caching-html-compiler) - Provides caching infrastructure for efficient compilation
+- [`templating-tools`](https://github.com/meteor/blaze/tree/master/packages/templating-tools) - Utility functions for scanning and processing HTML files
+- [`spacebars-compiler`](https://github.com/meteor/blaze/tree/master/packages/spacebars-compiler) - Compiles Spacebars template syntax into JavaScript
+- [`html-tools`](https://github.com/meteor/blaze/tree/master/packages/html-tools) - Tokenizes and parses HTML with support for template extensions
 
 
 

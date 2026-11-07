@@ -5,29 +5,44 @@ On this page we want to provide you guidance with migrating between Blaze versio
 ## 3.1.0
 
 This is a performance release, improving bundle size, render performance and developer experience.
-With this release, we removed jQuery, which has implications for existing Blaze apps that used jQuery and
-intend to opt-out now.
+With this release, jQuery became optional. Blaze picks its DOM backend when it loads: if the `jquery`
+package is present, Blaze keeps using jQuery exactly as before; if it is absent, Blaze uses native DOM
+operations instead. Nothing changes for an app that keeps jQuery, apart from a message in the browser
+console telling you that the native backend is available and that jQuery support is deprecated.
+
+### Keep jQuery
+
+Do nothing. As long as the `jquery` package is in your app, Blaze uses it. Note that any package that
+depends on `jquery` keeps it in your app, and therefore keeps Blaze on the jQuery backend.
 
 ### Remove jQuery
 
-In order to remove jQuery, simply run `meteor remove jquery && meteor npm uninstall jquery` in your console.
-Blaze will adapt automatically to use native DOM operations under the hood.
+Run `meteor remove jquery && meteor npm uninstall jquery` in your console. Blaze adapts automatically and
+uses native DOM operations under the hood.
 
 > Breaking note!
 
-While this is a minor release, removing jQuery will be breaking if you remove it AND rely on
-template-level selectors:
+While this is a minor release, removing jQuery is breaking for code that relied on jQuery through Blaze:
+
+- `template.$(selector)` returns an array of DOM elements instead of a jQuery object. `template.find`
+  and `template.findAll` are unchanged: they always returned DOM elements.
+- The `event` passed to event handlers is the native DOM event instead of a jQuery event object.
+  `event.target`, `event.currentTarget`, `preventDefault()`, `stopPropagation()` and
+  `stopImmediatePropagation()` work the same; jQuery-only helpers such as `isDefaultPrevented()` are
+  not available, use `event.defaultPrevented` instead.
+- jQuery plugins called on `template.$(...)` no longer work, since there is no jQuery object to call
+  them on.
 
 ```js
 // with jQuery
 const instance = this
 
-// with jQuery, this returns a list of jQuery objects,
-// each capable of builtin jQuery interactions
+// with jQuery, this returns a jQuery object wrapping the matched elements,
+// with all the jQuery methods available
 const $myComponent = instance.$('.my-component')
-$myComponent.data('moo') //jQuery builtin, returning data-moo attribute value of the element
+$myComponent.data('moo') // jQuery builtin, returning the data-moo attribute value of the element
 
-// get native HTMLElement
+// get the native HTMLElement
 $myComponent.get(0)
 ```
 
@@ -35,9 +50,9 @@ $myComponent.get(0)
 // jQuery removed
 const instance = this
 
-// without jQuery, this returns a list of HTMLElements,
+// without jQuery, this returns an array of HTMLElements,
 // note that now you always need to use the array index
-// to access the specific elememnts
-const $myComponent = instance.$('.my-component')[0]
-$myComponent.dataset.moo //native DOM builtin, returning data-moo attribute value of the element
+// to access the specific elements
+const myComponent = instance.$('.my-component')[0]
+myComponent.dataset.moo // native DOM builtin, returning the data-moo attribute value of the element
 ```

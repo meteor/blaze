@@ -136,7 +136,19 @@ export default defineConfig({
             { icon: "discord", link: "https://discord.gg/hZkTCaVjmT" },
         ],
         editLink: {
-            pattern: 'https://github.com/meteor/blaze/edit/master/site/sources/:path'
+            pattern: 'https://github.com/meteor/blaze/edit/master/site/source/:path'
+        }
+    },
+    markdown: {
+        config: (md) => {
+            // Blaze docs are full of {{mustaches}} in inline code. Fenced code
+            // blocks already get v-pre; give inline code the same so Vue does
+            // not try to interpolate them.
+            const renderInlineCode = md.renderer.rules.code_inline
+            md.renderer.rules.code_inline = (tokens, idx, options, env, self) => {
+                tokens[idx].attrSet('v-pre', '')
+                return renderInlineCode(tokens, idx, options, env, self)
+            }
         }
     },
     vite: {
