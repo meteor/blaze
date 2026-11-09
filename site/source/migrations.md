@@ -7,13 +7,32 @@ On this page we want to provide you guidance with migrating between Blaze versio
 This is a performance release, improving bundle size, render performance and developer experience.
 With this release, jQuery became optional. Blaze picks its DOM backend when it loads: if the `jquery`
 package is present, Blaze keeps using jQuery exactly as before; if it is absent, Blaze uses native DOM
-operations instead. Nothing changes for an app that keeps jQuery, apart from a message in the browser
-console telling you that the native backend is available and that jQuery support is deprecated.
+operations instead. Nothing changes at runtime for an app that keeps jQuery, apart from a message in the
+browser console telling you that the native backend is available and that jQuery support is deprecated.
+TypeScript apps have one type to adjust, see below.
 
 ### Keep jQuery
 
 Do nothing. As long as the `jquery` package is in your app, Blaze uses it. Note that any package that
 depends on `jquery` keeps it in your app, and therefore keeps Blaze on the jQuery backend.
+
+One thing does change for TypeScript apps that use the types shipped with the `blaze` package, for
+instance through `zodern:types`: `template.$(selector)` is now typed as `JQuery | HTMLElement[]`, because
+what it returns depends on whether `jquery` is installed. Calling a jQuery method on the result, such as
+`instance.$('input').val()`, no longer type-checks on its own. Cast the result where your app relies on
+jQuery:
+
+```ts
+const $input = instance.$('input') as JQuery<HTMLInputElement>
+$input.val()
+```
+
+Or narrow at runtime when the code has to work on both backends:
+
+```ts
+const result = instance.$('input')
+const inputs = Array.isArray(result) ? result : result.toArray()
+```
 
 ### Remove jQuery
 
