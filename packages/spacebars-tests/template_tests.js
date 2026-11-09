@@ -4870,6 +4870,55 @@ Tinytest.add(
   }
 );
 
+// A library may replace stopPropagation() on the event itself to record the
+// calls. The dispatch wraps that method for its own bookkeeping and must put
+// the library's version back, so a listener that runs later still reaches it.
+Tinytest.add(
+  'spacebars-tests - template_tests - delegated event dispatch puts back a replaced stopPropagation',
+  function (test) {
+    const tmpl = new Template(
+      Template.spacebars_test_event_current_target.viewName,
+      Template.spacebars_test_event_current_target.renderFunction);
+    const seen = [];
+    tmpl.events({
+      'click .card': function () {
+        seen.push('handler');
+      },
+    });
+    const div = renderToDiv(tmpl);
+    document.body.appendChild(div);
+    // Capturing listener: runs before the delegated dispatch and replaces
+    // both methods on this event, the way a recording library would.
+    const replaceMethods = function (evt) {
+      const stopPropagation = evt.stopPropagation;
+      const stopImmediatePropagation = evt.stopImmediatePropagation;
+      evt.stopPropagation = function () {
+        seen.push('stopPropagation');
+        return stopPropagation.call(this);
+      };
+      evt.stopImmediatePropagation = function () {
+        seen.push('stopImmediatePropagation');
+        return stopImmediatePropagation.call(this);
+      };
+    };
+    // Bubbling listener: runs after the delegated dispatch.
+    const callMethods = function (evt) {
+      evt.stopImmediatePropagation();
+      evt.stopPropagation();
+    };
+    document.addEventListener('click', replaceMethods, true);
+    document.addEventListener('click', callMethods);
+
+    div.querySelector('.title').dispatchEvent(
+      new MouseEvent('click', { bubbles: true, cancelable: true }));
+    document.removeEventListener('click', replaceMethods, true);
+    document.removeEventListener('click', callMethods);
+
+    test.equal(seen, ['handler', 'stopImmediatePropagation', 'stopPropagation']);
+    document.body.removeChild(div);
+  }
+);
+
 Tinytest.add(
   'spacebars-tests - template_tests - capturing event keeps currentTarget after the dispatch',
   function (test) {

@@ -250,11 +250,15 @@ const dispatchDelegatedEvent = (elem, delegates, event) => {
     // The native event only exposes stopPropagation() through cancelBubble,
     // which may already be set by another listener on `elem`, and doesn't
     // expose stopImmediatePropagation() at all. Track both calls for the
-    // duration of this dispatch, the way jQuery's event object does.
+    // duration of this dispatch, the way jQuery's event object does. Another
+    // library may have replaced either method on this very event, to record
+    // calls for instance: it is called through, and put back afterwards.
     let propagationStopped = false;
     let immediatePropagationStopped = false;
     const stopPropagation = event.stopPropagation;
     const stopImmediatePropagation = event.stopImmediatePropagation;
+    const ownStopPropagation = Object.getOwnPropertyDescriptor(event, 'stopPropagation');
+    const ownStopImmediatePropagation = Object.getOwnPropertyDescriptor(event, 'stopImmediatePropagation');
     Object.defineProperty(event, 'stopPropagation', {
         value() {
             propagationStopped = true;
@@ -288,9 +292,20 @@ const dispatchDelegatedEvent = (elem, delegates, event) => {
             withCurrentTarget(event, node, () => runHandlers(node, handlers));
         }
     } finally {
-        delete event.stopPropagation;
-        delete event.stopImmediatePropagation;
+        restoreOwnProperty(event, 'stopPropagation', ownStopPropagation);
+        restoreOwnProperty(event, 'stopImmediatePropagation', ownStopImmediatePropagation);
     }
+};
+
+/**
+ * Puts an object's own property back the way it was before a dispatch
+ * overrode it: redefined from its saved descriptor, or removed when the
+ * object had none, so the prototype's method shows through again.
+ * @private
+ */
+const restoreOwnProperty = (object, name, descriptor) => {
+    if (descriptor) Object.defineProperty(object, name, descriptor);
+    else delete object[name];
 };
 
 /**
