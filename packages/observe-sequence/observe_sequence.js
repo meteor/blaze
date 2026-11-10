@@ -296,9 +296,9 @@ const diffArray = (lastSeqArray, seqArray, callbacks) => {
   // it appropriately.
   diffFn(oldIdObjects, newIdObjects, {
     addedBefore: function (id, doc, before) {
-      const position = before ? posCur[idStringify(before)] : lengthCur;
+      const position = before !== null ? posCur[idStringify(before)] : lengthCur;
 
-      if (before) {
+      if (before !== null) {
         // If not adding at the end, we need to update indexes.
         // XXX this can still be improved greatly!
         Object.entries(posCur).forEach(([id, pos]) => {
@@ -321,7 +321,7 @@ const diffArray = (lastSeqArray, seqArray, callbacks) => {
         return;
 
       const oldPosition = posCur[idStringify(id)];
-      let newPosition = before ? posCur[idStringify(before)] : lengthCur;
+      let newPosition = before !== null ? posCur[idStringify(before)] : lengthCur;
 
       // Moving the item forward. The new element is losing one position as it
       // was removed from the old position before being inserted at the new

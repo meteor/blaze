@@ -716,6 +716,66 @@ Tinytest.addAsync('observe-sequence - number arrays, _id:0 correctly handled, no
   ]);
 });
 
+// diffQueryOrderedChanges passes null as `before` for "end of list". An anchor
+// whose id is 0, false, undefined or "" was taken for that marker, so the
+// element was added or moved after the last item instead of just before the
+// anchor. Strings are not affected: their ids are prefixed with "-".
+Tinytest.addAsync('observe-sequence - array to other array, falsy ids as anchors', async function (test) {
+  const cases = [
+    [[0, 1], [1, 0], [
+      {addedAt: [0, 0, 0, null]},
+      {addedAt: [1, 1, 1, null]},
+      {movedTo: [1, 1, 1, 0, 0]}
+    ]],
+    [[0, 1], [2, 0, 1], [
+      {addedAt: [0, 0, 0, null]},
+      {addedAt: [1, 1, 1, null]},
+      {addedAt: [2, 2, 0, 0]}
+    ]],
+    [[false, true], [true, false], [
+      {addedAt: [false, false, 0, null]},
+      {addedAt: [true, true, 1, null]},
+      {movedTo: [true, true, 1, 0, false]}
+    ]],
+    // Pins the strict comparison against null: undefined is a valid id.
+    [[undefined, 1], [1, undefined], [
+      {addedAt: [undefined, undefined, 0, null]},
+      {addedAt: [1, 1, 1, null]},
+      {movedTo: [1, 1, 1, 0, undefined]}
+    ]]
+  ];
+  for (const [initial, next, expected] of cases) {
+    const dep = new Tracker.Dependency;
+    let seq = initial;
+    await runOneObserveSequenceTestCase(test, function () {
+      dep.depend();
+      return seq;
+    }, function () {
+      seq = next;
+      dep.changed();
+    }, expected);
+  }
+
+  // Objects keep their _id as is, so an empty string is a falsy id too.
+  const empty = {_id: '', name: 'empty'};
+  const a = {_id: 'a', name: 'a'};
+  const dep = new Tracker.Dependency;
+  let seq = [empty, a];
+  await runOneObserveSequenceTestCase(test, function () {
+    dep.depend();
+    return seq;
+  }, function () {
+    seq = [a, empty];
+    dep.changed();
+  }, [
+    {addedAt: ['', empty, 0, null]},
+    {addedAt: ['a', a, 1, null]},
+    {movedTo: ['a', a, 1, 0, '']},
+    {changedAt: ['', empty, empty, 1]},
+    {changedAt: ['a', a, a, 0]}
+  ]);
+});
+
 Tinytest.addAsync('observe-sequence - cursor to other cursor, same collection', async function (test) {
   const dep = new Tracker.Dependency;
   const coll = new Mongo.Collection(null);
