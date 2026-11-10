@@ -95,7 +95,7 @@ Blaze._getTemplateHelper = function (template, name, tmplInstanceFunc) {
       }
     }
     if (template[name] != null) {
-      return wrapHelper(bindDataContext(template[name]), tmplInstanceFunc);
+      return wrapHelper(bindDataContext(template[name]), tmplInstanceFunc, `${template.viewName} ${name}`);
     }
   }
 
