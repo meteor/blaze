@@ -18,7 +18,7 @@ and manipulate "Views," the building blocks of reactive templates.
         * [.view](#Blaze.TemplateInstance+view) : [<code>View</code>](#Blaze.View)
         * [.firstNode](#Blaze.TemplateInstance+firstNode) : <code>DOMNode</code>
         * [.lastNode](#Blaze.TemplateInstance+lastNode) : <code>DOMNode</code>
-        * [.$(selector)](#Blaze.TemplateInstance+$) ⇒ <code>Array.&lt;DOMNode&gt;</code>
+        * [.$(selector)](#Blaze.TemplateInstance+$) ⇒ <code>JQuery</code> \| <code>Array.&lt;DOMElement&gt;</code>
         * [.findAll(selector)](#Blaze.TemplateInstance+findAll) ⇒ <code>Array.&lt;DOMElement&gt;</code>
         * [.find(selector)](#Blaze.TemplateInstance+find) ⇒ <code>DOMElement</code>
         * [.autorun(runFunc)](#Blaze.TemplateInstance+autorun)
@@ -115,7 +115,7 @@ Same as the constructor argument.
     * [.view](#Blaze.TemplateInstance+view) : [<code>View</code>](#Blaze.View)
     * [.firstNode](#Blaze.TemplateInstance+firstNode) : <code>DOMNode</code>
     * [.lastNode](#Blaze.TemplateInstance+lastNode) : <code>DOMNode</code>
-    * [.$(selector)](#Blaze.TemplateInstance+$) ⇒ <code>Array.&lt;DOMNode&gt;</code>
+    * [.$(selector)](#Blaze.TemplateInstance+$) ⇒ <code>JQuery</code> \| <code>Array.&lt;DOMElement&gt;</code>
     * [.findAll(selector)](#Blaze.TemplateInstance+findAll) ⇒ <code>Array.&lt;DOMElement&gt;</code>
     * [.find(selector)](#Blaze.TemplateInstance+find) ⇒ <code>DOMElement</code>
     * [.autorun(runFunc)](#Blaze.TemplateInstance+autorun)
@@ -156,9 +156,9 @@ Same as the constructor argument.
 **Locus**: Client  
 <a name="Blaze.TemplateInstance+$"></a>
 
-#### templateInstance.$(selector) ⇒ <code>Array.&lt;DOMNode&gt;</code>
+#### templateInstance.$(selector) ⇒ <code>JQuery</code> \| <code>Array.&lt;DOMElement&gt;</code>
 **Kind**: instance method of [<code>TemplateInstance</code>](#Blaze.TemplateInstance)  
-**Summary**: Find all elements matching `selector` in this template instance, and return them as a JQuery object.  
+**Summary**: Find all elements matching `selector` in this template instance. Returns a jQuery object when the `jquery` package is installed, and an array of DOM elements otherwise.  
 **Locus**: Client  
 
 | Param | Type | Description |
@@ -809,7 +809,7 @@ error will be thrown.  This is in contrast to
         * [.view](#Blaze.TemplateInstance+view) : [<code>View</code>](#Blaze.View)
         * [.firstNode](#Blaze.TemplateInstance+firstNode) : <code>DOMNode</code>
         * [.lastNode](#Blaze.TemplateInstance+lastNode) : <code>DOMNode</code>
-        * [.$(selector)](#Blaze.TemplateInstance+$) ⇒ <code>Array.&lt;DOMNode&gt;</code>
+        * [.$(selector)](#Blaze.TemplateInstance+$) ⇒ <code>JQuery</code> \| <code>Array.&lt;DOMElement&gt;</code>
         * [.findAll(selector)](#Blaze.TemplateInstance+findAll) ⇒ <code>Array.&lt;DOMElement&gt;</code>
         * [.find(selector)](#Blaze.TemplateInstance+find) ⇒ <code>DOMElement</code>
         * [.autorun(runFunc)](#Blaze.TemplateInstance+autorun)
@@ -906,7 +906,7 @@ Same as the constructor argument.
     * [.view](#Blaze.TemplateInstance+view) : [<code>View</code>](#Blaze.View)
     * [.firstNode](#Blaze.TemplateInstance+firstNode) : <code>DOMNode</code>
     * [.lastNode](#Blaze.TemplateInstance+lastNode) : <code>DOMNode</code>
-    * [.$(selector)](#Blaze.TemplateInstance+$) ⇒ <code>Array.&lt;DOMNode&gt;</code>
+    * [.$(selector)](#Blaze.TemplateInstance+$) ⇒ <code>JQuery</code> \| <code>Array.&lt;DOMElement&gt;</code>
     * [.findAll(selector)](#Blaze.TemplateInstance+findAll) ⇒ <code>Array.&lt;DOMElement&gt;</code>
     * [.find(selector)](#Blaze.TemplateInstance+find) ⇒ <code>DOMElement</code>
     * [.autorun(runFunc)](#Blaze.TemplateInstance+autorun)
@@ -947,9 +947,9 @@ Same as the constructor argument.
 **Locus**: Client  
 <a name="Blaze.TemplateInstance+$"></a>
 
-#### templateInstance.$(selector) ⇒ <code>Array.&lt;DOMNode&gt;</code>
+#### templateInstance.$(selector) ⇒ <code>JQuery</code> \| <code>Array.&lt;DOMElement&gt;</code>
 **Kind**: instance method of [<code>TemplateInstance</code>](#Blaze.TemplateInstance)  
-**Summary**: Find all elements matching `selector` in this template instance, and return them as a JQuery object.  
+**Summary**: Find all elements matching `selector` in this template instance. Returns a jQuery object when the `jquery` package is installed, and an array of DOM elements otherwise.  
 **Locus**: Client  
 
 | Param | Type | Description |

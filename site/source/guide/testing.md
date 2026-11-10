@@ -101,7 +101,7 @@ yes, you do need to import the HTML files of your Blaze templates!)
 
 To be a unit test, we must stub out the dependencies of the module. In this case, thanks to the way we've isolated our
 code into a reusable component, there's not much to do; principally we need to stub out the <code v-pre>{{_}}</code>
-helper that's created by the [`tap:i18n`](ui-ux.html#i18n) system. Note that we stub it out in a `beforeEach` and
+helper that's created by the [`tap:i18n`](https://guide.meteor.com/ui-ux.html#i18n) system. Note that we stub it out in a `beforeEach` and
 restore it the `afterEach`.
 
 If you're testing code that makes use of globals, you'll need to import those globals. For instance if you have a global
@@ -154,7 +154,7 @@ TEST_WATCH=1 meteor test --driver-package meteortesting:mocha
 
 As we've defined a test file (`imports/todos/todos.tests.js`), what this means is that the file above will be eagerly loaded, adding the `'builds correctly from factory'` test to the Mocha registry.
 
-To run the tests, visit http://localhost:3000 in your browser. This kicks off `meteortesting:mocha`, which runs your tests both in the browser and on the server. It will display the test results in a div with ID mocha.
+To run the tests, visit `http://localhost:3000` in your browser. This kicks off `meteortesting:mocha`, which runs your tests both in the browser and on the server. It will display the test results in a div with ID mocha.
 
 Usually, while developing an application, it makes sense to run `meteor test` on a second port (say `3100`), while also running your main application in a separate process:
 

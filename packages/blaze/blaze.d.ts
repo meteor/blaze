@@ -80,7 +80,7 @@ declare module 'meteor/blaze' {
     class TemplateInstance<D = any> {
       constructor(view: View);
 
-      $<TElement extends HTMLElement = HTMLElement>(selector: string): JQuery<TElement>;
+      $<TElement extends HTMLElement = HTMLElement>(selector: string): JQuery<TElement> | TElement[];
       autorun(runFunc: (computation: Tracker.Computation) => void): Tracker.Computation;
       data: D;
       find(selector: string): HTMLElement;

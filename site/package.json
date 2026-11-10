@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "docs:init": "ln -f ../*.md source/repo/",
+    "docs:init": "mkdir -p source/repo && ln -f ../CONTRIBUTING.md ../CODE_OF_CONDUCT.md ../SECURITY.md source/repo/",
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
     "docs:preview": "vitepress preview",

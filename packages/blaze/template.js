@@ -318,10 +318,10 @@ Blaze.TemplateInstance = function (view) {
 };
 
 /**
- * @summary Find all elements matching `selector` in this template instance, and return them as a JQuery object.
+ * @summary Find all elements matching `selector` in this template instance. Returns a jQuery object when the `jquery` package is installed, and an array of DOM elements otherwise.
  * @locus Client
  * @param {String} selector The CSS selector to match, scoped to the template contents.
- * @returns {DOMNode[]}
+ * @returns {JQuery|DOMElement[]}
  */
 Blaze.TemplateInstance.prototype.$ = function (selector) {
   const view = this.view;

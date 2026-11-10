@@ -40,7 +40,7 @@ unnecessary re-runs by using a more subtle reactive data source. The [
 
 ## Attribute helpers
 
-Setting tag attributes via helpers (e.g. `<div {% raw %}{{attributes}}{% endraw %}>`) is a neat tool and has some
+Setting tag attributes via helpers (e.g. `<div {{attributes}}>`) is a neat tool and has some
 precedence rules that make it more useful. Specifically, when you use it more than once on a given element, the
 attributes are composed (rather than the second set of attributes simply replacing the first). So you can use one helper
 to set one set of attributes and a second to set another. For instance:
