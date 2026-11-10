@@ -60,13 +60,14 @@ function _identity(x) {
  * @param {ReactiveVar<U>} reactiveVar Target view.
  * @param {Promise<T> | T} value Bound value.
  * @param {function(T): U} [mapper] Maps the computed value before store.
+ * @param {function(): boolean} [isCurrent] Whether this binding run is still active.
  * @private
  */
-function _setBindingValue(reactiveVar, value, mapper = _identity) {
+function _setBindingValue(reactiveVar, value, mapper = _identity, isCurrent = () => true) {
   if (value && typeof value.then === 'function') {
     value.then(
-      value => reactiveVar.set({ value: mapper(value) }),
-      error => reactiveVar.set({ error }),
+      value => isCurrent() && reactiveVar.set({ value: mapper(value) }),
+      error => isCurrent() && reactiveVar.set({ error }),
     );
   } else {
     reactiveVar.set({ value: mapper(value) });
@@ -85,8 +86,19 @@ function _setBindingValue(reactiveVar, value, mapper = _identity) {
 function _createBinding(view, binding, displayName, mapper) {
   const reactiveVar = new ReactiveVar(undefined, _isEqualBinding);
   if (typeof binding === 'function') {
+    // Only the latest run may set the value: a slower promise from an earlier
+    // run must not overwrite a newer result. See meteor/blaze#514.
+    let latestRun = 0;
     view.autorun(
-      () => _setBindingValue(reactiveVar, binding(), mapper),
+      (comp) => {
+        const run = ++latestRun;
+        _setBindingValue(
+          reactiveVar,
+          binding(),
+          mapper,
+          () => run === latestRun && !comp.stopped,
+        );
+      },
       view.parentView,
       displayName,
     );

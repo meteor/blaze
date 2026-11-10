@@ -178,9 +178,14 @@ const materializeTag = function (tag, parentView, workStack) {
 
   if (rawAttrs) {
     const attrUpdater = new ElementAttributesUpdater(elem);
+    // Only the latest run may update the attributes. See meteor/blaze#514.
+    let latestRun = 0;
+    let updaterComputation;
     const updateAttributes = function () {
+      const run = ++latestRun;
       const expandedAttrs = Blaze._expandAttributes(rawAttrs, parentView);
       then(waitForAllAttributes(expandedAttrs), awaitedAttrs => {
+        if (run !== latestRun || updaterComputation?.stopped) return;
         const flattenedAttrs = HTML.flattenAttributes(awaitedAttrs);
         const stringAttrs = {};
         Object.keys(flattenedAttrs).forEach((attrName) => {
@@ -197,7 +202,6 @@ const materializeTag = function (tag, parentView, workStack) {
         attrUpdater.update(stringAttrs);
       });
     };
-    let updaterComputation;
     if (parentView) {
       updaterComputation =
         parentView.autorun(updateAttributes, undefined, 'updater');
