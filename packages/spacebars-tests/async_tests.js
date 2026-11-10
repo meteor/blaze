@@ -164,3 +164,44 @@ asyncSuite('state2nested', [
   ['resolved rejected', { x: resolved, y: rejected }, '1 a1 b1 ab1', '2 a3 b2 ab2 ab3'],
   ['resolved resolved', { x: resolved, y: resolved }, '1 a1 b1 ab1', '3 a3 b3 ab3'],
 ]);
+
+// An earlier promise that settles after a newer one must not overwrite the
+// newer result (#514).
+for (const [templateName, testName, settleFirst, secondValue, expected] of [
+  ['direct', 'out-of-order resolution keeps latest value',
+    ({ resolve }) => resolve('stale'), 'fresh', 'fresh'],
+  ['state1', 'out-of-order rejection keeps latest resolved state',
+    ({ reject }) => reject(new Error('stale')), 'fresh', '3 a3'],
+  ['if', 'out-of-order condition keeps latest branch',
+    ({ resolve }) => resolve(true), false, '2'],
+  ['each_new', 'out-of-order sequence keeps latest items',
+    ({ resolve }) => resolve(['a']), ['b'], 'b'],
+  ['with', 'out-of-order context keeps latest data',
+    ({ resolve }) => resolve({ y: 'stale' }), { y: 'fresh' }, 'fresh'],
+  ['attribute', 'out-of-order attribute keeps latest value',
+    ({ resolve }) => resolve('stale'), 'fresh', '<img class="fresh">'],
+]) {
+  asyncTest(templateName, testName, async (test, template, render) => {
+    let first;
+    const firstPromise = new Promise((resolve, reject) => {
+      first = { resolve, reject };
+    });
+    firstPromise.catch(() => {});
+    const current = new ReactiveVar(secondValue);
+    template.helpers({ x: () => current.get() });
+
+    const readHTML = render();
+    current.set(firstPromise);
+    Tracker.flush();
+    current.set(Promise.resolve(secondValue));
+    Tracker.flush();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    Tracker.flush();
+    test.equal(readHTML(), expected);
+
+    settleFirst(first);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    Tracker.flush();
+    test.equal(readHTML(), expected);
+  });
+}
