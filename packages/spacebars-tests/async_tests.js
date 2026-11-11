@@ -193,3 +193,56 @@ for (const [templateName, testName, makeHelpers, expectedMessages] of [
     test.equal(reportedMessages.sort(), expectedMessages);
   });
 }
+
+// Async block helpers inside HTML attributes (#470).
+asyncSuite('attribute_if', [
+  ['false', { x: Promise.resolve(false) }, '<img>', '<img class="a d">'],
+  ['true', { x: Promise.resolve(true) }, '<img>', '<img class="a b c">'],
+]);
+
+asyncSuite('attribute_unless', [
+  ['false', { x: Promise.resolve(false) }, '<img>', '<img class="a b c">'],
+  ['true', { x: Promise.resolve(true) }, '<img>', '<img class="a d">'],
+]);
+
+asyncSuite('attribute_let', [
+  ['false', { x: Promise.resolve(false) }, '<img class="a 2">', '<img class="a 2">'],
+  ['true', { x: Promise.resolve(true) }, '<img class="a 2">', '<img class="a 1">'],
+]);
+
+asyncSuite('attribute_with', [
+  ['direct', { x: Promise.resolve({ y: 'foo' }) }, '<img>', '<img class="a foo">'],
+]);
+
+asyncSuite('attribute_each', [
+  ['empty', { x: Promise.resolve([]) }, '<img>', '<img class="a 0">'],
+  ['two', { x: Promise.resolve([1, 2]) }, '<img>', '<img class="a 12">'],
+]);
+
+asyncSuite('attribute_inclusion', [
+  ['false', { x: getter(false) }, '<img>', '<img class="a d">'],
+  ['true', { x: getter(true) }, '<img>', '<img class="a b c">'],
+]);
+
+asyncTest('attribute_if', 'reactive update without infinite loop', async (test, template, render) => {
+  const current = new ReactiveVar(Promise.resolve(true));
+  let calls = 0;
+  template.helpers({
+    x() {
+      calls += 1;
+      return current.get();
+    },
+  });
+
+  const readHTML = render();
+  await new Promise(Tracker.afterFlush);
+  test.equal(readHTML(), '<img class="a b c">');
+  test.equal(calls, 2);
+
+  current.set(Promise.resolve(false));
+  Tracker.flush();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  test.equal(readHTML(), '<img class="a d">');
+  test.equal(calls, 4);
+});
+

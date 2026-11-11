@@ -64,7 +64,7 @@ function _identity(x) {
  */
 function _setBindingValue(reactiveVar, value, mapper = _identity) {
   if (value && typeof value.then === 'function') {
-    value.then(
+    return value.then(
       value => reactiveVar.set({ value: mapper(value) }),
       error => reactiveVar.set({ error }),
     );
@@ -86,12 +86,32 @@ function _createBinding(view, binding, displayName, mapper) {
   const reactiveVar = new ReactiveVar(undefined, _isEqualBinding);
   if (typeof binding === 'function') {
     view.autorun(
-      () => _setBindingValue(reactiveVar, binding(), mapper),
+      (comp) => {
+        const promise = _setBindingValue(reactiveVar, binding(), mapper);
+        if (view._isCreatedForExpansion) {
+          if (promise && comp.firstRun) {
+            view._bindingPromises = view._bindingPromises || [];
+            view._bindingPromises.push(promise);
+          }
+          if (view._expandComputation) {
+            const expandComputation = view._expandComputation;
+            Tracker.onInvalidate(() => {
+              if (!view.isDestroyed) {
+                expandComputation.invalidate();
+              }
+            });
+          }
+        }
+      },
       view.parentView,
       displayName,
     );
   } else {
-    _setBindingValue(reactiveVar, binding, mapper);
+    const promise = _setBindingValue(reactiveVar, binding, mapper);
+    if (promise && view._isCreatedForExpansion) {
+      view._bindingPromises = view._bindingPromises || [];
+      view._bindingPromises.push(promise);
+    }
   }
 
   return reactiveVar;
@@ -250,9 +270,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
       'collection',
     );
 
-    eachView.stopHandle = ObserveSequence.observe(function () {
-      return eachView.argVar.get()?.value;
-    }, {
+    const observeCallbacks = {
       // Called immediately when the sequence source is invalidated,
       // BEFORE the Tracker flush re-runs other autoruns. This freezes
       // item views so their helpers don't re-run with stale data.
@@ -371,12 +389,27 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
         }
         eachView._eachItemPendingDep.changed();
       }
-    });
+    };
 
-    if (eachView.elseFunc && eachView.numItems === 0) {
-      eachView.inElseMode = true;
-      eachView.initialSubviews[0] =
-        Blaze.View('each_else', eachView.elseFunc);
+    const setupObserve = () => {
+      if (eachView.isDestroyed) return;
+      eachView.stopHandle = ObserveSequence.observe(function () {
+        return eachView.argVar.get()?.value;
+      }, observeCallbacks);
+
+      if (eachView.elseFunc && eachView.numItems === 0) {
+        eachView.inElseMode = true;
+        eachView.initialSubviews[0] =
+          Blaze.View('each_else', eachView.elseFunc);
+      }
+    };
+
+    if (eachView._bindingPromises?.length) {
+      eachView._bindingPromises = [
+        Promise.all(eachView._bindingPromises).then(setupObserve),
+      ];
+    } else {
+      setupObserve();
     }
   });
 

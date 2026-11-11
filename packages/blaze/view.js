@@ -414,8 +414,10 @@ Blaze._createView = function (view, parentView, forExpansion) {
 
   view.parentView = (parentView || null);
   view.isCreated = true;
-  if (forExpansion)
+  if (forExpansion) {
     view._isCreatedForExpansion = true;
+    view._expandComputation = Tracker.currentComputation;
+  }
 
   Blaze._fireCallbacks(view, 'created');
 };
@@ -564,26 +566,61 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
 // reactive string; that is, the Computation will be invalidated
 // if any changes are made to the view or subviews that might affect
 // the HTML.
+function waitForExpanded(x) {
+  if (x && typeof x.then === 'function') {
+    return x.then(waitForExpanded);
+  }
+  if (Array.isArray(x)) {
+    const mapped = x.map(waitForExpanded);
+    return mapped.some(el => el && typeof el.then === 'function')
+      ? Promise.all(mapped)
+      : mapped;
+  }
+  return x;
+}
+
 Blaze._expandView = function (view, parentView) {
   Blaze._createView(view, parentView, true /*forExpansion*/);
 
-  view._isInRender = true;
-  const htmljs = Blaze._withCurrentView(view, function () {
-    return view._render();
-  });
-  view._isInRender = false;
-
-  const result = Blaze._expand(htmljs, view);
-
-  if (Tracker.active) {
-    Tracker.onInvalidate(function () {
+  const computation = Tracker.currentComputation;
+  if (computation) {
+    computation.onInvalidate(function () {
       Blaze._destroyView(view);
     });
-  } else {
-    Blaze._destroyView(view);
   }
 
-  return result;
+  const renderAndExpand = function () {
+    if (view.isDestroyed) {
+      return null;
+    }
+    view._isInRender = true;
+    const htmljs = Blaze._withCurrentView(view, function () {
+      return view._render();
+    });
+    view._isInRender = false;
+
+    const result = waitForExpanded(Blaze._expand(htmljs, view));
+
+    if (!computation) {
+      if (result && typeof result.then === 'function') {
+        return result.finally(() => Blaze._destroyView(view));
+      }
+      Blaze._destroyView(view);
+    }
+
+    return result;
+  };
+
+  if (view._bindingPromises?.length) {
+    return Promise.all(view._bindingPromises).then(() => {
+      if (computation && computation.stopped) {
+        return null;
+      }
+      return Tracker.withComputation(computation, renderAndExpand);
+    });
+  }
+
+  return renderAndExpand();
 };
 
 // Options: `parentView`
