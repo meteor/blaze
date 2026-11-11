@@ -164,3 +164,32 @@ asyncSuite('state2nested', [
   ['resolved rejected', { x: resolved, y: rejected }, '1 a1 b1 ab1', '2 a3 b2 ab2 ab3'],
   ['resolved resolved', { x: resolved, y: resolved }, '1 a1 b1 ab1', '3 a3 b3 ab3'],
 ]);
+
+// A promise that rejects in an attribute is reported once, where it rejects,
+// and not again by each enclosing layer of the attribute promise chain.
+for (const [templateName, testName, makeHelpers, expectedMessages] of [
+  ['attribute', 'rejected value reported once',
+    () => ({ x: Promise.reject(new Error('class')) }), ['class']],
+  ['attributes', 'rejected attributes object reported once',
+    () => ({ x: Promise.reject(new Error('attrs')) }), ['attrs']],
+  ['attributes', 'rejected nested value reported once',
+    () => ({ x: value({ class: Promise.reject(new Error('class')) }) }), ['class']],
+  ['attributes_double', 'two rejected values reported once each',
+    () => ({ x: value({ class: Promise.reject(new Error('x')) }), y: value({ id: Promise.reject(new Error('y')) }) }), ['x', 'y']],
+  ['attributes', 'error thrown while reading the resolved attributes reported once',
+    () => ({ x: Promise.resolve({ get class() { throw new Error('getter'); } }) }), ['getter']],
+]) {
+  asyncTest(templateName, testName, async (test, template, render) => {
+    const reportedMessages = [];
+    const originalReportException = Blaze._reportException;
+    Blaze._reportException = (error) => reportedMessages.push(error.message);
+    try {
+      template.helpers(makeHelpers());
+      render();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    } finally {
+      Blaze._reportException = originalReportException;
+    }
+    test.equal(reportedMessages.sort(), expectedMessages);
+  });
+}
