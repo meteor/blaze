@@ -210,6 +210,42 @@ if (document.addEventListener) {
     cleanupDiv();
     Tracker.flush();
   });
+
+  // Capturing must only fire a handler when the event target itself matches
+  // the selector, as in jQuery mode. mouseenter/mouseleave do not bubble and
+  // are dispatched to every element the pointer crosses, so one targeting a
+  // child of .card must not run the '.card' handlers.
+  Tinytest.add("spacebars-tests - templating_tests - capturing events only fire for a matching target", function (test) {
+    const buf = [];
+    Template.test_capture_events_exact_target.events({
+      'mouseenter .card, mouseleave .card': function (evt) {
+        buf.push(`${evt.type} ${evt.currentTarget.className}`);
+      }
+    });
+
+    const containerDiv = renderToDiv(Template.test_capture_events_exact_target);
+    const cleanupDiv = addToBody(containerDiv);
+    const card = containerDiv.querySelector(".card");
+    const title = containerDiv.querySelector(".title");
+    const other = containerDiv.querySelector(".other");
+
+    // entering or leaving a child of .card is not entering or leaving .card
+    simulateEvent(title, "mouseenter", {}, {bubbles: false});
+    simulateEvent(title, "mouseleave", {}, {bubbles: false});
+    test.equal(buf, []);
+
+    // nor is an element outside .card, or the delegation root itself
+    simulateEvent(other, "mouseenter", {}, {bubbles: false});
+    simulateEvent(containerDiv, "mouseenter", {}, {bubbles: false});
+    test.equal(buf, []);
+
+    simulateEvent(card, "mouseenter", {}, {bubbles: false});
+    simulateEvent(card, "mouseleave", {}, {bubbles: false});
+    test.equal(buf, ["mouseenter card", "mouseleave card"]);
+
+    cleanupDiv();
+    Tracker.flush();
+  });
 }
 
 Tinytest.add("spacebars-tests - templating_tests - safestring", function(test) {
