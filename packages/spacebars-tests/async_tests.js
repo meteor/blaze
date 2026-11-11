@@ -176,6 +176,8 @@ for (const [templateName, testName, makeHelpers, expectedMessages] of [
     () => ({ x: value({ class: Promise.reject(new Error('class')) }) }), ['class']],
   ['attributes_double', 'two rejected values reported once each',
     () => ({ x: value({ class: Promise.reject(new Error('x')) }), y: value({ id: Promise.reject(new Error('y')) }) }), ['x', 'y']],
+  ['attributes', 'error thrown while reading the resolved attributes reported once',
+    () => ({ x: Promise.resolve({ get class() { throw new Error('getter'); } }) }), ['getter']],
 ]) {
   asyncTest(templateName, testName, async (test, template, render) => {
     const reportedMessages = [];
