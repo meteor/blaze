@@ -246,3 +246,42 @@ asyncTest('attribute_if', 'reactive update without infinite loop', async (test, 
   test.equal(calls, 4);
 });
 
+// A binding that settles later than the next microtask, as a method call does.
+asyncTest('attribute_if', 'binding that settles later', async (test, template, render) => {
+  const pending = [];
+  let calls = 0;
+  template.helpers({
+    x() {
+      calls += 1;
+      return new Promise(resolve => pending.push(resolve));
+    },
+  });
+
+  const readHTML = render();
+  await new Promise(resolve => setTimeout(resolve, 10));
+  test.equal(readHTML(), '<img>');
+  test.equal(calls, 2);
+
+  pending.forEach(resolve => resolve(true));
+  await new Promise(resolve => setTimeout(resolve, 0));
+  test.equal(readHTML(), '<img class="a b c">');
+  test.equal(calls, 2);
+});
+
+// `Blaze.toHTML` stays synchronous: a pending async binding renders as in the
+// first pass of the materialized suites above (an empty block, the else branch
+// of `#each`) and never leaks a `Promise` into the HTML.
+asyncTest('if', 'toHTML renders a pending condition as empty', async (test, template) => {
+  template.helpers({ x: getter(true) });
+  test.equal(canonicalizeHtml(Blaze.toHTML(template)), '');
+});
+
+asyncTest('each_new', 'toHTML renders a pending sequence in else mode', async (test, template) => {
+  template.helpers({ x: getter([1, 2]) });
+  test.equal(canonicalizeHtml(Blaze.toHTML(template)), '0');
+});
+
+asyncTest('attribute_if', 'toHTML renders a pending attribute block as empty', async (test, template) => {
+  template.helpers({ x: getter(true) });
+  test.equal(canonicalizeHtml(Blaze.toHTML(template)), '<img class="a ">');
+});

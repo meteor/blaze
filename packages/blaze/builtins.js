@@ -86,35 +86,50 @@ function _createBinding(view, binding, displayName, mapper) {
   const reactiveVar = new ReactiveVar(undefined, _isEqualBinding);
   if (typeof binding === 'function') {
     view.autorun(
-      (comp) => {
-        const promise = _setBindingValue(reactiveVar, binding(), mapper);
-        if (view._isCreatedForExpansion) {
-          if (promise && comp.firstRun) {
-            view._bindingPromises = view._bindingPromises || [];
-            view._bindingPromises.push(promise);
-          }
-          if (view._expandComputation) {
-            const expandComputation = view._expandComputation;
-            Tracker.onInvalidate(() => {
-              if (!view.isDestroyed) {
-                expandComputation.invalidate();
-              }
-            });
-          }
+      (computation) => {
+        const settled = _setBindingValue(reactiveVar, binding(), mapper);
+        if (settled && view._awaitBindings) {
+          _awaitExpansionBinding(view, computation, settled);
         }
       },
       view.parentView,
       displayName,
     );
   } else {
-    const promise = _setBindingValue(reactiveVar, binding, mapper);
-    if (promise && view._isCreatedForExpansion) {
-      view._bindingPromises = view._bindingPromises || [];
-      view._bindingPromises.push(promise);
+    const settled = _setBindingValue(reactiveVar, binding, mapper);
+    if (settled && view._awaitBindings) {
+      _awaitExpansionBinding(view, null, settled);
     }
   }
 
   return reactiveVar;
+}
+
+/**
+ * A view expanded by an attribute updater has no render computation of its
+ * own, so the updater is the only computation that can re-render it once an
+ * async binding settles (see `Blaze._expandView`). The initial `Promise`s are
+ * collected for the updater to await before rendering; a later re-run of the
+ * binding invalidates the updater, which expands a fresh view, instead of
+ * leaving this one with a value that settles after its render.
+ * @param {Blaze.View} view Target view.
+ * @param {Tracker.Computation | null} computation The binding's autorun, if any.
+ * @param {Promise} settled Settles once the binding's value is stored.
+ * @private
+ */
+function _awaitExpansionBinding(view, computation, settled) {
+  if (!computation || computation.firstRun) {
+    view._bindingPromises = view._bindingPromises || [];
+    view._bindingPromises.push(settled);
+  }
+  const expandComputation = view._expandComputation;
+  if (computation && expandComputation) {
+    Tracker.onInvalidate(() => {
+      if (!view.isDestroyed) {
+        expandComputation.invalidate();
+      }
+    });
+  }
 }
 
 /**

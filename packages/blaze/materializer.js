@@ -194,7 +194,8 @@ const materializeTag = function (tag, parentView, workStack) {
   if (rawAttrs) {
     const attrUpdater = new ElementAttributesUpdater(elem);
     const updateAttributes = function () {
-      const expandedAttrs = Blaze._expandAttributes(rawAttrs, parentView);
+      const expandedAttrs =
+        Blaze._expandAttributes(rawAttrs, parentView, true /*awaitBindings*/);
       then(waitForAllAttributes(expandedAttrs), awaitedAttrs => {
         const flattenedAttrs = HTML.flattenAttributes(awaitedAttrs);
         const stringAttrs = {};
