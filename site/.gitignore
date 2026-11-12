@@ -3,6 +3,9 @@ Thumbs.db
 db.json
 *.log
 node_modules/
-public/
+
 .deploy*/
 data
+.vitepress/cache/
+source/repo/*.md
+.vitepress/dist/

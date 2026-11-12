@@ -1,85 +1,156 @@
 const DOMBackend = {};
 Blaze._DOMBackend = DOMBackend;
 
-const $jq = (typeof jQuery !== 'undefined' ? jQuery :
-           (typeof Package !== 'undefined' ?
-            Package.jquery && Package.jquery.jQuery : null));
-if (! $jq)
-  throw new Error("jQuery not found");
+let $jq;
+let $jqSource;
 
-DOMBackend._$jq = $jq;
+if (!$jq && typeof jQuery !== 'undefined') {
+  $jq = jQuery;
+  $jqSource = 'global scope';
+}
 
+if (!$jq && typeof Package !== 'undefined' && Package.jquery) {
+  $jq = Package.jquery.jQuery ?? Package.jquery.$ ?? null;
+  $jqSource = 'Meteor packages';
+}
 
-DOMBackend.getContext = function() {
-  if (DOMBackend._context) {
-    return DOMBackend._context;
-  }
-  if ( DOMBackend._$jq.support.createHTMLDocument ) {
-    DOMBackend._context = document.implementation.createHTMLDocument( "" );
+const _hasJQuery = !!$jq;
+if (_hasJQuery && typeof console !== 'undefined') {
+  const version = $jq.fn?.jquery ?? ' ';
+  console.info(
+    `[Blaze] jQuery ${version} detected as DOM backend. Native DOM backend is available — ` +
+    'remove jquery to enable native DOM backend. jQuery support will be removed in Blaze 4.0.'
+  );
+  console.info(
+    `[Blaze] jQuery was loaded via ${$jqSource}`
+  );
+}
 
-    // Set the base href for the created document
-    // so any parsed elements with URLs
-    // are based on the document's URL (gh-2965)
-    const base = DOMBackend._context.createElement( "base" );
+DOMBackend._$jq = $jq; // null when absent
+DOMBackend._hasJQuery = _hasJQuery;
+
+DOMBackend.getContext = function () {
+  if (DOMBackend._context) return DOMBackend._context;
+  // jQuery may need the legacy check; native path always supports createHTMLDocument
+  const useCreateHTMLDocument = _hasJQuery ? $jq.support.createHTMLDocument : true;
+  if (useCreateHTMLDocument) {
+    DOMBackend._context = document.implementation.createHTMLDocument("");
+    const base = DOMBackend._context.createElement("base");
     base.href = document.location.href;
-    DOMBackend._context.head.appendChild( base );
+    DOMBackend._context.head.appendChild(base);
   } else {
     DOMBackend._context = document;
   }
   return DOMBackend._context;
-}
+};
+
 DOMBackend.parseHTML = function (html) {
-  // Return an array of nodes.
-  //
-  // jQuery does fancy stuff like creating an appropriate
-  // container element and setting innerHTML on it, as well
-  // as working around various IE quirks.
-  return $jq.parseHTML(html, DOMBackend.getContext()) || [];
+  if (_hasJQuery) {
+    return $jq.parseHTML(html, DOMBackend.getContext()) || [];
+  }
+  const template = DOMBackend.getContext().createElement('template');
+  template.innerHTML = html;
+  return Array.from(template.content.childNodes);
+};
+
+// Native event delegation, mirroring jQuery's: one listener per element and
+// event type, dispatching to every delegated handler bound there.
+// elem -> Map<eventType, {listener, delegates: Array<{scopedSelector, handler}>}>
+const _delegateMap = new WeakMap();
+
+// focus/blur don't bubble — use focusin/focusout for native delegation
+// (jQuery does this automatically in .on() delegation)
+const _delegateEventAlias = { focus: 'focusin', blur: 'focusout' };
+
+const delegatedEventType = (type) => {
+  const eventType = DOMBackend.Events.parseEventType(type);
+  // Alias non-bubbling events to their bubbling equivalents
+  return _delegateEventAlias[eventType] || eventType;
 };
 
 DOMBackend.Events = {
   // `selector` is non-null.  `type` is one type (but
   // may be in backend-specific form, e.g. have namespaces).
   // Order fired must be order bound.
-  delegateEvents: function (elem, type, selector, handler) {
-    $jq(elem).on(type, selector, handler);
+  delegateEvents(elem, type, selector, handler) {
+    if (_hasJQuery) {
+      $jq(elem).on(type, selector, handler);
+      return;
+    }
+
+    const eventType = delegatedEventType(type);
+
+    if (!_delegateMap.has(elem)) {
+      _delegateMap.set(elem, new Map());
+    }
+    const typeMap = _delegateMap.get(elem);
+    let delegation = typeMap.get(eventType);
+    if (!delegation) {
+      delegation = { delegates: [] };
+      delegation.listener = (event) => {
+        dispatchDelegatedEvent(elem, delegation.delegates, event);
+      };
+      typeMap.set(eventType, delegation);
+      elem.addEventListener(eventType, delegation.listener);
+    }
+    // Replace rather than mutate the array, so that binding or unbinding
+    // from inside a handler doesn't change the dispatch in progress
+    // (jQuery also snapshots its handler queue before running it).
+    delegation.delegates = delegation.delegates.concat({
+      scopedSelector: scopeSelector(selector),
+      handler,
+    });
   },
 
-  undelegateEvents: function (elem, type, handler) {
-    $jq(elem).off(type, '**', handler);
+  undelegateEvents(elem, type, handler) {
+    if (_hasJQuery) {
+      $jq(elem).off(type, '**', handler);
+      return;
+    }
+
+    const typeMap = _delegateMap.get(elem);
+    if (!typeMap) return;
+
+    const eventType = delegatedEventType(type);
+    const delegation = typeMap.get(eventType);
+    if (!delegation) return;
+
+    delegation.delegates = delegation.delegates.filter(
+      (delegate) => delegate.handler !== handler);
+    if (delegation.delegates.length === 0) {
+      elem.removeEventListener(eventType, delegation.listener);
+      typeMap.delete(eventType);
+    }
   },
 
-  bindEventCapturer: function (elem, type, selector, handler) {
-    const $elem = $jq(elem);
+  bindEventCapturer(elem, type, selector, handler) {
+    if (_hasJQuery) {
+      const $elem = $jq(elem);
 
-    const wrapper = function (event) {
-      event = $jq.event.fix(event);
-      event.currentTarget = event.target;
+      const wrapper = (event) => {
+        event = $jq.event.fix(event);
+        event.currentTarget = event.target;
+        const $target = $jq(event.currentTarget);
+        if ($target.is($elem.find(selector)))
+          handler.call(elem, event);
+      };
 
-      // Note: It might improve jQuery interop if we called into jQuery
-      // here somehow.  Since we don't use jQuery to dispatch the event,
-      // we don't fire any of jQuery's event hooks or anything.  However,
-      // since jQuery can't bind capturing handlers, it's not clear
-      // where we would hook in.  Internal jQuery functions like `dispatch`
-      // are too high-level.
-      const $target = $jq(event.currentTarget);
-      if ($target.is($elem.find(selector)))
-        handler.call(elem, event);
-    };
-
-    handler._meteorui_wrapper = wrapper;
+      handler._meteorui_wrapper = wrapper;
+    } else {
+      handler._meteorui_wrapper = createCaptureWrapper(elem, selector, handler);
+    }
 
     type = DOMBackend.Events.parseEventType(type);
     // add *capturing* event listener
-    elem.addEventListener(type, wrapper, true);
+    elem.addEventListener(type, handler._meteorui_wrapper, true);
   },
 
-  unbindEventCapturer: function (elem, type, handler) {
+  unbindEventCapturer(elem, type, handler) {
     type = DOMBackend.Events.parseEventType(type);
     elem.removeEventListener(type, handler._meteorui_wrapper, true);
   },
 
-  parseEventType: function (type) {
+  parseEventType(type) {
     // strip off namespaces
     const dotLoc = type.indexOf('.');
     if (dotLoc >= 0)
@@ -88,6 +159,180 @@ DOMBackend.Events = {
   }
 };
 
+/**
+ * Roots a delegation selector at the delegation element, as jQuery does with
+ * `$(elem).find(selector)`: for `'div p'`, both the div and the p must live
+ * inside `elem`. A bare `closest(selector)` would match against the whole
+ * document, letting ancestors outside `elem` satisfy the selector.
+ * @param {String} selector Delegation selector, possibly a comma-separated list
+ * @returns {String} The selector with every part prefixed by `:scope`
+ * @private
+ */
+const scopeSelector = (selector) => selector
+    .split(',')
+    .map((part) => `:scope ${part}`)
+    .join(',');
+
+/**
+ * Runs `callback` with `event.currentTarget` reporting the matched element, as
+ * a delegated handler expects. jQuery sets it on its own event object, which
+ * nothing else sees and which keeps it, so an async handler can still read it
+ * after an `await`. Here the handlers get the native event itself, so
+ * `currentTarget` is shadowed by an own getter instead: it returns the matched
+ * element while the handler runs and once the dispatch is over, and the native
+ * value in between, so later listeners of the same dispatch (e.g. on
+ * `document`) see their own `currentTarget`.
+ * @param {Event} event The native event
+ * @param {Element} currentTarget The element the handler was matched on
+ * @param {Function} callback Runs the handler; its return value is passed through
+ * @returns {*} The return value of `callback`
+ * @private
+ */
+const withCurrentTarget = (event, currentTarget, callback) => {
+    let inHandler = true;
+    Object.defineProperty(event, 'currentTarget', {
+        configurable: true,
+        get() {
+            if (inHandler || this.eventPhase === Event.NONE) return currentTarget;
+            // The native getter, from the event's own prototype chain (an
+            // event from an iframe has that realm's Event.prototype).
+            return Reflect.get(Object.getPrototypeOf(this), 'currentTarget', this);
+        },
+    });
+    try {
+        return callback();
+    } finally {
+        inHandler = false;
+    }
+};
+
+/**
+ * Native counterpart of `jQuery.event.dispatch` for delegated handlers. Like
+ * jQuery, it walks from `event.target` up to (excluding) `elem` and, at every
+ * element on the way, runs each handler whose selector matches it, in the
+ * order the handlers were bound, with `currentTarget` set to that element.
+ * Innermost elements run first. A handler that stops propagation (or returns
+ * `false`) lets the remaining handlers at its own level run but stops the
+ * climb; `stopImmediatePropagation` stops everything.
+ * @param {Element} elem The delegation root the listener is bound on
+ * @param {Array<Object>} delegates Entries of `{scopedSelector, handler}` bound on `elem` for this event type
+ * @param {Event} event The native event being dispatched
+ * @private
+ */
+const dispatchDelegatedEvent = (elem, delegates, event) => {
+    // event.target can be a text node (nodeType 3) — walk to parent element first
+    const origin = event.target.nodeType === 1 ? event.target : event.target.parentElement;
+
+    // Build the whole queue before running any handler, as jQuery does, so
+    // DOM changes made by a handler don't change which handlers run.
+    const queue = [];
+    const scopedMatches = new Map();
+    // Only the scoped selector is valid on its own: a jQuery delegation
+    // selector may start with a combinator ('> .card'), which matches()
+    // rejects. Each selector's match set is computed once per dispatch.
+    const matchesScoped = (delegate, node) => {
+        let matches = scopedMatches.get(delegate.scopedSelector);
+        if (!matches) {
+            matches = new Set(elem.querySelectorAll(delegate.scopedSelector));
+            scopedMatches.set(delegate.scopedSelector, matches);
+        }
+        return matches.has(node);
+    };
+    // `elem` itself is excluded: delegated handlers only fire on descendants.
+    for (let node = origin; node && node !== elem; node = node.parentElement) {
+        const handlers = delegates
+            .filter((delegate) => matchesScoped(delegate, node))
+            .map((delegate) => delegate.handler);
+        if (handlers.length) queue.push({ node, handlers });
+    }
+    if (!queue.length) return;
+
+    // The native event only exposes stopPropagation() through cancelBubble,
+    // which may already be set by another listener on `elem`, and doesn't
+    // expose stopImmediatePropagation() at all. Track both calls for the
+    // duration of this dispatch, the way jQuery's event object does. Another
+    // library may have replaced either method on this very event, to record
+    // calls for instance: it is called through, and put back afterwards.
+    let propagationStopped = false;
+    let immediatePropagationStopped = false;
+    const stopPropagation = event.stopPropagation;
+    const stopImmediatePropagation = event.stopImmediatePropagation;
+    const ownStopPropagation = Object.getOwnPropertyDescriptor(event, 'stopPropagation');
+    const ownStopImmediatePropagation = Object.getOwnPropertyDescriptor(event, 'stopImmediatePropagation');
+    Object.defineProperty(event, 'stopPropagation', {
+        value() {
+            propagationStopped = true;
+            return stopPropagation.call(event);
+        },
+        configurable: true,
+    });
+    Object.defineProperty(event, 'stopImmediatePropagation', {
+        value() {
+            propagationStopped = true;
+            immediatePropagationStopped = true;
+            return stopImmediatePropagation.call(event);
+        },
+        configurable: true,
+    });
+
+    const runHandlers = (node, handlers) => {
+        for (const handler of handlers) {
+            if (immediatePropagationStopped) break;
+            // mimic jQuery event return false behavior
+            if (handler.call(node, event) === false) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }
+    };
+
+    try {
+        for (const { node, handlers } of queue) {
+            if (propagationStopped) break;
+            withCurrentTarget(event, node, () => runHandlers(node, handlers));
+        }
+    } finally {
+        restoreOwnProperty(event, 'stopPropagation', ownStopPropagation);
+        restoreOwnProperty(event, 'stopImmediatePropagation', ownStopImmediatePropagation);
+    }
+};
+
+/**
+ * Puts an object's own property back the way it was before a dispatch
+ * overrode it: redefined from its saved descriptor, or removed when the
+ * object had none, so the prototype's method shows through again.
+ * @private
+ */
+const restoreOwnProperty = (object, name, descriptor) => {
+    if (descriptor) Object.defineProperty(object, name, descriptor);
+    else delete object[name];
+};
+
+/**
+ * Creates the capturing listener used for non-bubbling events, matching the
+ * jQuery branch of `bindEventCapturer`: the handler fires only when
+ * `event.target` itself is one of `$(elem).find(selector)`. Capturing is used
+ * for events such as `mouseenter`/`mouseleave`, which the browser dispatches
+ * to every element the pointer crosses; walking up from the target to the
+ * closest match would fire a `'mouseleave .card'` handler when the pointer
+ * merely leaves a child of `.card`.
+ * @param {Element} elem The template's delegation root
+ * @param {String} selector Delegation selector from the event map
+ * @param {Function} handler The event map handler, called with `elem` as `this`
+ * @returns {Function} The listener to register in capture phase
+ * @private
+ */
+const createCaptureWrapper = (elem, selector, handler) => {
+    const scopedSelector = scopeSelector(selector);
+
+    return (event) => {
+        // querySelectorAll never returns `elem` itself or a text node
+        const matches = elem.querySelectorAll(scopedSelector);
+        if (!Array.prototype.includes.call(matches, event.target)) return;
+
+        withCurrentTarget(event, event.target, () => handler.call(elem, event));
+    };
+};
 
 ///// Removal detection and interoperability.
 
@@ -99,34 +344,50 @@ DOMBackend.Events = {
 // which we can detect using a custom event with a teardown
 // hook.
 
-const NOOP = function () {};
+const NOOP = () => {};
 
 // Circular doubly-linked list
-const TeardownCallback = function (func) {
-  this.next = this;
-  this.prev = this;
-  this.func = func;
-};
+class TeardownCallback {
+  constructor(func) {
+    this.next = this;
+    this.prev = this;
+    this.func = func;
+  }
 
-// Insert newElt before oldElt in the circular list
-TeardownCallback.prototype.linkBefore = function(oldElt) {
-  this.prev = oldElt.prev;
-  this.next = oldElt;
-  oldElt.prev.next = this;
-  oldElt.prev = this;
-};
+  // Insert newElt before oldElt in the circular list
+  linkBefore(oldElt) {
+    this.prev = oldElt.prev;
+    this.next = oldElt;
+    oldElt.prev.next = this;
+    oldElt.prev = this;
+  }
 
-TeardownCallback.prototype.unlink = function () {
-  this.prev.next = this.next;
-  this.next.prev = this.prev;
-};
+  unlink() {
+    this.prev.next = this.next;
+    this.next.prev = this.prev;
+  }
 
-TeardownCallback.prototype.go = function () {
-  const func = this.func;
-  func && func();
-};
+  go() {
+    const func = this.func;
+    func && func();
+  }
 
-TeardownCallback.prototype.stop = TeardownCallback.prototype.unlink;
+  stop() { this.unlink(); }
+}
+
+// Shared helper: execute all teardown callbacks on an element
+function _executeTeardownCallbacks(elem) {
+  const callbacks = elem[DOMBackend.Teardown._CB_PROP];
+  if (callbacks) {
+    let elt = callbacks.next;
+    while (elt !== callbacks) {
+      elt.go();
+      elt = elt.next;
+    }
+    callbacks.go();
+    elem[DOMBackend.Teardown._CB_PROP] = null;
+  }
+}
 
 DOMBackend.Teardown = {
   _JQUERY_EVENT_NAME: 'blaze_teardown_watcher',
@@ -135,16 +396,18 @@ DOMBackend.Teardown = {
   // one of its ancestors is removed from the DOM via the backend library.
   // The callback function is called at most once, and it receives the element
   // in question as an argument.
-  onElementTeardown: function (elem, func) {
+  onElementTeardown(elem, func) {
     const elt = new TeardownCallback(func);
 
     const propName = DOMBackend.Teardown._CB_PROP;
-    if (! elem[propName]) {
+    if (!elem[propName]) {
       // create an empty node that is never unlinked
       elem[propName] = new TeardownCallback;
 
-      // Set up the event, only the first time.
-      $jq(elem).on(DOMBackend.Teardown._JQUERY_EVENT_NAME, NOOP);
+      // Set up the jQuery event, only the first time (only when jQuery is present).
+      if (_hasJQuery) {
+        $jq(elem).on(DOMBackend.Teardown._JQUERY_EVENT_NAME, NOOP);
+      }
     }
 
     elt.linkBefore(elem[propName]);
@@ -153,46 +416,54 @@ DOMBackend.Teardown = {
   },
   // Recursively call all teardown hooks, in the backend and registered
   // through DOMBackend.onElementTeardown.
-  tearDownElement: function (elem) {
+  tearDownElement(elem) {
     const elems = [];
-    // Array.prototype.slice.call doesn't work when given a NodeList in
-    // IE8 ("JScript object expected").
     const nodeList = elem.getElementsByTagName('*');
     for (let i = 0; i < nodeList.length; i++) {
       elems.push(nodeList[i]);
     }
     elems.push(elem);
-    $jq.cleanData(elems);
-  }
-};
 
-$jq.event.special[DOMBackend.Teardown._JQUERY_EVENT_NAME] = {
-  setup: function () {
-    // This "setup" callback is important even though it is empty!
-    // Without it, jQuery will call addEventListener, which is a
-    // performance hit, especially with Chrome's async stack trace
-    // feature enabled.
-  },
-  teardown: function() {
-    const elem = this;
-    const callbacks = elem[DOMBackend.Teardown._CB_PROP];
-    if (callbacks) {
-      let elt = callbacks.next;
-      while (elt !== callbacks) {
-        elt.go();
-        elt = elt.next;
+    if (_hasJQuery) {
+      // jQuery's cleanData triggers the special event teardown handler
+      $jq.cleanData(elems);
+    } else {
+      // Native path: call teardown callbacks directly
+      for (const el of elems) {
+        _executeTeardownCallbacks(el);
       }
-      callbacks.go();
-
-      elem[DOMBackend.Teardown._CB_PROP] = null;
     }
   }
 };
 
+// Register jQuery special event only when jQuery is present
+if (_hasJQuery) {
+  $jq.event.special[DOMBackend.Teardown._JQUERY_EVENT_NAME] = {
+    setup() {
+      // This "setup" callback is important even though it is empty!
+      // Without it, jQuery will call addEventListener, which is a
+      // performance hit, especially with Chrome's async stack trace
+      // feature enabled.
+    },
+    teardown() {
+      _executeTeardownCallbacks(this);
+    }
+  };
+} else {
+    // in native DOM Backend we need to extend the native remove function
+    // to call the TearDown callbacks, registered during materializing
+    // for the element and its full descendant subtree.
+    (function(removeFn) {
+        HTMLElement.prototype.remove = function () {
+            DOMBackend.Teardown.tearDownElement(this);
+            return removeFn.apply(this, arguments);
+        };
+    })(HTMLElement.prototype.remove);
 
-// Must use jQuery semantics for `context`, not
-// querySelectorAll's.  In other words, all the parts
-// of `selector` must be found under `context`.
+}
+
+
 DOMBackend.findBySelector = function (selector, context) {
-  return $jq(selector, context);
+  if (_hasJQuery) return $jq(selector, context);
+  return Array.from((context || document).querySelectorAll(selector));
 };
