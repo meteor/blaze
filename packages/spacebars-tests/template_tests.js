@@ -4945,6 +4945,28 @@ Tinytest.add(
   }
 );
 
+Tinytest.add(
+  'spacebars-tests - template_tests - a static is attribute creates a customized built-in element',
+  function (test) {
+    if (!window.customElements) return;
+    if (!customElements.get('spacebars-test-button')) {
+      try {
+        customElements.define('spacebars-test-button', class extends HTMLButtonElement {}, { extends: 'button' });
+      } catch (error) {
+        return; // no customized built-in elements in this browser (WebKit)
+      }
+    }
+    // The reactive child keeps the tag out of the compiler's static-HTML
+    // optimization, so the materializer creates the element itself.
+    const div = renderToDiv(Template.spacebars_test_customized_built_in, { label: 'built-in' });
+    const button = div.querySelector('button');
+    test.equal(button.getAttribute('is'), 'spacebars-test-button');
+    test.equal(button.textContent, 'built-in');
+    // Upgraded at creation, even while the div is still detached.
+    test.isTrue(button instanceof customElements.get('spacebars-test-button'));
+  }
+);
+
 Tinytest.addAsync(
   'spacebars-tests - template_tests - async event handler sees currentTarget after an await',
   async function (test) {
