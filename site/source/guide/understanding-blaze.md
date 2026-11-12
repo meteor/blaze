@@ -38,6 +38,35 @@ If your helper or sub-component is expensive to run, and often re-runs without a
 unnecessary re-runs by using a more subtle reactive data source. The [
 `peerlibrary:computed-field`](https://atmospherejs.com/peerlibrary/computed-field) package helps achieve this pattern.
 
+## Flushing before the browser looks at the DOM
+
+Changing a reactive data source does not update the DOM on the spot: Blaze re-runs the affected helpers and updates
+the DOM at the next Tracker flush, which happens asynchronously after the current code has finished. Code that
+reads the DOM right after a change sees the old state; `Tracker.afterFlush(callback)` runs the callback once the
+DOM reflects the change.
+
+Some browser APIs take a callback and expect the DOM to be updated by the time it returns. The View Transitions
+API is one of them: `document.startViewTransition(callback)` captures the old state, runs the callback, captures
+the new state and animates between the two. If the callback only changes a reactive variable, the DOM is still
+unchanged when the new state is captured, and nothing animates. Call `Tracker.flush()` at the end of the callback to
+apply the pending updates synchronously:
+
+```js
+Template.gallery.events({
+  'click .next'(event, instance) {
+    const update = () => {
+      instance.current.set(instance.current.get() + 1);
+      Tracker.flush();
+    };
+    if (document.startViewTransition) {
+      document.startViewTransition(update);
+    } else {
+      update();
+    }
+  },
+});
+```
+
 ## Attribute helpers
 
 Setting tag attributes via helpers (e.g. `<div {{attributes}}>`) is a neat tool and has some
