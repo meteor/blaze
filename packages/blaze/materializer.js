@@ -194,8 +194,15 @@ const materializeTag = function (tag, parentView, workStack) {
   if (rawAttrs) {
     const attrUpdater = new ElementAttributesUpdater(elem);
     const updateAttributes = function () {
-      const expandedAttrs = Blaze._expandAttributes(rawAttrs, parentView);
+      // A run invalidated while its attribute `Promise`s are pending (a
+      // binding re-ran, or the element was torn down) has been replaced by a
+      // newer run: its result must not be written over the newer one.
+      let invalidated = false;
+      Tracker.onInvalidate(() => { invalidated = true; });
+      const expandedAttrs =
+        Blaze._expandAttributes(rawAttrs, parentView, true /*awaitBindings*/);
       then(waitForAllAttributes(expandedAttrs), awaitedAttrs => {
+        if (invalidated) return;
         const flattenedAttrs = HTML.flattenAttributes(awaitedAttrs);
         const stringAttrs = {};
         Object.keys(flattenedAttrs).forEach((attrName) => {

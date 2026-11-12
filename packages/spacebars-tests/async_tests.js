@@ -178,6 +178,8 @@ for (const [templateName, testName, makeHelpers, expectedMessages] of [
     () => ({ x: value({ class: Promise.reject(new Error('x')) }), y: value({ id: Promise.reject(new Error('y')) }) }), ['x', 'y']],
   ['attributes', 'error thrown while reading the resolved attributes reported once',
     () => ({ x: Promise.resolve({ get class() { throw new Error('getter'); } }) }), ['getter']],
+  ['attribute_with', 'error thrown while reading the resolved data of an attribute block reported once',
+    () => ({ x: Promise.resolve({ get y() { throw new Error('getter'); } }) }), ['getter']],
 ]) {
   asyncTest(templateName, testName, async (test, template, render) => {
     const reportedMessages = [];
@@ -193,3 +195,133 @@ for (const [templateName, testName, makeHelpers, expectedMessages] of [
     test.equal(reportedMessages.sort(), expectedMessages);
   });
 }
+
+// Async block helpers inside HTML attributes (#470).
+asyncSuite('attribute_if', [
+  ['false', { x: Promise.resolve(false) }, '<img>', '<img class="a d">'],
+  ['true', { x: Promise.resolve(true) }, '<img>', '<img class="a b c">'],
+]);
+
+asyncSuite('attribute_unless', [
+  ['false', { x: Promise.resolve(false) }, '<img>', '<img class="a b c">'],
+  ['true', { x: Promise.resolve(true) }, '<img>', '<img class="a d">'],
+]);
+
+asyncSuite('attribute_let', [
+  ['false', { x: Promise.resolve(false) }, '<img class="a 2">', '<img class="a 2">'],
+  ['true', { x: Promise.resolve(true) }, '<img class="a 2">', '<img class="a 1">'],
+]);
+
+asyncSuite('attribute_with', [
+  ['direct', { x: Promise.resolve({ y: 'foo' }) }, '<img>', '<img class="a foo">'],
+]);
+
+asyncSuite('attribute_each', [
+  ['empty', { x: Promise.resolve([]) }, '<img>', '<img class="a 0">'],
+  ['two', { x: Promise.resolve([1, 2]) }, '<img>', '<img class="a 12">'],
+]);
+
+asyncSuite('attribute_inclusion', [
+  ['false', { x: getter(false) }, '<img>', '<img class="a d">'],
+  ['true', { x: getter(true) }, '<img>', '<img class="a b c">'],
+]);
+
+asyncTest('attribute_if', 'reactive update without infinite loop', async (test, template, render) => {
+  const current = new ReactiveVar(Promise.resolve(true));
+  let calls = 0;
+  template.helpers({
+    x() {
+      calls += 1;
+      return current.get();
+    },
+  });
+
+  const readHTML = render();
+  await new Promise(Tracker.afterFlush);
+  test.equal(readHTML(), '<img class="a b c">');
+  test.equal(calls, 2);
+
+  current.set(Promise.resolve(false));
+  Tracker.flush();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  test.equal(readHTML(), '<img class="a d">');
+  test.equal(calls, 4);
+});
+
+// A binding that settles later than the next microtask, as a method call does.
+asyncTest('attribute_if', 'binding that settles later', async (test, template, render) => {
+  const pending = [];
+  let calls = 0;
+  template.helpers({
+    x() {
+      calls += 1;
+      return new Promise(resolve => pending.push(resolve));
+    },
+  });
+
+  const readHTML = render();
+  await new Promise(resolve => setTimeout(resolve, 10));
+  test.equal(readHTML(), '<img>');
+  test.equal(calls, 2);
+
+  pending.forEach(resolve => resolve(true));
+  await new Promise(resolve => setTimeout(resolve, 0));
+  test.equal(readHTML(), '<img class="a b c">');
+  test.equal(calls, 2);
+});
+
+// A run of the attribute updater invalidated while its bindings are pending
+// must not write its result over the one of the run that replaced it: the
+// promises A of the first run settle after the replacement, a promise B
+// settled first or a synchronous value, and the replacement's result stays.
+for (const [testName, synchronousReplacement] of [
+  ['overlapping async updates keep the newest result', false],
+  ['synchronous update kept over an earlier pending one', true],
+]) {
+  asyncTest('attribute_if', testName, async (test, template, render) => {
+    const generation = new ReactiveVar(0);
+    const pending = [];
+    template.helpers({
+      x() {
+        if (generation.get() === 1 && synchronousReplacement) return false;
+        return new Promise(resolve => pending.push(resolve));
+      },
+    });
+
+    const readHTML = render();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    test.equal(readHTML(), '<img>');
+    const first = pending.splice(0);
+    test.equal(first.length, 2);
+
+    generation.set(1);
+    Tracker.flush();
+    const second = pending.splice(0);
+    test.equal(second.length, synchronousReplacement ? 0 : 2);
+    second.forEach(resolve => resolve(false));
+    await new Promise(resolve => setTimeout(resolve, 0));
+    test.equal(readHTML(), '<img class="a d">');
+
+    first.forEach(resolve => resolve(true));
+    await new Promise(resolve => setTimeout(resolve, 0));
+    test.equal(readHTML(), '<img class="a d">');
+  });
+}
+
+// `Blaze.toHTML` stays synchronous: a pending async binding renders as in the
+// first pass of the materialized suites above (an empty block, the else branch
+// of `#each`) and never leaks a `Promise` into the HTML.
+asyncTest('if', 'toHTML renders a pending condition as empty', async (test, template) => {
+  template.helpers({ x: getter(true) });
+  test.equal(canonicalizeHtml(Blaze.toHTML(template)), '');
+});
+
+asyncTest('each_new', 'toHTML renders a pending sequence in else mode', async (test, template) => {
+  template.helpers({ x: getter([1, 2]) });
+  test.equal(canonicalizeHtml(Blaze.toHTML(template)), '0');
+});
+
+asyncTest('attribute_if', 'toHTML renders a pending attribute block as empty', async (test, template) => {
+  template.helpers({ x: getter(true) });
+  test.equal(canonicalizeHtml(Blaze.toHTML(template)), '<img class="a ">');
+});

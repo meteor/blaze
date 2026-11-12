@@ -64,7 +64,7 @@ function _identity(x) {
  */
 function _setBindingValue(reactiveVar, value, mapper = _identity) {
   if (value && typeof value.then === 'function') {
-    value.then(
+    return value.then(
       value => reactiveVar.set({ value: mapper(value) }),
       error => reactiveVar.set({ error }),
     );
@@ -86,15 +86,50 @@ function _createBinding(view, binding, displayName, mapper) {
   const reactiveVar = new ReactiveVar(undefined, _isEqualBinding);
   if (typeof binding === 'function') {
     view.autorun(
-      () => _setBindingValue(reactiveVar, binding(), mapper),
+      (computation) => {
+        const settled = _setBindingValue(reactiveVar, binding(), mapper);
+        if (settled && view._awaitBindings) {
+          _awaitExpansionBinding(view, computation, settled);
+        }
+      },
       view.parentView,
       displayName,
     );
   } else {
-    _setBindingValue(reactiveVar, binding, mapper);
+    const settled = _setBindingValue(reactiveVar, binding, mapper);
+    if (settled && view._awaitBindings) {
+      _awaitExpansionBinding(view, null, settled);
+    }
   }
 
   return reactiveVar;
+}
+
+/**
+ * A view expanded by an attribute updater has no render computation of its
+ * own, so the updater is the only computation that can re-render it once an
+ * async binding settles (see `Blaze._expandView`). The initial `Promise`s are
+ * collected for the updater to await before rendering; a later re-run of the
+ * binding invalidates the updater, which expands a fresh view, instead of
+ * leaving this one with a value that settles after its render.
+ * @param {Blaze.View} view Target view.
+ * @param {Tracker.Computation | null} computation The binding's autorun, if any.
+ * @param {Promise} settled Settles once the binding's value is stored.
+ * @private
+ */
+function _awaitExpansionBinding(view, computation, settled) {
+  if (!computation || computation.firstRun) {
+    view._bindingPromises = view._bindingPromises || [];
+    view._bindingPromises.push(settled);
+  }
+  const expandComputation = view._expandComputation;
+  if (computation && expandComputation) {
+    Tracker.onInvalidate(() => {
+      if (!view.isDestroyed) {
+        expandComputation.invalidate();
+      }
+    });
+  }
 }
 
 /**
@@ -250,9 +285,7 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
       'collection',
     );
 
-    eachView.stopHandle = ObserveSequence.observe(function () {
-      return eachView.argVar.get()?.value;
-    }, {
+    const observeCallbacks = {
       // Called immediately when the sequence source is invalidated,
       // BEFORE the Tracker flush re-runs other autoruns. This freezes
       // item views so their helpers don't re-run with stale data.
@@ -371,12 +404,27 @@ Blaze.Each = function (argFunc, contentFunc, elseFunc) {
         }
         eachView._eachItemPendingDep.changed();
       }
-    });
+    };
 
-    if (eachView.elseFunc && eachView.numItems === 0) {
-      eachView.inElseMode = true;
-      eachView.initialSubviews[0] =
-        Blaze.View('each_else', eachView.elseFunc);
+    const setupObserve = () => {
+      if (eachView.isDestroyed) return;
+      eachView.stopHandle = ObserveSequence.observe(function () {
+        return eachView.argVar.get()?.value;
+      }, observeCallbacks);
+
+      if (eachView.elseFunc && eachView.numItems === 0) {
+        eachView.inElseMode = true;
+        eachView.initialSubviews[0] =
+          Blaze.View('each_else', eachView.elseFunc);
+      }
+    };
+
+    if (eachView._bindingPromises?.length) {
+      eachView._bindingPromises = [
+        Promise.all(eachView._bindingPromises).then(setupObserve),
+      ];
+    } else {
+      setupObserve();
     }
   });
 

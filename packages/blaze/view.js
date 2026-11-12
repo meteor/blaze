@@ -126,6 +126,11 @@ Blaze.View = function (name, render) {
      */
   this.isCreated = false;
   this._isCreatedForExpansion = false;
+  // Set by `Blaze._expandView` when the expansion awaits the async bindings
+  // of the view (see `_createBinding` in builtins.js).
+  this._awaitBindings = false;
+  this._expandComputation = null;
+  this._bindingPromises = null;
 
     /**
      *   True if this View has been rendered to DOM by `Blaze.render` or
@@ -555,6 +560,21 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
   }
 };
 
+// Settles the `Promise`s that nested views awaiting their bindings left in
+// the expanded output, so the attribute updater receives plain values.
+function waitForExpanded(x) {
+  if (x && typeof x.then === 'function') {
+    return x.then(waitForExpanded);
+  }
+  if (Array.isArray(x)) {
+    const mapped = x.map(waitForExpanded);
+    return mapped.some(el => el && typeof el.then === 'function')
+      ? Promise.all(mapped)
+      : mapped;
+  }
+  return x;
+}
+
 // Expands a View to HTMLjs, calling `render` recursively on all
 // Views and evaluating any dynamic attributes.  Calls the `created`
 // callback, but not the `materialized` or `rendered` callbacks.
@@ -564,26 +584,60 @@ Blaze._materializeView = function (view, parentView, _workStack, _intoArray) {
 // reactive string; that is, the Computation will be invalidated
 // if any changes are made to the view or subviews that might affect
 // the HTML.
-Blaze._expandView = function (view, parentView) {
+// With `awaitBindings`, passed by the attribute updater of the materializer,
+// the expansion waits for the async bindings of the view and of the views
+// nested in it to settle before rendering, inside the updater's computation,
+// and returns a `Promise` of the expanded output (see #470). Without it,
+// `Blaze.toHTML` and `Blaze._toText` render synchronously, with the async
+// bindings still pending, and never return a `Promise`.
+Blaze._expandView = function (view, parentView, awaitBindings) {
+  const computation = Tracker.currentComputation;
+  if (awaitBindings) {
+    // Read by `_createBinding` and `Blaze.Each` in the `created` callbacks.
+    view._awaitBindings = true;
+    view._expandComputation = computation;
+  }
   Blaze._createView(view, parentView, true /*forExpansion*/);
 
-  view._isInRender = true;
-  const htmljs = Blaze._withCurrentView(view, function () {
-    return view._render();
-  });
-  view._isInRender = false;
-
-  const result = Blaze._expand(htmljs, view);
-
-  if (Tracker.active) {
-    Tracker.onInvalidate(function () {
+  if (computation) {
+    computation.onInvalidate(function () {
       Blaze._destroyView(view);
     });
-  } else {
-    Blaze._destroyView(view);
   }
 
-  return result;
+  const renderAndExpand = function () {
+    if (view.isDestroyed) {
+      return null;
+    }
+    view._isInRender = true;
+    const htmljs = Blaze._withCurrentView(view, function () {
+      return view._render();
+    });
+    view._isInRender = false;
+
+    const expanded = Blaze._expand(htmljs, view, awaitBindings);
+    const result = awaitBindings ? waitForExpanded(expanded) : expanded;
+
+    if (!computation) {
+      if (result && typeof result.then === 'function') {
+        return result.finally(() => Blaze._destroyView(view));
+      }
+      Blaze._destroyView(view);
+    }
+
+    return result;
+  };
+
+  if (view._bindingPromises?.length) {
+    return Promise.all(view._bindingPromises).then(() => {
+      if (computation && computation.stopped) {
+        return null;
+      }
+      return Tracker.withComputation(computation, renderAndExpand);
+    });
+  }
+
+  return renderAndExpand();
 };
 
 // Options: `parentView`
@@ -593,7 +647,7 @@ Blaze._HTMLJSExpander.def({
     if (x instanceof Blaze.Template)
       x = x.constructView();
     if (x instanceof Blaze.View)
-      return Blaze._expandView(x, this.parentView);
+      return Blaze._expandView(x, this.parentView, this.awaitBindings);
 
     // this will throw an error; other objects are not allowed!
     return HTML.TransformingVisitor.prototype.visitObject.call(this, x);
@@ -624,16 +678,16 @@ const currentViewIfRendering = function () {
   return (view && view._isInRender) ? view : null;
 };
 
-Blaze._expand = function (htmljs, parentView) {
+Blaze._expand = function (htmljs, parentView, awaitBindings) {
   parentView = parentView || currentViewIfRendering();
   return (new Blaze._HTMLJSExpander(
-    {parentView: parentView})).visit(htmljs);
+    {parentView: parentView, awaitBindings: awaitBindings})).visit(htmljs);
 };
 
-Blaze._expandAttributes = function (attrs, parentView) {
+Blaze._expandAttributes = function (attrs, parentView, awaitBindings) {
   parentView = parentView || currentViewIfRendering();
   const expanded = (new Blaze._HTMLJSExpander(
-    {parentView: parentView})).visitAttributes(attrs);
+    {parentView: parentView, awaitBindings: awaitBindings})).visitAttributes(attrs);
   return expanded || {};
 };
 
