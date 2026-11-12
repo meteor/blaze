@@ -49,6 +49,12 @@ While this is a minor release, removing jQuery is breaking for code that relied 
   `event.target`, `event.currentTarget`, `preventDefault()`, `stopPropagation()` and
   `stopImmediatePropagation()` work the same; jQuery-only helpers such as `isDefaultPrevented()` are
   not available, use `event.defaultPrevented` instead.
+- Event properties that jQuery does not copy onto its event object, such as `dataTransfer` (drag and
+  drop), `deltaY` (wheel), `clipboardData` (copy and paste), `inputType` (input events),
+  `animationName`, `newState` (popover toggle) or `command` (invoker commands), were only reachable
+  through `event.originalEvent`. With the native backend they are on `event` itself, and
+  `event.originalEvent` is `undefined`. Code that has to run on both backends can read
+  `(event.originalEvent || event).dataTransfer`.
 - jQuery plugins called on `template.$(...)` no longer work, since there is no jQuery object to call
   them on.
 

@@ -371,6 +371,18 @@ Defines a [helper function](#Template-helpers) which can be used from all templa
 
 The [template instance](#Template-instances) corresponding to the current template helper, event handler, callback, or autorun.  If there isn't one, `null`.
 
+In an `async` function, call `Template.instance()` before the first `await`: once the function resumes, Blaze no longer tracks the current template instance and `Template.instance()` returns `null`. Event handlers receive the instance as their second argument and lifecycle callbacks have it as `this`, so capture it in a variable first:
+
+```js
+Template.editor.events({
+  async 'click .save'(event, instance) {
+    const saved = await Meteor.callAsync('drafts.save', instance.draft.get());
+    // `Template.instance()` would be `null` here
+    instance.draft.set(saved);
+  },
+});
+```
+
 ### Template.currentData() {#Template-currentData}
 
 - Inside an `onCreated`, `onRendered`, or `onDestroyed` callback, returns
