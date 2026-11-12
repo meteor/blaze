@@ -4945,6 +4945,39 @@ Tinytest.add(
   }
 );
 
+Tinytest.add(
+  'spacebars-tests - template_tests - event map works for a view rendered into a shadow root',
+  function (test) {
+    if (!Element.prototype.attachShadow) return;
+    const tmpl = new Template(
+      Template.spacebars_test_event_shadow_root.viewName,
+      Template.spacebars_test_event_shadow_root.renderFunction);
+    const seen = [];
+    tmpl.events({
+      'click .card .title': function (evt) { seen.push(`click ${evt.currentTarget.className}`); },
+      // a selector starting with a combinator, rooted at the shadow root
+      'click > .card': function (evt) { seen.push(`child ${evt.currentTarget.className}`); },
+      'mouseenter .card': function (evt) { seen.push(`mouseenter ${evt.currentTarget.className}`); },
+    });
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const shadowRoot = host.attachShadow({ mode: 'open' });
+    const view = Blaze.render(tmpl, shadowRoot);
+
+    // bubbling event, delegated; non-bubbling event, captured
+    shadowRoot.querySelector('.title').dispatchEvent(
+      new MouseEvent('click', { bubbles: true, cancelable: true }));
+    shadowRoot.querySelector('.card').dispatchEvent(
+      new MouseEvent('mouseenter', { bubbles: false }));
+
+    test.equal(seen, ['click title', 'child card', 'mouseenter card']);
+    // the template instance can query its own shadow tree
+    test.equal(view.templateInstance().findAll('.title').length, 1);
+    Blaze.remove(view);
+    document.body.removeChild(host);
+  }
+);
+
 Tinytest.addAsync(
   'spacebars-tests - template_tests - async event handler sees currentTarget after an await',
   async function (test) {

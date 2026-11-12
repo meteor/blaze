@@ -73,7 +73,9 @@ DOMBackend.Events = {
   // may be in backend-specific form, e.g. have namespaces).
   // Order fired must be order bound.
   delegateEvents(elem, type, selector, handler) {
-    if (_hasJQuery) {
+    // jQuery binds nothing on a document fragment (a shadow root): the
+    // native delegation below takes over there.
+    if (_hasJQuery && elem.nodeType !== 11) {
       $jq(elem).on(type, selector, handler);
       return;
     }
@@ -97,13 +99,13 @@ DOMBackend.Events = {
     // from inside a handler doesn't change the dispatch in progress
     // (jQuery also snapshots its handler queue before running it).
     delegation.delegates = delegation.delegates.concat({
-      scopedSelector: scopeSelector(selector),
+      scopedSelector: scopeSelector(selector, elem),
       handler,
     });
   },
 
   undelegateEvents(elem, type, handler) {
-    if (_hasJQuery) {
+    if (_hasJQuery && elem.nodeType !== 11) {
       $jq(elem).off(type, '**', handler);
       return;
     }
@@ -165,13 +167,26 @@ DOMBackend.Events = {
  * inside `elem`. A bare `closest(selector)` would match against the whole
  * document, letting ancestors outside `elem` satisfy the selector.
  * @param {String} selector Delegation selector, possibly a comma-separated list
- * @returns {String} The selector with every part prefixed by `:scope`
+ * @param {Node} elem The delegation element, or a document fragment
+ * @returns {String} The selector with every part prefixed by `:scope` (`:host`
+ * for a shadow root), or the selector itself for a bare document fragment
  * @private
  */
-const scopeSelector = (selector) => selector
-    .split(',')
-    .map((part) => `:scope ${part}`)
-    .join(',');
+const scopeSelector = (selector, elem) => {
+    // `:scope` matches nothing when the query runs on a document fragment.
+    // A shadow root is rooted with `:host` instead; a bare fragment keeps the
+    // selector as is (every match is inside it anyway), so a selector that
+    // starts with a combinator is not supported there.
+    let root = ':scope';
+    if (elem && elem.nodeType === 11) {
+        if (!elem.host) return selector;
+        root = ':host';
+    }
+    return selector
+        .split(',')
+        .map((part) => `${root} ${part}`)
+        .join(',');
+};
 
 /**
  * Runs `callback` with `event.currentTarget` reporting the matched element, as
@@ -323,7 +338,7 @@ const restoreOwnProperty = (object, name, descriptor) => {
  * @private
  */
 const createCaptureWrapper = (elem, selector, handler) => {
-    const scopedSelector = scopeSelector(selector);
+    const scopedSelector = scopeSelector(selector, elem);
 
     return (event) => {
         // querySelectorAll never returns `elem` itself or a text node
