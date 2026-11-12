@@ -270,6 +270,44 @@ asyncTest('attribute_if', 'binding that settles later', async (test, template, r
   test.equal(calls, 2);
 });
 
+// A run of the attribute updater invalidated while its bindings are pending
+// must not write its result over the one of the run that replaced it: the
+// promises A of the first run settle after the replacement, a promise B
+// settled first or a synchronous value, and the replacement's result stays.
+for (const [testName, synchronousReplacement] of [
+  ['overlapping async updates keep the newest result', false],
+  ['synchronous update kept over an earlier pending one', true],
+]) {
+  asyncTest('attribute_if', testName, async (test, template, render) => {
+    const generation = new ReactiveVar(0);
+    const pending = [];
+    template.helpers({
+      x() {
+        if (generation.get() === 1 && synchronousReplacement) return false;
+        return new Promise(resolve => pending.push(resolve));
+      },
+    });
+
+    const readHTML = render();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    test.equal(readHTML(), '<img>');
+    const first = pending.splice(0);
+    test.equal(first.length, 2);
+
+    generation.set(1);
+    Tracker.flush();
+    const second = pending.splice(0);
+    test.equal(second.length, synchronousReplacement ? 0 : 2);
+    second.forEach(resolve => resolve(false));
+    await new Promise(resolve => setTimeout(resolve, 0));
+    test.equal(readHTML(), '<img class="a d">');
+
+    first.forEach(resolve => resolve(true));
+    await new Promise(resolve => setTimeout(resolve, 0));
+    test.equal(readHTML(), '<img class="a d">');
+  });
+}
+
 // `Blaze.toHTML` stays synchronous: a pending async binding renders as in the
 // first pass of the materialized suites above (an empty block, the else branch
 // of `#each`) and never leaks a `Promise` into the HTML.
