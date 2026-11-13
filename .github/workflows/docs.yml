@@ -1,0 +1,41 @@
+# Builds the documentation site on every pull request and on pushes to
+# master, so that a page that no longer renders, a dead link or a stale
+# generated API page is caught before it reaches blazejs.org.
+name: Docs
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-site:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install site dependencies
+        run: npm install
+        working-directory: site
+
+      - name: Link repository pages and regenerate the API pages
+        run: npm run docs:init && npm run docs:api
+        working-directory: site
+
+      - name: Check that the generated API pages match the JSDoc
+        run: git diff --exit-code -- site/source/api
+
+      - name: Build the site
+        run: npm run docs:build
+        working-directory: site

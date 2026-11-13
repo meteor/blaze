@@ -1,0 +1,10 @@
+# Builds the documentation site (site/) on Netlify, which serves blazejs.org.
+# Paths are relative to the base directory. Netlify installs the npm
+# dependencies of site/ before running the command.
+[build]
+  base = "site"
+  command = "npm run docs:init && npm run docs:api && npm run docs:build"
+  publish = ".vitepress/dist"
+
+[build.environment]
+  NODE_VERSION = "22"
