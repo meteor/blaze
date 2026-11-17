@@ -417,9 +417,10 @@ DOMRange.prototype.$ = function (selector) {
   // so if performance is an issue, the selector should be
   // run on a child element.
 
-  // Since jQuery can't run selectors on a DocumentFragment,
-  // we don't expect findBySelector to work.
-  if (parentNode.nodeType === 11 /* DocumentFragment */)
+  // A shadow root takes selectors on both backends; a bare document
+  // fragment (an offscreen range) does not take `:scope`, and its content
+  // is not on screen anyway.
+  if (parentNode.nodeType === 11 /* DocumentFragment */ && ! parentNode.host)
     throw new Error("Can't use $ on an offscreen range");
 
   let results = Blaze._DOMBackend.findBySelector(selector, parentNode);
@@ -462,10 +463,11 @@ DOMRange.prototype.$ = function (selector) {
 
 // Returns true if element a contains node b and is not node b.
 //
-// The restriction that `a` be an element (not a document fragment,
-// say) is based on what's easy to implement cross-browser.
+// `a` is an element, or a document fragment such as a shadow root: a view
+// rendered into one has it as `parentElement`, and its event maps go
+// through this check for every event.
 Blaze._elementContains = function (a, b) {
-  if (a.nodeType !== 1) // ELEMENT
+  if (a.nodeType !== 1 && a.nodeType !== 11) // ELEMENT, DOCUMENT_FRAGMENT
     return false;
   if (a === b)
     return false;
