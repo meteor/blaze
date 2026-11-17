@@ -1,3 +1,21 @@
+## v3.1.0-beta.1, 2026-11-17
+
+Changes since 3.1.0-beta.0.
+
+### Highlights / Potentially breaking changes
+* [#538](https://github.com/meteor/blaze/pull/538) Aligned native event delegation with jQuery, including capturing handlers, nested selector matches and restoring `currentTarget` after handlers. Includes #518, #521 and #522 by [@drone1](https://github.com/drone1), bundled in [#525](https://github.com/meteor/blaze/pull/525) ([#517](https://github.com/meteor/blaze/issues/517), [#519](https://github.com/meteor/blaze/issues/519), [#520](https://github.com/meteor/blaze/issues/520)).
+* [#537](https://github.com/meteor/blaze/pull/537) Fixed block helpers inside HTML attributes waiting for async helpers and async template arguments ([#470](https://github.com/meteor/blaze/issues/470)).
+* [#533](https://github.com/meteor/blaze/pull/533) Added `Blaze.setExceptionLogLevel()` to report caught exceptions through `console.warn` or `console.error`, including the error object. The default remains `Meteor._debug`. Based on [#509](https://github.com/meteor/blaze/pull/509) by [@nicolv](https://github.com/nicolv) ([#314](https://github.com/meteor/blaze/issues/314)).
+* [#530](https://github.com/meteor/blaze/pull/530) Corrected the TypeScript return type of `TemplateInstance.$()` to `JQuery<TElement> | TElement[]`. Apps using jQuery must narrow or cast the result before calling jQuery methods; see the migration guide.
+* [#526](https://github.com/meteor/blaze/pull/526) Fixed array sequence updates moving or removing the wrong item after an earlier move in the same update.
+* [#528](https://github.com/meteor/blaze/pull/528) Fixed array sequence ordering when adding or moving items before falsy identifiers such as `0`, `false`, `undefined` or `""`.
+
+### Other changes
+* [#534](https://github.com/meteor/blaze/pull/534) Reported rejected attribute promises once, while preserving reports for errors raised during attribute resolution.
+* [#532](https://github.com/meteor/blaze/pull/532) Included template and helper names in exceptions from old-style helpers ([#291](https://github.com/meteor/blaze/issues/291)).
+* [#530](https://github.com/meteor/blaze/pull/530) Fixed the documentation build and expanded optional jQuery and TypeScript migration guidance.
+* [#524](https://github.com/meteor/blaze/pull/524) Added repository guidance for coding agents.
+
 ## v3.1.0-beta.0, 2026-09-23
 
 This is the cumulative set of changes in the 3.1.0 prerelease series, including the alpha release.
