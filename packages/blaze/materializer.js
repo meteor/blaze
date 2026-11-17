@@ -167,8 +167,14 @@ const materializeTag = function (tag, parentView, workStack) {
     // inline SVG
     elem = document.createElementNS('http://www.w3.org/2000/svg', tagName);
   } else {
-    // normal elements
-    elem = document.createElement(tagName);
+    // normal elements; a static `is` attribute names a customized built-in
+    // element, which only createElement can upgrade (setting the attribute
+    // afterwards does not).
+    const staticAttrs = Array.isArray(tag.attrs)
+      ? tag.attrs.find((attributes) => attributes && typeof attributes.is === 'string')
+      : tag.attrs;
+    const is = staticAttrs && typeof staticAttrs.is === 'string' ? staticAttrs.is : null;
+    elem = is ? document.createElement(tagName, { is }) : document.createElement(tagName);
   }
 
   let rawAttrs = tag.attrs;
