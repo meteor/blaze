@@ -5,7 +5,7 @@ export default defineConfig({
     title: "Blaze Docs",
     srcDir: "source",
     lang: 'en-US',
-    base: '/blaze/',
+    base: '/',
     description: "The original MeteorJS Frontend",
     head: [['link', {rel: 'icon', href: '/logo/icon.ico'}]],
     lastUpdated: true,

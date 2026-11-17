@@ -1,21 +1,28 @@
-## Blaze JS - http://blazejs.org
+## Blaze JS - https://blazejs.org
 
-This is a [vitepress](https://vitepress.dev) static site used to generate
-the [Blaze JS Documentation](http://blazejs.org/).
+This is a [VitePress](https://vitepress.dev) site used to generate the
+[Blaze JS documentation](https://blazejs.org/).
 
 ### Running locally
 
 ```
 npm install
+npm run docs:init   # links CONTRIBUTING, CODE_OF_CONDUCT and SECURITY from the repository root
+npm run docs:api    # regenerates source/api/{blaze,spacebars,templates_api}.md from the JSDoc
 npm run docs:dev
 ```
 
-#### Generating `data.js`
+`npm run docs:build` builds the static site into `.vitepress/dist`.
 
-To generate the api boxes, the site uses a file `data/data.js` which is generated from the js docs in
-the [Blaze source code](https://github.com/meteor/blaze). This will automatically happen whenever you start your local
-hexo server.
+### Generated API pages
 
-#### Starting hexo
+`source/api/blaze.md`, `source/api/spacebars.md` and `source/api/templates_api.md`
+are generated from the JSDoc comments of the packages by `npm run docs:api` and
+committed. Run it after changing a JSDoc comment: the `Docs` workflow fails when
+they are out of date.
 
-Ensure you've run `npm install`. Then simply `npm start`.
+### Deployment
+
+blazejs.org is served by Netlify, configured by `netlify.toml` at the repository
+root: it builds `site/` with the three commands above and publishes
+`.vitepress/dist`. The `Docs` workflow runs the same build on every pull request.

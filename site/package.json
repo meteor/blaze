@@ -10,8 +10,8 @@
     "docs:api": "jsdoc2md -m none -g none ../packages/blaze/*.js > source/api/blaze.md && jsdoc2md -m none -g none ../packages/spacebars/*.js > source/api/spacebars.md && jsdoc2md -m none -g none ../packages/templating-runtime/*.js > source/api/templates_api.md"
   },
   "devDependencies": {
-    "jsdoc": "^4.0.5",
-    "jsdoc-to-markdown": "^9.1.3",
-    "vitepress": "^2.0.0-alpha.16"
+    "jsdoc": "4.0.5",
+    "jsdoc-to-markdown": "9.1.3",
+    "vitepress": "2.0.0-alpha.21"
   }
 }
