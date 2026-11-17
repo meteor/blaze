@@ -265,3 +265,25 @@ Template.Lists_show_page.onRendered(function () {
     });
 });
 ```
+
+## Web Components
+
+Custom elements work in a Blaze template like any other element: Blaze creates them with `document.createElement`,
+so they upgrade once their definition is registered, their attributes follow your data reactively, and the events
+they dispatch are reachable from event maps like any DOM event.
+
+Attributes are strings. A custom element that takes structured data (an array, an object, a function) exposes it as
+a JavaScript property, and a property cannot be set from the template: <code v-pre>&lt;my-chart data={{points}}&gt;</code> gives the
+element the attribute `data="[object Object]"`. Set the property from JavaScript instead, in an `autorun` started
+from `onRendered()`, so that it follows the data:
+
+```js
+Template.Dashboard.onRendered(function () {
+    this.autorun(() => {
+        this.find('my-chart').data = Template.currentData().points;
+    });
+});
+```
+
+The `autorun` re-runs when `points` changes and stops when the template instance is destroyed. The same pattern
+applies to native properties that have no attribute form, such as `video.srcObject`.
