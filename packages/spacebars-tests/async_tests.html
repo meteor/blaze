@@ -109,3 +109,28 @@
 <template name="spacebars_async_tests_with">
   {{#with x}}{{y}}{{/with}}
 </template>
+
+<template name="spacebars_async_tests_attribute_if">
+  <img class="a {{#if x}}b{{/if}} {{#if x}}c{{else}}d{{/if}}">
+</template>
+
+<template name="spacebars_async_tests_attribute_unless">
+  <img class="a {{#unless x}}b{{/unless}} {{#unless x}}c{{else}}d{{/unless}}">
+</template>
+
+<template name="spacebars_async_tests_attribute_let">
+  {{#let y=x}}<img class="a {{#if y}}1{{else}}2{{/if}}">{{/let}}
+</template>
+
+<template name="spacebars_async_tests_attribute_with">
+  <img class="a {{#with x}}{{y}}{{/with}}">
+</template>
+
+<template name="spacebars_async_tests_attribute_each">
+  <img class="a {{#each y in x}}{{y}}{{else}}0{{/each}}">
+</template>
+
+<template name="spacebars_async_tests_attribute_inclusion">
+  {{> spacebars_async_tests_attribute_if x=x}}
+</template>
+

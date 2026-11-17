@@ -1,13 +1,19 @@
 /**
  * @namespace Blaze
- * @summary The namespace for all Blaze-related methods and classes.
+ */
+
+/**
+ * Blaze is the package that makes reactive templates possible.
+ * You can use the Blaze API directly in order to render templates programmatically
+ * and manipulate "Views," the building blocks of reactive templates.
+ * @type {{}}
  */
 Blaze = {};
 
 // Utility to HTML-escape a string.  Included for legacy reasons.
 // TODO: Should be replaced with _.escape once underscore is upgraded to a newer
 //       version which escapes ` (backtick) as well. Underscore 1.5.2 does not.
-Blaze._escape = (function() {
+Blaze._escape = (() => {
   const escape_map = {
     "<": "&lt;",
     ">": "&gt;",
@@ -17,17 +23,16 @@ Blaze._escape = (function() {
     "`": "&#x60;", /* IE allows backtick-delimited attributes?? */
     "&": "&amp;"
   };
-  const escape_one = function(c) {
-    return escape_map[c];
-  };
+  const escape_one = (c) =>
+    escape_map[c];
 
-  return function (x) {
+  return (x) => {
     return x.replace(/[&<>"'`]/g, escape_one);
   };
 })();
 
 Blaze._warn = function (msg) {
-  msg = 'Warning: ' + msg;
+  msg = `Warning: ${msg}`;
 
   if ((typeof console !== 'undefined') && console.warn) {
     console.warn(msg);

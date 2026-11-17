@@ -9,8 +9,8 @@ Tinytest.add("spacebars - Spacebars.dot", function (test) {
       return {x:1, y: function () { return this.x+1; }};
     }, 'y')(), 2);
 
-  var m = 1;
-  var mget = function () {
+  let m = 1;
+  const mget = function () {
     return {
       answer: m,
       getAnswer: function () {
@@ -18,16 +18,16 @@ Tinytest.add("spacebars - Spacebars.dot", function (test) {
       }
     };
   };
-  var mgetDotAnswer = Spacebars.dot(mget, 'answer');
+  const mgetDotAnswer = Spacebars.dot(mget, 'answer');
   test.equal(mgetDotAnswer, 1);
 
   m = 3;
-  var mgetDotGetAnswer = Spacebars.dot(mget, 'getAnswer');
+  const mgetDotGetAnswer = Spacebars.dot(mget, 'getAnswer');
   test.equal(mgetDotGetAnswer(), 3);
   m = 4;
   test.equal(mgetDotGetAnswer(), 3);
 
-  var closet = {
+  const closet = {
     mget: mget,
     mget2: function () {
       return this.mget();
@@ -35,12 +35,12 @@ Tinytest.add("spacebars - Spacebars.dot", function (test) {
   };
 
   m = 5;
-  var f1 = Spacebars.dot(closet, 'mget', 'answer');
+  const f1 = Spacebars.dot(closet, 'mget', 'answer');
   m = 6;
-  var f2 = Spacebars.dot(closet, 'mget2', 'answer');
+  const f2 = Spacebars.dot(closet, 'mget2', 'answer');
   test.equal(f2, 6);
   m = 8;
-  var f3 = Spacebars.dot(closet, 'mget2', 'getAnswer');
+  const f3 = Spacebars.dot(closet, 'mget2', 'getAnswer');
   m = 9;
   test.equal(f3(), 8);
 

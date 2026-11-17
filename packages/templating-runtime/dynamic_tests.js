@@ -1,9 +1,9 @@
 Tinytest.add(
   "spacebars - ui-dynamic-template - render template dynamically", function (test, expect) {
-    var tmpl = Template.ui_dynamic_test;
+    const tmpl = Template.ui_dynamic_test;
 
-    var nameVar = new ReactiveVar;
-    var dataVar = new ReactiveVar;
+    const nameVar = new ReactiveVar;
+    const dataVar = new ReactiveVar;
     tmpl.helpers({
       templateName: function () {
         return nameVar.get();
@@ -14,7 +14,7 @@ Tinytest.add(
     });
 
     // No template chosen
-    var div = renderToDiv(tmpl);
+    const div = renderToDiv(tmpl);
     test.equal(canonicalizeHtml(div.innerHTML), "");
 
     // Choose the "ui-dynamic-test-sub" template, with no data context
@@ -34,16 +34,16 @@ Tinytest.add(
 Tinytest.add(
   "spacebars - ui-dynamic-template - render template dynamically, no data context",
   function (test, expect) {
-    var tmpl = Template.ui_dynamic_test_no_data;
+    const tmpl = Template.ui_dynamic_test_no_data;
 
-    var nameVar = new ReactiveVar;
+    const nameVar = new ReactiveVar;
     tmpl.helpers({
       templateName: function () {
         return nameVar.get();
       }
     });
 
-    var div = renderToDiv(tmpl);
+    const div = renderToDiv(tmpl);
     test.equal(canonicalizeHtml(div.innerHTML), "");
 
     nameVar.set("ui_dynamic_test_sub");
@@ -56,10 +56,10 @@ Tinytest.add(
   "spacebars - ui-dynamic-template - render template " +
     "dynamically, data context gets inherited",
   function (test, expect) {
-    var tmpl = Template.ui_dynamic_test_inherited_data;
+    const tmpl = Template.ui_dynamic_test_inherited_data;
 
-    var nameVar = new ReactiveVar();
-    var dataVar = new ReactiveVar();
+    const nameVar = new ReactiveVar();
+    const dataVar = new ReactiveVar();
     tmpl.helpers({
       templateName: function () {
         return nameVar.get();
@@ -69,7 +69,7 @@ Tinytest.add(
       }
     });
 
-    var div = renderToDiv(tmpl);
+    const div = renderToDiv(tmpl);
     test.equal(canonicalizeHtml(div.innerHTML), "");
 
     nameVar.set("ui_dynamic_test_sub");
@@ -87,10 +87,10 @@ Tinytest.add(
 
 Tinytest.add(
   "spacebars - ui-dynamic-template - render template dynamically with contentBlock", function (test, expect) {
-    var tmpl = Template.ui_dynamic_test_contentblock;
+    const tmpl = Template.ui_dynamic_test_contentblock;
 
-    var nameVar = new ReactiveVar;
-    var dataVar = new ReactiveVar;
+    const nameVar = new ReactiveVar;
+    const dataVar = new ReactiveVar;
     tmpl.helpers({
       templateName: function () {
         return nameVar.get();
@@ -101,7 +101,7 @@ Tinytest.add(
     });
 
     // No template chosen
-    var div = renderToDiv(tmpl);
+    const div = renderToDiv(tmpl);
     test.equal(canonicalizeHtml(div.innerHTML), "");
 
     // Choose the "ui-dynamic-test-sub" template, with no data context
@@ -121,16 +121,16 @@ Tinytest.add(
 Tinytest.add(
   "spacebars - ui-dynamic-template - render template dynamically with contentBlock, no data context",
   function (test, expect) {
-    var tmpl = Template.ui_dynamic_test_contentblock_no_data;
+    const tmpl = Template.ui_dynamic_test_contentblock_no_data;
 
-    var nameVar = new ReactiveVar;
+    const nameVar = new ReactiveVar;
     tmpl.helpers({
       templateName: function () {
         return nameVar.get();
       }
     });
 
-    var div = renderToDiv(tmpl);
+    const div = renderToDiv(tmpl);
     test.equal(canonicalizeHtml(div.innerHTML), "");
 
     nameVar.set("ui_dynamic_test_sub_contentblock");
@@ -143,10 +143,10 @@ Tinytest.add(
     "dynamically, data context does not get inherited if " +
     "falsey context is passed in",
   function (test, expect) {
-    var tmpl = Template.ui_dynamic_test_falsey_inner_context;
+    const tmpl = Template.ui_dynamic_test_falsey_inner_context;
 
-    var nameVar = new ReactiveVar();
-    var dataVar = new ReactiveVar();
+    const nameVar = new ReactiveVar();
+    const dataVar = new ReactiveVar();
     tmpl.helpers({
       templateName: function () {
         return nameVar.get();
@@ -156,7 +156,7 @@ Tinytest.add(
       }
     });
 
-    var div = renderToDiv(tmpl);
+    const div = renderToDiv(tmpl);
     test.equal(canonicalizeHtml(div.innerHTML), "");
 
     nameVar.set("ui_dynamic_test_sub");
@@ -171,18 +171,18 @@ Tinytest.add(
   "spacebars - ui-dynamic-template - render template " +
     "dynamically, bad arguments",
   function (test, expect) {
-    var tmplPrefix = "ui_dynamic_test_bad_args";
-    var errors = [
+    const tmplPrefix = "ui_dynamic_test_bad_args";
+    const errors = [
       "Must specify 'template' as an argument",
       "Must specify 'template' as an argument",
       "Invalid argument to {{> Template.dynamic}}"
     ];
 
-    for (var i = 0; i < 3; i++) {
-      var tmpl = Template[tmplPrefix + i];
+    for (let i = 0; i < 3; i++) {
+      const tmpl = Template[tmplPrefix + i];
       test.throws(function () {
         Blaze._throwNextException = true;
-        var div = renderToDiv(tmpl);
+        const div = renderToDiv(tmpl);
       });
     }
   }
@@ -192,14 +192,14 @@ Tinytest.add(
   "spacebars - ui-dynamic-template - render template " +
     "dynamically, falsey context",
   function (test, expect) {
-    var tmpl = Template.ui_dynamic_test_falsey_context;
-    var subtmpl = Template.ui_dynamic_test_falsey_context_sub;
+    const tmpl = Template.ui_dynamic_test_falsey_context;
+    const subtmpl = Template.ui_dynamic_test_falsey_context_sub;
 
-    var subtmplContext;
+    let subtmplContext;
     subtmpl.helpers({foo: function () {
       subtmplContext = this;
     }});
-    var div = renderToDiv(tmpl);
+    const div = renderToDiv(tmpl);
 
     // Because `this` can only be an object, Blaze normalizes falsey
     // data contexts to {}.
@@ -209,10 +209,10 @@ Tinytest.add(
 
 Tinytest.add(
   "spacebars - ui-dynamic-template - back-compat", function (test, expect) {
-    var tmpl = Template.ui_dynamic_backcompat;
+    const tmpl = Template.ui_dynamic_backcompat;
 
-    var nameVar = new ReactiveVar;
-    var dataVar = new ReactiveVar;
+    const nameVar = new ReactiveVar;
+    const dataVar = new ReactiveVar;
     tmpl.helpers({
       templateName: function () {
         return nameVar.get();
@@ -223,7 +223,7 @@ Tinytest.add(
     });
 
     // No template chosen
-    var div = renderToDiv(tmpl);
+    const div = renderToDiv(tmpl);
     test.equal(canonicalizeHtml(div.innerHTML), "");
 
     // Choose the "ui-dynamic-test-sub" template, with no data context

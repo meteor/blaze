@@ -1,7 +1,7 @@
 import { BlazeTools } from 'meteor/blaze-tools';
 
 const toCode = BlazeTools.toJS;
-
+const hasJquery = Blaze._DOMBackend._hasJQuery;
 const P = HTML.P;
 const CharRef = HTML.CharRef;
 const DIV = HTML.DIV;
@@ -267,8 +267,8 @@ Tinytest.add("blaze - render - view GC", function (test) {
   (function () {
     const R = ReactiveVar('Hello');
     const test1 = P(Blaze.View(function () { return R.get(); }));
-
     const div = document.createElement("DIV");
+
     materialize(test1, div);
     test.equal(canonicalizeHtml(div.innerHTML), "<p>Hello</p>");
 
@@ -278,7 +278,7 @@ Tinytest.add("blaze - render - view GC", function (test) {
 
     test.equal(R._numListeners(), 1);
 
-    $(div).remove();
+    if (hasJquery) { $(div).remove() } else { div.remove() }
 
     test.equal(R._numListeners(), 0);
 
@@ -325,7 +325,7 @@ Tinytest.add("blaze - render - reactive attributes", function (test) {
     test.equal(canonicalizeHtml(div.innerHTML), '<span class="blah"></span>');
     test.equal(R._numListeners(), 1);
 
-    $(div).remove();
+    if (hasJquery) { $(div).remove() } else { div.remove() }
 
     test.equal(R._numListeners(), 0);
   })();
@@ -354,7 +354,7 @@ Tinytest.add("blaze - render - reactive attributes", function (test) {
     Tracker.flush();
     test.equal(canonicalizeHtml(div.innerHTML), '<div style="background-color: red; padding: 10px"></div>');
 
-    $(div).remove();
+    if (hasJquery) { $(div).remove() } else { div.remove() }
 
     test.equal(style._numListeners(), 0);
   })();
@@ -393,7 +393,7 @@ Tinytest.add("blaze - render - reactive attributes", function (test) {
     test.equal(canonicalizeHtml(div.innerHTML), '<span style="jquery-style: hidden"></span>');
     test.equal(R._numListeners(), 1);
 
-    $(div).remove();
+    if (hasJquery) { $(div).remove() } else { div.remove() }
 
     test.equal(R._numListeners(), 0);
   })();
@@ -482,7 +482,7 @@ Tinytest.add("blaze - render - reactive attributes", function (test) {
     Tracker.flush();
     test.equal(canonicalizeHtml(div.innerHTML), '<span ggg="" id="foo"></span>');
 
-    $(div).remove();
+    if (hasJquery) { $(div).remove() } else { div.remove() }
 
     test.equal(R._numListeners(), 0);
   })();
@@ -574,7 +574,7 @@ Tinytest.add("blaze - render - templates and views", function (test) {
     test.equal(canonicalizeHtml(div.innerHTML), '123<hr>');
 
     buf.length = 0;
-    $(div).remove();
+    if (hasJquery) { $(div).remove() } else { div.remove() }
     buf.sort();
     test.equal(buf, ['destroyed 1', 'destroyed 2', 'destroyed 3']);
 
@@ -617,10 +617,12 @@ Tinytest.add("blaze - render - findAll", function (test) {
   Blaze.render(myTemplate, div);
   Tracker.flush();
 
-  test.equal(Array.isArray(found), true);
-  test.equal(Array.isArray($found), false);
   test.equal(found.length, 2);
   test.equal($found.length, 2);
+  const foundIsArray = Array.isArray(found);
+  const $foundIsArray = Array.isArray($found);
+  test.equal(foundIsArray, true);
+  test.equal($foundIsArray, !hasJquery);
 });
 
 Tinytest.add("blaze - render - reactive attributes 2", function (test) {
@@ -670,7 +672,7 @@ Tinytest.add("blaze - render - reactive attributes 2", function (test) {
 
   // clean up
 
-  $(div).remove();
+  if (hasJquery) { $(div).remove() } else { div.remove() }
 
   test.equal(R1._numListeners(), 0);
   test.equal(R2._numListeners(), 0);
@@ -778,7 +780,7 @@ if (typeof MutationObserver !== 'undefined') {
       // We do not update anything after initial rendering, so only one mutation is there.
       test.equal(observedMutations.length, 1);
 
-      $(div).remove();
+      if (hasJquery) { $(div).remove() } else { div.remove() }
       observer.disconnect();
 
       onComplete();

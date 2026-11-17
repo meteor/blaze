@@ -95,9 +95,24 @@ const materializeDOMInner = function (htmljs, intoArray, parentView, workStack) 
 
 const isPromiseLike = x => !!x && typeof x.then === 'function';
 
+// Thrown in place of a rejection that `waitForAllAttributes` has reported, so
+// that the end of the chain reports only the errors nobody reported yet.
+const alreadyReported = new Error('attribute rejection already reported');
+
+function reportRejection(error) {
+  Blaze._reportException(error);
+  throw alreadyReported;
+}
+
 function then(maybePromise, fn) {
   if (isPromiseLike(maybePromise)) {
-    maybePromise.then(fn, Blaze._reportException);
+    maybePromise.then(fn, error => {
+      // An error thrown while reading the resolved attributes, for example
+      // by a getter, rejects the chain without having been reported.
+      if (error !== alreadyReported) {
+        Blaze._reportException(error);
+      }
+    });
   } else {
     fn(maybePromise);
   }
@@ -117,7 +132,7 @@ function waitForAllAttributes(attrs) {
 
   // Singular async attributes, e.g., `<img {{x}}>`.
   if (isPromiseLike(attrs)) {
-    return attrs.then(waitForAllAttributes, Blaze._reportExceptionAndThrow);
+    return attrs.then(waitForAllAttributes, reportRejection);
   }
 
   // Singular sync attributes, with potentially async properties.
@@ -126,13 +141,13 @@ function waitForAllAttributes(attrs) {
     if (isPromiseLike(value)) {
       promises.push(value.then(value => {
         attrs[key] = value;
-      }, Blaze._reportExceptionAndThrow));
+      }, reportRejection));
     } else if (Array.isArray(value)) {
       value.forEach((element, index) => {
         if (isPromiseLike(element)) {
           promises.push(element.then(element => {
             value[index] = element;
-          }, Blaze._reportExceptionAndThrow));
+          }, reportRejection));
         }
       });
     }
@@ -140,7 +155,7 @@ function waitForAllAttributes(attrs) {
 
   // If any of the properties were async, lift the `Promise`.
   return promises.length
-    ? Promise.all(promises).then(() => attrs, Blaze._reportExceptionAndThrow)
+    ? Promise.all(promises).then(() => attrs)
     : attrs;
 }
 
@@ -179,8 +194,15 @@ const materializeTag = function (tag, parentView, workStack) {
   if (rawAttrs) {
     const attrUpdater = new ElementAttributesUpdater(elem);
     const updateAttributes = function () {
-      const expandedAttrs = Blaze._expandAttributes(rawAttrs, parentView);
+      // A run invalidated while its attribute `Promise`s are pending (a
+      // binding re-ran, or the element was torn down) has been replaced by a
+      // newer run: its result must not be written over the newer one.
+      let invalidated = false;
+      Tracker.onInvalidate(() => { invalidated = true; });
+      const expandedAttrs =
+        Blaze._expandAttributes(rawAttrs, parentView, true /*awaitBindings*/);
       then(waitForAllAttributes(expandedAttrs), awaitedAttrs => {
+        if (invalidated) return;
         const flattenedAttrs = HTML.flattenAttributes(awaitedAttrs);
         const stringAttrs = {};
         Object.keys(flattenedAttrs).forEach((attrName) => {
@@ -202,8 +224,8 @@ const materializeTag = function (tag, parentView, workStack) {
       updaterComputation =
         parentView.autorun(updateAttributes, undefined, 'updater');
     } else {
-      updaterComputation = Tracker.nonreactive(function () {
-        return Tracker.autorun(function () {
+      updaterComputation = Tracker.nonreactive(() => {
+        return Tracker.autorun(() => {
           Tracker._withCurrentView(parentView, updateAttributes);
         });
       });
@@ -216,7 +238,7 @@ const materializeTag = function (tag, parentView, workStack) {
   if (children.length) {
     const childNodesAndRanges = [];
     // push this function first so that it's done last
-    workStack.push(function () {
+    workStack.push(() => {
       for (let i = 0; i < childNodesAndRanges.length; i++) {
         const x = childNodesAndRanges[i];
         if (x instanceof Blaze._DOMRange)

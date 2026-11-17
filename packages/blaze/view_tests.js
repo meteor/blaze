@@ -77,3 +77,32 @@ if (Meteor.isClient) {
     Make sure the event doesn't destroy the view.`);
   });
 }
+
+// Exceptions thrown by helpers are reported with the template and helper
+// names, so that error trackers can tell them apart. See meteor/blaze#291.
+Tinytest.add("blaze - lookup - helper exceptions name the template and the helper", function (test) {
+  const reportedMessages = [];
+  const originalReportException = Blaze._reportException;
+  Blaze._reportException = (error, message) => reportedMessages.push(message);
+
+  const tmpl = new Blaze.Template('Template.helperExceptionTest', () => null);
+  tmpl.helpers({ failingHelper() { throw new Error('boom'); } });
+  tmpl._NOWARN_OLDSTYLE_HELPERS = true;
+  tmpl.failingOldStyleHelper = () => { throw new Error('boom'); };
+  Blaze.registerHelper('failingGlobalHelper', () => { throw new Error('boom'); });
+
+  try {
+    Blaze._getTemplateHelper(tmpl, 'failingHelper', null)();
+    Blaze._getTemplateHelper(tmpl, 'failingOldStyleHelper', null)();
+    Blaze._getGlobalHelper('failingGlobalHelper', null)();
+  } finally {
+    Blaze._reportException = originalReportException;
+    Blaze.deregisterHelper('failingGlobalHelper');
+  }
+
+  test.equal(reportedMessages, [
+    'Exception in Template.helperExceptionTest failingHelper:',
+    'Exception in Template.helperExceptionTest failingOldStyleHelper:',
+    'Exception in global helper failingGlobalHelper:',
+  ]);
+});

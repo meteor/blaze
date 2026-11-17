@@ -39,7 +39,7 @@ const DOMRange = Blaze._DOMRange;
 // don't accept JS properties, so just use the same logic
 // even though we don't need to set properties on the
 // placeholder anymore.
-DOMRange._USE_COMMENT_PLACEHOLDERS = (function () {
+DOMRange._USE_COMMENT_PLACEHOLDERS = (() => {
   let result = false;
   const textNode = document.createTextNode("");
   try {
@@ -405,8 +405,6 @@ DOMRange.prototype.onAttachedDetached = function (callbacks) {
 };
 
 DOMRange.prototype.$ = function (selector) {
-  const self = this;
-
   const parentNode = this.parentElement;
   if (! parentNode)
     throw new Error("Can't select in removed DomRange");
@@ -434,13 +432,14 @@ DOMRange.prototype.$ = function (selector) {
   // Function that selects only elements that are actually
   // in this DomRange, rather than simply descending from
   // `parentNode`.
+  const domRange = this;
   const filterFunc = function (elem) {
     // handle jQuery's arguments to filter, where the node
     // is in `this` and the index is the first argument.
     if (typeof elem === 'number')
       elem = this;
 
-    return self.containsElement(elem);
+    return domRange.containsElement(elem);
   };
 
   if (! results.filter) {

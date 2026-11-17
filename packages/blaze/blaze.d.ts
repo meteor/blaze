@@ -1,5 +1,3 @@
-import * as $ from 'jquery';
-
 import { Tracker } from 'meteor/tracker';
 import { Meteor } from 'meteor/meteor';
 declare module 'meteor/blaze' {
@@ -82,7 +80,7 @@ declare module 'meteor/blaze' {
     class TemplateInstance<D = any> {
       constructor(view: View);
 
-      $<TElement extends HTMLElement = HTMLElement>(selector: string): JQuery<TElement>;
+      $<TElement extends HTMLElement = HTMLElement>(selector: string): JQuery<TElement> | TElement[];
       autorun(runFunc: (computation: Tracker.Computation) => void): Tracker.Computation;
       data: D;
       find(selector: string): HTMLElement;
@@ -123,5 +121,7 @@ declare module 'meteor/blaze' {
     function toHTML(templateOrView: Template | View): string;
 
     function toHTMLWithData(templateOrView: Template | View, data: Object | Function): string;
+
+    function setExceptionLogLevel(level: 'log' | 'warn' | 'error'): void;
   }
 }

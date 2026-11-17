@@ -1,8 +1,6 @@
 ---
 title: Changelog
-description:
+description: Release notes of every Blaze version.
 ---
 
-{%- changelog '../HISTORY.md' %}
-
-<!-- Change this to force a deployment 03 -->
+<!--@include: ../../HISTORY.md-->

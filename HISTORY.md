@@ -1,3 +1,52 @@
+## v3.1.0-beta.1, 2026-11-17
+
+Changes since 3.1.0-beta.0.
+
+### Highlights / Potentially breaking changes
+* [#538](https://github.com/meteor/blaze/pull/538) Aligned native event delegation with jQuery, including capturing handlers, nested selector matches and restoring `currentTarget` after handlers. Includes #518, #521 and #522 by [@drone1](https://github.com/drone1), bundled in [#525](https://github.com/meteor/blaze/pull/525) ([#517](https://github.com/meteor/blaze/issues/517), [#519](https://github.com/meteor/blaze/issues/519), [#520](https://github.com/meteor/blaze/issues/520)).
+* [#537](https://github.com/meteor/blaze/pull/537) Fixed block helpers inside HTML attributes waiting for async helpers and async template arguments ([#470](https://github.com/meteor/blaze/issues/470)).
+* [#533](https://github.com/meteor/blaze/pull/533) Added `Blaze.setExceptionLogLevel()` to report caught exceptions through `console.warn` or `console.error`, including the error object. The default remains `Meteor._debug`. Based on [#509](https://github.com/meteor/blaze/pull/509) by [@nicolv](https://github.com/nicolv) ([#314](https://github.com/meteor/blaze/issues/314)).
+* [#530](https://github.com/meteor/blaze/pull/530) Corrected the TypeScript return type of `TemplateInstance.$()` to `JQuery<TElement> | TElement[]`. Apps using jQuery must narrow or cast the result before calling jQuery methods; see the migration guide.
+* [#526](https://github.com/meteor/blaze/pull/526) Fixed array sequence updates moving or removing the wrong item after an earlier move in the same update.
+* [#528](https://github.com/meteor/blaze/pull/528) Fixed array sequence ordering when adding or moving items before falsy identifiers such as `0`, `false`, `undefined` or `""`.
+
+### Other changes
+* [#534](https://github.com/meteor/blaze/pull/534) Reported rejected attribute promises once, while preserving reports for errors raised during attribute resolution.
+* [#532](https://github.com/meteor/blaze/pull/532) Included template and helper names in exceptions from old-style helpers ([#291](https://github.com/meteor/blaze/issues/291)).
+* [#530](https://github.com/meteor/blaze/pull/530) Fixed the documentation build and expanded optional jQuery and TypeScript migration guidance.
+* [#524](https://github.com/meteor/blaze/pull/524) Added repository guidance for coding agents.
+
+## v3.1.0-beta.0, 2026-09-23
+
+This is the cumulative set of changes in the 3.1.0 prerelease series, including the alpha release.
+
+### Highlights / Potentially breaking changes
+* [#493](https://github.com/meteor/blaze/pull/493) Made jQuery optional with a native DOM backend. Without jQuery, `TemplateInstance.$()` returns an array of elements instead of a jQuery object.
+* [#497](https://github.com/meteor/blaze/pull/497) Completed native DOM event delegation and teardown support, with tests for both jQuery and native DOM modes.
+* [#489](https://github.com/meteor/blaze/pull/489) Removed external npm dependencies from Blaze packages, including lodash helpers and `uglify-js` in the Spacebars compiler.
+* [#478](https://github.com/meteor/blaze/pull/478) Reduced redundant DOM attribute updates and cached URL protocol detection.
+* [#488](https://github.com/meteor/blaze/pull/488) Modernized Blaze package source to ES2015+ syntax.
+* [#501](https://github.com/meteor/blaze/pull/501) Fixed `{{#each}}` item views re-rendering with stale data while their sequence is being updated ([#468](https://github.com/meteor/blaze/issues/468)).
+* [#513](https://github.com/meteor/blaze/pull/513) Fixed delegated event selectors in the native DOM backend when templates contain nested block helpers ([#512](https://github.com/meteor/blaze/issues/512)).
+
+### Other changes
+* [#495](https://github.com/meteor/blaze/pull/495) Reported template exceptions through `console.error` in the fallback path.
+* [#487](https://github.com/meteor/blaze/pull/487) Fixed README links and updated the test status badges.
+* [#483](https://github.com/meteor/blaze/pull/483) Expanded the architecture documentation.
+* [#494](https://github.com/meteor/blaze/pull/494) Moved the documentation site to VitePress and expanded the API and guide documentation.
+
+## v3.1.0-alpha.0, 2026-06-25
+
+### Highlights / Potentially breaking changes
+* [#493](https://github.com/meteor/blaze/pull/493) Made jQuery optional by adding a dual-mode jQuery/native DOM backend.
+* [#497](https://github.com/meteor/blaze/pull/497) Completed the native DOM backend follow-up with fixes and test coverage for both jQuery and non-jQuery setups.
+* [#489](https://github.com/meteor/blaze/pull/489) Removed external npm dependencies from Blaze packages.
+* [#478](https://github.com/meteor/blaze/pull/478) Improved attribute update performance in Blaze rendering.
+* [#488](https://github.com/meteor/blaze/pull/488) Modernized the codebase to ES2015+ syntax across Blaze packages.
+
+### Other changes
+* [#495](https://github.com/meteor/blaze/pull/495) Improved template exception reporting by using `console.error` in the fallback path.
+
 ## v3.0.3, 2026-XX-XX
 
 ### Highlights
